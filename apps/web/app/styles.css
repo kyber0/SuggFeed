@@ -1083,6 +1083,7 @@ textarea { height: 130px; resize: vertical; }
 }
 .comment-skeleton-wrap { display: flex; flex-direction: column; gap: 12px; }
 .comment-skeleton { height: 52px; border-radius: var(--r-lg); }
+.mobile-spacer { display: none; }
 
 /* ── Comment form (sticky bottom) ───────────────────────── */
 .comment-form {
@@ -1210,12 +1211,14 @@ textarea { height: 130px; resize: vertical; }
     /* On mobile, col-right doesn't need to be a flex column itself
        because scrolling is handled by the parent columns container */
     display: block;
-    padding-bottom: 80px;
+    padding-bottom: 0;
+    overflow: visible;
   }
   .detail-col-divider { display: none; }
   /* Prevent long idea titles from overflowing on mobile */
   .detail-panel-title { word-break: break-word; overflow-wrap: anywhere; font-size: 20px; }
   .comment-list { min-height: 120px; margin-bottom: 0; }
+  .mobile-spacer { display: block; height: 100px; flex-shrink: 0; }
   .card-read-more { opacity: 1; }
   /* Comment form is fixed on mobile to stay at the screen bottom */
   .comment-form {

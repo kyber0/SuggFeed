@@ -329,6 +329,7 @@ export function IdeaDetailPanel({
                   </div>
                 ))
               )}
+              <div className="mobile-spacer" aria-hidden="true" />
             </div>
 
             {/* Comment form — sticky at bottom of right column */}
