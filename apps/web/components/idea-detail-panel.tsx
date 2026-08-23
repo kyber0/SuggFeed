@@ -58,22 +58,6 @@ export function IdeaDetailPanel({
   const commentListRef = useRef<HTMLDivElement>(null);
   const formRef        = useRef<HTMLFormElement>(null);
 
-  // Shift comment form up when mobile keyboard opens (Visual Viewport API)
-  useEffect(() => {
-    const vv = (window as Window & { visualViewport?: VisualViewport }).visualViewport;
-    if (!vv) return;
-    const onResize = () => {
-      if (!formRef.current) return;
-      const offset = window.innerHeight - vv.height - vv.offsetTop;
-      formRef.current.style.setProperty("--kb-offset", `${Math.max(0, offset)}px`);
-    };
-    vv.addEventListener("resize", onResize);
-    vv.addEventListener("scroll", onResize);
-    return () => {
-      vv.removeEventListener("resize", onResize);
-      vv.removeEventListener("scroll", onResize);
-    };
-  }, []);
 
   // Lock scroll while panel is open.
   // Using overflow:hidden on <html> (not position:fixed on body) keeps the
@@ -338,7 +322,6 @@ export function IdeaDetailPanel({
               className="comment-form"
               onSubmit={handleCommentSubmit}
               noValidate
-              style={{ bottom: "var(--kb-offset, 0px)" } as React.CSSProperties}
             >
               <div className="comment-input-row">
                 <textarea
