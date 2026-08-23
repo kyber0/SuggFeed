@@ -1215,7 +1215,7 @@ textarea { height: 130px; resize: vertical; }
   .detail-col-divider { display: none; }
   /* Prevent long idea titles from overflowing on mobile */
   .detail-panel-title { word-break: break-word; overflow-wrap: anywhere; font-size: 20px; }
-  .comment-list { min-height: 120px; margin-bottom: 0; }
+  .comment-list { min-height: 120px; margin-bottom: 0; padding-bottom: 80px; }
   .card-read-more { opacity: 1; }
   /* Comment form is fixed on mobile to stay at the screen bottom */
   .comment-form {
@@ -1227,9 +1227,6 @@ textarea { height: 130px; resize: vertical; }
     padding: 12px 20px;
     background: var(--surface);
     z-index: 100;
-  }
-  .detail-panel-columns {
-    padding-bottom: 70px; /* space for the fixed comment form */
   }
 }
 
