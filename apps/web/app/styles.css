@@ -1106,11 +1106,11 @@ textarea { height: 130px; resize: vertical; }
   flex: 1;
   resize: none;
   border-radius: var(--r-lg);
-  padding: 10px 12px;
-  font-size: 14px;
-  line-height: 1.5;
-  min-height: 42px;
-  max-height: 120px;
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  min-height: 32px;
+  max-height: 80px;
   overflow-y: auto;
   background: var(--bg);
   border: 1px solid var(--line-2);
@@ -1122,7 +1122,7 @@ textarea { height: 130px; resize: vertical; }
 }
 .comment-send-btn {
   flex-shrink: 0;
-  width: 40px; height: 40px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   background: var(--navy);
   color: #fff;

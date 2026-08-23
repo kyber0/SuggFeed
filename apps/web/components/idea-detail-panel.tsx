@@ -345,7 +345,7 @@ export function IdeaDetailPanel({
                   value={body}
                   onChange={(e) => { setBody(e.target.value); setFormError(""); }}
                   maxLength={500}
-                  rows={2}
+                  rows={1}
                   placeholder="Share your thoughts…"
                 />
                 <button className="comment-send-btn" type="submit" disabled={submitting} aria-label="Post comment">
