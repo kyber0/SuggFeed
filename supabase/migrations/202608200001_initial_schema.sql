@@ -1,0 +1,21 @@
+create type public.user_role as enum ('student', 'moderator', 'admin');
+create type public.submission_status as enum ('pending', 'approved', 'rejected', 'in_progress', 'resolved');
+
+create table public.profiles (id uuid primary key references auth.users(id) on delete cascade, role public.user_role not null default 'student', display_name text, expo_push_token text, created_at timestamptz not null default now());
+create table public.categories (id uuid primary key default gen_random_uuid(), name text not null, slug text not null unique, is_active boolean not null default true);
+create table public.submissions (id uuid primary key default gen_random_uuid(), user_id uuid references public.profiles(id) on delete set null, anonymous_tracking_hash text unique, title text not null check (char_length(title) between 8 and 120), description text not null check (char_length(description) between 20 and 2000), category_id uuid not null references public.categories(id), status public.submission_status not null default 'pending', vote_count integer not null default 0, reviewed_by uuid references public.profiles(id), reviewed_at timestamptz, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create table public.status_history (id uuid primary key default gen_random_uuid(), submission_id uuid not null references public.submissions(id) on delete cascade, old_status public.submission_status, new_status public.submission_status not null, changed_by uuid references public.profiles(id), note text, created_at timestamptz not null default now());
+create table public.attachments (id uuid primary key default gen_random_uuid(), submission_id uuid not null references public.submissions(id) on delete cascade, storage_path text not null, mime_type text not null, size_bytes integer not null check (size_bytes > 0 and size_bytes <= 5242880));
+create table public.votes (submission_id uuid not null references public.submissions(id) on delete cascade, user_id uuid references public.profiles(id) on delete cascade, anon_token text, created_at timestamptz not null default now(), check (user_id is not null or anon_token is not null));
+create unique index votes_authenticated_unique on public.votes (submission_id, user_id) where user_id is not null;
+create unique index votes_anonymous_unique on public.votes (submission_id, anon_token) where anon_token is not null;
+create table public.audit_log (id bigint generated always as identity primary key, actor_id uuid references public.profiles(id), action text not null, target_table text not null, target_id uuid, metadata jsonb not null default '{}'::jsonb, created_at timestamptz not null default now());
+
+alter table public.profiles enable row level security; alter table public.categories enable row level security; alter table public.submissions enable row level security; alter table public.status_history enable row level security; alter table public.attachments enable row level security; alter table public.votes enable row level security; alter table public.audit_log enable row level security;
+create function public.is_staff() returns boolean language sql stable security definer set search_path = public as $$ select coalesce((select role in ('moderator','admin') from public.profiles where id = auth.uid()), false) $$;
+create policy "categories readable" on public.categories for select using (is_active or public.is_staff());
+create policy "public may read approved submissions" on public.submissions for select using (status in ('approved','in_progress','resolved') or user_id = auth.uid() or public.is_staff());
+create policy "owners read their history" on public.status_history for select using (public.is_staff() or exists (select 1 from public.submissions s where s.id = submission_id and s.user_id = auth.uid()));
+create policy "staff audit access" on public.audit_log for select using (public.is_staff());
+-- Writes intentionally have no client RLS policies: Edge Functions service role performs validation, rate limiting and audit logging.
+insert into public.categories (name, slug) values ('Facilities','facilities'),('Learning','learning'),('Safety','safety'),('Student life','student-life'),('Other','other');

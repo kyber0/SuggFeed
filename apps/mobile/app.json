@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Campus Voice",
+    "slug": "campus-voice",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.campusvoice.app",
+      "infoPlist": {
+        "NSUserNotificationUsageDescription": "Campus Voice sends you updates when your feedback changes status."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0b3857"
+      },
+      "package": "com.campusvoice.app",
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#0b3857"
+        }
+      ],
+      "@sentry/react-native",
+      "expo-router"
+    ],
+    "scheme": "campusvoice",
+    "extra": {
+      "eas": {
+        "projectId": "replace-with-your-eas-project-id"
+      }
+    }
+  }
+}

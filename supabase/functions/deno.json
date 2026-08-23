@@ -1,0 +1,14 @@
+{
+  "nodeModulesDir": "auto",
+  "imports": {
+    "https://esm.sh/@supabase/supabase-js@2": "https://esm.sh/@supabase/supabase-js@2",
+    "https://esm.sh/zod@3.24.1": "https://esm.sh/zod@3.24.1"
+  },
+  "lint": {
+    "rules": { "exclude": ["no-explicit-any"] }
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 120
+  }
+}

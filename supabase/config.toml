@@ -1,0 +1,11 @@
+[functions.submit-feedback]
+verify_jwt = false
+
+[functions.lookup-by-tracking-code]
+verify_jwt = false
+
+[functions.archive-old-submissions]
+verify_jwt = false
+
+[functions.vote-submission]
+verify_jwt = false

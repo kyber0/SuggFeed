@@ -1,0 +1,38 @@
+{
+  "name": "Campus Voice",
+  "short_name": "CampusVoice",
+  "description": "A safer way to make your school better. Share feedback anonymously and follow its progress.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0b3857",
+  "background_color": "#fcfdfd",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Share feedback",
+      "url": "/?mode=share",
+      "description": "Submit a new idea or concern"
+    },
+    {
+      "name": "Track submission",
+      "url": "/?mode=track",
+      "description": "Check the status of your submission"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+# Expo
+.expo/
+dist/
+web-build/
+
+# EAS
+google-play-service-account.json
+google-services.json
+GoogleService-Info.plist
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

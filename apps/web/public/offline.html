@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b3857" />
+  <title>You're offline — Campus Voice</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100dvh;
+      background: #f4f8fa; color: #102a43;
+      font-family: Arial, sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 32px 20px; text-align: center;
+    }
+    .icon { font-size: 64px; margin-bottom: 24px; line-height: 1; }
+    h1 { font-size: 28px; margin: 0 0 12px; color: #0b3857; }
+    p  { color: #627d98; line-height: 1.6; max-width: 420px; margin: 0 auto 28px; }
+    .brand { font-size: 22px; font-weight: 800; color: #0b3857; text-decoration: none; }
+    .brand span { color: #e86e4a; }
+    .retry {
+      background: #e86e4a; color: white; border: 0; border-radius: 6px;
+      padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer;
+    }
+    .retry:hover { opacity: .9; }
+    .note { margin-top: 20px; font-size: 13px; color: #9ab; }
+  </style>
+</head>
+<body>
+  <a class="brand" href="/">campus<span>voice</span></a>
+  <div class="icon">📡</div>
+  <h1>You're offline</h1>
+  <p>Campus Voice needs a connection to show the latest ideas and submit new feedback. Any drafts you write will be saved on this device and sent automatically when you reconnect.</p>
+  <button class="retry" onclick="window.location.reload()">Try again</button>
+  <p class="note">Drafts are saved locally — nothing will be lost.</p>
+</body>
+</html>
