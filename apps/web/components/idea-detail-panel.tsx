@@ -13,7 +13,7 @@ import {
   loadAttachments,
   loadComments,
 } from "../lib/feedback-api";
-import { TurnstileWidget } from "./turnstile-widget";
+
 
 function relativeDate(value: string) {
   const days = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000));
@@ -32,7 +32,6 @@ const STATUS_COLOR: Record<string, string> = {
 
 interface Props {
   idea: PublishedSubmission;
-  turnstileSiteKey?: string;
   votedIds: Set<string>;
   votingId: string | null;
   onVote: (id: string) => void;
@@ -42,7 +41,6 @@ interface Props {
 
 export function IdeaDetailPanel({
   idea,
-  turnstileSiteKey,
   votedIds,
   votingId,
   onVote,
@@ -57,8 +55,7 @@ export function IdeaDetailPanel({
   const [body, setBody]                         = useState("");
   const [displayName, setDisplayName]           = useState("");
   const [isAnonymous, setIsAnonymous]           = useState(false);
-  const [commentToken, setCommentToken]         = useState("");
-  const [commentCaptchaKey, setCommentCaptchaKey] = useState(0);
+
   const [submitting, setSubmitting]             = useState(false);
   const [formError, setFormError]               = useState("");
   const commentListRef = useRef<HTMLDivElement>(null);
@@ -140,7 +137,6 @@ export function IdeaDetailPanel({
     e.preventDefault();
     setFormError("");
     if (body.trim().length < 10) { setFormError("Comment must be at least 10 characters."); return; }
-    if (!commentToken) { setFormError("Please complete the spam check."); return; }
     setSubmitting(true);
     try {
       const result = await addComment({
@@ -148,12 +144,10 @@ export function IdeaDetailPanel({
         body:           body.trim(),
         displayName:    isAnonymous ? undefined : displayName.trim() || undefined,
         anonToken,
-        turnstileToken: commentToken,
+        turnstileToken: "",
       });
       setComments((c) => [...c, result.comment]);
       setBody("");
-      setCommentToken("");
-      setCommentCaptchaKey((k) => k + 1);
       scrollToLatest();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Couldn't post comment.");
@@ -384,7 +378,7 @@ export function IdeaDetailPanel({
                 <div className="char-counter" style={{ marginTop: 2 }}>{body.length} / 500</div>
               </div>
 
-              <TurnstileWidget key={commentCaptchaKey} siteKey={turnstileSiteKey} onToken={setCommentToken} />
+
 
               {formError && <p className="comment-error">{formError}</p>}
 

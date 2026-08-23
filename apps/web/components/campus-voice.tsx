@@ -573,7 +573,6 @@ export function CampusVoice({ turnstileSiteKey }: { turnstileSiteKey?: string })
           return (
             <IdeaDetailPanel
               idea={liveIdea}
-              turnstileSiteKey={turnstileSiteKey}
               votedIds={votedIds}
               votingId={votingId}
               onVote={handleVote}
