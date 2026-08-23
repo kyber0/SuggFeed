@@ -1088,10 +1088,11 @@ textarea { height: 130px; resize: vertical; }
 .comment-form {
   flex-shrink: 0;
   position: sticky;
-  bottom: var(--kb-offset, 0px);
+  bottom: calc(-24px + var(--kb-offset, 0px));
+  margin: 0 -24px -24px -24px;
   background: var(--surface);
   border-top: 1px solid var(--line);
-  padding: 12px 16px;
+  padding: 12px 24px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1216,11 +1217,19 @@ textarea { height: 130px; resize: vertical; }
   .detail-panel-title { word-break: break-word; overflow-wrap: anywhere; font-size: 20px; }
   .comment-list { min-height: 120px; margin-bottom: 0; }
   .card-read-more { opacity: 1; }
-  /* Comment form is position:sticky on mobile too, keyboard offset via JS */
+  /* Comment form is fixed on mobile to stay at the screen bottom */
   .comment-form {
-    position: sticky;
+    position: fixed;
     bottom: var(--kb-offset, 0px);
-    z-index: 10;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 12px 20px;
+    background: var(--surface);
+    z-index: 100;
+  }
+  .detail-panel-columns {
+    padding-bottom: 70px; /* space for the fixed comment form */
   }
 }
 
