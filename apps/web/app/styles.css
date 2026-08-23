@@ -1210,12 +1210,12 @@ textarea { height: 130px; resize: vertical; }
     /* On mobile, col-right doesn't need to be a flex column itself
        because scrolling is handled by the parent columns container */
     display: block;
-    padding-bottom: 0;
+    padding-bottom: 80px;
   }
   .detail-col-divider { display: none; }
   /* Prevent long idea titles from overflowing on mobile */
   .detail-panel-title { word-break: break-word; overflow-wrap: anywhere; font-size: 20px; }
-  .comment-list { min-height: 120px; margin-bottom: 0; padding-bottom: 80px; }
+  .comment-list { min-height: 120px; margin-bottom: 0; }
   .card-read-more { opacity: 1; }
   /* Comment form is fixed on mobile to stay at the screen bottom */
   .comment-form {
