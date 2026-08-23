@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
-  X, ThumbsUp, Check, MessageSquare, Send, User, EyeOff,
+  X, ThumbsUp, Check, MessageSquare, Send, EyeOff,
   Calendar, Activity, Tag, Paperclip, FileText, ZoomIn,
 } from "lucide-react";
 import {
@@ -53,17 +53,26 @@ export function IdeaDetailPanel({
   const [attachmentsLoading, setAttachmentsLoading] = useState(true);
   const [lightbox, setLightbox]                 = useState<string | null>(null);
   const [body, setBody]                         = useState("");
-  const [displayName, setDisplayName]           = useState("");
-  const [isAnonymous, setIsAnonymous]           = useState(false);
-
   const [submitting, setSubmitting]             = useState(false);
   const [formError, setFormError]               = useState("");
   const commentListRef = useRef<HTMLDivElement>(null);
+  const formRef        = useRef<HTMLFormElement>(null);
 
-  // Load persisted display name and anon pref after mount
+  // Shift comment form up when mobile keyboard opens (Visual Viewport API)
   useEffect(() => {
-    setDisplayName(localStorage.getItem("cv_display_name") ?? "");
-    setIsAnonymous(localStorage.getItem("cv_anon_pref") === "true");
+    const vv = (window as Window & { visualViewport?: VisualViewport }).visualViewport;
+    if (!vv) return;
+    const onResize = () => {
+      if (!formRef.current) return;
+      const offset = window.innerHeight - vv.height - vv.offsetTop;
+      formRef.current.style.setProperty("--kb-offset", `${Math.max(0, offset)}px`);
+    };
+    vv.addEventListener("resize", onResize);
+    vv.addEventListener("scroll", onResize);
+    return () => {
+      vv.removeEventListener("resize", onResize);
+      vv.removeEventListener("scroll", onResize);
+    };
   }, []);
 
   // Lock scroll while panel is open.
@@ -142,7 +151,7 @@ export function IdeaDetailPanel({
       const result = await addComment({
         submissionId:   idea.id,
         body:           body.trim(),
-        displayName:    isAnonymous ? undefined : displayName.trim() || undefined,
+        displayName:    undefined,
         anonToken,
         turnstileToken: "",
       });
@@ -322,69 +331,30 @@ export function IdeaDetailPanel({
               )}
             </div>
 
-            {/* Comment form — pinned to bottom of right column */}
-            <form className="comment-form" onSubmit={handleCommentSubmit} noValidate>
-              <p className="comment-form-title">Leave a comment</p>
-
-              {/* Identity row */}
-              <div className="comment-identity-row">
-                <div style={{ flex: 1 }}>
-                  <label htmlFor={`dn-${idea.id}`} className="comment-field-label">
-                    <User size={12} strokeWidth={2} style={{ verticalAlign: "middle", marginRight: 4 }} />
-                    Display name <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>
-                  </label>
-                  <input
-                    id={`dn-${idea.id}`}
-                    type="text"
-                    value={isAnonymous ? "" : displayName}
-                    disabled={isAnonymous}
-                    onChange={(e) => {
-                      setDisplayName(e.target.value);
-                      localStorage.setItem("cv_display_name", e.target.value);
-                    }}
-                    placeholder={isAnonymous ? "Hidden — posting anonymously" : "e.g. Student"}
-                    maxLength={60}
-                    style={{ marginTop: 4 }}
-                  />
-                </div>
-              </div>
-
-              <label className="anon-toggle-row">
-                <input
-                  type="checkbox"
-                  checked={isAnonymous}
-                  onChange={(e) => {
-                    setIsAnonymous(e.target.checked);
-                    localStorage.setItem("cv_anon_pref", String(e.target.checked));
-                  }}
-                />
-                <span className="anon-toggle-label">
-                  <EyeOff size={13} strokeWidth={2} style={{ verticalAlign: "middle", marginRight: 4 }} />
-                  Post anonymously
-                </span>
-              </label>
-
-              <div style={{ marginTop: 12 }}>
-                <label htmlFor={`comment-body-${idea.id}`} className="comment-field-label">Your comment</label>
+            {/* Comment form — sticky at bottom of right column */}
+            <form
+              ref={formRef}
+              className="comment-form"
+              onSubmit={handleCommentSubmit}
+              noValidate
+              style={{ bottom: "var(--kb-offset, 0px)" } as React.CSSProperties}
+            >
+              <div className="comment-input-row">
                 <textarea
                   id={`comment-body-${idea.id}`}
                   value={body}
                   onChange={(e) => { setBody(e.target.value); setFormError(""); }}
                   maxLength={500}
-                  rows={3}
-                  placeholder="Share your thoughts on this idea…"
-                  style={{ marginTop: 4, height: "auto" }}
+                  rows={2}
+                  placeholder="Share your thoughts…"
                 />
-                <div className="char-counter" style={{ marginTop: 2 }}>{body.length} / 500</div>
+                <button className="comment-send-btn" type="submit" disabled={submitting} aria-label="Post comment">
+                  {submitting
+                    ? <span className="comment-send-spinner" />
+                    : <Send size={16} strokeWidth={2} />}
+                </button>
               </div>
-
-
-
               {formError && <p className="comment-error">{formError}</p>}
-
-              <button className="btn-primary" type="submit" disabled={submitting} style={{ marginTop: 12, width: "100%" }}>
-                {submitting ? "Posting…" : <><Send size={14} strokeWidth={2} style={{ marginRight: 6 }} />Post comment</>}
-              </button>
             </form>
           </div>
         </div>

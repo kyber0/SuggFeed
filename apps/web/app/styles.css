@@ -1049,11 +1049,15 @@ textarea { height: 130px; resize: vertical; }
 }
 
 /* ── Comments ────────────────────────────────────────────── */
-.detail-col-right .detail-comments-section { display: flex; flex-direction: column; flex: 1; }
+.detail-col-right {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 .comment-list {
   display: flex; flex-direction: column; gap: 12px;
   flex: 1; overflow-y: auto; min-height: 80px;
-  padding-right: 4px; margin-bottom: 16px;
+  padding-right: 4px; padding-bottom: 8px;
 }
 .comment-list::-webkit-scrollbar { width: 4px; }
 .comment-list::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
@@ -1080,25 +1084,66 @@ textarea { height: 130px; resize: vertical; }
 .comment-skeleton-wrap { display: flex; flex-direction: column; gap: 12px; }
 .comment-skeleton { height: 52px; border-radius: var(--r-lg); }
 
-/* ── Comment form ────────────────────────────────────────── */
+/* ── Comment form (sticky bottom) ───────────────────────── */
 .comment-form {
-  background: var(--bg); border: 1px solid var(--line);
-  border-radius: var(--r-lg); padding: 16px;
-  display: flex; flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: var(--kb-offset, 0px);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: bottom 120ms ease-out;
 }
-.comment-form-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
-.comment-field-label { font-size: 12px; font-weight: 600; color: var(--ink-2); display: block; }
-.comment-identity-row { display: flex; gap: 10px; align-items: flex-end; }
-.anon-toggle-row {
-  display: flex; align-items: center; gap: 8px;
-  margin-top: 10px; cursor: pointer;
-  font-size: 13px; color: var(--muted); user-select: none;
+.comment-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
 }
-.anon-toggle-row input[type=checkbox] { width: auto; flex-shrink: 0; margin: 0; }
-.anon-toggle-label { display: flex; align-items: center; }
+.comment-input-row textarea {
+  flex: 1;
+  resize: none;
+  border-radius: var(--r-lg);
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 42px;
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  transition: border-color var(--t-fast);
+}
+.comment-input-row textarea:focus {
+  outline: none;
+  border-color: var(--navy);
+}
+.comment-send-btn {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+.comment-send-btn:hover:not(:disabled) { background: var(--navy-light, #2a4a7f); transform: scale(1.08); }
+.comment-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.comment-send-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 .comment-error {
   font-size: 12px; color: var(--error); background: var(--error-bg);
-  border-radius: var(--r-md); padding: 6px 10px; margin-top: 8px;
+  border-radius: var(--r-md); padding: 6px 10px;
 }
 
 /* ── Profile panel ───────────────────────────────────────── */
@@ -1158,12 +1203,25 @@ textarea { height: 130px; resize: vertical; }
   }
   .detail-col { overflow-y: visible; }  /* let parent scroll */
   .detail-col-left  { flex: none; min-width: 0; }
-  .detail-col-right { flex: none; background: none; border-top: 1px solid var(--line); }
+  .detail-col-right {
+    flex: none;
+    border-top: 1px solid var(--line);
+    /* On mobile, col-right doesn't need to be a flex column itself
+       because scrolling is handled by the parent columns container */
+    display: block;
+    padding-bottom: 0;
+  }
   .detail-col-divider { display: none; }
   /* Prevent long idea titles from overflowing on mobile */
   .detail-panel-title { word-break: break-word; overflow-wrap: anywhere; font-size: 20px; }
-  .comment-list { min-height: 120px; }
+  .comment-list { min-height: 120px; margin-bottom: 0; }
   .card-read-more { opacity: 1; }
+  /* Comment form is position:sticky on mobile too, keyboard offset via JS */
+  .comment-form {
+    position: sticky;
+    bottom: var(--kb-offset, 0px);
+    z-index: 10;
+  }
 }
 
 /* ── Card attachment badge ────────────────────────────────── */
