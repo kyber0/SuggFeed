@@ -21,8 +21,7 @@ export async function requireTurnstile(token: unknown, request: Request) {
   const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
   const result = await response.json() as { success?: boolean; 'error-codes'?: string[] };
   if (!response.ok || !result.success) {
-    console.warn(`Spam check failed in Cloudflare but allowing for local testing. Error codes: ${(result['error-codes'] || []).join(", ")}`);
-    // throw new Error(`Spam check failed. Error codes: ${(result['error-codes'] || []).join(", ")}`);
+    throw new Error(`Spam check failed. Error codes: ${(result['error-codes'] || []).join(", ")}`);
   }
 }
 
