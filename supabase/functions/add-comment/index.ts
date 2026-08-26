@@ -77,10 +77,15 @@ Deno.serve(async (request) => {
     return json({ comment });
   } catch (error) {
     console.error("add-comment failed", error);
-    return json({
-      error: error instanceof z.ZodError
-        ? "Invalid comment: " + error.errors[0]?.message
-        : error instanceof Error ? error.message : "Unable to post comment",
-    }, 400);
+    let errorMessage = "Unable to post comment";
+    if (error instanceof z.ZodError) {
+      errorMessage = "Invalid comment: " + error.errors[0]?.message;
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (error && typeof error === "object" && "message" in error) {
+      // Supabase PostgrestError is an object, not an instance of Error
+      errorMessage = `DB Error: ${String(error.message)} \nDetails: ${"details" in error ? String(error.details) : ""}`;
+    }
+    return json({ error: errorMessage }, 400);
   }
 });
