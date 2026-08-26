@@ -83,7 +83,7 @@ export function Header() {
   return (
     <>
       <header className="site-header">
-        <a className="brand" href="/">campus<span>voice</span></a>
+        <a className="brand" href="/">Sugg<span>Feed</span></a>
         <nav>
           <a href="#feed" className="nav-link-hide-mobile">Community ideas</a>
           <a href="/admin" className="nav-link-hide-mobile">Staff portal</a>
