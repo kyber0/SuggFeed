@@ -1,0 +1,69 @@
+{
+  "version": "5",
+  "redirects": {
+    "https://esm.sh/@supabase/supabase-js@2": "https://esm.sh/@supabase/supabase-js@2.112.3"
+  },
+  "remote": {
+    "https://esm.sh/@supabase/supabase-js@2.112.3": "f6b9130984301066587e8917dfab3b3d60be47dc966bd3d04c733bc9423c1cf9"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@sentry/nextjs@10",
+        "npm:turbo@^2.3.3",
+        "npm:typescript@^5.7.2"
+      ]
+    },
+    "members": {
+      "apps/mobile": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@babel/core@^7.25.0",
+            "npm:@expo/metro-runtime@~6.1.2",
+            "npm:@sentry/react-native@^7.2.0",
+            "npm:@supabase/supabase-js@^2.47.10",
+            "npm:@types/react@~19.1.17",
+            "npm:expo-constants@~18.0.14",
+            "npm:expo-linking@~8.0.12",
+            "npm:expo-notifications@~0.32.17",
+            "npm:expo-router@~6.0.24",
+            "npm:expo-splash-screen@~31.0.13",
+            "npm:expo-status-bar@~3.0.9",
+            "npm:expo@54.0",
+            "npm:react-dom@19.1.0",
+            "npm:react-native-safe-area-context@5.6.2",
+            "npm:react-native-screens@4.16",
+            "npm:react-native@0.81.5",
+            "npm:react@19.1.0",
+            "npm:typescript@^5.7.2",
+            "npm:zod@^3.24.1"
+          ]
+        }
+      },
+      "apps/web": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@sentry/nextjs@^8.45.0",
+            "npm:@supabase/supabase-js@^2.47.10",
+            "npm:@testing-library/react@^16.1.0",
+            "npm:@types/node@^22.10.2",
+            "npm:@types/react@^19.0.2",
+            "npm:@vitejs/plugin-react@^4.3.4",
+            "npm:@vitest/coverage-v8@^2.1.8",
+            "npm:dexie@^4.0.10",
+            "npm:fake-indexeddb@6",
+            "npm:jsdom@^25.0.1",
+            "npm:lucide-react@^1.33.0",
+            "npm:next@^15.1.2",
+            "npm:react-dom@19",
+            "npm:react@19",
+            "npm:recharts@^3.10.1",
+            "npm:typescript@^5.7.2",
+            "npm:vitest@^2.1.8",
+            "npm:zod@^3.24.1"
+          ]
+        }
+      }
+    }
+  }
+}

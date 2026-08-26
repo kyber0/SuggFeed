@@ -1,0 +1,4 @@
+
+> web@0.1.0 typecheck C:\dev\SuggFeed\apps\web
+> tsc --noEmit
+
