@@ -5,10 +5,10 @@ export async function notifyReview(client: SupabaseClient, submission: { id: str
   const { data: profile } = await client.from("profiles").select("expo_push_token,email_notifications_enabled").eq("id", submission.user_id).maybeSingle();
   const text = `Your feedback “${submission.title}” is now ${status.replace("_", " ")}.${note ? ` ${note}` : ""}`;
   const jobs: Promise<Response>[] = [];
-  if (profile?.expo_push_token) jobs.push(fetch("https://exp.host/--/api/v2/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ to: profile.expo_push_token, title: "Campus Voice update", body: text, data: { submissionId: submission.id } }) }));
+  if (profile?.expo_push_token) jobs.push(fetch("https://exp.host/--/api/v2/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ to: profile.expo_push_token, title: "SuggFeed update", body: text, data: { submissionId: submission.id } }) }));
   if (profile?.email_notifications_enabled && Deno.env.get("RESEND_API_KEY") && Deno.env.get("RESEND_FROM_EMAIL")) {
     const { data } = await client.auth.admin.getUserById(submission.user_id);
-    if (data.user?.email) jobs.push(fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`, "Content-Type": "application/json" }, body: JSON.stringify({ from: Deno.env.get("RESEND_FROM_EMAIL"), to: [data.user.email], subject: "Your Campus Voice feedback was updated", text }) }));
+    if (data.user?.email) jobs.push(fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`, "Content-Type": "application/json" }, body: JSON.stringify({ from: Deno.env.get("RESEND_FROM_EMAIL"), to: [data.user.email], subject: "Your SuggFeed feedback was updated", text }) }));
   }
   const results = await Promise.allSettled(jobs);
   results.forEach((result) => { if (result.status === "rejected") console.error("Notification delivery failed", result.reason); });
@@ -27,7 +27,7 @@ export async function notifyComment(client: SupabaseClient, submission: { id: st
   if (profile?.email_notifications_enabled && Deno.env.get("RESEND_API_KEY") && Deno.env.get("RESEND_FROM_EMAIL")) {
     const { data } = await client.auth.admin.getUserById(submission.user_id);
     if (data.user?.email) {
-      jobs.push(fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`, "Content-Type": "application/json" }, body: JSON.stringify({ from: Deno.env.get("RESEND_FROM_EMAIL"), to: [data.user.email], subject: "New comment on your Campus Voice idea", text }) }));
+      jobs.push(fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`, "Content-Type": "application/json" }, body: JSON.stringify({ from: Deno.env.get("RESEND_FROM_EMAIL"), to: [data.user.email], subject: "New comment on your SuggFeed idea", text }) }));
     }
   }
   

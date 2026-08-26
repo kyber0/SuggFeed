@@ -118,7 +118,7 @@ export function AdminDashboard() {
   if (!mounted) return (
     <main className="admin-shell admin-login">
       <div className="admin-header">
-        <a className="brand" href="/">campus<span>voice</span></a>
+        <a className="brand" href="/">sugg<span>feed</span></a>
       </div>
     </main>
   );
@@ -232,7 +232,7 @@ export function AdminDashboard() {
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `campusvoice-${filterStatus}-${new Date().toISOString().slice(0,10)}.csv`;
+    a.href = url; a.download = `suggfeed-${filterStatus}-${new Date().toISOString().slice(0,10)}.csv`;
     a.click(); URL.revokeObjectURL(url);
     toast("CSV exported.", "success");
   }
@@ -255,7 +255,7 @@ export function AdminDashboard() {
   if (recoveryMode) return (
     <>
       <header className="site-header">
-        <a className="brand" href="/">campus<span>voice</span></a>
+        <a className="brand" href="/">sugg<span>feed</span></a>
         <nav>
           <a href="/">← Back to site</a>
           <div style={{ width: 1, height: 24, background: "var(--line-2)", margin: "0 4px" }} />
@@ -284,7 +284,7 @@ export function AdminDashboard() {
   if (!accessToken) return (
     <>
       <header className="site-header">
-        <a className="brand" href="/">campus<span>voice</span></a>
+        <a className="brand" href="/">sugg<span>feed</span></a>
         <nav>
           <a href="/">← Back to site</a>
           <div style={{ width: 1, height: 24, background: "var(--line-2)", margin: "0 4px" }} />
@@ -321,7 +321,7 @@ export function AdminDashboard() {
   return (
     <>
       <header className="site-header">
-        <a className="brand" href="/">campus<span>voice</span></a>
+        <a className="brand" href="/">sugg<span>feed</span></a>
         <nav>
           <a href="/" className="nav-link-hide-mobile">Public site</a>
           <button

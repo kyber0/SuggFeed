@@ -1,6 +1,6 @@
 {
-  "name": "Campus Voice",
-  "short_name": "CampusVoice",
+  "name": "SuggFeed",
+  "short_name": "SuggFeed",
   "description": "A safer way to make your school better. Share feedback anonymously and follow its progress.",
   "start_url": "/",
   "display": "standalone",

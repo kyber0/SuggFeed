@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Campus Voice",
-    "slug": "campus-voice",
+    "name": "SuggFeed",
+    "slug": "sugg-feed",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -10,16 +10,16 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.campusvoice.app",
+      "bundleIdentifier": "com.suggfeed.app",
       "infoPlist": {
-        "NSUserNotificationUsageDescription": "Campus Voice sends you updates when your feedback changes status."
+        "NSUserNotificationUsageDescription": "SuggFeed sends you updates when your feedback changes status."
       }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0b3857"
       },
-      "package": "com.campusvoice.app",
+      "package": "com.suggfeed.app",
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE"
@@ -35,7 +35,7 @@
       "@sentry/react-native",
       "expo-router"
     ],
-    "scheme": "campusvoice",
+    "scheme": "suggfeed",
     "extra": {
       "eas": {
         "projectId": "replace-with-your-eas-project-id"

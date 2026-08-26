@@ -5,10 +5,10 @@ import { AuthProvider } from "../components/auth-context";
 import { ToastProvider } from "../components/toast";
 
 export const metadata: Metadata = {
-  title: "Campus Voice",
+  title: "SuggFeed",
   description: "A safer way to make your school better. Share feedback anonymously and follow its progress.",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Campus Voice" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "SuggFeed" },
   icons: {
     icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/icons/icon-192.png" }],

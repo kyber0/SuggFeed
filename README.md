@@ -1,4 +1,4 @@
-# Campus Voice
+# SuggFeed
 
 > A safer, anonymous way for students to share feedback, follow its progress, and see the changes their community is shaping.
 
@@ -54,8 +54,8 @@ SuggFeed/
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/your-org/campus-voice
-cd campus-voice
+git clone https://github.com/your-org/sugg-feed
+cd sugg-feed
 pnpm install
 ```
 

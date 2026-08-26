@@ -61,7 +61,7 @@ function SkeletonCard() {
 
 const emptySubmission = { title: "", description: "", category: "Facilities", isAnonymous: true, consent: false };
 
-export function CampusVoice({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
+export function SuggFeed({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   const { toast } = useToast();
   const [mode, setMode] = useState<"share" | "track">("share");
   const [submission, setSubmission] = useState(emptySubmission);
@@ -563,7 +563,7 @@ export function CampusVoice({ turnstileSiteKey }: { turnstileSiteKey?: string })
         </section>
 
         <footer className="site-footer">
-          Campus Voice <span>•</span> A respectful space for constructive feedback
+          SuggFeed <span>•</span> A respectful space for constructive feedback
           <span>•</span> <a href="/admin" className="admin-link">Staff Portal</a>
         </footer>
       </main>

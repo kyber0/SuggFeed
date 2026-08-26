@@ -1,4 +1,4 @@
-// Campus Voice Service Worker
+// SuggFeed Service Worker
 // Cache strategy:
 //   - Static assets (JS/CSS/images): Cache-first, fallback to network
 //   - Supabase API / Edge Functions: Network-first, fallback to cache
@@ -78,12 +78,12 @@ self.addEventListener("push", (event) => {
   if (!event.data) return;
   const data = event.data.json();
   event.waitUntil(
-    self.registration.showNotification(data.title ?? "Campus Voice", {
+    self.registration.showNotification(data.title ?? "SuggFeed", {
       body: data.body ?? "",
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
       data: data.data ?? {},
-      tag: data.data?.submissionId ?? "campus-voice",
+      tag: data.data?.submissionId ?? "sugg-feed",
     })
   );
 });

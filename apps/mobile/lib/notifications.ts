@@ -28,7 +28,7 @@ export async function registerForPushNotifications(): Promise<void> {
   try {
     if (Platform.OS === "android") {
       await Notifications.setNotificationChannelAsync("default", {
-        name: "Campus Voice",
+        name: "SuggFeed",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
       });

@@ -47,7 +47,7 @@ export default function RootLayout() {
           headerTintColor: "#ffffff",
           headerTitleStyle: { fontWeight: "800", fontSize: 17, letterSpacing: -0.5 },
           headerTitleAlign: "left",
-          // Header title is "campusvoice" but RN doesn't support inline styled text in options easily —
+          // Header title is "suggfeed" but RN doesn't support inline styled text in options easily —
           // overridden per-screen below where needed
           tabBarStyle: {
             backgroundColor: "#ffffff",
@@ -69,7 +69,7 @@ export default function RootLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: "Campus Voice",
+            title: "SuggFeed",
             tabBarLabel: "Ideas",
             tabBarIcon: ({ focused, color }) => (
               <View style={{

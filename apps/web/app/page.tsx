@@ -1,4 +1,5 @@
-import { CampusVoice } from "../components/campus-voice";
+import { SuggFeed } from "../components/sugg-feed";
+
 export default function Page() {
-  return <CampusVoice turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />;
+  return <SuggFeed turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />;
 }
