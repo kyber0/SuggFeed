@@ -13,6 +13,7 @@ import {
   loadAttachments,
   loadComments,
 } from "../lib/feedback-api";
+import { TurnstileWidget } from "./turnstile-widget";
 
 
 function relativeDate(value: string) {
@@ -55,6 +56,7 @@ export function IdeaDetailPanel({
   const [body, setBody]                         = useState("");
   const [submitting, setSubmitting]             = useState(false);
   const [formError, setFormError]               = useState("");
+  const [turnstileToken, setTurnstileToken]     = useState("");
   const commentListRef = useRef<HTMLDivElement>(null);
   const formRef        = useRef<HTMLFormElement>(null);
 
@@ -130,6 +132,7 @@ export function IdeaDetailPanel({
     e.preventDefault();
     setFormError("");
     if (body.trim().length < 10) { setFormError("Comment must be at least 10 characters."); return; }
+    if (!turnstileToken) { setFormError("Please complete the spam check."); return; }
     setSubmitting(true);
     try {
       const result = await addComment({
@@ -137,10 +140,11 @@ export function IdeaDetailPanel({
         body:           body.trim(),
         displayName:    undefined,
         anonToken,
-        turnstileToken: "",
+        turnstileToken,
       });
       setComments((c) => [...c, result.comment]);
       setBody("");
+      setTurnstileToken(""); // reset so widget refreshes for next comment
       scrollToLatest();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Couldn't post comment.");
@@ -323,6 +327,10 @@ export function IdeaDetailPanel({
               onSubmit={handleCommentSubmit}
               noValidate
             >
+              <TurnstileWidget
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                onToken={setTurnstileToken}
+              />
               <div className="comment-input-row">
                 <textarea
                   id={`comment-body-${idea.id}`}
@@ -332,7 +340,7 @@ export function IdeaDetailPanel({
                   rows={1}
                   placeholder="Share your thoughts…"
                 />
-                <button className="comment-send-btn" type="submit" disabled={submitting} aria-label="Post comment">
+                <button className="comment-send-btn" type="submit" disabled={submitting || !turnstileToken} aria-label="Post comment">
                   {submitting
                     ? <span className="comment-send-spinner" />
                     : <Send size={16} strokeWidth={2} />}
