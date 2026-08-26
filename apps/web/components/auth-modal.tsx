@@ -54,7 +54,7 @@ export function AuthModal() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) { toast(error.message, "error"); setBusy(false); }
     // On success the browser redirects — no need to reset busy
