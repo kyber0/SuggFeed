@@ -29,7 +29,7 @@ Deno.serve(async (request) => {
 
     const client = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("PROJECT_SERVICE_ROLE_KEY")!,
+      Deno.env.get("PROJECT_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
     const user = await authenticatedUser(client, request);

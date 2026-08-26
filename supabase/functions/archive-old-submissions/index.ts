@@ -5,7 +5,7 @@ Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
     if (request.headers.get("Authorization") !== `Bearer ${Deno.env.get("ARCHIVE_CRON_SECRET")}`) return json({ error: "Unauthorized" }, 401);
-    const client = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("PROJECT_SERVICE_ROLE_KEY")!);
+    const client = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("PROJECT_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: settings, error: settingsError } = await client.from("retention_settings").select("retention_days").eq("id", true).single();
     if (settingsError || !settings) throw settingsError ?? new Error("Retention settings unavailable");
     const cutoff = new Date(Date.now() - settings.retention_days * 86_400_000).toISOString();

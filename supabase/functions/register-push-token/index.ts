@@ -5,7 +5,7 @@ import { authenticatedUser, corsHeaders, json } from "../_shared/security.ts";
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
-    const client = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("PROJECT_SERVICE_ROLE_KEY")!);
+    const client = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("PROJECT_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const user = await authenticatedUser(client, request);
     if (!user) return json({ error: "Sign in required" }, 401);
     const { expoPushToken } = z.object({ expoPushToken: z.string().startsWith("ExponentPushToken[").max(255) }).parse(await request.json());
