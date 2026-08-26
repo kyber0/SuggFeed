@@ -5,7 +5,7 @@
     "https://esm.sh/zod@3.24.1": "https://esm.sh/zod@3.24.1"
   },
   "lint": {
-    "rules": { "exclude": ["no-explicit-any"] }
+    "rules": { "exclude": ["no-explicit-any", "no-import-prefix"] }
   },
   "fmt": {
     "useTabs": false,
