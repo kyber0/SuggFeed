@@ -146,6 +146,7 @@ main { max-width: 1200px; margin: auto; }
   padding: var(--sp-1) var(--sp-2);
 }
 .site-header nav a:hover, .site-header nav button:hover { color: var(--ink); }
+.site-header nav a.active { color: var(--accent); font-weight: 600; }
 .site-header .btn-ghost {
   border: 1px solid var(--line-2); border-radius: var(--r-md);
   padding: 6px 14px; color: var(--ink) !important;

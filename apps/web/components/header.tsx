@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, User, Settings } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useAuth } from "./auth-context";
 import { AuthModal } from "./auth-modal";
 import { ProfilePanel } from "./profile-panel";
@@ -8,6 +9,7 @@ import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
   const { user, signOut, openAuthModal } = useAuth();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -85,9 +87,10 @@ export function Header() {
       <header className="site-header">
         <a className="brand" href="/">Sugg<span>Feed</span></a>
         <nav>
-          <a href="/roadmap" className="nav-link-hide-mobile">Roadmap</a>
-          <a href="/feed" className="nav-link-hide-mobile">Community ideas</a>
-          <a href="/admin" className="nav-link-hide-mobile">Staff portal</a>
+          <a href="/" className={`nav-link-hide-mobile ${pathname === "/" ? "active" : ""}`}>Home</a>
+          <a href="/roadmap" className={`nav-link-hide-mobile ${pathname === "/roadmap" ? "active" : ""}`}>Roadmap</a>
+          <a href="/feed" className={`nav-link-hide-mobile ${pathname === "/feed" ? "active" : ""}`}>Community ideas</a>
+          <a href="/admin" className={`nav-link-hide-mobile ${pathname === "/admin" ? "active" : ""}`}>Staff portal</a>
           {navControls}
           <div style={{ width: 1, height: 24, background: "var(--line-2)", margin: "0 4px" }} />
           <ThemeToggle />
