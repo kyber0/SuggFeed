@@ -489,6 +489,13 @@ textarea { height: 130px; resize: vertical; }
   0% { background-position: 0% center; }
   100% { background-position: 200% center; }
 }
+.btn-premium-sm {
+  @extend .btn-premium;
+  padding: 8px 16px;
+  font-size: 13px;
+  margin-top: 0;
+  width: auto;
+}
 
 /* old .primary alias */
 .primary { @extend .btn-primary; }
