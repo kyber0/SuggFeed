@@ -16,6 +16,7 @@ import { StatusStepper } from "./status-stepper";
 import { Header } from "./header";
 import { useToast } from "./toast";
 import { IdeaDetailPanel } from "./idea-detail-panel";
+import { getAnonToken } from "../lib/anon-token";
 
 type Timeline = { new_status: string; note: string | null; created_at: string }[];
 
@@ -31,13 +32,6 @@ function uuidv4(): string {
   });
 }
 
-export function getAnonToken(): string {
-  if (typeof window === "undefined") return "";
-  const key = "cv_anon_token";
-  let token = localStorage.getItem(key);
-  if (!token) { token = uuidv4(); localStorage.setItem(key, token); }
-  return token;
-}
 
 function relativeDate(value: string) {
   const days = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000));

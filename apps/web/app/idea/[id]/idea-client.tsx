@@ -15,7 +15,7 @@ import {
   voteSubmission,
 } from "../../../lib/feedback-api";
 import { TurnstileWidget } from "../../../components/turnstile-widget";
-import { getAnonToken } from "../../../components/sugg-feed";
+import { getAnonToken } from "../../../lib/anon-token";
 import Link from "next/link";
 import { useToast } from "../../../components/toast";
 

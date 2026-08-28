@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAnonToken } from "./sugg-feed";
+import { getAnonToken } from "../lib/anon-token";
 import { loadMyActivity, PublishedSubmission } from "../lib/feedback-api";
 import { Header } from "./header";
 import { useAuth } from "./auth-context";
