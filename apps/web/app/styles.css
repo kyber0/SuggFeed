@@ -462,6 +462,19 @@ textarea { height: 130px; resize: vertical; }
 .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
 .btn-primary .arrow { font-size: 18px; }
 
+/* ── Ghost button ────────────────────────────────── */
+.btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  background: transparent; color: var(--ink); border: 1px solid var(--line-2);
+  border-radius: var(--r-lg); padding: 14px 20px;
+  font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: all var(--t-fast);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bg-2);
+  border-color: var(--navy);
+}
+
 /* ── Premium button (Rich Aesthetics) ─────────────── */
 .btn-premium {
   display: flex; align-items: center; justify-content: center; gap: var(--sp-2);

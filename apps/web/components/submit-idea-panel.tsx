@@ -224,9 +224,9 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
               <TurnstileWidget key={captchaKey} siteKey={turnstileSiteKey} onToken={setTurnstileToken} />
             </div>
 
-            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-              <button type="button" className="btn-ghost" onClick={closeSubmitPanel}>Cancel</button>
-              <button className="btn-primary" type="submit" disabled={submitting || !submission.consent}>
+            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", alignItems: "center", marginTop: 24 }}>
+              <button type="button" className="btn-ghost" onClick={closeSubmitPanel} style={{ marginTop: 0 }}>Cancel</button>
+              <button className="btn-primary" type="submit" disabled={submitting || !submission.consent} style={{ marginTop: 0, width: "auto" }}>
                 {submitting ? "Sending…" : <><Send size={15} strokeWidth={2} />Send for review</>}
               </button>
             </div>
