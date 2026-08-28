@@ -169,6 +169,12 @@ main { max-width: 1200px; margin: auto; }
   cursor: pointer;
   transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
   font-size: 13px; font-weight: 600; color: var(--ink);
+  max-width: 140px;
+}
+.avatar-chip span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .avatar-chip:hover {
   border-color: var(--navy);
