@@ -98,7 +98,7 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
       const result = await submitFeedback({ ...body, consent: true, attachments, turnstileToken });
       
       if (result.trackingCode) {
-        toast(`Submitted! 🎉 Save your tracking code: ${result.trackingCode}`, "success", { duration: 6000 });
+        toast(`Submitted! 🎉 Save your tracking code: ${result.trackingCode}`, "success");
         try {
           const stored = JSON.parse(localStorage.getItem("cv_my_tracking_codes") || "[]");
           localStorage.setItem("cv_my_tracking_codes", JSON.stringify([...stored, result.trackingCode]));
