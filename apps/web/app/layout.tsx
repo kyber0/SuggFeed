@@ -4,6 +4,7 @@ import { ServiceWorkerRegistrar } from "../components/service-worker";
 import { AuthProvider } from "../components/auth-context";
 import { ToastProvider } from "../components/toast";
 import { ThemeProvider } from "../components/theme-provider";
+import { MobileTabBar } from "../components/mobile-tab-bar";
 
 export const metadata: Metadata = {
   title: "SuggFeed",
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <AuthProvider>
             <ToastProvider>
               {children}
+              <MobileTabBar />
               <ServiceWorkerRegistrar />
             </ToastProvider>
           </AuthProvider>

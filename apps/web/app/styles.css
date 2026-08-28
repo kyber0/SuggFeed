@@ -914,10 +914,11 @@ textarea { height: 130px; resize: vertical; }
   /* Admin header: hide 'Sign out' text, show icon only */
   .admin-signout-label { display: none; }
 
-  /* Toasts */
+  /* Toasts: lift above the bottom tab bar */
   .toast-region {
     right: var(--sp-3); left: var(--sp-3);
-    bottom: var(--sp-4); max-width: none; width: auto;
+    bottom: calc(64px + env(safe-area-inset-bottom) + var(--sp-2));
+    max-width: none; width: auto;
   }
 
   /* Modal */
@@ -927,6 +928,57 @@ textarea { height: 130px; resize: vertical; }
   .status-stepper { padding: var(--sp-3); gap: 0; }
   .step-label { font-size: 9px; }
   .step-dot { width: 22px; height: 22px; font-size: 11px; }
+
+  /* Add bottom padding to all pages so content isn't hidden by the tab bar */
+  body { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+}
+
+/* ── Mobile bottom tab bar ────────────────────────── */
+.mobile-tab-bar {
+  display: none; /* hidden on desktop */
+}
+
+@media (max-width: 640px) {
+  .mobile-tab-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: calc(60px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 24px rgba(10,30,50,.08);
+    z-index: 200;
+  }
+
+  .mobile-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: color var(--t-fast), transform var(--t-fast);
+    -webkit-tap-highlight-color: transparent;
+    padding: 8px 0;
+  }
+
+  .mobile-tab:active { transform: scale(0.92); }
+
+  .mobile-tab--active {
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  /* Dot indicator above active tab */
+  .mobile-tab--active svg {
+    position: relative;
+  }
 }
 
 /* Small phones: 390px */
