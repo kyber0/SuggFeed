@@ -1443,6 +1443,15 @@ textarea { height: 130px; resize: vertical; }
   line-height: 1.5;
 }
 
+/* Mobile tab bar — hidden on desktop */
+.roadmap-tabs {
+  display: none;
+}
+
+.roadmap-board-mobile {
+  display: none;
+}
+
 .roadmap-board {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1547,4 +1556,75 @@ textarea { height: 130px; resize: vertical; }
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* ── Roadmap: mobile tab bar ──────────────────────── */
+@media (max-width: 640px) {
+  /* Show tabs + single-column board; hide the 3-column desktop board */
+  .roadmap-tabs {
+    display: flex;
+    gap: 8px;
+    max-width: 1200px;
+    margin: 0 auto 24px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    padding: 4px;
+  }
+
+  .roadmap-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 8px;
+    border: none;
+    border-radius: var(--r-lg);
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all var(--t-base);
+    white-space: nowrap;
+  }
+
+  .roadmap-tab--active {
+    background: var(--surface);
+    color: var(--tab-color, var(--navy));
+    box-shadow: var(--shadow-sm);
+  }
+
+  .roadmap-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: var(--r-full);
+    background: var(--line);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    transition: all var(--t-base);
+  }
+
+  .roadmap-tab--active .roadmap-tab-count {
+    background: color-mix(in srgb, var(--tab-color, var(--navy)) 15%, transparent);
+    color: var(--tab-color, var(--navy));
+  }
+
+  .roadmap-board { display: none; }
+
+  .roadmap-board-mobile {
+    display: block;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .roadmap-board-mobile .roadmap-col {
+    height: auto;
+  }
 }
