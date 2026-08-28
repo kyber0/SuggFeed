@@ -1510,12 +1510,14 @@ textarea { height: 130px; resize: vertical; }
 }
 
 .roadmap-card {
+  display: block;
   background: var(--bg);
   border: 1px solid var(--line-2);
   border-radius: 8px;
   padding: 16px;
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
