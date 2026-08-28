@@ -148,9 +148,8 @@ export function CommunityFeed() {
               <span className="feed-total">{totalCount > 0 ? `${totalCount} ideas published` : ""}</span>
             </p>
           </div>
-          <button className="btn-primary-sm feed-submit-cta" onClick={openSubmitPanel}>
-            <ArrowRight size={15} strokeWidth={2} />
-            Share your idea
+          <button className="btn-premium-secondary feed-submit-cta" onClick={openSubmitPanel}>
+            Share your idea <ArrowRight size={15} strokeWidth={2} />
           </button>
         </div>
 
