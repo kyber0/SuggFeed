@@ -59,6 +59,18 @@ export async function loadPublishedSubmissions(sortBy: "popular" | "newest" | "o
   return { submissions: (data ?? []) as unknown as PublishedSubmission[], count: count ?? 0 };
 }
 
+export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)")
+    .in("status", ["approved", "in_progress", "resolved"])
+    .order("vote_count", { ascending: false })
+    .limit(100);
+
+  if (error) throw error;
+  return data as unknown as PublishedSubmission[];
+}
+
 export async function loadSingleSubmission(id: string): Promise<PublishedSubmission | null> {
   const { data, error } = await supabase
     .from("submissions")

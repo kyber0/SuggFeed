@@ -85,7 +85,8 @@ export function Header() {
       <header className="site-header">
         <a className="brand" href="/">Sugg<span>Feed</span></a>
         <nav>
-          <a href="#feed" className="nav-link-hide-mobile">Community ideas</a>
+          <a href="/roadmap" className="nav-link-hide-mobile">Roadmap</a>
+          <a href="/#feed" className="nav-link-hide-mobile">Community ideas</a>
           <a href="/admin" className="nav-link-hide-mobile">Staff portal</a>
           {navControls}
           <div style={{ width: 1, height: 24, background: "var(--line-2)", margin: "0 4px" }} />
