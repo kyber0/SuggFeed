@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Map, User, ShieldCheck } from "lucide-react";
+import { PlusCircle, MessageSquare, Map, User } from "lucide-react";
 import { useAuth } from "./auth-context";
 
 const TABS = [
-  { href: "/",        label: "Home",      Icon: Home },
+  { href: "/",        label: "Submit",    Icon: PlusCircle },
+  { href: "/feed",    label: "Ideas",     Icon: MessageSquare },
   { href: "/roadmap", label: "Roadmap",   Icon: Map },
   { href: "/profile", label: "My Activity", Icon: User },
-  { href: "/admin",   label: "Staff",     Icon: ShieldCheck },
 ];
 
 export function MobileTabBar() {
