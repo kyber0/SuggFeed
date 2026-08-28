@@ -178,7 +178,15 @@ export function SuggFeed({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
       );
       const result = await submitFeedback({ title: draft.title, description: draft.description, category: draft.category, isAnonymous: draft.isAnonymous, consent: true, attachments, turnstileToken });
       await drafts.delete(draft.id);
-      toast(result.trackingCode ? `Queued draft sent! Save your code: ${result.trackingCode}` : "Queued draft sent successfully.", "success");
+      if (result.trackingCode) {
+        toast(`Queued draft sent! Save your code: ${result.trackingCode}`, "success");
+        try {
+          const stored = JSON.parse(localStorage.getItem("cv_my_tracking_codes") || "[]");
+          localStorage.setItem("cv_my_tracking_codes", JSON.stringify([...stored, result.trackingCode]));
+        } catch { /* ignore */ }
+      } else {
+        toast("Queued draft sent successfully.", "success");
+      }
       await refreshFeed();
     } catch (error) {
       await drafts.update(draft.id, { syncStatus: "failed", attempts: draft.attempts + 1, lastError: error instanceof Error ? error.message : "Sync failed" });
@@ -213,6 +221,10 @@ export function SuggFeed({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
       const result = await submitFeedback({ ...body, consent: true, attachments, turnstileToken });
       if (result.trackingCode) {
         toast(`Submitted! 🎉 Save your private tracking code: ${result.trackingCode}`, "success");
+        try {
+          const stored = JSON.parse(localStorage.getItem("cv_my_tracking_codes") || "[]");
+          localStorage.setItem("cv_my_tracking_codes", JSON.stringify([...stored, result.trackingCode]));
+        } catch { /* ignore */ }
       } else {
         toast("Submitted for review. Thank you for speaking up! 🙌", "success");
       }

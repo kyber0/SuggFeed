@@ -149,6 +149,15 @@ export function ProfilePanel({ onClose }: Props) {
 
           <hr className="profile-divider" />
 
+          {/* Activity Link */}
+          <div className="field">
+            <a href="/profile" className="btn-ghost" style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: 6 }}>
+              View my activity history
+            </a>
+          </div>
+
+          <hr className="profile-divider" />
+
           {/* Display name */}
           <div className="field">
             <label htmlFor="profile-display-name">

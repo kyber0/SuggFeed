@@ -71,6 +71,13 @@ export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
   return data as unknown as PublishedSubmission[];
 }
 
+export async function loadMyActivity(anonToken?: string, trackingCodes?: string[]) {
+  return invoke<{ submissions: PublishedSubmission[]; votedSubmissions: PublishedSubmission[] }>(
+    "my-activity",
+    { anonToken, trackingCodes }
+  );
+}
+
 export async function loadSingleSubmission(id: string): Promise<PublishedSubmission | null> {
   const { data, error } = await supabase
     .from("submissions")
