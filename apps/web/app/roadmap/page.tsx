@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { RoadmapBoard } from "../../../components/roadmap-board";
+import { RoadmapBoard } from "../../components/roadmap-board";
 
 export const metadata: Metadata = {
   title: "Roadmap | SuggFeed",
