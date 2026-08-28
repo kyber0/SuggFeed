@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
-  X, ThumbsUp, Check, MessageSquare, Send, EyeOff,
+  X, ThumbsUp, Check, MessageSquare, Send, EyeOff, Share2,
   Calendar, Activity, Tag, Paperclip, FileText, ZoomIn,
 } from "lucide-react";
 import {
@@ -57,6 +57,7 @@ export function IdeaDetailPanel({
   const [submitting, setSubmitting]             = useState(false);
   const [formError, setFormError]               = useState("");
   const [turnstileToken, setTurnstileToken]     = useState("");
+  const [copied, setCopied]                     = useState(false);
   const commentListRef = useRef<HTMLDivElement>(null);
   const formRef        = useRef<HTMLFormElement>(null);
 
@@ -181,11 +182,13 @@ export function IdeaDetailPanel({
                 navigator.clipboard.writeText(url);
                 const toast = (window as any).toast;
                 if (toast) toast("Link copied to clipboard!", "success");
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
               }} 
               aria-label="Share"
               title="Copy link"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+              {copied ? <Check size={16} strokeWidth={2.5} color="#11845b" /> : <Share2 size={16} strokeWidth={2.5} />}
             </button>
             <button className="panel-close-btn" onClick={onClose} aria-label="Close">
               <X size={18} strokeWidth={2.5} />
