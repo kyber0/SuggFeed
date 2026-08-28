@@ -3,6 +3,7 @@ import "./styles.css";
 import { ServiceWorkerRegistrar } from "../components/service-worker";
 import { AuthProvider } from "../components/auth-context";
 import { ToastProvider } from "../components/toast";
+import { ThemeProvider } from "../components/theme-provider";
 
 export const metadata: Metadata = {
   title: "SuggFeed",
@@ -33,12 +34,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body suppressHydrationWarning>
-        <AuthProvider>
-          <ToastProvider>
-            {children}
-            <ServiceWorkerRegistrar />
-          </ToastProvider>
-        </AuthProvider>
+        <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <ToastProvider>
+              {children}
+              <ServiceWorkerRegistrar />
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
