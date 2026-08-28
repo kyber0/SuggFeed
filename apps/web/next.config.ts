@@ -22,23 +22,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Only apply Sentry's webpack plugin in production.
-// In development its ESM helpers (_optionalChain, _nullishCoalesce) cause
-// webpack to crash in a pnpm monorepo where @sentry/core resolves to the
-// ESM build which does not re-export those symbols.
-if (IS_DEV) {
-  module.exports = nextConfig;
-} else {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { withSentryConfig } = require("@sentry/nextjs");
-  module.exports = withSentryConfig(nextConfig, {
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    silent: !process.env.SENTRY_AUTH_TOKEN,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    widenClientFileUpload: true,
-    hideSourceMaps: true,
-    disableLogger: true,
-    automaticVercelMonitors: false,
-  });
-}
+export default nextConfig;

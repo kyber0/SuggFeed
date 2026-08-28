@@ -1,4 +1,3 @@
-"use client";
 import { supabase } from "./supabase";
 
 export type AttachmentPayload = { name: string; type: string; base64: string };
