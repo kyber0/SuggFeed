@@ -129,9 +129,10 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
       <div className="panel-overlay" onClick={closeSubmitPanel} aria-hidden="true" />
       
       {/* Panel */}
-      <aside className="detail-panel" style={{ width: "100%", maxWidth: "600px", left: "50%", transform: "translateX(-50%)" }} role="dialog" aria-modal="true" aria-label="Share feedback">
+      <aside className="detail-panel" role="dialog" aria-modal="true" aria-label="Share feedback">
         
-        <div className="detail-panel-header" style={{ borderBottom: "1px solid var(--line-1)" }}>
+        <div className="detail-panel-header">
+          <div className="mobile-drag-handle" aria-hidden="true" />
           <h2 style={{ fontSize: 18, color: "var(--ink)", fontWeight: 600 }}>Share Feedback</h2>
           <div style={{ marginLeft: "auto" }}>
             <button className="panel-close-btn" onClick={closeSubmitPanel} aria-label="Close">
