@@ -239,7 +239,7 @@ export function SuggFeed({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
               <div style={{ maxWidth: 400, margin: "0 auto" }}>
                 <h2 style={{ fontSize: 24, marginBottom: 12 }}>What would you like to improve?</h2>
                 <p style={{ color: "var(--muted)", marginBottom: 32 }}>Be constructive and avoid including personal or sensitive information.</p>
-                <button className="btn-primary" onClick={openSubmitPanel} style={{ width: "100%", justifyContent: "center", padding: 14, fontSize: 16 }}>
+                <button className="btn-premium" onClick={openSubmitPanel} style={{ width: "100%", justifyContent: "center", padding: 14, fontSize: 16 }}>
                   <Send size={18} strokeWidth={2} /> Share your idea
                 </button>
               </div>
