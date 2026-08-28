@@ -9,7 +9,7 @@ import { Header } from "./header";
 import { IdeaDetailPanel } from "./idea-detail-panel";
 import { useToast } from "./toast";
 import { getAnonToken } from "../lib/anon-token";
-import Link from "next/link";
+import { useSubmitIdea } from "./submit-idea-context";
 
 const ALL_CATS = ["All", "Facilities", "Learning", "Safety", "Student life", "Other"];
 const PER_PAGE = 18;
@@ -42,6 +42,8 @@ export function CommunityFeed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<PublishedSubmission | null>(null);
   const [anonToken, setAnonToken]   = useState("");
+  
+  const { openSubmitPanel } = useSubmitIdea();
 
   /* ── Init ── */
   useEffect(() => {
@@ -146,10 +148,10 @@ export function CommunityFeed() {
               <span className="feed-total">{totalCount > 0 ? `${totalCount} ideas published` : ""}</span>
             </p>
           </div>
-          <Link href="/" className="btn-primary-sm feed-submit-cta">
+          <button className="btn-primary-sm feed-submit-cta" onClick={openSubmitPanel}>
             <ArrowRight size={15} strokeWidth={2} />
             Share your idea
-          </Link>
+          </button>
         </div>
 
         {/* ── Controls ── */}

@@ -5,6 +5,8 @@ import { AuthProvider } from "../components/auth-context";
 import { ToastProvider } from "../components/toast";
 import { ThemeProvider } from "../components/theme-provider";
 import { MobileTabBar } from "../components/mobile-tab-bar";
+import { SubmitIdeaProvider } from "../components/submit-idea-context";
+import { SubmitIdeaPanel } from "../components/submit-idea-panel";
 
 export const metadata: Metadata = {
   title: "SuggFeed",
@@ -36,13 +38,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
-          <AuthProvider>
-            <ToastProvider>
-              {children}
-              <MobileTabBar />
-              <ServiceWorkerRegistrar />
-            </ToastProvider>
-          </AuthProvider>
+          <SubmitIdeaProvider>
+            <AuthProvider>
+              <ToastProvider>
+                {children}
+                <SubmitIdeaPanel turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
+                <MobileTabBar />
+                <ServiceWorkerRegistrar />
+              </ToastProvider>
+            </AuthProvider>
+          </SubmitIdeaProvider>
         </ThemeProvider>
       </body>
     </html>
