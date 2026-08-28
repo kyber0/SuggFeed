@@ -59,6 +59,18 @@ export async function loadPublishedSubmissions(sortBy: "popular" | "newest" | "o
   return { submissions: (data ?? []) as unknown as PublishedSubmission[], count: count ?? 0 };
 }
 
+export async function loadSingleSubmission(id: string): Promise<PublishedSubmission | null> {
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)")
+    .eq("id", id)
+    .in("status", ["approved", "in_progress", "resolved"])
+    .maybeSingle();
+
+  if (error) throw error;
+  return data as unknown as PublishedSubmission | null;
+}
+
 export async function loadAttachments(submissionId: string): Promise<AttachmentFile[]> {
   const result = await invoke<{ files: AttachmentFile[] }>("get-attachments", { submissionId });
   return result.files ?? [];

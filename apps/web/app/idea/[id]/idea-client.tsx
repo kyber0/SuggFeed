@@ -2,8 +2,8 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
-  X, ThumbsUp, Check, MessageSquare, Send, EyeOff,
-  Calendar, Activity, Tag, Paperclip, FileText, ZoomIn,
+  ThumbsUp, Check, MessageSquare, Send, EyeOff,
+  Calendar, Activity, Tag, Paperclip, FileText, ZoomIn, ArrowLeft, X
 } from "lucide-react";
 import {
   type AttachmentFile,
@@ -12,9 +12,12 @@ import {
   addComment,
   loadAttachments,
   loadComments,
-} from "../lib/feedback-api";
-import { TurnstileWidget } from "./turnstile-widget";
-
+  voteSubmission,
+} from "../../../lib/feedback-api";
+import { TurnstileWidget } from "../../../components/turnstile-widget";
+import { getAnonToken } from "../../../components/sugg-feed";
+import Link from "next/link";
+import { useToast } from "../../../components/toast";
 
 function relativeDate(value: string) {
   const days = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000));
@@ -32,22 +35,13 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 interface Props {
-  idea: PublishedSubmission;
-  votedIds: Set<string>;
-  votingId: string | null;
-  onVote: (id: string) => void;
-  onClose: () => void;
-  anonToken: string;
+  initialIdea: PublishedSubmission;
+  turnstileSiteKey?: string;
 }
 
-export function IdeaDetailPanel({
-  idea,
-  votedIds,
-  votingId,
-  onVote,
-  onClose,
-  anonToken,
-}: Props) {
+export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
+  const { toast } = useToast();
+  const [idea, setIdea] = useState(initialIdea);
   const [comments, setComments]                 = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading]   = useState(true);
   const [attachments, setAttachments]           = useState<AttachmentFile[]>([]);
@@ -57,43 +51,21 @@ export function IdeaDetailPanel({
   const [submitting, setSubmitting]             = useState(false);
   const [formError, setFormError]               = useState("");
   const [turnstileToken, setTurnstileToken]     = useState("");
+  const [votedIds, setVotedIds]                 = useState<Set<string>>(new Set());
+  const [votingId, setVotingId]                 = useState<string | null>(null);
+  const [anonToken, setAnonToken]               = useState("");
+
   const commentListRef = useRef<HTMLDivElement>(null);
   const formRef        = useRef<HTMLFormElement>(null);
 
-
-  // Lock scroll while panel is open.
-  // Using overflow:hidden on <html> (not position:fixed on body) keeps the
-  // document's scroll position intact so there is no visual jump on open/close.
   useEffect(() => {
-    const html = document.documentElement;
-    html.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-
-    // Slide the header up when the panel opens.
-    const header = document.querySelector<HTMLElement>(".site-header");
-    if (header) {
-      header.classList.remove("header-reveal");
-      header.classList.add("header-hide");
-    }
-
-    return () => {
-      html.style.overflow = "";
-      document.body.style.overflow = "";
-
-      // Slide the header back down when the panel closes.
-      if (header) {
-        header.classList.remove("header-hide");
-        header.classList.add("header-reveal");
-        header.addEventListener(
-          "animationend",
-          () => header.classList.remove("header-reveal"),
-          { once: true }
-        );
-      }
-    };
+    setAnonToken(getAnonToken());
+    try {
+      const raw = localStorage.getItem("cv_voted");
+      if (raw) setVotedIds(new Set(JSON.parse(raw) as string[]));
+    } catch { /* ignore */ }
   }, []);
 
-  // Load comments and attachments when idea changes
   useEffect(() => {
     setCommentsLoading(true);
     loadComments(idea.id)
@@ -110,15 +82,6 @@ export function IdeaDetailPanel({
       .catch(() => setAttachments([]))
       .finally(() => setAttachmentsLoading(false));
   }, [idea.id, idea.attachments?.length]);
-
-  // Close on Escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
-
-
 
   const scrollToLatest = useCallback(() => {
     setTimeout(() => {
@@ -138,13 +101,12 @@ export function IdeaDetailPanel({
       const result = await addComment({
         submissionId:   idea.id,
         body:           body.trim(),
-        displayName:    undefined,
         anonToken,
         turnstileToken,
       });
       setComments((c) => [...c, result.comment]);
       setBody("");
-      setTurnstileToken(""); // reset so widget refreshes for next comment
+      setTurnstileToken(""); 
       scrollToLatest();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Couldn't post comment.");
@@ -153,54 +115,57 @@ export function IdeaDetailPanel({
     }
   }
 
+  async function handleVote() {
+    if (votingId) return;
+    const isUnvote = votedIds.has(idea.id);
+
+    const nextVotedIds = new Set(votedIds);
+    if (isUnvote) { nextVotedIds.delete(idea.id); } else { nextVotedIds.add(idea.id); }
+    setVotedIds(nextVotedIds);
+    localStorage.setItem("cv_voted", JSON.stringify([...nextVotedIds]));
+    
+    setIdea(prev => ({
+      ...prev,
+      vote_count: Math.max(0, prev.vote_count + (isUnvote ? -1 : 1))
+    }));
+
+    setVotingId(idea.id);
+    try {
+      const { voteCount } = await voteSubmission(idea.id, anonToken);
+      setIdea(prev => ({ ...prev, vote_count: voteCount }));
+    } catch (error) {
+      setVotedIds(new Set(votedIds));
+      setIdea(prev => ({
+        ...prev,
+        vote_count: Math.max(0, prev.vote_count + (isUnvote ? 1 : -1))
+      }));
+      localStorage.setItem("cv_voted", JSON.stringify([...votedIds]));
+      toast(error instanceof Error ? error.message : "Couldn't record your vote.", "error");
+    } finally { setVotingId(null); }
+  }
+
   const voted = votedIds.has(idea.id);
   const statusColor = STATUS_COLOR[idea.status] ?? "#627d98";
 
   return (
-    <>
-      {/* Backdrop */}
-      <div className="panel-overlay" onClick={onClose} aria-hidden="true" />
+    <div className="standalone-container">
+      <Link href="/" className="back-link">
+        <ArrowLeft size={16} /> Back to all ideas
+      </Link>
 
-      {/* Wide two-column drawer */}
-      <aside className="detail-panel detail-panel-split" role="dialog" aria-modal="true" aria-label={idea.title}>
-
-        {/* ── Full-width header ── */}
+      <div className="detail-panel-split standalone-split">
         <div className="detail-panel-header">
-          <div className="mobile-drag-handle" aria-hidden="true" />
           <div className="detail-panel-badges">
             <span className="tag">{idea.categories?.name ?? "Other"}</span>
             <span className="status-badge" style={{ background: `${statusColor}18`, color: statusColor }}>
               {readableStatus(idea.status)}
             </span>
           </div>
-          <div style={{ display: "flex", gap: "8px", marginLeft: "auto" }}>
-            <button 
-              className="panel-close-btn" 
-              onClick={() => {
-                const url = `${window.location.origin}/idea/${idea.id}`;
-                navigator.clipboard.writeText(url);
-                const toast = (window as any).toast;
-                if (toast) toast("Link copied to clipboard!", "success");
-              }} 
-              aria-label="Share"
-              title="Copy link"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            </button>
-            <button className="panel-close-btn" onClick={onClose} aria-label="Close">
-              <X size={18} strokeWidth={2.5} />
-            </button>
-          </div>
         </div>
 
-        {/* ── Two-column body ── */}
         <div className="detail-panel-columns">
-
-          {/* ── LEFT: Idea details (60%) ── */}
           <div className="detail-col detail-col-left">
             <h2 className="detail-panel-title">{idea.title}</h2>
-
-            {/* Meta row */}
             <div className="detail-meta-row">
               <span className="detail-meta-item">
                 <Calendar size={13} strokeWidth={2} />
@@ -212,14 +177,11 @@ export function IdeaDetailPanel({
               </span>
             </div>
 
-            {/* Vote */}
             <div className="detail-vote-row">
               <button
                 className={`vote-btn large${voted ? " voted" : ""}`}
-                onClick={() => onVote(idea.id)}
+                onClick={handleVote}
                 disabled={votingId === idea.id}
-                aria-label={voted ? "Remove support" : "Support this idea"}
-                title={voted ? "Click to remove your support" : "Support this idea"}
               >
                 {voted
                   ? <Check size={16} strokeWidth={2.5} className="vote-arrow" />
@@ -229,7 +191,6 @@ export function IdeaDetailPanel({
               </button>
             </div>
 
-            {/* Full description */}
             <div className="detail-description">
               <p className="eyebrow" style={{ marginBottom: 10 }}>
                 <Tag size={11} strokeWidth={2} style={{ verticalAlign: "middle", marginRight: 4 }} />
@@ -240,7 +201,6 @@ export function IdeaDetailPanel({
               </p>
             </div>
 
-            {/* Attachments */}
             {(idea.attachments?.length ?? 0) > 0 && (
               <div className="detail-attachments">
                 <p className="eyebrow" style={{ marginBottom: 12 }}>
@@ -258,7 +218,6 @@ export function IdeaDetailPanel({
                           className="attachment-thumb"
                           onClick={() => setLightbox(file.url)}
                           title={file.name}
-                          aria-label={`View ${file.name}`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
@@ -295,17 +254,14 @@ export function IdeaDetailPanel({
             )}
           </div>
 
-          {/* Vertical divider */}
           <div className="detail-col-divider" />
 
-          {/* ── RIGHT: Comments (40%) ── */}
           <div className="detail-col detail-col-right">
             <p className="eyebrow" style={{ marginBottom: 14 }}>
               <MessageSquare size={11} strokeWidth={2} style={{ verticalAlign: "middle", marginRight: 4 }} />
               COMMENTS ({commentsLoading ? "…" : comments.length})
             </p>
 
-            {/* Comment list — grows and scrolls independently */}
             <div className="comment-list" ref={commentListRef}>
               {commentsLoading ? (
                 <div className="comment-skeleton-wrap">
@@ -332,10 +288,8 @@ export function IdeaDetailPanel({
                   </div>
                 ))
               )}
-              <div className="mobile-spacer" aria-hidden="true" />
             </div>
 
-            {/* Comment form — sticky at bottom of right column */}
             <form
               ref={formRef}
               className="comment-form"
@@ -343,7 +297,7 @@ export function IdeaDetailPanel({
               noValidate
             >
               <TurnstileWidget
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                siteKey={turnstileSiteKey}
                 onToken={setTurnstileToken}
               />
               <div className="comment-input-row">
@@ -355,7 +309,7 @@ export function IdeaDetailPanel({
                   rows={1}
                   placeholder="Share your thoughts…"
                 />
-                <button className="comment-send-btn" type="submit" disabled={submitting || !turnstileToken} aria-label="Post comment">
+                <button className="comment-send-btn" type="submit" disabled={submitting || !turnstileToken}>
                   {submitting
                     ? <span className="comment-send-spinner" />
                     : <Send size={16} strokeWidth={2} />}
@@ -365,24 +319,22 @@ export function IdeaDetailPanel({
             </form>
           </div>
         </div>
-      </aside>
+      </div>
 
-      {/* Lightbox */}
       {lightbox && (
         <div
           className="lightbox-overlay"
           onClick={() => setLightbox(null)}
           role="dialog"
           aria-modal="true"
-          aria-label="Image preview"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={lightbox} alt="Attachment" className="lightbox-img" onClick={(e) => e.stopPropagation()} />
-          <button className="lightbox-close" onClick={() => setLightbox(null)} aria-label="Close image">
+          <button className="lightbox-close" onClick={() => setLightbox(null)}>
             <X size={20} strokeWidth={2.5} />
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }
