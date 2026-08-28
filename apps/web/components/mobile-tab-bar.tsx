@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PlusCircle, MessageSquare, Map, User } from "lucide-react";
+import { Home, PlusCircle, MessageSquare, Map, User } from "lucide-react";
 import { useAuth } from "./auth-context";
 import { useSubmitIdea } from "./submit-idea-context";
 
-const TABS = [
-  { href: "/",        label: "Submit",    Icon: PlusCircle },
+type Tab = { href: string; label: string; Icon: any; isAction?: boolean };
+
+const TABS: Tab[] = [
+  { href: "/",        label: "Home",      Icon: Home },
   { href: "/feed",    label: "Ideas",     Icon: MessageSquare },
+  { href: "#submit",  label: "Submit",    Icon: PlusCircle, isAction: true },
   { href: "/roadmap", label: "Roadmap",   Icon: Map },
-  { href: "/profile", label: "My Activity", Icon: User },
+  { href: "/profile", label: "Profile",   Icon: User },
 ];
 
 export function MobileTabBar() {
@@ -19,9 +22,9 @@ export function MobileTabBar() {
 
   return (
     <nav className="mobile-tab-bar" aria-label="Mobile navigation">
-      {TABS.map(({ href, label, Icon }) => {
-        // Special case for Submit tab
-        if (href === "/") {
+      {TABS.map(({ href, label, Icon, isAction }) => {
+        // Special case for Submit action tab
+        if (isAction) {
           return (
             <button
               key="submit"
