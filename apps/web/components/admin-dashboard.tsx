@@ -9,6 +9,7 @@ import { AnimatedCounter } from "./animated-counter";
 import { ThemeToggle } from "./theme-toggle";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import type { PublishedSubmission } from "../lib/feedback-api";
+import Link from "next/link";
 
 type Status = "pending" | "approved" | "rejected" | "in_progress" | "resolved";
 type Submission = Omit<PublishedSubmission, 'status'> & { status: Status };
@@ -37,7 +38,7 @@ function StatChip({ label, count, cls }: { label: string; count: number; cls?: s
   );
 }
 
-export function AdminDashboard() {
+export function AdminDashboard({ defaultViewMode = "queue" }: { defaultViewMode?: "queue" | "analytics" }) {
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
@@ -56,7 +57,7 @@ export function AdminDashboard() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [recoveryMode, setRecoveryMode] = useState(false);
   const [newPassword, setNewPassword] = useState("");
-  const [viewMode, setViewMode] = useState<"queue" | "analytics">("queue");
+  const [viewMode, setViewMode] = useState<"queue" | "analytics">(defaultViewMode);
 
   async function loadSubmissions() {
     const { data, error } = await supabase
@@ -346,31 +347,33 @@ export function AdminDashboard() {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', background: 'var(--bg-2)', padding: 4, borderRadius: 'var(--r-md)', border: '1px solid var(--line-2)' }}>
-            <button
-              onClick={() => setViewMode('queue')}
+            <Link
+              href="/admin"
               style={{
                 padding: '6px 12px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', borderRadius: 'var(--r-sm)',
-                background: viewMode === 'queue' ? 'var(--surface)' : 'transparent',
-                color: viewMode === 'queue' ? 'var(--ink)' : 'var(--muted)',
-                boxShadow: viewMode === 'queue' ? 'var(--shadow-sm)' : 'none',
+                background: defaultViewMode === 'queue' ? 'var(--surface)' : 'transparent',
+                color: defaultViewMode === 'queue' ? 'var(--ink)' : 'var(--muted)',
+                boxShadow: defaultViewMode === 'queue' ? 'var(--shadow-sm)' : 'none',
+                textDecoration: 'none', display: 'inline-block'
               }}
             >
               Queue
-            </button>
-            <button
-              onClick={() => setViewMode('analytics')}
+            </Link>
+            <Link
+              href="/admin/analytics"
               style={{
                 padding: '6px 12px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', borderRadius: 'var(--r-sm)',
-                background: viewMode === 'analytics' ? 'var(--surface)' : 'transparent',
-                color: viewMode === 'analytics' ? 'var(--ink)' : 'var(--muted)',
-                boxShadow: viewMode === 'analytics' ? 'var(--shadow-sm)' : 'none',
+                background: defaultViewMode === 'analytics' ? 'var(--surface)' : 'transparent',
+                color: defaultViewMode === 'analytics' ? 'var(--ink)' : 'var(--muted)',
+                boxShadow: defaultViewMode === 'analytics' ? 'var(--shadow-sm)' : 'none',
+                textDecoration: 'none', display: 'inline-block'
               }}
             >
               Analytics
-            </button>
+            </Link>
           </div>
 
-          {viewMode === 'queue' && (
+          {defaultViewMode === 'queue' && (
             <button
               className="btn-ghost"
               onClick={exportCsv}
@@ -383,7 +386,7 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      {viewMode === 'analytics' ? (
+      {defaultViewMode === 'analytics' ? (
         <div style={{ marginTop: 24 }}>
           {/* Top KPIs */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
