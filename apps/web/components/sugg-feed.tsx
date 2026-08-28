@@ -293,7 +293,7 @@ export function SuggFeed({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
               <p className="eyebrow">OPEN IDEAS</p>
               <h2>What the community is talking about</h2>
             </div>
-            <button className="btn-premium" onClick={openSubmitPanel} style={{ padding: "8px 16px", fontSize: 13, marginTop: 0, width: "auto" }}>
+            <button className="btn-premium-secondary" onClick={openSubmitPanel}>
               Share your own idea <ArrowRight size={14} strokeWidth={2} />
             </button>
           </div>
