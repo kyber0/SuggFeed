@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@expo/metro-runtime": "~6.1.2",
+    "@expo/metro-runtime": "~57.0.16",
     "@sentry/react-native": "^7.2.0",
     "@supabase/supabase-js": "^2.47.10",
     "expo": "~54.0.0",
