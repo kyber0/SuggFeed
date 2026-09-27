@@ -1,3 +1,4 @@
+// @privacy-policy
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -13,7 +14,7 @@ export default function PrivacyPage() {
     <main className="sf-legal-page">
       <div className="sf-legal-container">
         <nav className="sf-legal-breadcrumb">
-          <Link href="/">? Back to SuggFeed</Link>
+          <Link href="/">Back to SuggFeed</Link>
         </nav>
 
         <header className="sf-legal-header">
@@ -25,9 +26,9 @@ export default function PrivacyPage() {
           <section>
             <h2>1. Introduction</h2>
             <p>
-              SuggFeed (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) is a school feedback platform that lets
-              students share suggestions anonymously and track their progress. This policy explains what
-              data we collect, why we collect it, and how we protect it.
+              SuggFeed is a school feedback platform that lets students share suggestions anonymously
+              and track their progress. This policy explains what data we collect, why we collect it,
+              and how we protect it.
             </p>
           </section>
 
@@ -37,24 +38,25 @@ export default function PrivacyPage() {
             <p>
               When you submit a suggestion, we store the text content, category, optional attachments,
               and a randomly generated anonymous tracking token. We do <strong>not</strong> store your
-              name, school ID, or any other personally identifiable information alongside your submission.
+              name, school ID, or any other personally identifiable information alongside your
+              submission.
             </p>
             <h3>2.2 Tracking Tokens</h3>
             <p>
-              A one-time tracking token is generated in your browser when you submit a suggestion. It is
-              stored locally on your device and is the only way to look up the status of your own
+              A one-time tracking token is generated in your browser when you submit a suggestion. It
+              is stored locally on your device and is the only way to look up the status of your own
               submission. We cannot link a tracking token back to you.
             </p>
             <h3>2.3 Authenticated Staff Accounts</h3>
             <p>
-              Staff and admin users sign in with an email and password managed by Supabase Auth. We store
-              your email address, hashed password (never plaintext), and role assignment. Login events are
-              logged for security auditing.
+              Staff and admin users sign in with an email and password managed by Supabase Auth. We
+              store your email address, hashed password (never plaintext), and role assignment. Login
+              events are logged for security auditing.
             </p>
             <h3>2.4 Usage Data</h3>
             <p>
-              We collect anonymised usage metrics (page views, error events) via our analytics provider.
-              No cross-site tracking cookies are used.
+              We collect anonymised usage metrics (page views, error events) via our analytics
+              provider. No cross-site tracking cookies are used.
             </p>
           </section>
 
@@ -81,9 +83,9 @@ export default function PrivacyPage() {
           <section>
             <h2>5. Third-Party Services</h2>
             <ul>
-              <li><strong>Supabase</strong> — database, authentication, and file storage (EU region).</li>
-              <li><strong>Cloudflare Turnstile</strong> — bot/spam protection at submission time. No personal data is shared beyond a challenge result.</li>
-              <li><strong>Vercel</strong> — hosting and edge functions. Requests are processed in the nearest region.</li>
+              <li><strong>Supabase</strong> - database, authentication, and file storage.</li>
+              <li><strong>Cloudflare Turnstile</strong> - bot/spam protection at submission time.</li>
+              <li><strong>Vercel</strong> - hosting and edge functions.</li>
             </ul>
           </section>
 
@@ -96,7 +98,8 @@ export default function PrivacyPage() {
               30 days.
             </p>
             <p>
-              Staff account holders may request access to or deletion of their personal data at any time.
+              Staff account holders may request access to or deletion of their personal data at any
+              time.
             </p>
           </section>
 

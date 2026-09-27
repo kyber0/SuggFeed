@@ -1,3 +1,4 @@
+// @terms-of-service
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -13,7 +14,7 @@ export default function TermsPage() {
     <main className="sf-legal-page">
       <div className="sf-legal-container">
         <nav className="sf-legal-breadcrumb">
-          <Link href="/">? Back to SuggFeed</Link>
+          <Link href="/">Back to SuggFeed</Link>
         </nav>
 
         <header className="sf-legal-header">
@@ -44,7 +45,7 @@ export default function TermsPage() {
             <ul>
               <li>Submit content that is abusive, discriminatory, defamatory, or harassing.</li>
               <li>Include personal information about other individuals without their consent.</li>
-              <li>Attempt to de-anonymise other users&apos; submissions.</li>
+              <li>Attempt to de-anonymise other users submissions.</li>
               <li>Abuse the platform with spam, automated scripts, or denial-of-service attacks.</li>
               <li>Impersonate a staff member or administrator.</li>
               <li>Submit false or misleading information with the intent to deceive.</li>
@@ -55,21 +56,21 @@ export default function TermsPage() {
             <h2>4. Content Ownership</h2>
             <p>
               You retain ownership of content you submit. By submitting, you grant SuggFeed a
-              non-exclusive, royalty-free licence to display and process your submission for the purposes
-              of operating the platform (review workflow, public feed display, reporting).
+              non-exclusive, royalty-free licence to display and process your submission for the
+              purposes of operating the platform.
             </p>
             <p>
               Approved submissions may be visible in the public feed and may be cited in school
-              communications. Anonymous attribution (&ldquo;submitted anonymously&rdquo;) will be used.
+              communications. Anonymous attribution will be used.
             </p>
           </section>
 
           <section>
             <h2>5. Moderation</h2>
             <p>
-              All submissions are subject to review before appearing publicly. Staff may reject, request
-              changes to, or remove any submission that violates these terms. Rejected submissions will
-              receive a reason via the tracking status page.
+              All submissions are subject to review before appearing publicly. Staff may reject,
+              request changes to, or remove any submission that violates these terms. Rejected
+              submissions will receive a reason via the tracking status page.
             </p>
           </section>
 
@@ -77,8 +78,7 @@ export default function TermsPage() {
             <h2>6. Anonymity Limitations</h2>
             <p>
               While SuggFeed is designed to protect anonymity, we may be required to disclose tracking
-              tokens or associated metadata if compelled by law, or to prevent serious harm. We will
-              notify you of any such disclosure unless prohibited from doing so.
+              tokens or associated metadata if compelled by law, or to prevent serious harm.
             </p>
           </section>
 
@@ -93,18 +93,17 @@ export default function TermsPage() {
           <section>
             <h2>8. Limitation of Liability</h2>
             <p>
-              SuggFeed is provided &ldquo;as is&rdquo;. To the fullest extent permitted by law, we exclude all
-              warranties and shall not be liable for any indirect, incidental, or consequential damages
-              arising from your use of the platform.
+              SuggFeed is provided as is. To the fullest extent permitted by law, we exclude all
+              warranties and shall not be liable for any indirect, incidental, or consequential
+              damages arising from your use of the platform.
             </p>
           </section>
 
           <section>
             <h2>9. Changes to These Terms</h2>
             <p>
-              We may update these terms from time to time. Continued use of SuggFeed after changes are
-              posted constitutes acceptance of the revised terms. Material changes will be communicated
-              via a notice on the platform.
+              We may update these terms from time to time. Continued use of SuggFeed after changes
+              are posted constitutes acceptance of the revised terms.
             </p>
           </section>
 
