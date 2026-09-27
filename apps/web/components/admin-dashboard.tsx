@@ -316,6 +316,14 @@ export function AdminDashboard({
     setMounted(true);
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
+        // Staff portal only accepts email/password sessions.
+        // OAuth sessions (Google, GitHub, etc.) are signed out immediately.
+        const provider = data.session.user.app_metadata?.provider ?? "email";
+        if (provider !== "email") {
+          supabase.auth.signOut().finally(() => setRoleLoading(false));
+          return;
+        }
+
         setAccessToken(data.session.access_token);
         // Resolve role before rendering the portal
         supabase
@@ -342,6 +350,12 @@ export function AdminDashboard({
       if (event === "PASSWORD_RECOVERY") {
         setRecoveryMode(true);
       } else if (session) {
+        // Ignore any OAuth sign-in events in the admin portal
+        const provider = session.user.app_metadata?.provider ?? "email";
+        if (provider !== "email") {
+          supabase.auth.signOut();
+          return;
+        }
         setAccessToken(session.access_token);
       } else {
         // Signed out
@@ -716,7 +730,9 @@ export function AdminDashboard({
   }
 
   // Access denied — user is authenticated but lacks staff role
-  if (accessToken && userRole && userRole !== "moderator" && userRole !== "admin") {
+  // Block anyone who has a session but is not confirmed staff.
+  // This covers: students, null/missing profiles, and any role not in the allowlist.
+  if (accessToken && userRole !== "moderator" && userRole !== "admin") {
     return (
       <>
         <header className="site-header">
