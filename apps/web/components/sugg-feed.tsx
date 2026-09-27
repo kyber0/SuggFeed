@@ -1,10 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Lock, BellRing, CheckCircle, ArrowRight, Send, MessageSquare } from "lucide-react";
+import { CheckCircle, ArrowRight, Send, MessageSquare, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { lookupTrackingCode } from "../lib/feedback-api";
 import { drafts } from "../lib/offline-queue";
-import { AnimatedCounter } from "./animated-counter";
 import { StatusStepper } from "./status-stepper";
 import { Header } from "./header";
 import { useToast } from "./toast";
@@ -20,221 +19,195 @@ import { DEFAULT_CATEGORIES, type PublishedSubmission } from "../lib/feedback-ap
 type Timeline = { new_status: string; note: string | null; created_at: string }[];
 
 const ALL_CATS = ["All", ...DEFAULT_CATEGORIES];
+const SORT_OPTIONS = [
+  { value: "popular", label: "Most Supported" },
+  { value: "newest",  label: "Newest First"   },
+  { value: "oldest",  label: "Oldest First"   },
+] as const;
 
 export function SuggFeed({ turnstileSiteKey: _siteKey }: { turnstileSiteKey?: string }) {
   const { toast } = useToast();
   const { openSubmitPanel } = useSubmitIdea();
 
-  // Mode: Share CTA vs Track
   const [mode, setMode] = useState<"share" | "track">("share");
-
-  // Offline queue indicator
   const [queued, setQueued] = useState(0);
+  const [sortOpen, setSortOpen] = useState(false);
 
-  // Tracking submission state
-  const [tracking, setTracking] = useState("");
-  const [timeline, setTimeline] = useState<Timeline>([]);
+  const [tracking, setTracking]     = useState("");
+  const [timeline, setTimeline]     = useState<Timeline>([]);
   const [trackStatus, setTrackStatus] = useState("");
-  const [trackBusy, setTrackBusy] = useState(false);
+  const [trackBusy, setTrackBusy]   = useState(false);
 
-  // Feed & voting hooks
   const {
-    feed,
-    setFeed,
-    feedLoading,
-    totalCount,
-    hasMore,
-    loadingMore,
-    loadMore,
-    sortBy,
-    setSortBy,
-    filterCat,
-    setFilterCat,
-    search,
-    setSearch,
+    feed, setFeed, feedLoading, totalCount, hasMore, loadingMore, loadMore,
+    sortBy, setSortBy, filterCat, setFilterCat, search, setSearch,
   } = useFeed();
 
   const { votedIds, votingId, handleVote } = useVoting(feed, setFeed);
   const [selectedIdea, setSelectedIdea] = useState<PublishedSubmission | null>(null);
 
+  useEffect(() => { drafts.count().then(setQueued).catch(() => {}); }, []);
   useEffect(() => {
-    drafts.count().then(setQueued).catch(() => {});
-  }, []);
+    if (!sortOpen) return;
+    const close = () => setSortOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [sortOpen]);
 
   async function findSubmission(event: FormEvent) {
     event.preventDefault();
     if (!tracking.trim()) return;
-    setTrackBusy(true);
-    setTimeline([]);
-    setTrackStatus("");
+    setTrackBusy(true); setTimeline([]); setTrackStatus("");
     try {
       const result = await lookupTrackingCode(tracking.trim().toUpperCase());
       setTrackStatus(result.status ?? "");
       setTimeline(result.timeline ?? []);
     } catch (error) {
       toast(error instanceof Error ? error.message : "Couldn't look up that code.", "error");
-    } finally {
-      setTrackBusy(false);
-    }
+    } finally { setTrackBusy(false); }
   }
+
+  const currentSort = SORT_OPTIONS.find(o => o.value === sortBy) ?? SORT_OPTIONS[0];
 
   return (
     <>
       <Header />
-      <main>
-        {/* ── Hero ── */}
-        <section className="hero" id="top">
-          <div className="hero-copy">
-            <p className="eyebrow">YOUR SCHOOL. YOUR VOICE.</p>
-            <h1>Small ideas can make a real difference.</h1>
-            <p className="lede">
-              Share feedback safely, follow its progress, and see the improvements your community is shaping.
-            </p>
-            <div className="pills">
-              <span>
-                <Lock size={13} strokeWidth={2} style={{ verticalAlign: "middle", marginRight: 5 }} />
-                Anonymous option
-              </span>
-              <span>
-                <BellRing size={13} strokeWidth={2} style={{ verticalAlign: "middle", marginRight: 5 }} />
-                Updates you can follow
-              </span>
-              <span>
-                <CheckCircle size={13} strokeWidth={2} style={{ verticalAlign: "middle", marginRight: 5 }} />
-                Reviewed by your school
-              </span>
-            </div>
-          </div>
-          <aside className="impact">
-            <p>Community impact</p>
-            <strong><AnimatedCounter value={totalCount} /></strong>
-            <span>ideas published so far</span>
-            <hr />
-            <b><AnimatedCounter value={queued} /></b>
-            <span>draft{queued === 1 ? "" : "s"} queued on this device</span>
-          </aside>
-        </section>
+      <main className="sf-main">
 
-        {/* ── Workspace ── */}
-        <section className="workspace">
-          <div className="tabs">
-            <button id="tab-share" className={mode === "share" ? "active" : ""} onClick={() => setMode("share")}>
+        {/* ── Minimalist Workspace ── */}
+        <section className="sf-workspace" id="top">
+          <div className="sf-workspace-tabs" role="tablist">
+            <button
+              id="tab-share"
+              role="tab"
+              aria-selected={mode === "share"}
+              className={`sf-workspace-tab${mode === "share" ? " active" : ""}`}
+              onClick={() => setMode("share")}
+            >
               Share feedback
             </button>
-            <button id="tab-track" className={mode === "track" ? "active" : ""} onClick={() => setMode("track")}>
+            <button
+              id="tab-track"
+              role="tab"
+              aria-selected={mode === "track"}
+              className={`sf-workspace-tab${mode === "track" ? " active" : ""}`}
+              onClick={() => setMode("track")}
+            >
               Track submission
             </button>
           </div>
 
-          {mode === "share" ? (
-            <div className="card" style={{ padding: "48px 24px", textAlign: "center" }}>
-              <div style={{ maxWidth: 400, margin: "0 auto" }}>
-                <h2 style={{ fontSize: 24, marginBottom: 12 }}>What would you like to improve?</h2>
-                <p style={{ color: "var(--muted)", marginBottom: 32 }}>
+          <div className="sf-workspace-card">
+            {mode === "share" ? (
+              <div className="sf-share-panel">
+                <h2 className="sf-panel-title">What would you like to improve?</h2>
+                <p className="sf-panel-desc">
                   Be constructive and avoid including personal or sensitive information.
                 </p>
-                <button
-                  className="btn-premium"
-                  onClick={openSubmitPanel}
-                  style={{ width: "100%", justifyContent: "center", padding: 14, fontSize: 16 }}
-                >
-                  <Send size={18} strokeWidth={2} /> Share your idea
+                <button className="sf-btn-share-main" onClick={openSubmitPanel}>
+                  <Send size={15} strokeWidth={2.2} />
+                  Share your idea
                 </button>
               </div>
-            </div>
-          ) : (
-            <form className="card" onSubmit={findSubmission}>
-              <h2>Check on your feedback</h2>
-              <p style={{ marginTop: 8 }}>Enter the private tracking code shown after an anonymous submission.</p>
-
-              <div className="field">
-                <label htmlFor="tracking-input">Tracking code</label>
-                <input
-                  id="tracking-input"
-                  value={tracking}
-                  onChange={(e) => setTracking(e.target.value.toUpperCase())}
-                  placeholder="e.g. CV-ABCDEF1234…"
-                  autoCapitalize="characters"
-                />
-              </div>
-
-              <button className="btn-primary" type="submit" disabled={trackBusy}>
-                {trackBusy ? "Looking up…" : <><ArrowRight size={15} strokeWidth={2} />Check status</>}
-              </button>
-
-              {trackStatus && (
-                <>
-                  <StatusStepper status={trackStatus} />
-                  {timeline.length > 0 && (
-                    <ol className="timeline" aria-label="Status history">
-                      {timeline.map((entry) => (
-                        <li key={entry.created_at}>
-                          <div>
-                            <strong>{readableStatus(entry.new_status)}</strong>
-                            <span>{new Date(entry.created_at).toLocaleString()}</span>
-                            {entry.note && <p>{entry.note}</p>}
-                          </div>
-                        </li>
-                      ))}
-                    </ol>
-                  )}
-                </>
-              )}
-            </form>
-          )}
+            ) : (
+              <form className="sf-track-panel" onSubmit={findSubmission}>
+                <h2 className="sf-panel-title">Check on your feedback</h2>
+                <p className="sf-panel-desc">
+                  Enter the private tracking code shown after an anonymous submission.
+                </p>
+                <div className="sf-track-field">
+                  <div className="sf-track-input-wrap">
+                    <Search size={15} strokeWidth={2} className="sf-track-icon" />
+                    <input
+                      id="tracking-input"
+                      value={tracking}
+                      onChange={(e) => setTracking(e.target.value.toUpperCase())}
+                      placeholder="e.g. CV-ABCDEF1234…"
+                      autoCapitalize="characters"
+                      className="sf-track-input"
+                      aria-label="Tracking code"
+                    />
+                  </div>
+                </div>
+                <button className="sf-btn-track" type="submit" disabled={trackBusy}>
+                  {trackBusy ? "Looking up…" : <><ArrowRight size={15} strokeWidth={2} /> Check status</>}
+                </button>
+                {trackStatus && (
+                  <div className="sf-track-result">
+                    <StatusStepper status={trackStatus} />
+                    {timeline.length > 0 && (
+                      <ol className="timeline" aria-label="Status history">
+                        {timeline.map((entry) => (
+                          <li key={entry.created_at}>
+                            <div>
+                              <strong>{readableStatus(entry.new_status)}</strong>
+                              <span>{new Date(entry.created_at).toLocaleString()}</span>
+                              {entry.note && <p>{entry.note}</p>}
+                            </div>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                )}
+              </form>
+            )}
+          </div>
         </section>
 
+        {/* ── Subtle Divider ── */}
+        <div className="sf-divider" />
+
         {/* ── Feed ── */}
-        <section className="feed" id="feed">
-          <div className="feed-header">
+        <section className="sf-feed" id="feed">
+          <div className="sf-feed-header">
             <div>
-              <p className="eyebrow">OPEN IDEAS</p>
-              <h2>What the community is talking about</h2>
+              <p className="sf-section-eyebrow">OPEN IDEAS</p>
+              <h2 className="sf-section-title">What the community is talking about</h2>
             </div>
-            <button className="btn-premium-secondary" onClick={openSubmitPanel}>
+            <button className="sf-btn-share-secondary" onClick={openSubmitPanel}>
               Share your own idea <ArrowRight size={14} strokeWidth={2} />
             </button>
           </div>
 
-          <div className="feed-controls">
-            <div style={{ display: "flex", gap: 8, flex: 1, minWidth: 200 }}>
+          <div className="sf-feed-controls">
+            <div className="sf-search-wrap">
+              <Search size={15} strokeWidth={2} className="sf-search-icon" />
               <input
-                className="feed-search"
+                className="sf-search-input"
                 type="text"
                 placeholder="Search ideas…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 aria-label="Search ideas"
-                style={{ flex: 1, paddingLeft: "42px" }}
               />
-              <select
-                className="sort-select"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as "popular" | "newest" | "oldest")}
-                aria-label="Sort ideas"
-                style={{
-                  padding: "0 12px",
-                  borderRadius: "var(--r-md)",
-                  border: "1px solid var(--line-2)",
-                  background: "var(--bg)",
-                  fontSize: 14,
-                  color: "var(--ink)",
-                  cursor: "pointer",
-                  outline: "none",
-                }}
-              >
-                <option value="popular">Most Supported</option>
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-              </select>
             </div>
+
+            <div className="sf-sort-wrap" onClick={(e) => e.stopPropagation()}>
+              <button className="sf-sort-btn" onClick={() => setSortOpen(v => !v)} aria-expanded={sortOpen}>
+                <SlidersHorizontal size={14} strokeWidth={2} />
+                {currentSort.label}
+                <ChevronDown size={13} strokeWidth={2} style={{ marginLeft: "auto", transition: "transform 0.2s", transform: sortOpen ? "rotate(180deg)" : "none" }} />
+              </button>
+              {sortOpen && (
+                <div className="sf-sort-menu">
+                  {SORT_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      className={`sf-sort-opt${sortBy === opt.value ? " active" : ""}`}
+                      onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
+                    >
+                      {opt.label}
+                      {sortBy === opt.value && <CheckCircle size={13} strokeWidth={2.5} />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="filter-chips" role="group" aria-label="Filter by category">
               {ALL_CATS.map((cat) => (
-                <button
-                  key={cat}
-                  className={`filter-chip${filterCat === cat ? " active" : ""}`}
-                  onClick={() => setFilterCat(cat)}
-                >
+                <button key={cat} className={`filter-chip${filterCat === cat ? " active" : ""}`} onClick={() => setFilterCat(cat)}>
                   {cat}
                 </button>
               ))}
@@ -245,14 +218,13 @@ export function SuggFeed({ turnstileSiteKey: _siteKey }: { turnstileSiteKey?: st
             {feedLoading ? (
               Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
             ) : feed.length === 0 ? (
-              <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "48px 0", color: "var(--muted)" }}>
-                <MessageSquare size={40} strokeWidth={1.25} style={{ margin: "0 auto 12px", opacity: 0.4 }} />
-                <p>
-                  No ideas match your search.{" "}
-                  <button className="filter-chip active" onClick={() => { setSearch(""); setFilterCat("All"); }}>
-                    Clear filters
-                  </button>
-                </p>
+              <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "64px 0" }}>
+                <div className="sf-empty-state">
+                  <div className="sf-empty-icon"><MessageSquare size={32} strokeWidth={1.25} /></div>
+                  <h3 style={{ fontSize: 18, marginBottom: 8, color: "var(--ink)" }}>No ideas found</h3>
+                  <p style={{ fontSize: 14, marginBottom: 20 }}>Try adjusting your search or filters.</p>
+                  <button className="filter-chip active" onClick={() => { setSearch(""); setFilterCat("All"); }}>Clear filters</button>
+                </div>
               </div>
             ) : (
               feed.map((item) => (
@@ -269,22 +241,22 @@ export function SuggFeed({ turnstileSiteKey: _siteKey }: { turnstileSiteKey?: st
           </div>
 
           {hasMore && feed.length > 0 && (
-            <div style={{ textAlign: "center", marginTop: 32 }}>
-              <button
-                className="btn-ghost"
-                onClick={loadMore}
-                disabled={loadingMore}
-                style={{ padding: "8px 24px" }}
-              >
-                {loadingMore ? "Loading…" : "Load more ideas"}
+            <div className="sf-load-more">
+              <button className="sf-load-more-btn" onClick={loadMore} disabled={loadingMore}>
+                {loadingMore ? "Loading…" : <>Load more ideas <ArrowRight size={14} /></>}
               </button>
             </div>
           )}
         </section>
 
-        <footer className="site-footer">
-          SuggFeed <span>•</span> A respectful space for constructive feedback
-          <span>•</span> <a href="/admin" className="admin-link">Staff Portal</a>
+        <footer className="sf-footer">
+          <div className="sf-footer-inner">
+            <span className="sf-footer-brand">SuggFeed</span>
+            <span className="sf-footer-dot">•</span>
+            <span>A respectful space for constructive feedback</span>
+            <span className="sf-footer-dot">•</span>
+            <a href="/admin" className="sf-footer-link">Staff Portal</a>
+          </div>
         </footer>
       </main>
 
