@@ -92,13 +92,36 @@ export function lookupTrackingCode(trackingCode: string) {
   );
 }
 
+/**
+ * Sanitize a user-supplied search string before interpolating it into a
+ * PostgREST `.or()` filter string.  Characters that have special meaning in
+ * PostgREST filter syntax (parentheses delimit nested filters, commas separate
+ * filter items, dots separate column/operator/value) must be escaped so they
+ * are treated as literal text by the ilike operator.
+ *
+ * The ilike wildcards % and _ are also escaped so a user cannot craft
+ * arbitrary prefix/suffix patterns beyond the ones we intentionally add.
+ */
+function sanitizeSearchTerm(term: string): string {
+  return term
+    .trim()
+    // Escape ilike pattern metacharacters first
+    .replace(/%/g, "\\%")
+    .replace(/_/g, "\\_")
+    // Escape PostgREST filter-string metacharacters
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)")
+    .replace(/,/g, "\\,")
+    .replace(/\./g, "\\.");
+}
+
 export async function loadPublishedSubmissions(
   sortBy: "popular" | "newest" | "oldest" = "popular",
   offset = 0,
   limit = 18,
   /** Server-side category filter — skips client-side string matching */
   category?: string,
-  /** Server-side full-text search — works across entire dataset, not just loaded page (#7) */
+  /** Server-side full-text search — works across entire dataset, not just loaded page */
   search?: string,
 ) {
   const fetcher = async () => {
@@ -112,9 +135,11 @@ export async function loadPublishedSubmissions(
       query = query.eq("categories.name", category);
     }
 
-    // Server-side search via ilike (case-insensitive) — OR across title and description
+    // Server-side search via ilike (case-insensitive) — OR across title and description.
+    // The term is sanitized before interpolation to prevent PostgREST filter injection.
     if (search && search.trim()) {
-      query = query.or(`title.ilike.%${search.trim()}%,description.ilike.%${search.trim()}%`);
+      const safe = sanitizeSearchTerm(search);
+      query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
     }
 
     if (sortBy === "popular") {
