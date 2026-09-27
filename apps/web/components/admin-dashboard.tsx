@@ -7,7 +7,7 @@ import { CheckCircle2, GitPullRequestArrow, CircleCheck, XCircle, LogOut, Paperc
 import { IdeaDetailPanel } from "./idea-detail-panel";
 import { AnimatedCounter } from "./animated-counter";
 import { ThemeToggle } from "./theme-toggle";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { AnalyticsDashboard } from "./analytics-dashboard";
 import type { PublishedSubmission } from "../lib/feedback-api";
 import Link from "next/link";
 
@@ -387,82 +387,11 @@ export function AdminDashboard({ defaultViewMode = "queue" }: { defaultViewMode?
       </div>
 
       {defaultViewMode === 'analytics' ? (
-        <div style={{ marginTop: 24 }}>
-          {/* Top KPIs */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
-            <div style={{ background: 'var(--surface)', padding: 24, borderRadius: 'var(--r-xl)', border: '1px solid var(--line)', display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Total Ideas</span>
-              <span style={{ fontSize: 36, fontWeight: 800, color: 'var(--ink)', marginTop: 8 }}>{submissions.length}</span>
-            </div>
-            <div style={{ background: 'var(--surface)', padding: 24, borderRadius: 'var(--r-xl)', border: '1px solid var(--line)', display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Total Votes</span>
-              <span style={{ fontSize: 36, fontWeight: 800, color: 'var(--ink)', marginTop: 8 }}>
-                {submissions.reduce((acc, s) => acc + s.vote_count, 0)}
-              </span>
-            </div>
-            <div style={{ background: 'var(--surface)', padding: 24, borderRadius: 'var(--r-xl)', border: '1px solid var(--line)', display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Avg Votes per Idea</span>
-              <span style={{ fontSize: 36, fontWeight: 800, color: 'var(--ink)', marginTop: 8 }}>
-                {submissions.length > 0 ? (submissions.reduce((acc, s) => acc + s.vote_count, 0) / submissions.length).toFixed(1) : "0.0"}
-              </span>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 24 }}>
-            {/* Category Chart */}
-            <div style={{ background: 'var(--surface)', padding: 24, borderRadius: 'var(--r-xl)', border: '1px solid var(--line)' }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', marginBottom: 24 }}>Ideas by Category</h3>
-              <div style={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={
-                    Object.entries(submissions.reduce((acc, s) => {
-                      const cat = s.categories?.name || 'Other';
-                      acc[cat] = (acc[cat] || 0) + 1;
-                      return acc;
-                    }, {} as Record<string, number>))
-                    .map(([name, count]) => ({ name, count }))
-                    .sort((a, b) => b.count - a.count)
-                  }>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--muted)' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--muted)' }} />
-                    <Tooltip cursor={{ fill: 'var(--bg-2)' }} contentStyle={{ borderRadius: 8, border: '1px solid var(--line)', boxShadow: 'var(--shadow-sm)' }} />
-                    <Bar dataKey="count" fill="var(--navy)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Status Chart */}
-            <div style={{ background: 'var(--surface)', padding: 24, borderRadius: 'var(--r-xl)', border: '1px solid var(--line)' }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', marginBottom: 24 }}>Moderation Funnel</h3>
-              <div style={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={ALL_STATUSES.map(s => ({ name: STATUS_LABELS[s], value: counts[s] })).filter(d => d.value > 0)}
-                      cx="50%" cy="50%"
-                      innerRadius={60} outerRadius={100}
-                      paddingAngle={2}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
-                      labelLine={false}
-                    >
-                      {ALL_STATUSES.map(s => ({ name: STATUS_LABELS[s], value: counts[s] })).filter(d => d.value > 0).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={
-                          entry.name === 'Approved' ? 'var(--success)' :
-                          entry.name === 'Rejected' ? 'var(--error)' :
-                          entry.name === 'Resolved' ? 'var(--mint)' :
-                          entry.name === 'In progress' ? 'var(--sky)' : 'var(--warn)'
-                        } />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--line)', boxShadow: 'var(--shadow-sm)' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AnalyticsDashboard
+          submissions={submissions}
+          isLoading={busy}
+          onRefresh={loadSubmissions}
+        />
       ) : (
         <>
           {/* Stats bar */}
