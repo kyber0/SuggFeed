@@ -57,7 +57,6 @@ jobs:
 
       - name: Deploy to Vercel (production)
         run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/web
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -75,6 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs: supabase-migrate
+    if: ${{ secrets.EXPO_TOKEN != '' }}
 
     steps:
       - uses: actions/checkout@v4
