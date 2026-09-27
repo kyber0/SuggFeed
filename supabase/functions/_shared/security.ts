@@ -1,8 +1,37 @@
 import type { SupabaseClient, User } from "https://esm.sh/@supabase/supabase-js@2";
 
-export const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS", "Vary": "Origin" };
+export function getCorsHeaders(request?: Request) {
+  const allowed = Deno.env.get("ALLOWED_ORIGIN");
+  const reqOrigin = request?.headers.get("origin") ?? "";
 
-export function json(body: unknown, status = 200) { return Response.json(body, { status, headers: corsHeaders }); }
+  let origin = "*";
+  if (allowed) {
+    const list = allowed.split(",").map((o) => o.trim());
+    if (reqOrigin && list.includes(reqOrigin)) {
+      origin = reqOrigin;
+    } else if (list.length === 1 && list[0] !== "*") {
+      origin = list[0];
+    }
+  }
+
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+export const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Vary": "Origin",
+};
+
+export function json(body: unknown, status = 200, request?: Request) {
+  return Response.json(body, { status, headers: request ? getCorsHeaders(request) : corsHeaders });
+}
 
 export async function sha256(value: string) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
