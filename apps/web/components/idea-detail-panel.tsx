@@ -14,16 +14,7 @@ import {
   loadComments,
 } from "../lib/feedback-api";
 import { TurnstileWidget } from "./turnstile-widget";
-
-
-function relativeDate(value: string) {
-  const days = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000));
-  return days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days}d ago`;
-}
-
-function readableStatus(value: string) {
-  return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { relativeDateShort as relativeDate, readableStatus } from "../lib/format";
 
 const STATUS_COLOR: Record<string, string> = {
   approved:    "#11845b",

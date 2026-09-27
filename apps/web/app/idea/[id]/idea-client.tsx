@@ -18,15 +18,7 @@ import { TurnstileWidget } from "../../../components/turnstile-widget";
 import { getAnonToken } from "../../../lib/anon-token";
 import Link from "next/link";
 import { useToast } from "../../../components/toast";
-
-function relativeDate(value: string) {
-  const days = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000));
-  return days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days}d ago`;
-}
-
-function readableStatus(value: string) {
-  return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { relativeDateShort as relativeDate, readableStatus } from "../../../lib/format";
 
 const STATUS_COLOR: Record<string, string> = {
   approved:    "#11845b",
@@ -61,7 +53,7 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
   useEffect(() => {
     setAnonToken(getAnonToken());
     try {
-      const raw = localStorage.getItem("cv_voted");
+      const raw = localStorage.getItem("sf_voted") ?? localStorage.getItem("cv_voted");
       if (raw) setVotedIds(new Set(JSON.parse(raw) as string[]));
     } catch { /* ignore */ }
   }, []);
@@ -122,7 +114,7 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
     const nextVotedIds = new Set(votedIds);
     if (isUnvote) { nextVotedIds.delete(idea.id); } else { nextVotedIds.add(idea.id); }
     setVotedIds(nextVotedIds);
-    localStorage.setItem("cv_voted", JSON.stringify([...nextVotedIds]));
+    localStorage.setItem("sf_voted", JSON.stringify([...nextVotedIds]));
     
     setIdea(prev => ({
       ...prev,
@@ -139,7 +131,7 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
         ...prev,
         vote_count: Math.max(0, prev.vote_count + (isUnvote ? 1 : -1))
       }));
-      localStorage.setItem("cv_voted", JSON.stringify([...votedIds]));
+      localStorage.setItem("sf_voted", JSON.stringify([...votedIds]));
       toast(error instanceof Error ? error.message : "Couldn't record your vote.", "error");
     } finally { setVotingId(null); }
   }

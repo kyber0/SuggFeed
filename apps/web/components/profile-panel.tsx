@@ -21,8 +21,14 @@ export function ProfilePanel({ onClose }: Props) {
 
   // Load persisted prefs from localStorage after mount
   useEffect(() => {
-    setDisplayName(localStorage.getItem("cv_display_name") ?? "");
-    setIsAnonymous(localStorage.getItem("cv_anon_pref") === "true");
+    setDisplayName(
+      localStorage.getItem("sf_display_name") ??
+      localStorage.getItem("cv_display_name") ??
+      ""
+    );
+    setIsAnonymous(
+      (localStorage.getItem("sf_anon_pref") ?? localStorage.getItem("cv_anon_pref")) === "true"
+    );
   }, []);
 
   // Seed display name from auth profile when signed in
@@ -31,6 +37,7 @@ export function ProfilePanel({ onClose }: Props) {
       const name =
         user.user_metadata?.full_name ??
         user.user_metadata?.display_name ??
+        localStorage.getItem("sf_display_name") ??
         localStorage.getItem("cv_display_name") ??
         "";
       setDisplayName(name);
@@ -62,8 +69,8 @@ export function ProfilePanel({ onClose }: Props) {
   async function handleSave() {
     setSaving(true);
     // Always persist to localStorage (quick + works for anon)
-    localStorage.setItem("cv_display_name", displayName.trim());
-    localStorage.setItem("cv_anon_pref", String(isAnonymous));
+    localStorage.setItem("sf_display_name", displayName.trim());
+    localStorage.setItem("sf_anon_pref", String(isAnonymous));
 
     // If signed in, also update the profiles table
     if (user) {

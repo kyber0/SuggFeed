@@ -6,6 +6,28 @@ export type AttachmentFile = { id: string; mime_type: string; size_bytes: number
 export type PublishedSubmission = { id: string; title: string; description: string; status: "approved" | "in_progress" | "resolved"; vote_count: number; created_at: string; categories: { name: string } | null; attachments: { id: string }[] };
 export type Comment = { id: string; submission_id: string; body: string; display_name: string | null; created_at: string };
 
+export const DEFAULT_CATEGORIES = [
+  "Facilities",
+  "Learning",
+  "Safety",
+  "Student life",
+  "Other",
+] as const;
+
+export async function loadCategories(): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("is_active", true)
+      .order("name");
+    if (error || !data || data.length === 0) return [...DEFAULT_CATEGORIES];
+    return data.map((c: { name: string }) => c.name);
+  } catch {
+    return [...DEFAULT_CATEGORIES];
+  }
+}
+
 function functionUrl(name: string) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!url) throw new Error("Supabase is not configured in apps/web/.env.local");
@@ -38,11 +60,29 @@ export function lookupTrackingCode(trackingCode: string) {
   );
 }
 
-export async function loadPublishedSubmissions(sortBy: "popular" | "newest" | "oldest" = "popular", offset = 0, limit = 18) {
+export async function loadPublishedSubmissions(
+  sortBy: "popular" | "newest" | "oldest" = "popular",
+  offset = 0,
+  limit = 18,
+  /** Server-side category filter — skips client-side string matching */
+  category?: string,
+  /** Server-side full-text search — works across entire dataset, not just loaded page (#7) */
+  search?: string,
+) {
   let query = supabase
     .from("submissions")
     .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)", { count: "exact" })
     .in("status", ["approved", "in_progress", "resolved"]);
+
+  // Server-side category filter
+  if (category && category !== "All") {
+    query = query.eq("categories.name", category);
+  }
+
+  // Server-side search via ilike (case-insensitive) — OR across title and description
+  if (search && search.trim()) {
+    query = query.or(`title.ilike.%${search.trim()}%,description.ilike.%${search.trim()}%`);
+  }
 
   if (sortBy === "popular") {
     query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false });

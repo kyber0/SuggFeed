@@ -4,8 +4,9 @@
  */
 export function getAnonToken(): string {
   if (typeof window === "undefined") return "";
-  const key = "cv_anon_token";
-  let token = localStorage.getItem(key);
+  const newKey = "sf_anon_token";
+  const legacyKey = "cv_anon_token";
+  let token = localStorage.getItem(newKey) ?? localStorage.getItem(legacyKey);
   if (!token) {
     token = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
       ? crypto.randomUUID()
@@ -13,7 +14,9 @@ export function getAnonToken(): string {
           const r = (Math.random() * 16) | 0;
           return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
         });
-    localStorage.setItem(key, token);
+    localStorage.setItem(newKey, token);
+  } else if (!localStorage.getItem(newKey)) {
+    localStorage.setItem(newKey, token);
   }
   return token;
 }

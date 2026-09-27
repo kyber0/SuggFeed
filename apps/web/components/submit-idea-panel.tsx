@@ -37,7 +37,9 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
   // Load draft from local storage on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("cv_draft_submission");
+      const saved =
+        localStorage.getItem("sf_draft_submission") ??
+        localStorage.getItem("cv_draft_submission");
       if (saved) setSubmission(JSON.parse(saved));
     } catch { /* ignore */ }
     setDraftLoaded(true);
@@ -57,9 +59,10 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
   useEffect(() => {
     if (!draftLoaded) return;
     if (submission === emptySubmission) {
+      localStorage.removeItem("sf_draft_submission");
       localStorage.removeItem("cv_draft_submission");
     } else {
-      localStorage.setItem("cv_draft_submission", JSON.stringify(submission));
+      localStorage.setItem("sf_draft_submission", JSON.stringify(submission));
     }
   }, [submission, draftLoaded]);
 
@@ -100,8 +103,12 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
       if (result.trackingCode) {
         toast(`Submitted! 🎉 Save your tracking code: ${result.trackingCode}`, "success");
         try {
-          const stored = JSON.parse(localStorage.getItem("cv_my_tracking_codes") || "[]");
-          localStorage.setItem("cv_my_tracking_codes", JSON.stringify([...stored, result.trackingCode]));
+          const stored = JSON.parse(
+            localStorage.getItem("sf_my_tracking_codes") ||
+            localStorage.getItem("cv_my_tracking_codes") ||
+            "[]"
+          );
+          localStorage.setItem("sf_my_tracking_codes", JSON.stringify([...stored, result.trackingCode]));
         } catch { /* ignore */ }
       } else {
         toast("Submitted for review. Thank you for speaking up! 🙌", "success");

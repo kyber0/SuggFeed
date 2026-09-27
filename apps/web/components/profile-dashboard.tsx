@@ -7,10 +7,7 @@ import { Header } from "./header";
 import { useAuth } from "./auth-context";
 import Link from "next/link";
 import { ThumbsUp, Paperclip, MessageSquare, List, CheckCircle } from "lucide-react";
-
-function readableStatus(value: string) {
-  return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { readableStatus } from "../lib/format";
 
 export function ProfileDashboard() {
   const { user } = useAuth();
@@ -21,7 +18,11 @@ export function ProfileDashboard() {
   useEffect(() => {
     let trackingCodes: string[] = [];
     try {
-      trackingCodes = JSON.parse(localStorage.getItem("cv_my_tracking_codes") || "[]");
+      trackingCodes = JSON.parse(
+        localStorage.getItem("sf_my_tracking_codes") ||
+        localStorage.getItem("cv_my_tracking_codes") ||
+        "[]"
+      );
     } catch { /* ignore */ }
 
     loadMyActivity(getAnonToken(), trackingCodes)
