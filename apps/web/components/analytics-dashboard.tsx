@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Cell,
+  LabelList,
 } from "recharts";
 import {
   TrendingUp,
@@ -198,6 +199,64 @@ function CategoryTooltip({ active, payload }: CategoryTooltipProps) {
         <span style={{ fontWeight: 700, color: "var(--ink)" }}>
           {item.votes.toLocaleString()}
         </span>
+      </div>
+    </div>
+  );
+}
+
+// Custom Tooltip for Moderation Funnel Bar Chart
+interface FunnelTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number; payload: { label: string; count: number; percentage: number; color: string } }>;
+}
+
+function FunnelTooltip({ active, payload }: FunnelTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null;
+  const item = payload[0].payload;
+  return (
+    <div
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--line)",
+        borderRadius: "var(--r-md)",
+        padding: "10px 14px",
+        fontSize: "12px",
+        boxShadow: "var(--shadow-md)",
+        fontVariantNumeric: "tabular-nums",
+        minWidth: "150px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontWeight: 700,
+          color: "var(--ink)",
+          marginBottom: 8,
+          paddingBottom: 6,
+          borderBottom: "1px solid var(--line)",
+        }}
+      >
+        <span
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: 3,
+            background: item.color,
+            display: "inline-block",
+            flexShrink: 0,
+          }}
+        />
+        {item.label}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 4 }}>
+        <span style={{ color: "var(--muted)" }}>Count:</span>
+        <span style={{ fontWeight: 700, color: "var(--ink)" }}>{item.count.toLocaleString()}</span>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
+        <span style={{ color: "var(--muted)" }}>Share:</span>
+        <span style={{ fontWeight: 700, color: item.color }}>{item.percentage}%</span>
       </div>
     </div>
   );
@@ -1146,70 +1205,111 @@ export function AnalyticsDashboard({
           boxShadow: "var(--shadow-sm)",
         }}
       >
-        <div style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--ink)", margin: 0 }}>
-            Moderation Funnel & Lifecycle Stages
-          </h3>
-          <p style={{ fontSize: "12px", color: "var(--muted)", margin: "3px 0 0 0" }}>
-            Operational throughput from student intake to resolution
-          </p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            marginBottom: 20,
+            flexWrap: "wrap",
+            gap: 12,
+          }}
+        >
+          <div>
+            <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--ink)", margin: 0 }}>
+              Moderation Funnel &amp; Lifecycle Stages
+            </h3>
+            <p style={{ fontSize: "12px", color: "var(--muted)", margin: "3px 0 0 0" }}>
+              Operational throughput from student intake to resolution
+            </p>
+          </div>
+          {/* Legend */}
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14 }}>
+            {funnelData.map((stage) => (
+              <div key={stage.status} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "11px", color: "var(--muted)" }}>
+                <span
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 3,
+                    background: stage.color,
+                    display: "inline-block",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ fontWeight: 500 }}>{stage.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
+        <div style={{ height: 260, width: "100%" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={funnelData}
+              margin={{ top: 20, right: 40, left: 0, bottom: 4 }}
+              barCategoryGap="28%"
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--line)" opacity={0.6} />
+              <XAxis
+                dataKey="label"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "var(--ink)", fontWeight: 500 }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "var(--muted)" }}
+                allowDecimals={false}
+              />
+              <Tooltip content={<FunnelTooltip />} cursor={{ fill: "var(--line)", opacity: 0.5 }} />
+              <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={72}>
+                {funnelData.map((entry, index) => (
+                  <Cell key={`funnel-${index}`} fill={entry.color} fillOpacity={0.85} />
+                ))}
+                <LabelList
+                  dataKey="percentage"
+                  position="top"
+                  formatter={(v) => `${v ?? ""}%`}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fill: "var(--muted)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Summary strip below chart */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-            gap: 12,
+            gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+            gap: 10,
             marginTop: 16,
+            paddingTop: 16,
+            borderTop: "1px solid var(--line)",
           }}
         >
           {funnelData.map((stage) => (
-            <div
-              key={stage.status}
-              style={{
-                padding: "14px 16px",
-                background: "var(--bg)",
-                border: "1px solid var(--line)",
-                borderRadius: "var(--r-lg)",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
+            <div key={`strip-${stage.status}`} style={{ textAlign: "center" }}>
               <div
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 3,
-                  background: stage.color,
-                }}
-              />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--muted)" }}>
-                  {stage.label}
-                </span>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    color: stage.color,
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {stage.percentage}%
-                </span>
-              </div>
-              <div
-                style={{
-                  fontSize: "24px",
+                  fontSize: "20px",
                   fontWeight: 800,
-                  color: "var(--ink)",
-                  marginTop: 8,
+                  color: stage.color,
                   fontVariantNumeric: "tabular-nums",
+                  lineHeight: 1,
                 }}
               >
-                {stage.count}
+                {stage.count.toLocaleString()}
+              </div>
+              <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: 4, fontWeight: 500 }}>
+                {stage.label}
               </div>
             </div>
           ))}
