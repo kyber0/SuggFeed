@@ -78,7 +78,8 @@ export default function SubmitScreen() {
       const result = await submitFeedback({
         title: title.trim(), description: description.trim(),
         category, isAnonymous, consent: true,
-        attachments: [], turnstileToken: "MOBILE_APP_SUBMISSION",
+        attachments: [],
+        turnstileToken: process.env.EXPO_PUBLIC_MOBILE_APP_SECRET || "MOBILE_APP_SUBMISSION",
       });
       const trackingMsg = result.trackingCode
         ? `\n\nYour tracking code:\n${result.trackingCode}\n\nSave it to check progress later.`

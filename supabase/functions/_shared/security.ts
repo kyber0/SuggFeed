@@ -43,6 +43,10 @@ export function requestIp(request: Request) {
 }
 
 export async function requireTurnstile(token: unknown, request: Request) {
+  const mobileSecret = Deno.env.get("MOBILE_APP_SECRET");
+  if (mobileSecret && (token === mobileSecret || request.headers.get("x-mobile-secret") === mobileSecret)) {
+    return;
+  }
   const secret = Deno.env.get("TURNSTILE_SECRET_KEY");
   if (!secret) throw new Error("Turnstile is not configured");
   if (typeof token !== "string" || token.length < 20) throw new Error("Complete the spam check before submitting");

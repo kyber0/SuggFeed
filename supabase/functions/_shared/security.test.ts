@@ -2,7 +2,7 @@
 // Run with: deno test --allow-env supabase/functions/_shared/security.test.ts
 
 import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { decodeAttachment, requestIp, sha256 } from "./security.ts";
+import { decodeAttachment, requestIp, requireTurnstile, sha256 } from "./security.ts";
 
 Deno.test("sha256 produces a deterministic hex string", async () => {
   const result = await sha256("CV-TESTCODE");
@@ -85,3 +85,30 @@ Deno.test("decodeAttachment rejects missing fields", () => {
   }
   assertEquals(threw, true);
 });
+
+Deno.test("requireTurnstile allows mobile app when MOBILE_APP_SECRET matches", async () => {
+  Deno.env.set("MOBILE_APP_SECRET", "super-secret-mobile-token-12345");
+  try {
+    const req = new Request("https://example.com", {
+      headers: { "x-mobile-secret": "super-secret-mobile-token-12345" },
+    });
+    // Should resolve without error
+    await requireTurnstile("test-token", req);
+  } finally {
+    Deno.env.delete("MOBILE_APP_SECRET");
+  }
+});
+
+Deno.test("requireTurnstile rejects when Turnstile is not configured and no mobile secret", async () => {
+  Deno.env.delete("MOBILE_APP_SECRET");
+  Deno.env.delete("TURNSTILE_SECRET_KEY");
+  const req = new Request("https://example.com");
+  await assertRejects(
+    async () => {
+      await requireTurnstile("test-token-without-config", req);
+    },
+    Error,
+    "Turnstile is not configured"
+  );
+});
+

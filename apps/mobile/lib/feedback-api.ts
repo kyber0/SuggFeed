@@ -36,6 +36,9 @@ async function invoke<T>(name: string, payload: unknown): Promise<T> {
       "Content-Type": "application/json",
       apikey: supabaseAnonKey,
       ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+      ...(process.env.EXPO_PUBLIC_MOBILE_APP_SECRET
+        ? { "x-mobile-secret": process.env.EXPO_PUBLIC_MOBILE_APP_SECRET }
+        : {}),
     },
     body: JSON.stringify(payload),
   });
