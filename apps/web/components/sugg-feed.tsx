@@ -255,6 +255,10 @@ export function SuggFeed({ turnstileSiteKey: _siteKey }: { turnstileSiteKey?: st
             <span className="sf-footer-dot">•</span>
             <span>A respectful space for constructive feedback</span>
             <span className="sf-footer-dot">•</span>
+            <a href="/privacy" className="sf-footer-link">Privacy</a>
+            <span className="sf-footer-dot">•</span>
+            <a href="/terms" className="sf-footer-link">Terms</a>
+            <span className="sf-footer-dot">•</span>
             <a href="/admin" className="sf-footer-link">Staff Portal</a>
           </div>
         </footer>

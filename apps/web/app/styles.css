@@ -7175,3 +7175,126 @@ input.feed-search {
   text-decoration: underline;
 }
 
+
+/* ============================================================
+   Legal Pages  (/privacy, /terms)
+   ============================================================ */
+
+.sf-legal-page {
+  min-height: 100vh;
+  background: var(--surface, #fafafa);
+  padding: 0 0 80px;
+}
+
+.sf-legal-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.sf-legal-breadcrumb {
+  margin-bottom: 32px;
+}
+
+.sf-legal-breadcrumb a {
+  font-size: 0.875rem;
+  color: var(--muted, #6b7280);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.sf-legal-breadcrumb a:hover {
+  color: var(--ink, #111);
+}
+
+.sf-legal-header {
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.sf-legal-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink, #111);
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.sf-legal-meta {
+  font-size: 0.875rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+.sf-legal-content {
+  color: var(--ink, #111);
+}
+
+.sf-legal-content section {
+  margin-bottom: 36px;
+}
+
+.sf-legal-content h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--ink, #111);
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+}
+
+.sf-legal-content h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink, #111);
+  margin: 16px 0 8px;
+}
+
+.sf-legal-content p {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--muted, #374151);
+  margin: 0 0 12px;
+}
+
+.sf-legal-content ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+
+.sf-legal-content ul li {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--muted, #374151);
+  margin-bottom: 6px;
+}
+
+.sf-legal-content a {
+  color: var(--accent, #2563eb);
+  text-decoration: none;
+}
+
+.sf-legal-content a:hover {
+  text-decoration: underline;
+}
+
+.sf-legal-footer {
+  display: flex;
+  gap: 20px;
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+
+.sf-legal-footer a {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted, #6b7280);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.sf-legal-footer a:hover {
+  color: var(--ink, #111);
+}
