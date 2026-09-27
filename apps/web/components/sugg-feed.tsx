@@ -200,12 +200,12 @@ export function SuggFeed({ turnstileSiteKey: _siteKey }: { turnstileSiteKey?: st
             <div style={{ display: "flex", gap: 8, flex: 1, minWidth: 200 }}>
               <input
                 className="feed-search"
-                type="search"
+                type="text"
                 placeholder="Search ideas…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 aria-label="Search ideas"
-                style={{ flex: 1 }}
+                style={{ flex: 1, paddingLeft: "42px" }}
               />
               <select
                 className="sort-select"

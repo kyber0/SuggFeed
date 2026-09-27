@@ -1,10 +1,33 @@
 import { supabase } from "./supabase";
+import { fetchWithCache, invalidateCache } from "./cache-manager";
 
 export type AttachmentPayload = { name: string; type: string; base64: string };
 export type SubmitPayload = { title: string; description: string; category: string; isAnonymous: boolean; consent: true; turnstileToken: string; attachments: AttachmentPayload[] };
 export type AttachmentFile = { id: string; mime_type: string; size_bytes: number; url: string | null; name: string };
-export type PublishedSubmission = { id: string; title: string; description: string; status: "approved" | "in_progress" | "resolved"; vote_count: number; created_at: string; categories: { name: string } | null; attachments: { id: string }[] };
-export type Comment = { id: string; submission_id: string; body: string; display_name: string | null; created_at: string };
+export type PublishedSubmission = {
+  id: string;
+  title: string;
+  description: string;
+  status: "approved" | "in_progress" | "resolved";
+  vote_count: number;
+  created_at: string;
+  categories: { name: string } | null;
+  attachments: { id: string }[];
+  comments?: { count: number }[];
+  comment_count?: number;
+};
+export type Comment = {
+  id: string;
+  submission_id: string;
+  body: string;
+  display_name: string | null;
+  created_at: string;
+  parent_id?: string | null;
+  is_pinned?: boolean;
+  is_hidden?: boolean;
+  report_count?: number;
+  user_id?: string | null;
+};
 
 export const DEFAULT_CATEGORIES = [
   "Facilities",
@@ -15,17 +38,23 @@ export const DEFAULT_CATEGORIES = [
 ] as const;
 
 export async function loadCategories(): Promise<string[]> {
-  try {
-    const { data, error } = await supabase
-      .from("categories")
-      .select("name")
-      .eq("is_active", true)
-      .order("name");
-    if (error || !data || data.length === 0) return [...DEFAULT_CATEGORIES];
-    return data.map((c: { name: string }) => c.name);
-  } catch {
-    return [...DEFAULT_CATEGORIES];
-  }
+  return fetchWithCache(
+    "categories",
+    async () => {
+      try {
+        const { data, error } = await supabase
+          .from("categories")
+          .select("name")
+          .eq("is_active", true)
+          .order("name");
+        if (error || !data || data.length === 0) return [...DEFAULT_CATEGORIES];
+        return data.map((c: { name: string }) => c.name);
+      } catch {
+        return [...DEFAULT_CATEGORIES];
+      }
+    },
+    { ttlMs: 60 * 60 * 1000 }
+  );
 }
 
 function functionUrl(name: string) {
@@ -50,8 +79,11 @@ async function invoke<T>(name: string, payload: unknown): Promise<T> {
   return result as T;
 }
 
-export function submitFeedback(payload: SubmitPayload) {
-  return invoke<{ trackingCode: string | null }>("submit-feedback", payload);
+export async function submitFeedback(payload: SubmitPayload) {
+  const res = await invoke<{ trackingCode: string | null }>("submit-feedback", payload);
+  invalidateCache("feed_");
+  invalidateCache("roadmap_");
+  return res;
 }
 
 export function lookupTrackingCode(trackingCode: string) {
@@ -69,45 +101,68 @@ export async function loadPublishedSubmissions(
   /** Server-side full-text search — works across entire dataset, not just loaded page (#7) */
   search?: string,
 ) {
-  let query = supabase
-    .from("submissions")
-    .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)", { count: "exact" })
-    .in("status", ["approved", "in_progress", "resolved"]);
+  const fetcher = async () => {
+    let query = supabase
+      .from("submissions")
+      .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id),comments(count)", { count: "exact" })
+      .in("status", ["approved", "in_progress", "resolved"]);
 
-  // Server-side category filter
-  if (category && category !== "All") {
-    query = query.eq("categories.name", category);
+    // Server-side category filter
+    if (category && category !== "All") {
+      query = query.eq("categories.name", category);
+    }
+
+    // Server-side search via ilike (case-insensitive) — OR across title and description
+    if (search && search.trim()) {
+      query = query.or(`title.ilike.%${search.trim()}%,description.ilike.%${search.trim()}%`);
+    }
+
+    if (sortBy === "popular") {
+      query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false });
+    } else if (sortBy === "newest") {
+      query = query.order("created_at", { ascending: false });
+    } else if (sortBy === "oldest") {
+      query = query.order("created_at", { ascending: true });
+    }
+
+    const { data, error, count } = await query.range(offset, offset + limit - 1);
+
+    if (error) throw error;
+    const submissions = (data ?? []).map((item: any) => ({
+      ...item,
+      comment_count: item.comments?.[0]?.count ?? 0,
+    }));
+    return { submissions: submissions as PublishedSubmission[], count: count ?? 0 };
+  };
+
+  // Cache initial page for instant load
+  if (offset === 0) {
+    const cacheKey = `feed_${sortBy}_${category || "All"}_${search ? search.trim().toLowerCase() : ""}_${limit}`;
+    return fetchWithCache(cacheKey, fetcher, { ttlMs: 90 * 1000 });
   }
 
-  // Server-side search via ilike (case-insensitive) — OR across title and description
-  if (search && search.trim()) {
-    query = query.or(`title.ilike.%${search.trim()}%,description.ilike.%${search.trim()}%`);
-  }
-
-  if (sortBy === "popular") {
-    query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false });
-  } else if (sortBy === "newest") {
-    query = query.order("created_at", { ascending: false });
-  } else if (sortBy === "oldest") {
-    query = query.order("created_at", { ascending: true });
-  }
-
-  const { data, error, count } = await query.range(offset, offset + limit - 1);
-
-  if (error) throw error;
-  return { submissions: (data ?? []) as unknown as PublishedSubmission[], count: count ?? 0 };
+  return fetcher();
 }
 
 export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
-  const { data, error } = await supabase
-    .from("submissions")
-    .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)")
-    .in("status", ["approved", "in_progress", "resolved"])
-    .order("vote_count", { ascending: false })
-    .limit(100);
+  return fetchWithCache(
+    "roadmap_submissions",
+    async () => {
+      const { data, error } = await supabase
+        .from("submissions")
+        .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id),comments(count)")
+        .in("status", ["approved", "in_progress", "resolved"])
+        .order("vote_count", { ascending: false })
+        .limit(100);
 
-  if (error) throw error;
-  return data as unknown as PublishedSubmission[];
+      if (error) throw error;
+      return (data ?? []).map((item: any) => ({
+        ...item,
+        comment_count: item.comments?.[0]?.count ?? 0,
+      })) as PublishedSubmission[];
+    },
+    { ttlMs: 3 * 60 * 1000 }
+  );
 }
 
 export async function loadMyActivity(anonToken?: string, trackingCodes?: string[]) {
@@ -118,15 +173,25 @@ export async function loadMyActivity(anonToken?: string, trackingCodes?: string[
 }
 
 export async function loadSingleSubmission(id: string): Promise<PublishedSubmission | null> {
-  const { data, error } = await supabase
-    .from("submissions")
-    .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)")
-    .eq("id", id)
-    .in("status", ["approved", "in_progress", "resolved"])
-    .maybeSingle();
+  return fetchWithCache(
+    `submission_${id}`,
+    async () => {
+      const { data, error } = await supabase
+        .from("submissions")
+        .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id),comments(count)")
+        .eq("id", id)
+        .in("status", ["approved", "in_progress", "resolved"])
+        .maybeSingle();
 
-  if (error) throw error;
-  return data as unknown as PublishedSubmission | null;
+      if (error) throw error;
+      if (!data) return null;
+      return {
+        ...(data as any),
+        comment_count: (data as any).comments?.[0]?.count ?? 0,
+      } as PublishedSubmission;
+    },
+    { ttlMs: 5 * 60 * 1000 }
+  );
 }
 
 export async function loadAttachments(submissionId: string): Promise<AttachmentFile[]> {
@@ -135,33 +200,55 @@ export async function loadAttachments(submissionId: string): Promise<AttachmentF
 }
 
 export async function voteSubmission(submissionId: string, anonToken: string) {
-  return invoke<{ voteCount: number; voted: boolean }>("vote-submission", { submissionId, anonToken });
+  const result = await invoke<{ voteCount: number; voted: boolean }>("vote-submission", { submissionId, anonToken });
+  invalidateCache("feed_");
+  invalidateCache("roadmap_");
+  invalidateCache(`submission_${submissionId}`);
+  return result;
 }
 
 export async function loadComments(submissionId: string): Promise<Comment[]> {
-  const { data, error } = await supabase
-    .from("comments")
-    .select("id,submission_id,body,display_name,created_at")
-    .eq("submission_id", submissionId)
-    .order("created_at", { ascending: true });
-  if (error) throw error;
-  return (data ?? []) as Comment[];
+  return fetchWithCache(
+    `comments_${submissionId}`,
+    async () => {
+      const { data, error } = await supabase
+        .from("comments")
+        .select("id,submission_id,body,display_name,created_at,parent_id,is_pinned,is_hidden,report_count,user_id")
+        .eq("submission_id", submissionId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as Comment[];
+    },
+    { ttlMs: 60 * 1000 }
+  );
 }
 
-export function addComment(payload: {
+export async function addComment(payload: {
   submissionId: string;
   body: string;
   displayName?: string;
   anonToken?: string;
   turnstileToken: string;
+  parentId?: string;
 }) {
-  return invoke<{ comment: Comment }>("add-comment", {
+  const result = await invoke<{ comment: Comment }>("add-comment", {
     submissionId:   payload.submissionId,
     body:           payload.body,
     displayName:    payload.displayName || undefined,
     anonToken:      payload.anonToken,
     turnstileToken: payload.turnstileToken,
+    parentId:       payload.parentId || undefined,
   });
+  invalidateCache(`comments_${payload.submissionId}`);
+  invalidateCache(`submission_${payload.submissionId}`);
+  invalidateCache("feed_");
+  return result;
+}
+
+export async function reportComment(commentId: string) {
+  const { error } = await supabase.rpc("report_comment", { target_id: commentId });
+  if (error) throw error;
+  return { success: true };
 }
 
 export async function fileToPayload(file: File): Promise<AttachmentPayload> {

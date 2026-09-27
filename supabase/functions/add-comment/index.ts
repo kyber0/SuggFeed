@@ -16,6 +16,7 @@ const commentInput = z.object({
   displayName:   z.string().max(60).optional(),
   anonToken:     z.string().uuid().optional(),
   turnstileToken: z.string(),
+  parentId:      z.string().uuid().optional(),
 });
 
 Deno.serve(async (request) => {
@@ -65,8 +66,9 @@ Deno.serve(async (request) => {
         display_name:  input.displayName?.trim() || null,
         anon_token:    user ? null : (input.anonToken ?? crypto.randomUUID()),
         user_id:       user?.id ?? null,
+        parent_id:     input.parentId ?? null,
       })
-      .select("id, body, display_name, created_at")
+      .select("id, body, display_name, created_at, parent_id, is_pinned, is_hidden, report_count")
       .single();
 
     if (insertError) throw insertError;

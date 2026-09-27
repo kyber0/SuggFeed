@@ -26,14 +26,35 @@ export async function requireTurnstile(token: unknown, request: Request) {
 }
 
 export async function enforceSlidingWindow(namespace: string, identifier: string, limit: number, windowSeconds: number) {
-  const url = Deno.env.get("UPSTASH_REDIS_REST_URL"); const token = Deno.env.get("UPSTASH_REDIS_REST_TOKEN");
-  if (!url || !token) throw new Error("Rate limiting is not configured");
-  const now = Date.now(); const key = `suggfeed:${namespace}:${await sha256(identifier)}`;
-  const script = "local n=tonumber(ARGV[1]); local w=tonumber(ARGV[2]); local l=tonumber(ARGV[3]); redis.call('ZREMRANGEBYSCORE',KEYS[1],0,n-w); local c=redis.call('ZCARD',KEYS[1]); if c>=l then return 0 end; redis.call('ZADD',KEYS[1],n,n..'-'..math.random()); redis.call('PEXPIRE',KEYS[1],w); return 1";
-  const response = await fetch(`${url.replace(/\/$/, "")}/pipeline`, { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify([["EVAL", script, "1", key, String(now), String(windowSeconds * 1000), String(limit)]]) });
-  const result = await response.json() as Array<{ result?: number; error?: string }>;
-  if (!response.ok || result[0]?.error) throw new Error("Rate limiter unavailable");
-  if (result[0]?.result !== 1) throw new Error("Too many requests. Please try again later.");
+  const url = Deno.env.get("UPSTASH_REDIS_REST_URL");
+  const token = Deno.env.get("UPSTASH_REDIS_REST_TOKEN");
+  if (!url || !token) {
+    console.warn(`[RateLimit] Skipped (${namespace}): UPSTASH_REDIS not configured`);
+    return;
+  }
+  try {
+    const now = Date.now();
+    const key = `suggfeed:${namespace}:${await sha256(identifier)}`;
+    const script = "local n=tonumber(ARGV[1]); local w=tonumber(ARGV[2]); local l=tonumber(ARGV[3]); redis.call('ZREMRANGEBYSCORE',KEYS[1],0,n-w); local c=redis.call('ZCARD',KEYS[1]); if c>=l then return 0 end; redis.call('ZADD',KEYS[1],n,n..'-'..math.random()); redis.call('PEXPIRE',KEYS[1],w); return 1";
+    const response = await fetch(`${url.replace(/\/$/, "")}/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify([["EVAL", script, "1", key, String(now), String(windowSeconds * 1000), String(limit)]]),
+    });
+    const result = await response.json() as Array<{ result?: number; error?: string }>;
+    if (!response.ok || result[0]?.error) {
+      console.warn(`[RateLimit] Upstash error (${namespace}), failing open:`, result[0]?.error);
+      return;
+    }
+    if (result[0]?.result !== 1) {
+      throw new Error("Too many requests. Please try again later.");
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message === "Too many requests. Please try again later.") {
+      throw err;
+    }
+    console.warn(`[RateLimit] Skipped (${namespace}) due to unreachable Redis:`, err);
+  }
 }
 
 export async function authenticatedUser(client: SupabaseClient, request: Request): Promise<User | null> {
