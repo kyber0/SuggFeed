@@ -104,6 +104,8 @@ export function AdminDashboard({
   const [password, setPassword] = useState("");
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  // true while we're resolving the role for an existing session
+  const [roleLoading, setRoleLoading] = useState(true);
 
   // Active view tab: 'queue' | 'flagged' | 'audit' | 'analytics'
   const [activeTab, setActiveTab] = useState<"queue" | "flagged" | "audit" | "analytics">(
@@ -315,15 +317,24 @@ export function AdminDashboard({
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         setAccessToken(data.session.access_token);
-        loadSubmissions();
+        // Resolve role before rendering the portal
         supabase
           .from("profiles")
           .select("role")
           .eq("id", data.session.user.id)
           .single()
           .then((res) => {
-            if (res.data) setUserRole(res.data.role);
+            const role = res.data?.role ?? null;
+            setUserRole(role);
+            setRoleLoading(false);
+            // Only load data if the user is actually staff
+            if (role === "moderator" || role === "admin") {
+              loadSubmissions();
+            }
           });
+      } else {
+        // No session — nothing to resolve
+        setRoleLoading(false);
       }
     });
 
@@ -332,6 +343,11 @@ export function AdminDashboard({
         setRecoveryMode(true);
       } else if (session) {
         setAccessToken(session.access_token);
+      } else {
+        // Signed out
+        setAccessToken(null);
+        setUserRole(null);
+        setRoleLoading(false);
       }
     });
 
@@ -520,6 +536,10 @@ export function AdminDashboard({
 
   // Comment Moderation Actions
   async function moderateComment(commentId: string, action: "unhide" | "hide" | "delete") {
+    if (userRole !== "moderator" && userRole !== "admin") {
+      toast("Moderator access required.", "error");
+      return;
+    }
     try {
       if (action === "unhide") {
         await supabase
@@ -683,7 +703,7 @@ export function AdminDashboard({
   }, [loadMore]);
 
   // Neutral mounting shell to avoid hydration mismatches
-  if (!mounted) {
+  if (!mounted || roleLoading) {
     return (
       <main className="admin-shell admin-login">
         <div className="login-card">
@@ -692,6 +712,57 @@ export function AdminDashboard({
           </div>
         </div>
       </main>
+    );
+  }
+
+  // Access denied — user is authenticated but lacks staff role
+  if (accessToken && userRole && userRole !== "moderator" && userRole !== "admin") {
+    return (
+      <>
+        <header className="site-header">
+          <a className="brand" href="/">
+            Sugg<span>Feed</span>
+          </a>
+          <nav>
+            <a href="/">← Public Site</a>
+            <div style={{ width: 1, height: 24, background: "var(--line-2)", margin: "0 4px" }} />
+            <button
+              onClick={async () => { await supabase.auth.signOut(); setAccessToken(null); setUserRole(null); }}
+              className="btn-ghost"
+            >
+              <LogOut size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
+              Sign out
+            </button>
+            <ThemeToggle />
+          </nav>
+        </header>
+        <main className="admin-shell admin-login">
+          <div className="login-card" style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: 14,
+                background: "rgba(220, 38, 38, 0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+                color: "#dc2626",
+              }}
+            >
+              <Lock size={24} />
+            </div>
+            <h1 style={{ fontSize: 20, marginBottom: 8 }}>Access Denied</h1>
+            <p style={{ color: "var(--muted)", fontSize: 13.5, lineHeight: 1.6, maxWidth: 320, margin: "0 auto 24px" }}>
+              Your account does not have moderator or administrator privileges. Contact your system administrator to request access.
+            </p>
+            <a href="/" className="btn-primary" style={{ display: "inline-block", textDecoration: "none", padding: "10px 24px" }}>
+              Return to Public Site
+            </a>
+          </div>
+        </main>
+      </>
     );
   }
 
