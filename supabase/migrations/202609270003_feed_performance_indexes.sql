@@ -13,7 +13,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_submissions_status_created_at
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_submissions_category_status
   ON public.submissions (category_id, status);
 
--- Index C: per-user tracking lookup (used by the "track submission" flow)
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_submissions_tracking_token
-  ON public.submissions (tracking_token)
-  WHERE tracking_token IS NOT NULL;
+-- Index C: anonymous tracking hash lookup (used by the "track submission" flow)
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_submissions_anon_tracking_hash
+  ON public.submissions (anonymous_tracking_hash)
+  WHERE anonymous_tracking_hash IS NOT NULL;
