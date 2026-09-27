@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
-  const lastUpdated = "27 September 2026";
+  const lastUpdated = "28 September 2026";
 
   return (
     <main className="sf-legal-page">
@@ -26,16 +26,18 @@ export default function TermsPage() {
           <section>
             <h2>1. Acceptance</h2>
             <p>
-              By accessing or using SuggFeed you agree to be bound by these Terms of Service. If you
-              do not agree, please do not use the platform.
+              By accessing or using SuggFeed you agree to be bound by these Terms of Service. If
+              you do not agree, please do not use the platform.
             </p>
           </section>
 
           <section>
-            <h2>2. Eligibility</h2>
+            <h2>2. Who Can Use SuggFeed</h2>
             <p>
-              SuggFeed is provided to students, staff, and administrators of the participating school.
-              Access may be revoked at any time at the discretion of school administrators.
+              SuggFeed is open to anyone who has a complaint, suggestion, or feedback to share.
+              You do not need an account to submit feedback. Staff and administrator accounts are
+              reserved for those managing and responding to submissions. Access for any account
+              may be revoked at any time for violations of these terms.
             </p>
           </section>
 
@@ -60,8 +62,8 @@ export default function TermsPage() {
               purposes of operating the platform.
             </p>
             <p>
-              Approved submissions may be visible in the public feed and may be cited in school
-              communications. Anonymous attribution will be used.
+              Approved submissions may be visible in the public feed and may be referenced in
+              official communications. Anonymous attribution will be used.
             </p>
           </section>
 
@@ -77,8 +79,9 @@ export default function TermsPage() {
           <section>
             <h2>6. Anonymity Limitations</h2>
             <p>
-              While SuggFeed is designed to protect anonymity, we may be required to disclose tracking
-              tokens or associated metadata if compelled by law, or to prevent serious harm.
+              While SuggFeed is designed to protect anonymity, we may be required to disclose
+              tracking tokens or associated metadata if compelled by law, or to prevent serious
+              harm.
             </p>
           </section>
 

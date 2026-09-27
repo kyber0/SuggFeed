@@ -2,13 +2,13 @@
 
 **Status:** Accepted  
 **Date:** 2026-09-27  
-**Deciders:** Engineering Lead, School Data Officer  
+**Deciders:** Engineering Lead, Data Officer  
 
 ---
 
 ## Context
 
-SuggFeed is a school feedback platform where the primary promise to students is that their feedback is genuinely anonymous — not merely pseudonymous. The platform must also satisfy the security expectations of a school environment, including protection of student data, PDPA/GDPR-adjacent obligations, and resistance to abuse.
+SuggFeed is a feedback platform where the primary promise to users is that their feedback is genuinely anonymous - not merely pseudonymous. Anyone - students, staff, community members, or members of the public - can submit complaints, suggestions, or other feedback. The platform must satisfy data-protection obligations (PDPA/GDPR-adjacent) and resist abuse from any source.
 
 Several design choices were made early in the project that have downstream consequences. This ADR records those decisions, the alternatives considered, and the rationale.
 
@@ -21,12 +21,12 @@ Several design choices were made early in the project that have downstream conse
 **Decision:** Submissions carry a randomly generated `tracking_token` (UUID v4). No user identity is stored alongside a submission row. The token is generated client-side, returned once, and stored in the submitter's browser (localStorage).
 
 **Rationale:**
-- A policy promise of "we won't look you up" is weaker than a technical guarantee of "we cannot look you up". 
-- Students are more likely to submit genuine, high-value feedback if they believe anonymity is structural.
-- Reduces the data liability surface: a data breach exposes no student identities.
+- A policy promise of "we won't look you up" is weaker than a technical guarantee of "we cannot look you up".
+- Users are more likely to submit genuine, high-value feedback if they believe anonymity is structural.
+- Reduces the data liability surface: a data breach exposes no submitter identities.
 
 **Trade-offs:**
-- Lost-token submissions cannot be recovered or claimed. The UX communicates this clearly ("Save your token — we cannot recover it for you").
+- Lost-token submissions cannot be recovered or claimed. The UX communicates this clearly ("Save your token - we cannot recover it for you").
 - Abuse attribution is harder. Mitigated by Cloudflare Turnstile (anti-bot), per-IP rate limiting, and content moderation by staff.
 
 **Alternatives considered:**
@@ -55,7 +55,7 @@ Several design choices were made early in the project that have downstream conse
 
 **Rationale:**
 - Prevents common browser-based attacks (XSS, clickjacking, MIME sniffing).
-- A school environment may have students on shared or monitored devices; frame-embedding protection prevents UI redressing attacks.
+- Users on shared or monitored devices benefit from frame-embedding protection against UI redressing attacks.
 
 **CSP notes:**
 - `script-src` currently includes `'unsafe-inline'` for Next.js inline scripts. This is mitigated by `strict-dynamic` and nonce-based exemptions should be adopted when Next.js supports it fully.
@@ -78,7 +78,7 @@ Several design choices were made early in the project that have downstream conse
 **Decision:** Three composite indexes are added (migration `202609270003`):
 - `(status, created_at DESC)` for the primary approved-feed query.
 - `(category_id, status)` for category-filtered views.
-- `(tracking_token) WHERE tracking_token IS NOT NULL` partial index for the track-submission lookup.
+- `(anonymous_tracking_hash) WHERE NOT NULL` partial index for the track-submission lookup.
 
 **Rationale:**
 - Without these, Postgres performs a sequential scan + sort on an unbounded table. At 10k submissions the feed query degrades noticeably.
