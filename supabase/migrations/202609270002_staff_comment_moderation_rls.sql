@@ -6,11 +6,13 @@
 alter table public.comments add column if not exists report_count integer not null default 0;
 alter table public.comments add column if not exists is_hidden boolean not null default false;
 
+drop policy if exists "staff moderates comments" on public.comments;
 create policy "staff moderates comments"
   on public.comments for update
   using (public.is_staff())
   with check (public.is_staff());
 
+drop policy if exists "staff deletes comments" on public.comments;
 create policy "staff deletes comments"
   on public.comments for delete
   using (public.is_staff());
