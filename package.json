@@ -14,8 +14,8 @@
     "mobile:ios": "pnpm --filter mobile ios"
   },
   "devDependencies": {
-    "turbo": "^2.3.3",
-    "typescript": "^5.7.2"
+    "turbo": "^2.11.4",
+    "typescript": "^7.0.2"
   },
   "workspaces": [
     "apps/web",
