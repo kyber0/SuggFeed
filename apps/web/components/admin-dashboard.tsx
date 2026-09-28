@@ -36,6 +36,7 @@ import {
   ThumbsUp,
   Check,
   Eye,
+  EyeOff,
   History,
   Sparkles,
   Lock,
@@ -176,6 +177,8 @@ export function AdminDashboard({
   // Account recovery
   const [recoveryMode, setRecoveryMode] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Hydrate staff portal preferences & draft notes on mount
   useEffect(() => {
@@ -348,6 +351,8 @@ export function AdminDashboard({
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") {
+        // Store the recovery session token so updateUser() has a valid auth context
+        if (session?.access_token) setAccessToken(session.access_token);
         setRecoveryMode(true);
       } else if (session) {
         // Ignore any OAuth sign-in events in the admin portal
@@ -823,14 +828,31 @@ export function AdminDashboard({
             <form onSubmit={updatePassword}>
               <div className="field">
                 <label>New Password</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  placeholder="Min 6 characters"
-                  minLength={6}
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    placeholder="Min 6 characters"
+                    minLength={6}
+                    style={{ paddingRight: 40 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(v => !v)}
+                    aria-label={showNewPassword ? "Hide password" : "Show password"}
+                    style={{
+                      position: "absolute", right: 12, top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none", border: "none",
+                      color: "var(--muted)", cursor: "pointer",
+                      display: "flex", alignItems: "center", padding: 0,
+                    }}
+                  >
+                    {showNewPassword ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
+                  </button>
+                </div>
               </div>
               <button
                 className="btn-primary"
@@ -919,13 +941,30 @@ export function AdminDashboard({
                     Forgot password?
                   </button>
                 </div>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    style={{ paddingRight: 40 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    style={{
+                      position: "absolute", right: 12, top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none", border: "none",
+                      color: "var(--muted)", cursor: "pointer",
+                      display: "flex", alignItems: "center", padding: 0,
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
+                  </button>
+                </div>
               </div>
 
               <button

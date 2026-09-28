@@ -1,12 +1,10 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { CheckCircle, ArrowRight, Send, MessageSquare, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
-import { lookupTrackingCode } from "../lib/feedback-api";
-import { drafts } from "../lib/offline-queue";
+import { CheckCircle, ArrowRight, Send, MessageSquare, Search, ChevronDown, SlidersHorizontal, Tag, Calendar, AlertCircle, X } from "lucide-react";
+import { lookupTrackingCode, type TrackingResult } from "../lib/feedback-api";
 import { StatusStepper } from "./status-stepper";
 import { Header } from "./header";
-import { useToast } from "./toast";
 import { IdeaDetailPanel } from "./idea-detail-panel";
 import { getAnonToken } from "../lib/anon-token";
 import { useSubmitIdea } from "./submit-idea-context";
@@ -16,8 +14,6 @@ import { IdeaCard, SkeletonCard } from "./idea-card";
 import { readableStatus } from "../lib/format";
 import { DEFAULT_CATEGORIES, type PublishedSubmission } from "../lib/feedback-api";
 
-type Timeline = { new_status: string; note: string | null; created_at: string }[];
-
 const ALL_CATS = ["All", ...DEFAULT_CATEGORIES];
 const SORT_OPTIONS = [
   { value: "popular", label: "Most Supported" },
@@ -26,17 +22,15 @@ const SORT_OPTIONS = [
 ] as const;
 
 export function SuggFeed({ turnstileSiteKey: _siteKey }: { turnstileSiteKey?: string }) {
-  const { toast } = useToast();
   const { openSubmitPanel } = useSubmitIdea();
 
   const [mode, setMode] = useState<"share" | "track">("share");
-  const [queued, setQueued] = useState(0);
   const [sortOpen, setSortOpen] = useState(false);
 
-  const [tracking, setTracking]     = useState("");
-  const [timeline, setTimeline]     = useState<Timeline>([]);
-  const [trackStatus, setTrackStatus] = useState("");
-  const [trackBusy, setTrackBusy]   = useState(false);
+  const [tracking, setTracking]       = useState("");
+  const [trackResult, setTrackResult] = useState<TrackingResult | null>(null);
+  const [trackError, setTrackError]   = useState<string | null>(null);
+  const [trackBusy, setTrackBusy]     = useState(false);
 
   const {
     feed, setFeed, feedLoading, totalCount, hasMore, loadingMore, loadMore,
@@ -46,7 +40,6 @@ export function SuggFeed({ turnstileSiteKey: _siteKey }: { turnstileSiteKey?: st
   const { votedIds, votingId, handleVote } = useVoting(feed, setFeed);
   const [selectedIdea, setSelectedIdea] = useState<PublishedSubmission | null>(null);
 
-  useEffect(() => { drafts.count().then(setQueued).catch(() => {}); }, []);
   useEffect(() => {
     if (!sortOpen) return;
     const close = () => setSortOpen(false);
@@ -57,13 +50,12 @@ export function SuggFeed({ turnstileSiteKey: _siteKey }: { turnstileSiteKey?: st
   async function findSubmission(event: FormEvent) {
     event.preventDefault();
     if (!tracking.trim()) return;
-    setTrackBusy(true); setTimeline([]); setTrackStatus("");
+    setTrackBusy(true); setTrackResult(null); setTrackError(null);
     try {
       const result = await lookupTrackingCode(tracking.trim().toUpperCase());
-      setTrackStatus(result.status ?? "");
-      setTimeline(result.timeline ?? []);
+      setTrackResult(result);
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Couldn't look up that code.", "error");
+      setTrackError(error instanceof Error ? error.message : "Couldn't look up that code.");
     } finally { setTrackBusy(false); }
   }
 
@@ -121,32 +113,73 @@ export function SuggFeed({ turnstileSiteKey: _siteKey }: { turnstileSiteKey?: st
                     <input
                       id="tracking-input"
                       value={tracking}
-                      onChange={(e) => setTracking(e.target.value.toUpperCase())}
+                      onChange={(e) => { setTracking(e.target.value.toUpperCase()); setTrackResult(null); setTrackError(null); }}
                       placeholder="e.g. CV-ABCDEF1234…"
                       autoCapitalize="characters"
                       className="sf-track-input"
                       aria-label="Tracking code"
                     />
+                    {tracking && (
+                      <button type="button" className="sf-track-clear" onClick={() => { setTracking(""); setTrackResult(null); setTrackError(null); }} aria-label="Clear">
+                        <X size={13} strokeWidth={2.5} />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <button className="sf-btn-track" type="submit" disabled={trackBusy}>
                   {trackBusy ? "Looking up…" : <><ArrowRight size={15} strokeWidth={2} /> Check status</>}
                 </button>
-                {trackStatus && (
-                  <div className="sf-track-result">
-                    <StatusStepper status={trackStatus} />
-                    {timeline.length > 0 && (
-                      <ol className="timeline" aria-label="Status history">
-                        {timeline.map((entry) => (
-                          <li key={entry.created_at}>
-                            <div>
-                              <strong>{readableStatus(entry.new_status)}</strong>
-                              <span>{new Date(entry.created_at).toLocaleString()}</span>
-                              {entry.note && <p>{entry.note}</p>}
-                            </div>
-                          </li>
-                        ))}
-                      </ol>
+
+                {/* ── Error state ── */}
+                {trackError && (
+                  <div className="sf-track-error" role="alert">
+                    <AlertCircle size={15} strokeWidth={2} />
+                    <span>{trackError}</span>
+                  </div>
+                )}
+
+                {/* ── Result card ── */}
+                {trackResult && (
+                  <div className="sf-track-result-card">
+                    <div className="sf-track-result-header">
+                      <div className="sf-track-result-meta">
+                        {trackResult.category && (
+                          <span className="sf-track-result-tag"><Tag size={11} strokeWidth={2} />{trackResult.category}</span>
+                        )}
+                        <span className="sf-track-result-date">
+                          <Calendar size={11} strokeWidth={2} />
+                          {new Date(trackResult.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                        </span>
+                      </div>
+                      <button type="button" className="sf-track-result-close" onClick={() => setTrackResult(null)} aria-label="Dismiss result">
+                        <X size={13} strokeWidth={2.5} />
+                      </button>
+                    </div>
+
+                    <h3 className="sf-track-result-title">{trackResult.title}</h3>
+                    {trackResult.description && (
+                      <p className="sf-track-result-desc">{trackResult.description}</p>
+                    )}
+
+                    <div className="sf-track-result-status">
+                      <StatusStepper status={trackResult.status} />
+                    </div>
+
+                    {trackResult.timeline.length > 0 && (
+                      <details className="sf-track-result-timeline">
+                        <summary>Status history ({trackResult.timeline.length})</summary>
+                        <ol className="timeline" aria-label="Status history">
+                          {trackResult.timeline.map((entry) => (
+                            <li key={entry.created_at}>
+                              <div>
+                                <strong>{readableStatus(entry.new_status)}</strong>
+                                <span>{new Date(entry.created_at).toLocaleString()}</span>
+                                {entry.note && <p>{entry.note}</p>}
+                              </div>
+                            </li>
+                          ))}
+                        </ol>
+                      </details>
                     )}
                   </div>
                 )}

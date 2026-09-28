@@ -92,10 +92,18 @@ export async function submitFeedback(payload: SubmitPayload) {
   return res;
 }
 
+export type TrackingResult = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  status: string;
+  createdAt: string;
+  timeline: { new_status: string; note: string | null; created_at: string }[];
+};
+
 export function lookupTrackingCode(trackingCode: string) {
-  return invoke<{ status: string; createdAt: string; timeline: { new_status: string; note: string | null; created_at: string }[] }>(
-    "lookup-by-tracking-code", { trackingCode }
-  );
+  return invoke<TrackingResult>("lookup-by-tracking-code", { trackingCode });
 }
 
 /**
