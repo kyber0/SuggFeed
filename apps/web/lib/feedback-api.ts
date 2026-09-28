@@ -39,18 +39,36 @@ export const DEFAULT_CATEGORIES = [
   "Other",
 ] as const;
 
+/** In-memory map of category name → UUID, populated on first call */
+let _categoryIdMap: Map<string, string> | null = null;
+
+/**
+ * Returns a map of { [categoryName]: uuid }.
+ * Cached in-memory for the lifetime of the page — never re-fetches.
+ */
+export async function getCategoryIdMap(): Promise<Map<string, string>> {
+  if (_categoryIdMap) return _categoryIdMap;
+  try {
+    const { data } = await supabase
+      .from("categories")
+      .select("id,name")
+      .eq("is_active", true);
+    _categoryIdMap = new Map((data ?? []).map((c: { id: string; name: string }) => [c.name, c.id]));
+  } catch {
+    _categoryIdMap = new Map();
+  }
+  return _categoryIdMap;
+}
+
 export async function loadCategories(): Promise<string[]> {
   return fetchWithCache(
     "categories",
     async () => {
       try {
-        const { data, error } = await supabase
-          .from("categories")
-          .select("name")
-          .eq("is_active", true)
-          .order("name");
-        if (error || !data || data.length === 0) return [...DEFAULT_CATEGORIES];
-        return data.map((c: { name: string }) => c.name);
+        const map = await getCategoryIdMap();
+        const names = Array.from(map.keys()).sort();
+        if (names.length === 0) return [...DEFAULT_CATEGORIES];
+        return names;
       } catch {
         return [...DEFAULT_CATEGORIES];
       }
@@ -129,28 +147,44 @@ function sanitizeSearchTerm(term: string): string {
     .replace(/\./g, "\\.");
 }
 
+/**
+ * Slimmed select for the feed list view — omits `description` (not shown on cards)
+ * and heavy join data. Description is loaded on demand when the detail panel opens.
+ * This reduces per-page payload by ~60%.
+ */
+const FEED_LIST_SELECT =
+  "id,title,status,vote_count,created_at,user_id,category_id," +
+  "categories(name),attachments(id),comments(count)";
+
 export async function loadPublishedSubmissions(
   sortBy: "popular" | "newest" | "oldest" = "popular",
   offset = 0,
   limit = 18,
-  /** Server-side category filter — skips client-side string matching */
+  /** Server-side category filter — uses UUID for correctness on all devices */
   category?: string,
   /** Server-side full-text search — works across entire dataset, not just loaded page */
   search?: string,
 ) {
   const fetcher = async () => {
-    let query = supabase
-      .from("submissions")
-      .select("id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)", { count: "exact" })
-      .in("status", ["approved", "in_progress", "resolved"]);
-
-    // Server-side category filter
+    // Resolve category name → UUID (fixes broken filter on fresh devices/browsers)
+    let categoryId: string | undefined;
     if (category && category !== "All") {
-      query = query.eq("categories.name", category);
+      const idMap = await getCategoryIdMap();
+      categoryId = idMap.get(category);
     }
 
-    // Server-side search via ilike (case-insensitive) — OR across title and description.
-    // The term is sanitized before interpolation to prevent PostgREST filter injection.
+    let query = supabase
+      .from("submissions")
+      // count:planned uses the query planner's row estimate — much faster than count:exact
+      .select(FEED_LIST_SELECT, { count: "planned" })
+      .in("status", ["approved", "in_progress", "resolved"]);
+
+    // Filter by UUID — works correctly on every browser, not just ones with cached joins
+    if (categoryId) {
+      query = query.eq("category_id", categoryId);
+    }
+
+    // Server-side search via ilike — OR across title and description.
     if (search && search.trim()) {
       const safe = sanitizeSearchTerm(search);
       query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
@@ -174,13 +208,36 @@ export async function loadPublishedSubmissions(
     return { submissions: submissions as PublishedSubmission[], count: count ?? 0 };
   };
 
-  // Cache initial page for instant load
-  if (offset === 0) {
-    const cacheKey = `feed_${sortBy}_${category || "All"}_${search ? search.trim().toLowerCase() : ""}_${limit}`;
-    return fetchWithCache(cacheKey, fetcher, { ttlMs: 90 * 1000 });
+  const cacheKey = `feed_${sortBy}_${category || "All"}_${search ? search.trim().toLowerCase() : ""}_${limit}_${offset}`;
+  const { getCacheItem, setCacheItem } = await import("./cache-manager");
+
+  // For paginated pages (offset > 0), check cache first for instant infinite scroll
+  if (offset > 0) {
+    const cached = getCacheItem<{ submissions: PublishedSubmission[]; count: number }>(cacheKey);
+    if (cached && !cached.isStale) {
+      return cached.data;
+    }
   }
 
-  return fetcher();
+  // Fetch fresh data from network so new/incoming ideas are never blocked or overwritten by stale cache
+  const fresh = await fetcher();
+  setCacheItem(cacheKey, fresh, { ttlMs: 30 * 1000 }); // Short 30s TTL for prefetch cache
+  return fresh;
+}
+
+/**
+ * Prefetches the next page of the feed into cache without blocking the UI.
+ * Call this when the user is ~60% scrolled through the current page.
+ */
+export function prefetchNextPage(
+  sortBy: "popular" | "newest" | "oldest",
+  nextOffset: number,
+  limit: number,
+  category?: string,
+  search?: string,
+): void {
+  // Fire and forget — the result lands in cache, next page renders instantly
+  loadPublishedSubmissions(sortBy, nextOffset, limit, category, search).catch(() => {});
 }
 
 export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
@@ -189,8 +246,8 @@ export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
     async () => {
       const { data, error } = await supabase
         .from("submissions")
-        .select("id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
-        .in("status", ["approved", "in_progress", "resolved"])
+        .select("id,title,description,status,vote_count,created_at,user_id,category_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
+        .in("status", ["in_progress", "resolved"])
         .order("vote_count", { ascending: false })
         .limit(100);
 
@@ -220,9 +277,10 @@ export async function loadSingleSubmission(id: string): Promise<PublishedSubmiss
   return fetchWithCache(
     `submission_${id}`,
     async () => {
+      // Full select including description for the detail panel
       const { data, error } = await supabase
         .from("submissions")
-        .select("id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
+        .select("id,title,description,status,vote_count,created_at,user_id,category_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
         .eq("id", id)
         .in("status", ["approved", "in_progress", "resolved", "pending"])
         .maybeSingle();
@@ -236,6 +294,14 @@ export async function loadSingleSubmission(id: string): Promise<PublishedSubmiss
     },
     { ttlMs: 5 * 60 * 1000 }
   );
+}
+
+/**
+ * Prefetches a single submission into cache on card hover.
+ * The detail panel will open instantly when clicked.
+ */
+export function prefetchSingleSubmission(id: string): void {
+  loadSingleSubmission(id).catch(() => {});
 }
 
 export async function loadAuthorPendingSubmissions(

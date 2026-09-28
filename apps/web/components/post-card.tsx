@@ -33,6 +33,8 @@ interface PostCardProps {
   onCommentClick?: (item: PublishedSubmission) => void;
   onBookmarkToggle?: (id: string) => void;
   isKeyboardFocused?: boolean;
+  /** Called on mouseenter — used to prefetch the full submission into cache */
+  onHover?: () => void;
 }
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -82,6 +84,7 @@ export function PostCard({
   onCommentClick,
   onBookmarkToggle,
   isKeyboardFocused = false,
+  onHover,
 }: PostCardProps) {
   const { toast } = useToast();
   const { user, openAuthModal } = useAuth();
@@ -251,6 +254,7 @@ export function PostCard({
       role="article"
       aria-label={`Post: ${item.title}`}
       onClick={() => onSelect(item)}
+      onMouseEnter={onHover}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
           onSelect(item);

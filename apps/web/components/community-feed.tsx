@@ -40,6 +40,8 @@ import {
   loadSingleSubmission,
   loadUserBookmarkIds,
   toggleUserBookmark,
+  prefetchNextPage,
+  prefetchSingleSubmission,
   DEFAULT_CATEGORIES,
   type PublishedSubmission,
 } from "../lib/feedback-api";
@@ -348,6 +350,17 @@ export function CommunityFeed() {
 
         setTotalCount(result.count);
         setHasMore(result.count > targetPage * PER_PAGE);
+
+        // Prefetch next page into cache so infinite scroll feels instant
+        if (result.count > targetPage * PER_PAGE) {
+          prefetchNextPage(
+            apiSortBy,
+            targetPage * PER_PAGE,
+            PER_PAGE,
+            selectedTopic !== "All" ? selectedTopic : undefined,
+            debouncedSearch || undefined
+          );
+        }
       } catch {
         toast("Couldn't load community ideas right now.", "error");
       } finally {
@@ -840,6 +853,7 @@ export function CommunityFeed() {
                   onCommentClick={(item) => openIdea(item, "comments")}
                   onBookmarkToggle={toggleBookmark}
                   isKeyboardFocused={focusedIndex === index}
+                  onHover={() => prefetchSingleSubmission(item.id)}
                 />
               ))
             )}

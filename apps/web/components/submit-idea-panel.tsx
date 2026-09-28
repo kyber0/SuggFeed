@@ -9,6 +9,7 @@ import {
 import { useSubmitIdea } from "./submit-idea-context";
 import { useToast } from "./toast";
 import { fileToPayload, submitFeedback } from "../lib/feedback-api";
+import { invalidateCache } from "../lib/cache-manager";
 import { getDeviceFingerprint } from "../lib/device-fingerprint";
 import { addDraft } from "../lib/offline-queue";
 import { FileDropzone } from "./file-dropzone";
@@ -202,6 +203,7 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
       setTurnstileToken(""); setCaptchaKey((k) => k + 1);
 
       if (typeof window !== "undefined") {
+        invalidateCache("feed_");
         window.dispatchEvent(new CustomEvent("suggfeed:idea_submitted", { detail: { trackingCode: result.trackingCode } }));
       }
     } catch (error) {
