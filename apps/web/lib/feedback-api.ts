@@ -53,7 +53,12 @@ export async function getCategoryIdMap(): Promise<Map<string, string>> {
       .from("categories")
       .select("id,name")
       .eq("is_active", true);
-    _categoryIdMap = new Map((data ?? []).map((c: { id: string; name: string }) => [c.name, c.id]));
+    const map = new Map<string, string>();
+    (data ?? []).forEach((c: { id: string; name: string }) => {
+      map.set(c.name, c.id);
+      map.set(c.name.toLowerCase(), c.id);
+    });
+    _categoryIdMap = map;
   } catch {
     _categoryIdMap = new Map();
   }
@@ -160,69 +165,50 @@ export async function loadPublishedSubmissions(
   sortBy: "popular" | "newest" | "oldest" = "popular",
   offset = 0,
   limit = 18,
-  /** Server-side category filter — uses UUID for correctness on all devices */
+  /** Server-side category filter */
   category?: string,
-  /** Server-side full-text search — works across entire dataset, not just loaded page */
+  /** Server-side full-text search */
   search?: string,
 ) {
-  const fetcher = async () => {
-    // Resolve category name → UUID (fixes broken filter on fresh devices/browsers)
-    let categoryId: string | undefined;
-    if (category && category !== "All") {
-      const idMap = await getCategoryIdMap();
-      categoryId = idMap.get(category);
-    }
-
-    let query = supabase
-      .from("submissions")
-      // count:planned uses the query planner's row estimate — much faster than count:exact
-      .select(FEED_LIST_SELECT, { count: "planned" })
-      .in("status", ["approved", "in_progress", "resolved"]);
-
-    // Filter by UUID — works correctly on every browser, not just ones with cached joins
-    if (categoryId) {
-      query = query.eq("category_id", categoryId);
-    }
-
-    // Server-side search via ilike — OR across title and description.
-    if (search && search.trim()) {
-      const safe = sanitizeSearchTerm(search);
-      query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
-    }
-
-    if (sortBy === "popular") {
-      query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false });
-    } else if (sortBy === "newest") {
-      query = query.order("created_at", { ascending: false });
-    } else if (sortBy === "oldest") {
-      query = query.order("created_at", { ascending: true });
-    }
-
-    const { data, error, count } = await query.range(offset, offset + limit - 1);
-
-    if (error) throw error;
-    const submissions = (data ?? []).map((item: any) => ({
-      ...item,
-      comment_count: item.comments?.[0]?.count ?? 0,
-    }));
-    return { submissions: submissions as PublishedSubmission[], count: count ?? 0 };
-  };
-
-  const cacheKey = `feed_${sortBy}_${category || "All"}_${search ? search.trim().toLowerCase() : ""}_${limit}_${offset}`;
-  const { getCacheItem, setCacheItem } = await import("./cache-manager");
-
-  // For paginated pages (offset > 0), check cache first for instant infinite scroll
-  if (offset > 0) {
-    const cached = getCacheItem<{ submissions: PublishedSubmission[]; count: number }>(cacheKey);
-    if (cached && !cached.isStale) {
-      return cached.data;
-    }
+  // Resolve category name → UUID (case-insensitive)
+  let categoryId: string | undefined;
+  if (category && category !== "All") {
+    const idMap = await getCategoryIdMap();
+    categoryId = idMap.get(category) || idMap.get(category.toLowerCase());
   }
 
-  // Fetch fresh data from network so new/incoming ideas are never blocked or overwritten by stale cache
-  const fresh = await fetcher();
-  setCacheItem(cacheKey, fresh, { ttlMs: 30 * 1000 }); // Short 30s TTL for prefetch cache
-  return fresh;
+  let query = supabase
+    .from("submissions")
+    .select(FEED_LIST_SELECT, { count: "exact" })
+    .in("status", ["approved", "in_progress", "resolved"]);
+
+  if (categoryId) {
+    query = query.eq("category_id", categoryId);
+  } else if (category && category !== "All") {
+    query = query.eq("categories.name", category);
+  }
+
+  if (search && search.trim()) {
+    const safe = sanitizeSearchTerm(search);
+    query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
+  }
+
+  if (sortBy === "popular") {
+    query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false });
+  } else if (sortBy === "newest") {
+    query = query.order("created_at", { ascending: false });
+  } else if (sortBy === "oldest") {
+    query = query.order("created_at", { ascending: true });
+  }
+
+  const { data, error, count } = await query.range(offset, offset + limit - 1);
+
+  if (error) throw error;
+  const submissions = (data ?? []).map((item: any) => ({
+    ...item,
+    comment_count: item.comments?.[0]?.count ?? 0,
+  }));
+  return { submissions: submissions as PublishedSubmission[], count: count ?? 0 };
 }
 
 /**
