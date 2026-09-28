@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^5.2.0",
     "@sentry/nextjs": "^8.45.0",
     "@supabase/supabase-js": "^2.47.10",
     "date-fns": "^4.4.0",
