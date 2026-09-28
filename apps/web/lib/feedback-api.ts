@@ -219,6 +219,33 @@ export async function loadSingleSubmission(id: string): Promise<PublishedSubmiss
   );
 }
 
+export async function loadSubmissionsByIds(ids: string[]): Promise<PublishedSubmission[]> {
+  if (!ids || ids.length === 0) return [];
+  const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+  if (uniqueIds.length === 0) return [];
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id),comments(count)")
+    .in("id", uniqueIds)
+    .in("status", ["approved", "in_progress", "resolved"]);
+
+  if (error) throw error;
+  const map = new Map<string, PublishedSubmission>();
+  (data ?? []).forEach((item: any) => {
+    map.set(item.id, {
+      ...item,
+      comment_count: item.comments?.[0]?.count ?? 0,
+    } as PublishedSubmission);
+  });
+  // Maintain the caller's ID order (e.g. most recently bookmarked/shared first)
+  const ordered: PublishedSubmission[] = [];
+  for (const id of uniqueIds) {
+    const found = map.get(id);
+    if (found) ordered.push(found);
+  }
+  return ordered;
+}
+
 export async function loadAttachments(submissionId: string): Promise<AttachmentFile[]> {
   const result = await invoke<{ files: AttachmentFile[] }>("get-attachments", { submissionId });
   return result.files ?? [];

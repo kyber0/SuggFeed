@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { loadPublishedSubmissions, type PublishedSubmission } from "../lib/feedback-api";
 import { supabase } from "../lib/supabase";
 import { useToast } from "../components/toast";
+import { isRecentlyVoted } from "./use-voting";
 
 export type SortBy = "popular" | "newest" | "oldest";
 
@@ -75,15 +76,15 @@ export function useFeed() {
         (payload) => {
           const updated = payload.new as Partial<PublishedSubmission> & { id: string };
           setFeed((cur) =>
-            cur.map((item) =>
-              item.id === updated.id
-                ? {
-                    ...item,
-                    vote_count: updated.vote_count ?? item.vote_count,
-                    status: (updated.status ?? item.status) as PublishedSubmission["status"],
-                  }
-                : item
-            )
+            cur.map((item) => {
+              if (item.id !== updated.id) return item;
+              const skipVoteCount = isRecentlyVoted(item.id);
+              return {
+                ...item,
+                vote_count: skipVoteCount ? item.vote_count : (updated.vote_count ?? item.vote_count),
+                status: (updated.status ?? item.status) as PublishedSubmission["status"],
+              };
+            })
           );
         }
       )

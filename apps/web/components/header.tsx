@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, User, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "./auth-context";
 import { AuthModal } from "./auth-modal";
 import { ProfilePanel } from "./profile-panel";
@@ -47,12 +48,13 @@ export function Header() {
             <div className="dropdown-user-email">{user.email}</div>
           </div>
           <div className="divider" />
-          <button
-            onClick={() => { setProfileOpen(true); setDropdownOpen(false); }}
-            style={{ display: "flex", alignItems: "center", gap: 8 }}
+          <Link
+            href="/profile"
+            onClick={() => setDropdownOpen(false)}
+            style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "inherit", padding: "8px 12px" }}
           >
-            <Settings size={14} /> My Profile
-          </button>
+            <User size={14} /> My Profile & Ideas
+          </Link>
           <div className="divider" />
           <button
             className="danger"
@@ -66,15 +68,15 @@ export function Header() {
     </div>
   ) : (
     <>
-      <button
-        className="btn-ghost"
-        onClick={() => setProfileOpen(true)}
+      <Link
+        href="/profile"
+        className={`btn-ghost ${pathname === "/profile" ? "active" : ""}`}
         aria-label="My profile"
-        style={{ display: "flex", alignItems: "center", gap: 5 }}
+        style={{ display: "flex", alignItems: "center", gap: 5, textDecoration: "none" }}
       >
         <User size={14} />
         <span className="profile-label">Profile</span>
-      </button>
+      </Link>
       <button className="btn-primary-sm" onClick={() => openAuthModal("signin")}>
         Sign in
       </button>
@@ -87,10 +89,11 @@ export function Header() {
       <header className="site-header">
         <a className="brand" href="/">Sugg<span>Feed</span></a>
         <nav>
-          <a href="/" className={`nav-link-hide-mobile ${pathname === "/" ? "active" : ""}`}>Home</a>
-          <a href="/roadmap" className={`nav-link-hide-mobile ${pathname === "/roadmap" ? "active" : ""}`}>Roadmap</a>
-          <a href="/feed" className={`nav-link-hide-mobile ${pathname === "/feed" ? "active" : ""}`}>Community ideas</a>
-          <a href="/admin" className={`nav-link-hide-mobile ${pathname === "/admin" ? "active" : ""}`}>Staff portal</a>
+          <Link href="/" className={`nav-link-hide-mobile ${pathname === "/" ? "active" : ""}`}>Home</Link>
+          <Link href="/feed" className={`nav-link-hide-mobile ${pathname === "/feed" ? "active" : ""}`}>Community ideas</Link>
+          <Link href="/roadmap" className={`nav-link-hide-mobile ${pathname === "/roadmap" ? "active" : ""}`}>Roadmap</Link>
+          <Link href="/profile" className={`nav-link-hide-mobile ${pathname === "/profile" ? "active" : ""}`}>Profile</Link>
+          <Link href="/admin" className={`nav-link-hide-mobile ${pathname === "/admin" ? "active" : ""}`}>Staff portal</Link>
           {navControls}
           <div style={{ width: 1, height: 24, background: "var(--line-2)", margin: "0 4px" }} />
           <ThemeToggle />

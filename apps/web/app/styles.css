@@ -7322,22 +7322,22 @@ input.feed-search {
 }
 
 .prof-hero-inner {
-  max-width: 900px;
+  max-width: 1140px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
 .prof-avatar {
-  width: 68px;
-  height: 68px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: rgba(255,255,255,0.2);
   border: 3px solid rgba(255,255,255,0.35);
   color: #fff;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -7352,7 +7352,7 @@ input.feed-search {
 }
 
 .prof-hero-name {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: #fff;
   margin: 0 0 2px;
@@ -7363,9 +7363,9 @@ input.feed-search {
 }
 
 .prof-hero-email {
-  font-size: 13px;
-  color: rgba(255,255,255,0.65);
-  margin: 0 0 10px;
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.7);
+  margin: 0 0 12px;
 }
 
 .prof-hero-badges {
@@ -7378,11 +7378,11 @@ input.feed-search {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 9999px;
   background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.95);
   font-size: 12px;
   font-weight: 600;
   backdrop-filter: blur(4px);
@@ -7407,12 +7407,12 @@ input.feed-search {
 
 /* ── Content area (two-column on desktop, stacked on mobile) ── */
 .prof-content {
-  max-width: 900px;
+  max-width: 1140px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 32px 20px;
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
+  grid-template-columns: 340px 1fr;
+  gap: 28px;
   align-items: start;
 }
 
@@ -7421,10 +7421,12 @@ input.feed-search {
   background: var(--surface-card);
   border-radius: var(--radius-card);
   border: 1px solid var(--line);
-  padding: 22px 20px;
+  padding: 24px 22px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  position: sticky;
+  top: 80px;
 }
 
 .prof-section-title {
@@ -7531,10 +7533,18 @@ input.feed-search {
 .prof-activity-tabs {
   display: flex;
   border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prof-activity-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .prof-tab-btn {
   flex: 1;
+  min-width: max-content;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7548,6 +7558,7 @@ input.feed-search {
   border: none;
   border-bottom: 2.5px solid transparent;
   cursor: pointer;
+  white-space: nowrap;
   transition: color 0.15s, border-color 0.15s;
 }
 
@@ -7580,6 +7591,51 @@ input.feed-search {
   display: flex;
   flex-direction: column;
   gap: 0;
+}
+
+/* ── Activity card wrap & actions ── */
+.prof-activity-card-wrap {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.12s;
+}
+
+.prof-activity-card-wrap:last-child {
+  border-bottom: none;
+}
+
+.prof-activity-card-wrap:hover {
+  background: var(--surface-hover, rgba(0,0,0,0.025));
+}
+
+.prof-activity-card-wrap .prof-activity-card {
+  flex: 1;
+  border-bottom: none;
+}
+
+.prof-remove-bookmark-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 12px 14px 12px 0;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  align-self: center;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.prof-remove-bookmark-btn:hover {
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.06);
 }
 
 /* ── Activity card ── */
@@ -7674,11 +7730,33 @@ input.feed-search {
 }
 
 .prof-empty {
-  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
   text-align: center;
   color: var(--muted);
-  font-size: 14px;
   line-height: 1.5;
+}
+
+.prof-empty-icon {
+  color: var(--line-2, #CBD5E1);
+  margin-bottom: 12px;
+}
+
+.prof-empty-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+.prof-empty-text {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 320px;
+  margin: 0;
 }
 
 .prof-skeleton {

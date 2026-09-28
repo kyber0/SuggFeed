@@ -22,13 +22,14 @@ import {
   X,
   Keyboard,
   ExternalLink,
+  User,
 } from "lucide-react";
 import { Header } from "./header";
 import { IdeaDetailPanel } from "./idea-detail-panel";
 import { PostCard, SkeletonPostCard } from "./post-card";
 import { getAnonToken } from "../lib/anon-token";
 import { useSubmitIdea } from "./submit-idea-context";
-import { useVoting } from "../hooks/use-voting";
+import { useVoting, isRecentlyVoted } from "../hooks/use-voting";
 import { useToast } from "./toast";
 import { supabase } from "../lib/supabase";
 import {
@@ -227,7 +228,9 @@ export function CommunityFeed() {
         toast("Saved to bookmarks", "success");
       }
       try {
-        localStorage.setItem("suggfeed_bookmarks", JSON.stringify(Array.from(next)));
+        const arr = Array.from(next);
+        localStorage.setItem("suggfeed_bookmarks", JSON.stringify(arr));
+        localStorage.setItem("sf_bookmarks", JSON.stringify(arr));
       } catch {
         // ignore
       }
@@ -350,15 +353,17 @@ export function CommunityFeed() {
         (payload) => {
           const updated = payload.new as any;
           setFeed((cur) =>
-            cur.map((item) =>
-              item.id === updated.id
-                ? {
-                    ...item,
-                    vote_count: updated.vote_count ?? item.vote_count,
-                    status: updated.status ?? item.status,
-                  }
-                : item
-            )
+            cur.map((item) => {
+              if (item.id !== updated.id) return item;
+              // Guard against race conditions where trailing DB triggers emit
+              // stale counts (e.g. 1 or 0) for an item the user just voted on.
+              const skipVoteCount = isRecentlyVoted(item.id);
+              return {
+                ...item,
+                vote_count: skipVoteCount ? item.vote_count : (updated.vote_count ?? item.vote_count),
+                status: updated.status ?? item.status,
+              };
+            })
           );
         }
       )
@@ -500,6 +505,10 @@ export function CommunityFeed() {
                   <span className="nav-count-badge">{bookmarkedIds.size}</span>
                 )}
               </button>
+              <Link href="/profile" className="nav-item">
+                <User size={17} />
+                <span>My Profile</span>
+              </Link>
             </nav>
 
             <div className="left-nav-divider" />

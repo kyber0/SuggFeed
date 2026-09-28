@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getAnonToken } from "../lib/anon-token";
-import { loadMyActivity, PublishedSubmission } from "../lib/feedback-api";
+import { loadMyActivity, loadSubmissionsByIds, type PublishedSubmission } from "../lib/feedback-api";
 import { Header } from "./header";
 import { useAuth } from "./auth-context";
 import Link from "next/link";
@@ -10,6 +10,8 @@ import {
   ThumbsUp,
   Paperclip,
   MessageSquare,
+  Bookmark,
+  Share2,
   CheckCircle,
   User,
   LogIn,
@@ -19,6 +21,7 @@ import {
   ArrowUpRight,
   EyeOff,
   Bell,
+  Trash2,
 } from "lucide-react";
 import { readableStatus } from "../lib/format";
 import { supabase } from "../lib/supabase";
@@ -30,7 +33,17 @@ const STATUS_COLOR: Record<string, string> = {
   pending: "#F59E0B",
 };
 
-function ActivityCard({ item }: { item: PublishedSubmission }) {
+type ProfileTab = "submissions" | "bookmarks" | "shared" | "voted";
+
+function ActivityCard({
+  item,
+  isBookmarkTab,
+  onRemoveBookmark,
+}: {
+  item: PublishedSubmission;
+  isBookmarkTab?: boolean;
+  onRemoveBookmark?: (id: string) => void;
+}) {
   const catName = item.categories?.name ?? "Other";
   const statusColor = STATUS_COLOR[item.status] ?? "#94A3B8";
   const date = new Date(item.created_at).toLocaleDateString(undefined, {
@@ -40,48 +53,67 @@ function ActivityCard({ item }: { item: PublishedSubmission }) {
   });
 
   return (
-    <Link
-      href={`/idea/${item.id}`}
-      className="prof-activity-card"
-      aria-label={item.title}
-    >
-      <div className="prof-activity-card-top">
-        <span className="prof-activity-cat">{catName}</span>
-        <span
-          className="prof-activity-status"
-          style={{ color: statusColor, background: `${statusColor}18`, borderColor: `${statusColor}30` }}
-        >
-          {readableStatus(item.status)}
-        </span>
-      </div>
-      <h3 className="prof-activity-title">{item.title}</h3>
-      <div className="prof-activity-footer">
-        <span className="prof-activity-stat">
-          <ThumbsUp size={12} strokeWidth={2.5} />
-          {item.vote_count}
-        </span>
-        {(item.attachments?.length ?? 0) > 0 && (
-          <span className="prof-activity-stat">
-            <Paperclip size={12} strokeWidth={2.5} />
-            {item.attachments.length}
+    <div className="prof-activity-card-wrap">
+      <Link
+        href={`/idea/${item.id}`}
+        className="prof-activity-card"
+        aria-label={item.title}
+      >
+        <div className="prof-activity-card-top">
+          <span className="prof-activity-cat">{catName}</span>
+          <span
+            className="prof-activity-status"
+            style={{ color: statusColor, background: `${statusColor}18`, borderColor: `${statusColor}30` }}
+          >
+            {readableStatus(item.status)}
           </span>
-        )}
-        <span className="prof-activity-date">
-          <Clock size={11} strokeWidth={2} />
-          {date}
-        </span>
-        <ArrowUpRight size={13} className="prof-activity-arrow" />
-      </div>
-    </Link>
+        </div>
+        <h3 className="prof-activity-title">{item.title}</h3>
+        <div className="prof-activity-footer">
+          <span className="prof-activity-stat">
+            <ThumbsUp size={12} strokeWidth={2.5} />
+            {item.vote_count}
+          </span>
+          {(item.attachments?.length ?? 0) > 0 && (
+            <span className="prof-activity-stat">
+              <Paperclip size={12} strokeWidth={2.5} />
+              {item.attachments.length}
+            </span>
+          )}
+          <span className="prof-activity-date">
+            <Clock size={11} strokeWidth={2} />
+            {date}
+          </span>
+          <ArrowUpRight size={13} className="prof-activity-arrow" />
+        </div>
+      </Link>
+      {isBookmarkTab && onRemoveBookmark && (
+        <button
+          type="button"
+          className="prof-remove-bookmark-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemoveBookmark(item.id);
+          }}
+          aria-label="Remove from bookmarks"
+          title="Remove from bookmarks"
+        >
+          <Bookmark size={14} fill="var(--bookmark, #F59E0B)" strokeWidth={0} />
+          <span>Remove</span>
+        </button>
+      )}
+    </div>
   );
 }
 
 export function ProfileDashboard() {
   const { user, openAuthModal } = useAuth();
   const [submissions, setSubmissions] = useState<PublishedSubmission[]>([]);
+  const [bookmarks, setBookmarks] = useState<PublishedSubmission[]>([]);
+  const [sharedPosts, setSharedPosts] = useState<PublishedSubmission[]>([]);
   const [voted, setVoted] = useState<PublishedSubmission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"submissions" | "voted">("submissions");
+  const [activeTab, setActiveTab] = useState<ProfileTab>("submissions");
 
   // Profile settings state
   const [displayName, setDisplayName] = useState("");
@@ -89,6 +121,19 @@ export function ProfileDashboard() {
   const [emailNotifs, setEmailNotifs] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Check URL query parameters for initial tab (e.g. ?tab=bookmarks)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab") as ProfileTab | null;
+      if (tabParam && ["submissions", "bookmarks", "shared", "voted"].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Load display name preferences
   useEffect(() => {
@@ -115,7 +160,7 @@ export function ProfileDashboard() {
     }
   }, [user]);
 
-  // Load activity
+  // Load user submissions, voted ideas, bookmarks, and shared ideas
   useEffect(() => {
     let trackingCodes: string[] = [];
     try {
@@ -126,14 +171,45 @@ export function ProfileDashboard() {
       );
     } catch { /* ignore */ }
 
-    loadMyActivity(getAnonToken(), trackingCodes)
-      .then(res => {
+    let bookmarkIds: string[] = [];
+    try {
+      const raw = localStorage.getItem("suggfeed_bookmarks") || localStorage.getItem("sf_bookmarks");
+      if (raw) bookmarkIds = JSON.parse(raw);
+    } catch { /* ignore */ }
+
+    let sharedIds: string[] = [];
+    try {
+      const raw = localStorage.getItem("sf_shared_posts") || localStorage.getItem("suggfeed_shared_posts");
+      if (raw) sharedIds = JSON.parse(raw);
+    } catch { /* ignore */ }
+
+    Promise.all([
+      loadMyActivity(getAnonToken(), trackingCodes),
+      loadSubmissionsByIds(bookmarkIds),
+      loadSubmissionsByIds(sharedIds),
+    ])
+      .then(([res, bMarks, sPosts]) => {
         setSubmissions(res.submissions);
         setVoted(res.votedSubmissions);
+        setBookmarks(bMarks);
+        setSharedPosts(sPosts);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user]);
+
+  function handleRemoveBookmark(id: string) {
+    setBookmarks((prev) => prev.filter((item) => item.id !== id));
+    try {
+      const raw = localStorage.getItem("suggfeed_bookmarks") || localStorage.getItem("sf_bookmarks");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      const next = list.filter((i) => i !== id);
+      localStorage.setItem("suggfeed_bookmarks", JSON.stringify(next));
+      localStorage.setItem("sf_bookmarks", JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -162,7 +238,11 @@ export function ProfileDashboard() {
 
   const shownName = displayName || user?.email?.split("@")[0] || "Anonymous user";
 
-  const activeList = activeTab === "submissions" ? submissions : voted;
+  let activeList: PublishedSubmission[] = [];
+  if (activeTab === "submissions") activeList = submissions;
+  else if (activeTab === "bookmarks") activeList = bookmarks;
+  else if (activeTab === "shared") activeList = sharedPosts;
+  else if (activeTab === "voted") activeList = voted;
 
   return (
     <>
@@ -189,7 +269,15 @@ export function ProfileDashboard() {
               <div className="prof-hero-badges">
                 <span className="prof-hero-badge">
                   <Sparkles size={11} />
-                  {submissions.length} ideas shared
+                  {submissions.length} ideas
+                </span>
+                <span className="prof-hero-badge">
+                  <Bookmark size={11} />
+                  {bookmarks.length} saved
+                </span>
+                <span className="prof-hero-badge">
+                  <Share2 size={11} />
+                  {sharedPosts.length} shared
                 </span>
                 <span className="prof-hero-badge">
                   <ThumbsUp size={11} />
@@ -310,8 +398,30 @@ export function ProfileDashboard() {
                 onClick={() => setActiveTab("submissions")}
               >
                 <MessageSquare size={14} />
-                My Submissions
+                <span>My Ideas</span>
                 <span className="prof-tab-count">{submissions.length}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "bookmarks"}
+                className={`prof-tab-btn${activeTab === "bookmarks" ? " active" : ""}`}
+                onClick={() => setActiveTab("bookmarks")}
+              >
+                <Bookmark size={14} />
+                <span>Bookmarks</span>
+                <span className="prof-tab-count">{bookmarks.length}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "shared"}
+                className={`prof-tab-btn${activeTab === "shared" ? " active" : ""}`}
+                onClick={() => setActiveTab("shared")}
+              >
+                <Share2 size={14} />
+                <span>Shared</span>
+                <span className="prof-tab-count">{sharedPosts.length}</span>
               </button>
               <button
                 type="button"
@@ -321,7 +431,7 @@ export function ProfileDashboard() {
                 onClick={() => setActiveTab("voted")}
               >
                 <CheckCircle size={14} />
-                Supported
+                <span>Supported</span>
                 <span className="prof-tab-count">{voted.length}</span>
               </button>
             </div>
@@ -335,13 +445,55 @@ export function ProfileDashboard() {
                 </>
               ) : activeList.length === 0 ? (
                 <div className="prof-empty">
-                  {activeTab === "submissions"
-                    ? "You haven't shared any ideas yet."
-                    : "You haven't supported any ideas yet."}
+                  {activeTab === "submissions" && (
+                    <>
+                      <MessageSquare size={32} strokeWidth={1.5} className="prof-empty-icon" />
+                      <p className="prof-empty-title">No submissions yet</p>
+                      <p className="prof-empty-text">You haven't submitted any ideas or suggestions yet.</p>
+                      <Link href="/" className="btn-primary-sm" style={{ marginTop: 12 }}>
+                        Submit an Idea
+                      </Link>
+                    </>
+                  )}
+                  {activeTab === "bookmarks" && (
+                    <>
+                      <Bookmark size={32} strokeWidth={1.5} className="prof-empty-icon" />
+                      <p className="prof-empty-title">No bookmarked ideas</p>
+                      <p className="prof-empty-text">Save ideas you want to keep track of from the ideas feed.</p>
+                      <Link href="/feed" className="btn-primary-sm" style={{ marginTop: 12 }}>
+                        Browse Ideas Stream
+                      </Link>
+                    </>
+                  )}
+                  {activeTab === "shared" && (
+                    <>
+                      <Share2 size={32} strokeWidth={1.5} className="prof-empty-icon" />
+                      <p className="prof-empty-title">No shared ideas yet</p>
+                      <p className="prof-empty-text">Ideas you share with classmates or groups will appear here.</p>
+                      <Link href="/feed" className="btn-primary-sm" style={{ marginTop: 12 }}>
+                        Explore & Share Ideas
+                      </Link>
+                    </>
+                  )}
+                  {activeTab === "voted" && (
+                    <>
+                      <ThumbsUp size={32} strokeWidth={1.5} className="prof-empty-icon" />
+                      <p className="prof-empty-title">No supported ideas</p>
+                      <p className="prof-empty-text">Support proposals you want campus administration to prioritize.</p>
+                      <Link href="/feed" className="btn-primary-sm" style={{ marginTop: 12 }}>
+                        Vote on Ideas
+                      </Link>
+                    </>
+                  )}
                 </div>
               ) : (
                 activeList.map((item) => (
-                  <ActivityCard key={item.id} item={item} />
+                  <ActivityCard
+                    key={item.id}
+                    item={item}
+                    isBookmarkTab={activeTab === "bookmarks"}
+                    onRemoveBookmark={handleRemoveBookmark}
+                  />
                 ))
               )}
             </div>
@@ -351,3 +503,4 @@ export function ProfileDashboard() {
     </>
   );
 }
+

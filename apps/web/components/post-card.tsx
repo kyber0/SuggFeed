@@ -164,12 +164,28 @@ export function PostCard({
     });
   }, [item.description]);
 
+  const recordSharedPost = (id: string) => {
+    try {
+      const raw = localStorage.getItem("sf_shared_posts") ?? localStorage.getItem("suggfeed_shared_posts");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      if (!list.includes(id)) {
+        list.unshift(id);
+        const str = JSON.stringify(list.slice(0, 100));
+        localStorage.setItem("sf_shared_posts", str);
+        localStorage.setItem("suggfeed_shared_posts", str);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   const handleCopyLink = (e: MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/idea/${item.id}`;
     navigator.clipboard.writeText(url);
+    recordSharedPost(item.id);
     setCopied(true);
-    toast("Link copied to clipboard!", "success");
+    toast("Link copied to clipboard! Added to shared ideas.", "success");
     setTimeout(() => setCopied(false), 2000);
     setMenuOpen(false);
     setShareMenuOpen(false);
@@ -177,6 +193,7 @@ export function PostCard({
 
   const handleShare = (e: MouseEvent) => {
     e.stopPropagation();
+    recordSharedPost(item.id);
     // Use Web Share API if available (mobile), else show share menu
     if (navigator.share) {
       navigator.share({
