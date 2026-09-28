@@ -53,6 +53,13 @@ import {
   AlertTriangle,
   KeyRound,
   BadgeCheck,
+  Users2,
+  UserPlus,
+  Crown,
+  UserX,
+  UserCheck,
+  SendHorizonal,
+  ChevronDown,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { AnalyticsDashboard } from "./analytics-dashboard";
@@ -116,8 +123,8 @@ export function AdminDashboard({
   // true while we're resolving the role for an existing session
   const [roleLoading, setRoleLoading] = useState(true);
 
-  // Active view tab: 'queue' | 'flagged' | 'audit' | 'analytics' | 'profile'
-  const [activeTab, setActiveTab] = useState<"queue" | "flagged" | "audit" | "analytics" | "profile">(
+  // Active view tab: 'queue' | 'flagged' | 'audit' | 'analytics' | 'profile' | 'staff'
+  const [activeTab, setActiveTab] = useState<"queue" | "flagged" | "audit" | "analytics" | "profile" | "staff">(
     defaultViewMode === "analytics" ? "analytics" : "queue"
   );
 
@@ -212,6 +219,19 @@ export function AdminDashboard({
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [profileJoinedAt, setProfileJoinedAt] = useState<string | null>(null);
+
+  // Staff Management state
+  type StaffMember = { id: string; display_name: string | null; role: string; created_at: string; email?: string };
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [staffRoleChanging, setStaffRoleChanging] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"moderator" | "admin">("moderator");
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [staffSearch, setStaffSearch] = useState("");
+  const [promoteSearch, setPromoteSearch] = useState("");
+  const [promoteResults, setPromoteResults] = useState<StaffMember[]>([]);
+  const [promoteSearchBusy, setPromoteSearchBusy] = useState(false);
 
   // Hydrate staff portal preferences & draft notes on mount
   useEffect(() => {
@@ -1191,6 +1211,7 @@ export function AdminDashboard({
               {activeTab === "audit" && "Staff Decision Audit Trail"}
               {activeTab === "analytics" && "Campus Insights & Analytics"}
               {activeTab === "profile" && "My Account & Profile"}
+              {activeTab === "staff" && "Staff & Access Management"}
             </h1>
             <p className="sp-subtitle">
               {activeTab === "queue" && "Review, triage, and route community ideas into campus delivery."}
@@ -1198,6 +1219,7 @@ export function AdminDashboard({
               {activeTab === "audit" && "Recent status changes and administrative notes logged across the campus."}
               {activeTab === "analytics" && "High-level metrics and submission trends."}
               {activeTab === "profile" && "Edit your display name, email, password, and account settings."}
+              {activeTab === "staff" && "Promote users to staff, manage roles, and invite new team members."}
             </p>
           </div>
 
@@ -1274,6 +1296,37 @@ export function AdminDashboard({
                 <User size={14} />
                 <span>Profile</span>
               </button>
+
+              {/* Staff Management — admins only */}
+              {userRole === "admin" && (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === "staff"}
+                  className={`sp-nav-tab${activeTab === "staff" ? " sp-nav-tab--active" : ""}`}
+                  onClick={() => {
+                    setActiveTab("staff");
+                    if (staffMembers.length === 0) {
+                      setStaffLoading(true);
+                      supabase
+                        .from("profiles")
+                        .select("id,display_name,role,created_at")
+                        .neq("role", "student")
+                        .order("created_at", { ascending: true })
+                        .then(({ data }) => {
+                          setStaffMembers((data ?? []) as StaffMember[]);
+                          setStaffLoading(false);
+                        });
+                    }
+                  }}
+                >
+                  <Users2 size={14} />
+                  <span>Staff</span>
+                  {staffMembers.length > 0 && (
+                    <span className="sp-tab-badge">{staffMembers.length}</span>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Refresh Button */}
@@ -1609,6 +1662,396 @@ export function AdminDashboard({
                 </div>
               </div>
             )}
+          </div>
+        ) : activeTab === "staff" ? (
+          /* ── Tab: Staff & Access Management ── */
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+            {/* ── Top Stats Row ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+              {[
+                { label: "Total Staff", value: staffMembers.length, color: "#6366F1", icon: <Users2 size={18} /> },
+                { label: "Administrators", value: staffMembers.filter(s => s.role === "admin").length, color: "#F59E0B", icon: <Crown size={18} /> },
+                { label: "Moderators", value: staffMembers.filter(s => s.role === "moderator").length, color: "#10B981", icon: <ShieldCheck size={18} /> },
+              ].map(stat => (
+                <div key={stat.label} className="sp-controls-card" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: "var(--r-md)", background: `${stat.color}1a`, color: stat.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {stat.icon}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>{stat.value}</div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 3 }}>{stat.label}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
+
+              {/* ── Left: Staff Roster ── */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div className="sp-controls-card">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
+                      <Users2 size={16} style={{ color: "#6366F1" }} /> Current Staff
+                    </h3>
+                    <button
+                      className="sp-btn-action"
+                      onClick={() => {
+                        setStaffLoading(true);
+                        supabase
+                          .from("profiles")
+                          .select("id,display_name,role,created_at")
+                          .neq("role", "student")
+                          .order("created_at", { ascending: true })
+                          .then(({ data }) => {
+                            setStaffMembers((data ?? []) as { id: string; display_name: string | null; role: string; created_at: string }[]);
+                            setStaffLoading(false);
+                          });
+                      }}
+                    >
+                      <RefreshCw size={12} className={staffLoading ? "spin" : ""} />
+                      <span>Refresh</span>
+                    </button>
+                  </div>
+
+                  {/* Search staff */}
+                  <div style={{ position: "relative", marginBottom: 12 }}>
+                    <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
+                    <input
+                      type="text"
+                      value={staffSearch}
+                      onChange={e => setStaffSearch(e.target.value)}
+                      placeholder="Filter staff..."
+                      style={{ paddingLeft: 30, height: 36, width: "100%", boxSizing: "border-box", fontSize: 13 }}
+                    />
+                  </div>
+
+                  {staffLoading ? (
+                    <div style={{ padding: "32px 0", textAlign: "center", color: "var(--muted)", fontSize: 13 }}>Loading staff...</div>
+                  ) : staffMembers.length === 0 ? (
+                    <div style={{ padding: "32px 0", textAlign: "center", color: "var(--muted)", fontSize: 13 }}>No staff members found.</div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {staffMembers
+                        .filter(s => !staffSearch || (s.display_name ?? "").toLowerCase().includes(staffSearch.toLowerCase()))
+                        .map(member => (
+                          <div key={member.id} style={{
+                            display: "flex", alignItems: "center", gap: 12,
+                            padding: "10px 12px", borderRadius: "var(--r-md)",
+                            background: "var(--bg)", border: "1px solid var(--line)",
+                          }}>
+                            {/* Avatar */}
+                            <div style={{
+                              width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                              background: member.role === "admin"
+                                ? "linear-gradient(135deg,#F59E0B,#D97706)"
+                                : "linear-gradient(135deg,#10B981,#059669)",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              color: "#fff", fontSize: 14, fontWeight: 700,
+                            }}>
+                              {(member.display_name ?? "?")[0].toUpperCase()}
+                            </div>
+
+                            {/* Info */}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {member.display_name ?? "Unnamed"}
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                                <span style={{
+                                  fontSize: 10, fontWeight: 700, padding: "1px 6px",
+                                  borderRadius: "var(--r-full)",
+                                  background: member.role === "admin" ? "rgba(245,158,11,0.15)" : "rgba(16,185,129,0.12)",
+                                  color: member.role === "admin" ? "#D97706" : "#10B981",
+                                }}>
+                                  {member.role === "admin" ? "Admin" : "Moderator"}
+                                </span>
+                                <span style={{ fontSize: 10, color: "var(--muted)" }}>
+                                  Since {new Date(member.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Role Actions */}
+                            <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                              {member.role === "moderator" ? (
+                                <button
+                                  disabled={staffRoleChanging === member.id}
+                                  title="Promote to Admin"
+                                  style={{
+                                    display: "inline-flex", alignItems: "center", gap: 4,
+                                    padding: "4px 10px", borderRadius: "var(--r-md)",
+                                    fontSize: 11, fontWeight: 700, cursor: "pointer",
+                                    background: "rgba(245,158,11,0.1)", color: "#D97706",
+                                    border: "1px solid rgba(245,158,11,0.25)",
+                                  }}
+                                  onClick={async () => {
+                                    setStaffRoleChanging(member.id);
+                                    const { error } = await supabase.from("profiles").update({ role: "admin" }).eq("id", member.id);
+                                    if (error) { toast(error.message, "error"); }
+                                    else {
+                                      setStaffMembers(prev => prev.map(m => m.id === member.id ? { ...m, role: "admin" } : m));
+                                      toast(`${member.display_name ?? "User"} promoted to Admin.`, "success");
+                                    }
+                                    setStaffRoleChanging(null);
+                                  }}
+                                >
+                                  <Crown size={11} /> Promote
+                                </button>
+                              ) : (
+                                <button
+                                  disabled={staffRoleChanging === member.id || member.id === authSession?.user?.id}
+                                  title="Demote to Moderator"
+                                  style={{
+                                    display: "inline-flex", alignItems: "center", gap: 4,
+                                    padding: "4px 10px", borderRadius: "var(--r-md)",
+                                    fontSize: 11, fontWeight: 700, cursor: "pointer",
+                                    background: "rgba(99,102,241,0.08)", color: "#6366F1",
+                                    border: "1px solid rgba(99,102,241,0.2)",
+                                    opacity: member.id === authSession?.user?.id ? 0.4 : 1,
+                                  }}
+                                  onClick={async () => {
+                                    setStaffRoleChanging(member.id);
+                                    const { error } = await supabase.from("profiles").update({ role: "moderator" }).eq("id", member.id);
+                                    if (error) { toast(error.message, "error"); }
+                                    else {
+                                      setStaffMembers(prev => prev.map(m => m.id === member.id ? { ...m, role: "moderator" } : m));
+                                      toast(`${member.display_name ?? "User"} demoted to Moderator.`, "info");
+                                    }
+                                    setStaffRoleChanging(null);
+                                  }}
+                                >
+                                  <ChevronDown size={11} /> Demote
+                                </button>
+                              )}
+                              <button
+                                disabled={staffRoleChanging === member.id || member.id === authSession?.user?.id}
+                                title="Remove staff access"
+                                style={{
+                                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                                  width: 28, height: 28, borderRadius: "var(--r-md)",
+                                  fontSize: 11, cursor: "pointer",
+                                  background: "rgba(239,68,68,0.08)", color: "#EF4444",
+                                  border: "1px solid rgba(239,68,68,0.2)",
+                                  opacity: member.id === authSession?.user?.id ? 0.4 : 1,
+                                }}
+                                onClick={async () => {
+                                  if (!window.confirm(`Remove staff access from ${member.display_name ?? "this user"}?`)) return;
+                                  setStaffRoleChanging(member.id);
+                                  const { error } = await supabase.from("profiles").update({ role: "student" }).eq("id", member.id);
+                                  if (error) { toast(error.message, "error"); }
+                                  else {
+                                    setStaffMembers(prev => prev.filter(m => m.id !== member.id));
+                                    toast(`${member.display_name ?? "User"} removed from staff.`, "info");
+                                  }
+                                  setStaffRoleChanging(null);
+                                }}
+                              >
+                                <UserX size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Right: Promote + Invite ── */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+                {/* Promote Existing User */}
+                <div className="sp-controls-card">
+                  <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
+                    <UserCheck size={16} style={{ color: "#10B981" }} /> Promote Existing User
+                  </h3>
+                  <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--muted)" }}>
+                    Search by display name and grant staff access to an existing account.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                    <div style={{ position: "relative", flex: 1 }}>
+                      <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
+                      <input
+                        type="text"
+                        value={promoteSearch}
+                        onChange={e => setPromoteSearch(e.target.value)}
+                        placeholder="Search by display name..."
+                        style={{ paddingLeft: 30, height: 38, width: "100%", boxSizing: "border-box", fontSize: 13 }}
+                        onKeyDown={async e => {
+                          if (e.key !== "Enter" || !promoteSearch.trim()) return;
+                          setPromoteSearchBusy(true);
+                          const { data } = await supabase
+                            .from("profiles")
+                            .select("id,display_name,role,created_at")
+                            .eq("role", "student")
+                            .ilike("display_name", `%${promoteSearch.trim()}%`)
+                            .limit(10);
+                          setPromoteResults((data ?? []) as { id: string; display_name: string | null; role: string; created_at: string }[]);
+                          setPromoteSearchBusy(false);
+                        }}
+                      />
+                    </div>
+                    <button
+                      className="btn-primary"
+                      disabled={promoteSearchBusy || !promoteSearch.trim()}
+                      style={{ height: 38, padding: "0 14px", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap", fontSize: 13 }}
+                      onClick={async () => {
+                        if (!promoteSearch.trim()) return;
+                        setPromoteSearchBusy(true);
+                        const { data } = await supabase
+                          .from("profiles")
+                          .select("id,display_name,role,created_at")
+                          .eq("role", "student")
+                          .ilike("display_name", `%${promoteSearch.trim()}%`)
+                          .limit(10);
+                        setPromoteResults((data ?? []) as { id: string; display_name: string | null; role: string; created_at: string }[]);
+                        setPromoteSearchBusy(false);
+                      }}
+                    >
+                      <Search size={13} /> Search
+                    </button>
+                  </div>
+
+                  {promoteSearchBusy && (
+                    <div style={{ fontSize: 13, color: "var(--muted)", padding: "8px 0" }}>Searching...</div>
+                  )}
+
+                  {!promoteSearchBusy && promoteResults.length > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {promoteResults.map(user => (
+                        <div key={user.id} style={{
+                          display: "flex", alignItems: "center", gap: 10,
+                          padding: "8px 10px", borderRadius: "var(--r-md)",
+                          background: "var(--bg)", border: "1px solid var(--line)",
+                        }}>
+                          <div style={{
+                            width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+                            background: "linear-gradient(135deg,#6366F1,#8B5CF6)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: "#fff", fontSize: 13, fontWeight: 700,
+                          }}>
+                            {(user.display_name ?? "?")[0].toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{user.display_name ?? "Unnamed"}</div>
+                            <div style={{ fontSize: 11, color: "var(--muted)" }}>Student account</div>
+                          </div>
+                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                            <button
+                              style={{
+                                padding: "4px 9px", borderRadius: "var(--r-md)", fontSize: 11, fontWeight: 700, cursor: "pointer",
+                                background: "rgba(16,185,129,0.1)", color: "#10B981", border: "1px solid rgba(16,185,129,0.25)",
+                              }}
+                              onClick={async () => {
+                                const { error } = await supabase.from("profiles").update({ role: "moderator" }).eq("id", user.id);
+                                if (error) { toast(error.message, "error"); return; }
+                                setStaffMembers(prev => [...prev, { ...user, role: "moderator" }]);
+                                setPromoteResults(prev => prev.filter(u => u.id !== user.id));
+                                toast(`${user.display_name ?? "User"} is now a Moderator.`, "success");
+                              }}
+                            >
+                              Moderator
+                            </button>
+                            <button
+                              style={{
+                                padding: "4px 9px", borderRadius: "var(--r-md)", fontSize: 11, fontWeight: 700, cursor: "pointer",
+                                background: "rgba(245,158,11,0.1)", color: "#D97706", border: "1px solid rgba(245,158,11,0.25)",
+                              }}
+                              onClick={async () => {
+                                const { error } = await supabase.from("profiles").update({ role: "admin" }).eq("id", user.id);
+                                if (error) { toast(error.message, "error"); return; }
+                                setStaffMembers(prev => [...prev, { ...user, role: "admin" }]);
+                                setPromoteResults(prev => prev.filter(u => u.id !== user.id));
+                                toast(`${user.display_name ?? "User"} is now an Admin.`, "success");
+                              }}
+                            >
+                              Admin
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!promoteSearchBusy && promoteSearch && promoteResults.length === 0 && (
+                    <div style={{ fontSize: 13, color: "var(--muted)", padding: "8px 0" }}>No matching student accounts found.</div>
+                  )}
+                </div>
+
+                {/* Invite New Staff */}
+                <div className="sp-controls-card">
+                  <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
+                    <UserPlus size={16} style={{ color: "#6366F1" }} /> Invite New Staff
+                  </h3>
+                  <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--muted)" }}>
+                    Send a magic-link invitation email to a new staff member. They'll set their own password on first login.
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={e => setInviteEmail(e.target.value)}
+                      placeholder="Staff email address"
+                      style={{ height: 40, fontSize: 13 }}
+                    />
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {(["moderator", "admin"] as const).map(r => (
+                        <button
+                          key={r}
+                          style={{
+                            flex: 1, height: 36, borderRadius: "var(--r-md)", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                            background: inviteRole === r
+                              ? (r === "admin" ? "rgba(245,158,11,0.15)" : "rgba(16,185,129,0.12)")
+                              : "var(--bg)",
+                            color: inviteRole === r
+                              ? (r === "admin" ? "#D97706" : "#10B981")
+                              : "var(--muted)",
+                            border: inviteRole === r
+                              ? `1px solid ${r === "admin" ? "rgba(245,158,11,0.4)" : "rgba(16,185,129,0.4)"}`
+                              : "1px solid var(--line)",
+                            transition: "all var(--t-fast)",
+                          }}
+                          onClick={() => setInviteRole(r)}
+                        >
+                          {r === "admin" ? "👑 Admin" : "🛡 Moderator"}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      className="btn-primary"
+                      disabled={inviteBusy || !inviteEmail.trim() || !inviteEmail.includes("@")}
+                      style={{ height: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 700 }}
+                      onClick={async () => {
+                        setInviteBusy(true);
+                        try {
+                          // Use Supabase admin invite (requires service role key on server)
+                          // As a fallback, use signUp with magic link
+                          const { error } = await supabase.auth.signInWithOtp({
+                            email: inviteEmail.trim(),
+                            options: {
+                              emailRedirectTo: `${window.location.origin}/admin`,
+                              data: { role: inviteRole, invited_as_staff: true },
+                            },
+                          });
+                          if (error) throw error;
+                          toast(`Invite sent to ${inviteEmail}. They'll receive a magic-link to set up their account.`, "success");
+                          setInviteEmail("");
+                        } catch (e) {
+                          toast(e instanceof Error ? e.message : "Failed to send invite.", "error");
+                        } finally {
+                          setInviteBusy(false);
+                        }
+                      }}
+                    >
+                      <SendHorizonal size={15} />
+                      {inviteBusy ? "Sending..." : "Send Invitation"}
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </div>
         ) : activeTab === "flagged" ? (
           /* ── Tab: Flagged Comments View ── */
