@@ -4,7 +4,7 @@
 //   - Supabase API / Edge Functions: Network-first, fallback to cache
 //   - Navigation (HTML): Network-first, fallback to offline shell
 
-const CACHE_VERSION = "cv-v2";
+const CACHE_VERSION = "cv-v3";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
@@ -107,9 +107,19 @@ self.addEventListener("notificationclick", (event) => {
 });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-// Cache API only supports complete responses (HTTP 200); partial content (HTTP 206) throws TypeError.
+// Cache API only supports complete responses (HTTP 200).
+// Partial content (206), redirects, and opaque (0) responses throw TypeError on cache.put().
 function isCacheable(response) {
-  return response && response.status === 200;
+  return response && response.status === 200 && response.type !== "opaque";
+}
+
+// Safe wrapper — swallows any TypeError thrown by cache.put (e.g. for 206 partial responses).
+async function safeCachePut(cache, request, response) {
+  try {
+    await cache.put(request, response);
+  } catch (e) {
+    // Ignore — likely a 206 partial content response that the Cache API cannot store
+  }
 }
 
 async function cacheFirst(request, cacheName) {
@@ -118,7 +128,7 @@ async function cacheFirst(request, cacheName) {
   const response = await fetch(request);
   if (isCacheable(response)) {
     const cache = await caches.open(cacheName);
-    cache.put(request, response.clone());
+    await safeCachePut(cache, request, response.clone());
   }
   return response;
 }
@@ -128,7 +138,7 @@ async function networkFirst(request, cacheName) {
     const response = await fetch(request);
     if (isCacheable(response)) {
       const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
+      await safeCachePut(cache, request, response.clone());
     }
     return response;
   } catch {
@@ -142,9 +152,9 @@ async function networkFirst(request, cacheName) {
 async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
-  const networkPromise = fetch(request).then((response) => {
-    if (isCacheable(response)) cache.put(request, response.clone());
+  const networkPromise = fetch(request).then(async (response) => {
+    if (isCacheable(response)) await safeCachePut(cache, request, response.clone());
     return response;
-  });
+  }).catch(() => cached);
   return cached ?? networkPromise;
 }
