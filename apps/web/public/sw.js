@@ -4,7 +4,7 @@
 //   - Supabase API / Edge Functions: Network-first, fallback to cache
 //   - Navigation (HTML): Network-first, fallback to offline shell
 
-const CACHE_VERSION = "cv-v3";
+const CACHE_VERSION = "cv-v4";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
@@ -43,10 +43,15 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET, chrome-extension, sw.js itself, and range requests (audio/video/streaming)
+  // Skip non-GET requests, the sw.js file itself, and range requests (streaming/video)
   if (request.method !== "GET") return;
   if (url.pathname === "/sw.js") return;
   if (request.headers.has("range")) return;
+
+  // ⚠️  IMPORTANT: Never intercept cross-origin requests (e.g. Google Fonts, Sentry CDN).
+  // The CSP connect-src directive blocks the SW from re-fetching external origins,
+  // which causes a flood of "Failed to fetch" / CSP violation errors.
+  if (url.origin !== self.location.origin) return;
 
   // Supabase / edge function calls — network-first
   if (url.hostname.endsWith(".supabase.co") || url.pathname.startsWith("/functions/")) {
@@ -70,7 +75,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else — stale-while-revalidate
+  // Everything else (same-origin assets) — stale-while-revalidate
   event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
 });
 

@@ -67,12 +67,16 @@ function functionUrl(name: string) {
 
 async function invoke<T>(name: string, payload: unknown): Promise<T> {
   const { data: { session } } = await supabase.auth.getSession();
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  // Supabase Edge Function Gateway requires a Bearer token.
+  // Use the user's access token when authenticated, fall back to the anon key for guests.
+  const authToken = session?.access_token ?? anonKey;
   const response = await fetch(functionUrl(name), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+      apikey: anonKey,
+      Authorization: `Bearer ${authToken}`,
     },
     body: JSON.stringify(payload),
   });
