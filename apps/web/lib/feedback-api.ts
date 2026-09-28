@@ -153,8 +153,8 @@ function sanitizeSearchTerm(term: string): string {
  * This reduces per-page payload by ~60%.
  */
 const FEED_LIST_SELECT =
-  "id,title,status,vote_count,created_at,user_id,category_id," +
-  "categories(name),attachments(id),comments(count)";
+  "id,title,description,status,vote_count,created_at,user_id,category_id," +
+  "categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)";
 
 export async function loadPublishedSubmissions(
   sortBy: "popular" | "newest" | "oldest" = "popular",

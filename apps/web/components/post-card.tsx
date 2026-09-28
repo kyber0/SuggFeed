@@ -123,7 +123,7 @@ export function PostCard({
     : `@${authorDisplayName.toLowerCase().replace(/\s+/g, "")}`;
 
   // Show "Show more" if body is longer than ~200 chars (likely to be clipped by CSS)
-  const isLongBody = item.description.length > 200;
+  const isLongBody = (item.description ?? "").length > 200;
 
   // Generate deterministic avatar gradient
   const avatarBg = useMemo(() => {
