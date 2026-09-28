@@ -17,16 +17,15 @@ Deno.serve(async (request) => {
     const ip = requestIp(request);
     const ipHash = await sha256(`suggfeed_ip:${ip}`);
 
-    // Compute stable server-salted device hash
+    // Compute device hash (combines client fingerprint + IP address)
     const rawFingerprint = input.deviceFingerprint?.trim() || "";
     const deviceHash = rawFingerprint
       ? await sha256(`suggfeed_device:${rawFingerprint}`)
-      : await sha256(`suggfeed_ip_fallback:${ip}`);
+      : ipHash;
 
-    // General rate limit: 60 vote actions per hour per IP
+    // Rate limit per IP: max 60 vote actions per hour
     await enforceSlidingWindow("vote-ip", ip, 60, 60 * 60);
 
-    // Use standard SUPABASE_SERVICE_ROLE_KEY with PROJECT_SERVICE_ROLE_KEY fallback
     const serviceKey = Deno.env.get("PROJECT_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const client = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
     const user = await authenticatedUser(client, request);
@@ -48,16 +47,18 @@ Deno.serve(async (request) => {
 
     if (user) {
       // ══════════════════════════════════════════════════════════════════
-      // AUTHENTICATED USER: EXEMPT from device fingerprint limit.
-      // Votes are tracked strictly per account (user.id). Multiple users
-      // on the same device can each vote with their own account.
+      // AUTHENTICATED USER: EXEMPT from device/IP limits.
+      // Tracked strictly by account user_id. Multiple accounts on the
+      // same device or IP can each vote independently.
       // ══════════════════════════════════════════════════════════════════
-      const { data: existing } = await client
+      const { data: existingVotes, error: authFindErr } = await client
         .from("votes")
         .select("submission_id")
         .eq("submission_id", input.submissionId)
-        .eq("user_id", user.id)
-        .maybeSingle();
+        .eq("user_id", user.id);
+
+      if (authFindErr) throw authFindErr;
+      const existing = (existingVotes && existingVotes.length > 0) ? existingVotes[0] : null;
 
       if (existing) {
         if (action === "vote") {
@@ -87,56 +88,61 @@ Deno.serve(async (request) => {
       }
     } else {
       // ══════════════════════════════════════════════════════════════════
-      // ANONYMOUS USER: ENFORCE device fingerprint / IP rule.
-      // An anonymous device can only have 1 vote per submission.
-      // Clearing localStorage or incognito tabs will NOT allow repeat voting.
+      // ANONYMOUS USER: ENFORCE device & address limits.
+      // Prevents infinite voting from the same device / IP address.
       // ══════════════════════════════════════════════════════════════════
-      const anonToken = input.anonToken ?? crypto.randomUUID();
+      const anonToken = input.anonToken?.trim() || crypto.randomUUID();
 
-      // Check if an anonymous vote already exists for this submission from this device or token
-      let existingQuery = client
+      // Query any anonymous votes for this submission
+      const { data: anonVotes, error: anonFindErr } = await client
         .from("votes")
-        .select("submission_id, anon_token, device_hash")
+        .select("submission_id, anon_token, device_hash, ip_hash")
         .eq("submission_id", input.submissionId)
         .is("user_id", null);
 
-      if (anonToken && deviceHash) {
-        existingQuery = existingQuery.or(`device_hash.eq.${deviceHash},anon_token.eq.${anonToken}`);
-      } else if (deviceHash) {
-        existingQuery = existingQuery.eq("device_hash", deviceHash);
-      } else {
-        existingQuery = existingQuery.eq("anon_token", anonToken);
-      }
+      if (anonFindErr) throw anonFindErr;
 
-      const { data: existing } = await existingQuery.maybeSingle();
+      // Match by device_hash, ip_hash, or anon_token
+      const existing = (anonVotes ?? []).find((v) =>
+        (deviceHash && v.device_hash === deviceHash) ||
+        (ipHash && v.ip_hash === ipHash) ||
+        (anonToken && v.anon_token === anonToken)
+      );
 
       if (existing) {
-        // Device has already voted for this submission!
+        // Device or address has already voted on this submission
         if (action === "vote") {
-          // Explicit "vote" request on an already-voted submission is blocked
           return json({
-            error: "You have already supported this idea from this device. Sign in to manage your votes across devices.",
+            error: "You have already voted on this idea from this device or network. Please sign in to vote with your account.",
             voteCount: submission.vote_count,
             voted: true,
+            alreadyVoted: true,
           }, 409, request);
         }
 
         // Action is "unvote" or "toggle": remove the existing vote
-        const { error } = await client.from("votes")
+        const deleteQuery = client
+          .from("votes")
           .delete()
           .eq("submission_id", input.submissionId)
-          .is("user_id", null)
-          .or(`device_hash.eq.${deviceHash},anon_token.eq.${anonToken}`);
+          .is("user_id", null);
+
+        const deleteFilters: string[] = [];
+        if (existing.device_hash) deleteFilters.push(`device_hash.eq.${existing.device_hash}`);
+        if (existing.ip_hash) deleteFilters.push(`ip_hash.eq.${existing.ip_hash}`);
+        if (existing.anon_token) deleteFilters.push(`anon_token.eq.${existing.anon_token}`);
+
+        const { error } = deleteFilters.length > 0
+          ? await deleteQuery.or(deleteFilters.join(","))
+          : await deleteQuery.eq("anon_token", anonToken);
+
         if (error) throw error;
         didVote = false;
       } else {
-        // Device has NOT voted for this submission yet.
+        // Not voted yet on this submission
         if (action === "unvote") {
           return json({ voteCount: submission.vote_count, voted: false }, 200, request);
         }
-
-        // Anti-sybil rate limit for anonymous voting: max 25 votes per hour per IP
-        await enforceSlidingWindow("anon-vote-ip", ip, 25, 60 * 60);
 
         const { error: insertError } = await client.from("votes")
           .insert({
@@ -147,12 +153,12 @@ Deno.serve(async (request) => {
           });
 
         if (insertError) {
-          // Unique violation on votes_anonymous_device_unique
           if ((insertError as { code?: string }).code === "23505") {
             return json({
-              error: "You have already supported this idea from this device.",
+              error: "You have already voted on this idea from this device or network.",
               voteCount: submission.vote_count,
               voted: true,
+              alreadyVoted: true,
             }, 409, request);
           }
           throw insertError;
@@ -161,10 +167,7 @@ Deno.serve(async (request) => {
       }
     }
 
-    // Update vote_count incrementally on the submission.
-    // Do NOT count(*) from votes table because seed/pre-existing submissions
-    // have initial vote counts without individual vote rows in votes table;
-    // counting would wipe those totals down to 1 or 0.
+    // Update vote_count incrementally on the submission
     const currentVotes = typeof submission.vote_count === "number" ? submission.vote_count : 0;
     const voteCount = Math.max(0, currentVotes + (didVote ? 1 : -1));
 

@@ -137,11 +137,18 @@ export function useVoting(feed: PublishedSubmission[], setFeed: React.Dispatch<R
       );
 
       if (isAlreadyVoted) {
-        // Device already voted anonymously: keep as voted in UI so state is accurate
+        // Device already voted anonymously: keep as voted in UI, but revert optimistic count
         const syncedVoted = new Set(votedIds);
         syncedVoted.add(id);
         setVotedIds(syncedVoted);
         localStorage.setItem("sf_voted", JSON.stringify([...syncedVoted]));
+        setFeed((cur) =>
+          cur.map((item) =>
+            item.id === id
+              ? { ...item, vote_count: preVoteCount }
+              : item
+          )
+        );
         toast(error.message, "info");
       } else {
         // Revert to pre-vote snapshot

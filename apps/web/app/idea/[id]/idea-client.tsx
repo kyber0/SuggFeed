@@ -219,6 +219,7 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
       );
       if (isAlreadyVoted) {
         toast(err.message, "info");
+        setIdea((prev) => ({ ...prev, vote_count: wasVoted ? prev.vote_count + 1 : prev.vote_count - 1 }));
         setVotedIds((prev) => {
           const next = new Set(prev);
           next.add(idea.id);
