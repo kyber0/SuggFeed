@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo, MouseEvent } from "react";
+import { useState, useMemo, MouseEvent, useEffect } from "react";
 import {
   Heart,
   MessageCircle,
-  Repeat2,
+  Share2,
   Bookmark,
   MoreHorizontal,
   Flag,
@@ -16,10 +16,12 @@ import {
   Paperclip,
   ShieldAlert,
   Flame,
+  Link as LinkIcon,
 } from "lucide-react";
 import type { PublishedSubmission } from "../lib/feedback-api";
 import { relativeDateShort as relativeDate } from "../lib/format";
 import { useToast } from "./toast";
+import { useAuth } from "./auth-context";
 
 interface PostCardProps {
   item: PublishedSubmission;
@@ -81,15 +83,42 @@ export function PostCard({
   isKeyboardFocused = false,
 }: PostCardProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [isSensitive, setIsSensitive] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [bodyExpanded, setBodyExpanded] = useState(false);
-  const [repostCount, setRepostCount] = useState(
-    Math.max(0, Math.floor(((item.vote_count || 1) * 0.35) % 45))
-  );
-  const [hasReposted, setHasReposted] = useState(false);
+
+  // Display name: auth profile > localStorage > anon fallback
+  const [resolvedDisplayName, setResolvedDisplayName] = useState<string | null>(null);
+  const [resolvedAnon, setResolvedAnon] = useState(false);
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("sf_display_name") ?? localStorage.getItem("cv_display_name") ?? "";
+    const isAnon = (localStorage.getItem("sf_anon_pref") ?? localStorage.getItem("cv_anon_pref")) === "true";
+    setResolvedAnon(isAnon);
+
+    if (!isAnon && storedName) {
+      setResolvedDisplayName(storedName);
+    } else if (!isAnon && user) {
+      const name = user.user_metadata?.full_name ?? user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? null;
+      setResolvedDisplayName(name);
+    } else {
+      setResolvedDisplayName(null);
+    }
+  }, [user]);
+
+  const authorName = resolvedAnon
+    ? "Anonymous"
+    : (resolvedDisplayName || "Community Member");
+
+  const authorHandle = resolvedAnon
+    ? "@anon"
+    : resolvedDisplayName
+      ? `@${resolvedDisplayName.toLowerCase().replace(/\s+/g, "")}`
+      : "@member";
 
   // Show "Show more" if body is longer than ~200 chars (likely to be clipped by CSS)
   const isLongBody = item.description.length > 200;
@@ -110,6 +139,10 @@ export function PostCard({
     }
     return colors[Math.abs(hash) % colors.length];
   }, [item.id]);
+
+  const avatarInitial = resolvedAnon
+    ? "?"
+    : (resolvedDisplayName?.[0]?.toUpperCase() ?? authorName[0]?.toUpperCase() ?? "C");
 
   const catName = item.categories?.name ?? "Other";
   const catStyle = CATEGORY_COLORS[catName] || CATEGORY_COLORS.Other;
@@ -139,13 +172,21 @@ export function PostCard({
     toast("Link copied to clipboard!", "success");
     setTimeout(() => setCopied(false), 2000);
     setMenuOpen(false);
+    setShareMenuOpen(false);
   };
 
-  const handleRepost = (e: MouseEvent) => {
+  const handleShare = (e: MouseEvent) => {
     e.stopPropagation();
-    setHasReposted((prev) => !prev);
-    setRepostCount((prev) => (hasReposted ? prev - 1 : prev + 1));
-    toast(hasReposted ? "Repost removed" : "Reposted to your activity feed!", "success");
+    // Use Web Share API if available (mobile), else show share menu
+    if (navigator.share) {
+      navigator.share({
+        title: item.title,
+        text: item.description.slice(0, 100),
+        url: `${window.location.origin}/idea/${item.id}`,
+      }).catch(() => {/* user dismissed */});
+    } else {
+      setShareMenuOpen((prev) => !prev);
+    }
   };
 
   const handleReport = (e: MouseEvent) => {
@@ -170,13 +211,13 @@ export function PostCard({
       {/* ── Post Header ── */}
       <div className="post-header">
         <div className="post-avatar" style={{ background: avatarBg }}>
-          {catName[0]?.toUpperCase() || "S"}
+          {avatarInitial}
         </div>
 
         <div className="post-author-meta">
           <div className="post-author-row">
-            <span className="post-author-name">Campus Member</span>
-            <span className="post-author-handle">@student</span>
+            <span className="post-author-name">{authorName}</span>
+            <span className="post-author-handle">{authorHandle}</span>
             <span className="post-dot">·</span>
             <time className="post-timestamp" title={new Date(item.created_at).toLocaleString()}>
               {relativeDate(item.created_at)}
@@ -305,7 +346,7 @@ export function PostCard({
         </div>
       )}
 
-      {/* ── Action Footer: Like, Comment, Repost, Bookmark, Expand ── */}
+      {/* ── Action Footer: Like, Comment, Share, Bookmark, Expand ── */}
       <div className="post-footer" onClick={(e) => e.stopPropagation()}>
         {/* Heart / Like */}
         <button
@@ -335,17 +376,32 @@ export function PostCard({
           <span className="action-count">{commentCount}</span>
         </button>
 
-        {/* Repost / Share */}
-        <button
-          type="button"
-          className={`action-btn action-repost ${hasReposted ? "active" : ""}`}
-          onClick={handleRepost}
-          aria-label="Repost"
-          title="Repost idea"
-        >
-          <Repeat2 size={16} strokeWidth={2} />
-          <span className="action-count">{repostCount}</span>
-        </button>
+        {/* Share */}
+        <div className="post-share-wrap" style={{ position: "relative" }}>
+          <button
+            type="button"
+            className={`action-btn action-share ${shareMenuOpen ? "active" : ""}`}
+            onClick={handleShare}
+            aria-label="Share idea"
+            title="Share this idea"
+          >
+            <Share2 size={16} strokeWidth={2} />
+            <span className="action-count action-label">Share</span>
+          </button>
+
+          {shareMenuOpen && (
+            <div
+              className="post-dropdown-menu post-share-menu"
+              onMouseLeave={() => setShareMenuOpen(false)}
+              style={{ bottom: "calc(100% + 6px)", top: "auto", right: 0, left: "auto", minWidth: 180 }}
+            >
+              <button type="button" onClick={handleCopyLink} className="dropdown-action">
+                {copied ? <Check size={14} color="#10B981" /> : <LinkIcon size={14} />}
+                <span>{copied ? "Copied!" : "Copy link"}</span>
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Bookmark */}
         <button
@@ -360,6 +416,7 @@ export function PostCard({
             strokeWidth={isBookmarked ? 0 : 2}
             fill={isBookmarked ? "var(--bookmark)" : "none"}
           />
+          <span className="action-count action-label">{isBookmarked ? "Saved" : "Save"}</span>
         </button>
 
         {/* Expand / View Details */}

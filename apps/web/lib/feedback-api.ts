@@ -226,8 +226,10 @@ export async function loadAttachments(submissionId: string): Promise<AttachmentF
 
 export async function voteSubmission(submissionId: string, anonToken: string) {
   const result = await invoke<{ voteCount: number; voted: boolean }>("vote-submission", { submissionId, anonToken });
-  invalidateCache("feed_");
-  invalidateCache("roadmap_");
+  // NOTE: Do NOT invalidate feed_ cache here. The optimistic update in use-voting.ts
+  // already handles the UI count, and the server-returned voteCount patches it correctly.
+  // Blowing the cache causes a stale re-fetch race that makes vote_count appear to reset.
+  // Only invalidate the per-submission detail cache (used by the drawer/detail panel).
   invalidateCache(`submission_${submissionId}`);
   return result;
 }

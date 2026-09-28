@@ -27,6 +27,10 @@ export function useVoting(feed: PublishedSubmission[], setFeed: React.Dispatch<R
     if (votingId) return; // prevent double-fire
     const isUnvote = votedIds.has(id);
 
+    // Capture pre-vote count snapshot to allow correct revert on failure
+    const preVoteItem = feed.find((i) => i.id === id);
+    const preVoteCount = preVoteItem?.vote_count ?? 0;
+
     // ── Optimistic update ─────────────────────────────
     const nextVotedIds = new Set(votedIds);
     if (isUnvote) { nextVotedIds.delete(id); } else { nextVotedIds.add(id); }
@@ -44,21 +48,26 @@ export function useVoting(feed: PublishedSubmission[], setFeed: React.Dispatch<R
     setVotingId(id);
     try {
       const { voteCount } = await voteSubmission(id, getAnonToken());
-      setFeed((cur) => cur.map((item) => item.id === id ? { ...item, vote_count: voteCount } : item));
+      // Only apply server count if it's a valid non-negative number
+      if (typeof voteCount === "number" && voteCount >= 0) {
+        setFeed((cur) => cur.map((item) => item.id === id ? { ...item, vote_count: voteCount } : item));
+      }
     } catch (error) {
-      // Revert on failure
-      setVotedIds(new Set(votedIds));
+      // Revert to pre-vote snapshot (not stale closure)
+      const revertVotedIds = new Set(votedIds); // original state before this vote
+      setVotedIds(revertVotedIds);
       setFeed((cur) =>
         cur.map((item) =>
           item.id === id
-            ? { ...item, vote_count: Math.max(0, item.vote_count + (isUnvote ? 1 : -1)) }
+            ? { ...item, vote_count: preVoteCount }
             : item
         )
       );
-      localStorage.setItem("sf_voted", JSON.stringify([...votedIds]));
+      localStorage.setItem("sf_voted", JSON.stringify([...revertVotedIds]));
       toast(error instanceof Error ? error.message : "Couldn't record your vote.", "error");
     } finally { setVotingId(null); }
   }
 
   return { votedIds, votingId, handleVote };
 }
+
