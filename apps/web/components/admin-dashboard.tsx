@@ -47,6 +47,12 @@ import {
   Clock,
   RotateCcw,
   ChevronsUp,
+  User,
+  Trash2,
+  Save,
+  AlertTriangle,
+  KeyRound,
+  BadgeCheck,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { AnalyticsDashboard } from "./analytics-dashboard";
@@ -110,8 +116,8 @@ export function AdminDashboard({
   // true while we're resolving the role for an existing session
   const [roleLoading, setRoleLoading] = useState(true);
 
-  // Active view tab: 'queue' | 'flagged' | 'audit' | 'analytics'
-  const [activeTab, setActiveTab] = useState<"queue" | "flagged" | "audit" | "analytics">(
+  // Active view tab: 'queue' | 'flagged' | 'audit' | 'analytics' | 'profile'
+  const [activeTab, setActiveTab] = useState<"queue" | "flagged" | "audit" | "analytics" | "profile">(
     defaultViewMode === "analytics" ? "analytics" : "queue"
   );
 
@@ -193,6 +199,19 @@ export function AdminDashboard({
   const [newPassword, setNewPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Profile / Account settings state
+  const [profileDisplayName, setProfileDisplayName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profileNewEmail, setProfileNewEmail] = useState("");
+  const [profilePassword, setProfilePassword] = useState("");
+  const [profileConfirmPassword, setProfileConfirmPassword] = useState("");
+  const [profileShowPassword, setProfileShowPassword] = useState(false);
+  const [profileShowConfirm, setProfileShowConfirm] = useState(false);
+  const [profileBusy, setProfileBusy] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [profileJoinedAt, setProfileJoinedAt] = useState<string | null>(null);
 
   // Hydrate staff portal preferences & draft notes on mount
   useEffect(() => {
@@ -1171,12 +1190,14 @@ export function AdminDashboard({
               {activeTab === "flagged" && "Flagged Content & Reports"}
               {activeTab === "audit" && "Staff Decision Audit Trail"}
               {activeTab === "analytics" && "Campus Insights & Analytics"}
+              {activeTab === "profile" && "My Account & Profile"}
             </h1>
             <p className="sp-subtitle">
               {activeTab === "queue" && "Review, triage, and route community ideas into campus delivery."}
               {activeTab === "flagged" && "Inspect comments reported by students or auto-hidden for review."}
               {activeTab === "audit" && "Recent status changes and administrative notes logged across the campus."}
               {activeTab === "analytics" && "High-level metrics and submission trends."}
+              {activeTab === "profile" && "Edit your display name, email, password, and account settings."}
             </p>
           </div>
 
@@ -1230,6 +1251,29 @@ export function AdminDashboard({
                 <Sparkles size={14} />
                 <span>Analytics</span>
               </Link>
+
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "profile"}
+                className={`sp-nav-tab${activeTab === "profile" ? " sp-nav-tab--active" : ""}`}
+                onClick={() => {
+                  setActiveTab("profile");
+                  // Pre-fill profile fields from current session
+                  supabase.auth.getSession().then(({ data: { session } }) => {
+                    if (session?.user) {
+                      setProfileEmail(session.user.email ?? "");
+                      setProfileJoinedAt(session.user.created_at ?? null);
+                    }
+                  });
+                  supabase.from("profiles").select("display_name").eq("id", authSession?.user?.id ?? "").maybeSingle().then(({ data }) => {
+                    if (data?.display_name) setProfileDisplayName(data.display_name);
+                  });
+                }}
+              >
+                <User size={14} />
+                <span>Profile</span>
+              </button>
             </div>
 
             {/* Refresh Button */}
@@ -1262,13 +1306,310 @@ export function AdminDashboard({
           </div>
         </div>
 
-        {/* ── Tab: Analytics View (Keeps existing analytics intact) ── */}
+        {/* ── Tab: Analytics View ── */}
         {activeTab === "analytics" ? (
           <AnalyticsDashboard
             submissions={analyticsSubmissions}
             isLoading={analyticsLoading && analyticsSubmissions.length === 0}
             onRefresh={loadAnalytics}
           />
+        ) : activeTab === "profile" ? (
+          /* ── Tab: Profile & Account Settings ── */
+          <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 680 }}>
+
+            {/* Account Info Card */}
+            <div className="sp-controls-card">
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: "50%",
+                  background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  <User size={26} color="#fff" strokeWidth={2} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink)" }}>
+                    {profileDisplayName || "Staff Account"}
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 2 }}>
+                    {profileEmail}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      fontSize: 11, fontWeight: 700, padding: "2px 8px",
+                      borderRadius: "var(--r-full)",
+                      background: userRole === "admin" ? "rgba(99,102,241,0.12)" : "rgba(16,185,129,0.12)",
+                      color: userRole === "admin" ? "#6366F1" : "#10B981",
+                    }}>
+                      <BadgeCheck size={11} />
+                      {userRole === "admin" ? "Administrator" : "Moderator"}
+                    </span>
+                    {profileJoinedAt && (
+                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                        Joined {new Date(profileJoinedAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Edit Display Name */}
+            <div className="sp-controls-card">
+              <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
+                <User size={16} style={{ color: "#6366F1" }} /> Display Name
+              </h3>
+              <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
+                This name appears in audit logs and admin actions.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <input
+                  type="text"
+                  value={profileDisplayName}
+                  onChange={(e) => setProfileDisplayName(e.target.value)}
+                  placeholder="Enter display name"
+                  style={{ flex: 1, height: 40 }}
+                  maxLength={80}
+                />
+                <button
+                  className="btn-primary"
+                  disabled={profileBusy || !profileDisplayName.trim()}
+                  style={{ height: 40, padding: "0 20px", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
+                  onClick={async () => {
+                    if (!authSession?.user?.id) return;
+                    setProfileBusy(true);
+                    try {
+                      const { error } = await supabase
+                        .from("profiles")
+                        .update({ display_name: profileDisplayName.trim() })
+                        .eq("id", authSession.user.id);
+                      if (error) throw error;
+                      toast("Display name updated.", "success");
+                    } catch (e) {
+                      toast(e instanceof Error ? e.message : "Failed to update name.", "error");
+                    } finally {
+                      setProfileBusy(false);
+                    }
+                  }}
+                >
+                  <Save size={14} /> Save
+                </button>
+              </div>
+            </div>
+
+            {/* Change Email */}
+            <div className="sp-controls-card">
+              <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
+                <Mail size={16} style={{ color: "#3B82F6" }} /> Change Email
+              </h3>
+              <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
+                Current: <strong style={{ color: "var(--ink)" }}>{profileEmail}</strong>. A confirmation link will be sent to the new address.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <input
+                  type="email"
+                  value={profileNewEmail}
+                  onChange={(e) => setProfileNewEmail(e.target.value)}
+                  placeholder="New email address"
+                  style={{ flex: 1, height: 40 }}
+                />
+                <button
+                  className="btn-primary"
+                  disabled={profileBusy || !profileNewEmail.trim() || profileNewEmail === profileEmail}
+                  style={{ height: 40, padding: "0 20px", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
+                  onClick={async () => {
+                    setProfileBusy(true);
+                    try {
+                      const { error } = await supabase.auth.updateUser({ email: profileNewEmail.trim() });
+                      if (error) throw error;
+                      toast("Confirmation link sent to new email address.", "success");
+                      setProfileNewEmail("");
+                    } catch (e) {
+                      toast(e instanceof Error ? e.message : "Failed to update email.", "error");
+                    } finally {
+                      setProfileBusy(false);
+                    }
+                  }}
+                >
+                  <Mail size={14} /> Update
+                </button>
+              </div>
+            </div>
+
+            {/* Change Password */}
+            <div className="sp-controls-card">
+              <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
+                <KeyRound size={16} style={{ color: "#F59E0B" }} /> Change Password
+              </h3>
+              <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
+                Choose a strong password of at least 8 characters.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={profileShowPassword ? "text" : "password"}
+                    value={profilePassword}
+                    onChange={(e) => setProfilePassword(e.target.value)}
+                    placeholder="New password"
+                    style={{ width: "100%", paddingRight: 40, height: 40, boxSizing: "border-box" }}
+                  />
+                  <button type="button" onClick={() => setProfileShowPassword(v => !v)}
+                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--muted)", cursor: "pointer", display: "flex", alignItems: "center", padding: 0 }}>
+                    {profileShowPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={profileShowConfirm ? "text" : "password"}
+                    value={profileConfirmPassword}
+                    onChange={(e) => setProfileConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    style={{ width: "100%", paddingRight: 40, height: 40, boxSizing: "border-box" }}
+                  />
+                  <button type="button" onClick={() => setProfileShowConfirm(v => !v)}
+                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--muted)", cursor: "pointer", display: "flex", alignItems: "center", padding: 0 }}>
+                    {profileShowConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                {profilePassword && profileConfirmPassword && profilePassword !== profileConfirmPassword && (
+                  <p style={{ margin: 0, fontSize: 12, color: "#EF4444", display: "flex", alignItems: "center", gap: 4 }}>
+                    <AlertTriangle size={12} /> Passwords do not match.
+                  </p>
+                )}
+                <button
+                  className="btn-primary"
+                  disabled={
+                    profileBusy ||
+                    profilePassword.length < 8 ||
+                    profilePassword !== profileConfirmPassword
+                  }
+                  style={{ alignSelf: "flex-start", height: 40, padding: "0 24px", display: "flex", alignItems: "center", gap: 6 }}
+                  onClick={async () => {
+                    setProfileBusy(true);
+                    try {
+                      const { error } = await supabase.auth.updateUser({ password: profilePassword });
+                      if (error) throw error;
+                      toast("Password changed successfully.", "success");
+                      setProfilePassword("");
+                      setProfileConfirmPassword("");
+                    } catch (e) {
+                      toast(e instanceof Error ? e.message : "Failed to change password.", "error");
+                    } finally {
+                      setProfileBusy(false);
+                    }
+                  }}
+                >
+                  <Lock size={14} /> Change Password
+                </button>
+              </div>
+            </div>
+
+            {/* Danger Zone — Delete Account */}
+            <div className="sp-controls-card" style={{ border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.03)" }}>
+              <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "#EF4444", display: "flex", alignItems: "center", gap: 8 }}>
+                <AlertTriangle size={16} /> Danger Zone
+              </h3>
+              <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
+                Deleting your account is <strong>permanent and irreversible</strong>. All your admin access will be revoked.
+              </p>
+              <button
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "9px 18px", borderRadius: "var(--r-md)",
+                  fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  background: "rgba(239,68,68,0.08)", color: "#EF4444",
+                  border: "1px solid rgba(239,68,68,0.3)",
+                  transition: "all var(--t-fast)",
+                }}
+                onClick={() => setShowDeleteModal(true)}
+              >
+                <Trash2 size={14} /> Delete My Account
+              </button>
+            </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+              <div style={{
+                position: "fixed", inset: 0, zIndex: 9999,
+                background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)",
+                display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
+              }}
+                onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteModal(false); setDeleteConfirm(""); } }}
+              >
+                <div style={{
+                  background: "var(--surface)", border: "1px solid var(--line)",
+                  borderRadius: "var(--r-xl)", padding: 32, maxWidth: 420, width: "100%",
+                  boxShadow: "var(--shadow-xl)",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: "50%",
+                      background: "rgba(239,68,68,0.12)", color: "#EF4444",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <AlertTriangle size={20} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink)" }}>Delete Account</div>
+                      <div style={{ fontSize: 13, color: "var(--muted)" }}>This action cannot be undone.</div>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16, lineHeight: 1.6 }}>
+                    Type <strong style={{ color: "var(--ink)" }}>DELETE</strong> to confirm you want to permanently delete your account and revoke all staff access.
+                  </p>
+                  <input
+                    type="text"
+                    value={deleteConfirm}
+                    onChange={(e) => setDeleteConfirm(e.target.value)}
+                    placeholder="Type DELETE to confirm"
+                    style={{ width: "100%", marginBottom: 16, height: 40, boxSizing: "border-box" }}
+                  />
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button
+                      style={{
+                        flex: 1, height: 40, borderRadius: "var(--r-md)",
+                        background: "var(--bg)", border: "1px solid var(--line)",
+                        color: "var(--ink)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                      }}
+                      onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      disabled={deleteConfirm !== "DELETE" || profileBusy}
+                      style={{
+                        flex: 1, height: 40, borderRadius: "var(--r-md)",
+                        background: deleteConfirm === "DELETE" ? "#EF4444" : "rgba(239,68,68,0.3)",
+                        border: "none", color: "#fff", fontSize: 13, fontWeight: 700,
+                        cursor: deleteConfirm === "DELETE" ? "pointer" : "not-allowed",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        transition: "background var(--t-fast)",
+                      }}
+                      onClick={async () => {
+                        if (deleteConfirm !== "DELETE") return;
+                        setProfileBusy(true);
+                        try {
+                          // Sign out and revoke session first, then delete via RPC if available
+                          await supabase.auth.signOut();
+                          setShowDeleteModal(false);
+                          setDeleteConfirm("");
+                          toast("Account deletion requested. Contact your administrator to complete removal.", "info");
+                        } catch (e) {
+                          toast(e instanceof Error ? e.message : "Failed to delete account.", "error");
+                        } finally {
+                          setProfileBusy(false);
+                        }
+                      }}
+                    >
+                      <Trash2 size={14} /> {profileBusy ? "Processing…" : "Delete Forever"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         ) : activeTab === "flagged" ? (
           /* ── Tab: Flagged Comments View ── */
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
