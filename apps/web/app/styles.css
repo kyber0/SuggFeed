@@ -3096,14 +3096,13 @@ input.feed-search {
   }
   .mobile-drag-handle {
     display: block;
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
     width: 36px;
     height: 4px;
+    margin: 8px auto 0;
     background: var(--line-2);
     border-radius: var(--radius-pill);
+    flex-shrink: 0;
   }
 
   /* â”€â”€ Mobile Tab Navigation (FB-style comments sheet toggle) â”€â”€ */

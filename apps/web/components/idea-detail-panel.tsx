@@ -271,9 +271,10 @@ export function IdeaDetailPanel({
         aria-modal="true"
         aria-label={idea.title}
       >
+        {/* Mobile drag handle — sits ABOVE the header, not inside it */}
+        <div className="mobile-drag-handle" aria-hidden="true" />
         {/* ── Header ── */}
         <div className="detail-panel-header">
-          <div className="mobile-drag-handle" aria-hidden="true" />
           <div className="detail-panel-badges">
             <span
               className="detail-category-badge"
