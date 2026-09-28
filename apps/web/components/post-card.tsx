@@ -44,6 +44,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
 };
 
 const STATUS_CONFIG: Record<string, { color: string; label: string }> = {
+  pending:     { color: "#F59E0B", label: "Pending Review" },
   approved:    { color: "#10B981", label: "Approved" },
   in_progress: { color: "#3B82F6", label: "In Progress" },
   resolved:    { color: "#0D9488", label: "Resolved" },
@@ -405,10 +406,16 @@ export function PostCard({
         <button
           type="button"
           className={`action-btn action-like ${isVoted ? "active" : ""}`}
-          onClick={() => onVote(item.id)}
+          onClick={() => {
+            if (item.status === "pending") {
+              toast("This idea is pending staff review. Voting opens once approved.", "info");
+              return;
+            }
+            onVote(item.id);
+          }}
           disabled={isVoting}
-          aria-label={isVoted ? "Undo like" : "Like post"}
-          title={isVoted ? "Undo like" : "Like this idea"}
+          aria-label={item.status === "pending" ? "Pending review" : (isVoted ? "Undo like" : "Like post")}
+          title={item.status === "pending" ? "Pending staff review before voting opens" : (isVoted ? "Undo like" : "Like this idea")}
         >
           <Heart size={16} strokeWidth={isVoted ? 0 : 2} fill={isVoted ? "var(--like)" : "none"} />
           <span className="action-count">{item.vote_count}</span>

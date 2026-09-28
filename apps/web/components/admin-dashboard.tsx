@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useToast } from "./toast";
+import { useAuth } from "./auth-context";
 import { loadAttachments, type AttachmentFile } from "../lib/feedback-api";
 import {
   getStoredPreference,
@@ -100,6 +101,7 @@ export function AdminDashboard({
   defaultViewMode?: "queue" | "analytics";
 }) {
   const { toast } = useToast();
+  const { session: authSession, role: contextRole, loading: authLoading } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -314,66 +316,95 @@ export function AdminDashboard({
     }
   }
 
-  // Auth Initialization
+  // Auth Initialization & Synchronization:
+  // Automatically logs in any user who already has an admin or moderator session (including OAuth & email).
   useEffect(() => {
     setMounted(true);
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        // Staff portal only accepts email/password sessions.
-        // OAuth sessions (Google, GitHub, etc.) are signed out immediately.
-        const provider = data.session.user.app_metadata?.provider ?? "email";
-        if (provider !== "email") {
-          supabase.auth.signOut().finally(() => setRoleLoading(false));
-          return;
+    let active = true;
+
+    async function syncAuth() {
+      // If auth-context is still initializing, wait
+      if (authLoading) return;
+
+      const currentSession = authSession ?? (await supabase.auth.getSession()).data.session;
+      if (!currentSession) {
+        if (active) {
+          setAccessToken(null);
+          setUserRole(null);
+          setRoleLoading(false);
         }
-
-        setAccessToken(data.session.access_token);
-        // Resolve role before rendering the portal
-        supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", data.session.user.id)
-          .single()
-          .then((res) => {
-            const role = res.data?.role ?? null;
-            setUserRole(role);
-            setRoleLoading(false);
-            // Only load data if the user is actually staff
-            if (role === "moderator" || role === "admin") {
-              loadSubmissions();
-            }
-          });
-      } else {
-        // No session — nothing to resolve
-        setRoleLoading(false);
+        return;
       }
-    });
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (active) setAccessToken(currentSession.access_token);
+
+      // Resolve role: prefer contextRole if already staff/moderator/admin, else fetch from database
+      let resolvedRole = contextRole;
+      if (!resolvedRole || resolvedRole === "student") {
+        try {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", currentSession.user.id)
+            .maybeSingle();
+
+          const dbRole = profile?.role ?? currentSession.user.app_metadata?.role ?? currentSession.user.user_metadata?.role ?? "student";
+          resolvedRole = dbRole;
+        } catch (err) {
+          console.error("Failed to query staff role", err);
+        }
+      }
+
+      if (active) {
+        setUserRole(resolvedRole ?? "student");
+        setRoleLoading(false);
+
+        // If the user is staff or admin, automatically load portal data
+        if (resolvedRole === "moderator" || resolvedRole === "admin") {
+          loadSubmissions();
+        }
+      }
+    }
+
+    syncAuth();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "PASSWORD_RECOVERY") {
-        // Store the recovery session token so updateUser() has a valid auth context
         if (session?.access_token) setAccessToken(session.access_token);
         setRecoveryMode(true);
       } else if (session) {
-        // Ignore any OAuth sign-in events in the admin portal
-        const provider = session.user.app_metadata?.provider ?? "email";
-        if (provider !== "email") {
-          supabase.auth.signOut();
-          return;
+        if (active) setAccessToken(session.access_token);
+        try {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", session.user.id)
+            .maybeSingle();
+          const r = profile?.role ?? session.user.app_metadata?.role ?? session.user.user_metadata?.role ?? "student";
+          if (active) {
+            setUserRole(r);
+            setRoleLoading(false);
+            if (r === "moderator" || r === "admin") {
+              loadSubmissions();
+            }
+          }
+        } catch {
+          if (active) setRoleLoading(false);
         }
-        setAccessToken(session.access_token);
       } else {
-        // Signed out
-        setAccessToken(null);
-        setUserRole(null);
-        setRoleLoading(false);
+        if (active) {
+          setAccessToken(null);
+          setUserRole(null);
+          setRoleLoading(false);
+        }
       }
     });
 
     return () => {
+      active = false;
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [authSession, contextRole, authLoading]);
 
   // Fetch contextual tab data
   useEffect(() => {
@@ -426,8 +457,24 @@ export function AdminDashboard({
       return;
     }
     setAccessToken(data.session.access_token);
-    await loadSubmissions();
-    toast("Welcome back! Staff portal ready.", "success");
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", data.session.user.id)
+        .maybeSingle();
+      const r = profile?.role ?? data.session.user.app_metadata?.role ?? data.session.user.user_metadata?.role ?? "student";
+      setUserRole(r);
+      if (r === "moderator" || r === "admin") {
+        await loadSubmissions();
+        toast("Welcome back! Staff portal ready.", "success");
+      } else {
+        toast("Access restricted: This account does not have staff privileges.", "error");
+      }
+    } catch {
+      await loadSubmissions();
+      toast("Welcome back! Staff portal ready.", "success");
+    }
   }
 
   // Password Recovery
@@ -617,6 +664,7 @@ export function AdminDashboard({
   async function signOut() {
     await supabase.auth.signOut();
     setAccessToken(null);
+    setUserRole(null);
     setSubmissions([]);
     toast("Staff session ended.", "info");
   }

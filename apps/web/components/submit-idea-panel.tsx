@@ -200,6 +200,10 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
 
       setSubmission(emptySubmission); setFiles([]);
       setTurnstileToken(""); setCaptchaKey((k) => k + 1);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("suggfeed:idea_submitted", { detail: { trackingCode: result.trackingCode } }));
+      }
     } catch (error) {
       toast(error instanceof Error ? error.message : "Couldn't send that right now. Please try again.", "error");
     } finally {

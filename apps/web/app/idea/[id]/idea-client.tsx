@@ -90,6 +90,15 @@ const STATUS_CONFIG: Record<
     bannerTitle: "Proposal Approved",
     bannerDesc: "This proposal has been accepted and scheduled for upcoming campus improvements.",
   },
+  pending: {
+    label: "Pending Review",
+    icon: Clock,
+    dotColor: "#f59e0b",
+    badgeBg: "rgba(245, 158, 11, 0.12)",
+    badgeText: "#f59e0b",
+    bannerTitle: "Pending Staff Review",
+    bannerDesc: "This proposal has been submitted and is currently being reviewed by campus staff before being published to the community feed.",
+  },
 };
 
 interface Props {
@@ -467,10 +476,16 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
             <div className="detail-support-card">
               <button
                 className={`detail-support-btn${voted ? " voted" : ""}`}
-                onClick={handleVote}
+                onClick={() => {
+                  if (idea.status === "pending") {
+                    toast("This idea is pending staff review. Voting opens once approved.", "info");
+                    return;
+                  }
+                  handleVote();
+                }}
                 disabled={votingId === idea.id}
-                aria-label={voted ? "Remove support" : "Support this idea"}
-                title={voted ? "Click to remove your support" : "Support this idea"}
+                aria-label={idea.status === "pending" ? "Pending review" : (voted ? "Remove support" : "Support this idea")}
+                title={idea.status === "pending" ? "Pending staff review before voting opens" : (voted ? "Click to remove your support" : "Support this idea")}
               >
                 {voted ? (
                   <Check size={16} strokeWidth={2.5} />
@@ -601,6 +616,27 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
             </div>
 
             {/* Compact, clean comment composer */}
+            {idea.status === "pending" ? (
+              <div
+                className="comment-pending-notice"
+                style={{
+                  margin: "16px 20px",
+                  padding: "14px 16px",
+                  background: "rgba(245, 158, 11, 0.08)",
+                  border: "1px solid rgba(245, 158, 11, 0.22)",
+                  borderRadius: "var(--radius-card)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  fontSize: "13px",
+                  color: "#d97706",
+                  fontWeight: 500,
+                }}
+              >
+                <Clock size={16} strokeWidth={2.2} style={{ flexShrink: 0 }} />
+                <span>Discussion and comments will open once this proposal is approved by campus staff.</span>
+              </div>
+            ) : (
             <form
               ref={formRef}
               className={`comment-composer-form ${isFocused || body ? "expanded" : ""}`}
@@ -728,6 +764,7 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
                 </div>
               )}
             </form>
+            )}
           </div>
         </div>
       </div>

@@ -14,12 +14,14 @@ type AuthCtx = {
   closeAuthModal: () => void;
   authModalOpen: boolean;
   authModalTab: "signin" | "signup" | "forgot" | "reset";
+  refreshRole: () => Promise<void>;
 };
 
 const Ctx = createContext<AuthCtx>({
   user: null, session: null, role: null, isStaff: false, loading: true,
   signOut: async () => {}, openAuthModal: () => {}, closeAuthModal: () => {},
   authModalOpen: false, authModalTab: "signin",
+  refreshRole: async () => {},
 });
 
 export function useAuth() { return useContext(Ctx); }
@@ -45,7 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select("role")
         .eq("id", userId)
         .maybeSingle();
-      const userRole = data?.role ?? "student";
+      const metaRole = (await supabase.auth.getSession()).data.session?.user?.app_metadata?.role;
+      const userRole = data?.role ?? metaRole ?? "student";
       setRole(userRole);
       setIsStaff(userRole === "moderator" || userRole === "admin");
     } catch {
@@ -53,6 +56,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsStaff(false);
     }
   }, []);
+
+  const refreshRole = useCallback(async () => {
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.user?.id) {
+      await syncRole(currentSession.user.id);
+    }
+  }, [syncRole]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -100,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const closeAuthModal = useCallback(() => setAuthModalOpen(false), []);
 
   return (
-    <Ctx.Provider value={{ user, session, role, isStaff, loading, signOut, openAuthModal, closeAuthModal, authModalOpen, authModalTab }}>
+    <Ctx.Provider value={{ user, session, role, isStaff, loading, signOut, openAuthModal, closeAuthModal, authModalOpen, authModalTab, refreshRole }}>
       {children}
     </Ctx.Provider>
   );

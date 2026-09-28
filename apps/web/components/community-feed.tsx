@@ -33,8 +33,10 @@ import { useVoting, isRecentlyVoted } from "../hooks/use-voting";
 import { useToast } from "./toast";
 import { useAuth } from "./auth-context";
 import { supabase } from "../lib/supabase";
+import { getDeviceFingerprint } from "../lib/device-fingerprint";
 import {
   loadPublishedSubmissions,
+  loadAuthorPendingSubmissions,
   loadSingleSubmission,
   loadUserBookmarkIds,
   toggleUserBookmark,
@@ -60,6 +62,7 @@ export function CommunityFeed() {
 
   // Feed items & pagination
   const [feed, setFeed] = useState<PublishedSubmission[]>([]);
+  const [authorPendingSubmissions, setAuthorPendingSubmissions] = useState<PublishedSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
@@ -123,6 +126,38 @@ export function CommunityFeed() {
   const feedTopRef = useRef<HTMLDivElement>(null);
   const isFetchingMoreRef = useRef(false); // guards against duplicate observer fires
   const anonToken = useMemo(() => getAnonToken(), []);
+
+  // Load author's own pending ideas (visible to this user/device even before moderation)
+  const fetchPendingSubmissions = useCallback(async () => {
+    try {
+      let trackingCodes: string[] = [];
+      try {
+        const stored =
+          localStorage.getItem("sf_my_tracking_codes") ||
+          localStorage.getItem("cv_my_tracking_codes");
+        if (stored) trackingCodes = JSON.parse(stored);
+      } catch { /* ignore */ }
+
+      const deviceFp = await getDeviceFingerprint().catch(() => undefined);
+      const pending = await loadAuthorPendingSubmissions(user?.id, trackingCodes, deviceFp);
+      setAuthorPendingSubmissions(pending);
+    } catch (e) {
+      console.error("Failed to load author pending submissions", e);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchPendingSubmissions();
+  }, [fetchPendingSubmissions]);
+
+  // Listen for idea submitted event to immediately update pending list
+  useEffect(() => {
+    const handleIdeaSubmitted = () => {
+      fetchPendingSubmissions();
+    };
+    window.addEventListener("suggfeed:idea_submitted", handleIdeaSubmitted);
+    return () => window.removeEventListener("suggfeed:idea_submitted", handleIdeaSubmitted);
+  }, [fetchPendingSubmissions]);
 
   // Load bookmarks for authenticated user from database
   useEffect(() => {
@@ -371,6 +406,10 @@ export function CommunityFeed() {
         },
         (payload) => {
           const updated = payload.new as any;
+          // If a pending submission owned by author is approved/rejected, remove it from pending list
+          if (updated.status && updated.status !== "pending") {
+            setAuthorPendingSubmissions((prev) => prev.filter((p) => p.id !== updated.id));
+          }
           setFeed((cur) =>
             cur.map((item) => {
               if (item.id !== updated.id) return item;
@@ -479,13 +518,37 @@ export function CommunityFeed() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [focusedIndex, feed, handleVote, selectedIdea]);
 
-  // Filtered feed for bookmarks
+  // Filter author's pending submissions based on current topic and search query
+  const filteredPendingSubmissions = useMemo(() => {
+    if (showBookmarksOnly) return [];
+    return authorPendingSubmissions.filter((item) => {
+      if (selectedTopic !== "All") {
+        const cat = item.categories?.name;
+        if (cat !== selectedTopic) return false;
+      }
+      if (debouncedSearch && debouncedSearch.trim()) {
+        const q = debouncedSearch.trim().toLowerCase();
+        const inTitle = item.title.toLowerCase().includes(q);
+        const inDesc = item.description.toLowerCase().includes(q);
+        if (!inTitle && !inDesc) return false;
+      }
+      return true;
+    });
+  }, [authorPendingSubmissions, selectedTopic, debouncedSearch, showBookmarksOnly]);
+
+  // Filtered feed for bookmarks with author pending ideas prepended
   const displayFeed = useMemo(() => {
+    let base = feed;
     if (showBookmarksOnly) {
-      return feed.filter((item) => bookmarkedIds.has(item.id));
+      return base.filter((item) => bookmarkedIds.has(item.id));
     }
-    return feed;
-  }, [feed, showBookmarksOnly, bookmarkedIds]);
+    if (filteredPendingSubmissions.length > 0) {
+      const feedIds = new Set(base.map((i) => i.id));
+      const unmerged = filteredPendingSubmissions.filter((p) => !feedIds.has(p.id));
+      return [...unmerged, ...base];
+    }
+    return base;
+  }, [feed, showBookmarksOnly, bookmarkedIds, filteredPendingSubmissions]);
 
   return (
     <>
@@ -730,6 +793,14 @@ export function CommunityFeed() {
 
           {/* ── Feed Stream ── */}
           <div className="post-cards-stream">
+            {filteredPendingSubmissions.length > 0 && !loading && (
+              <div className="author-pending-feed-banner">
+                <Clock size={16} strokeWidth={2.2} />
+                <span>
+                  You have {filteredPendingSubmissions.length} idea{filteredPendingSubmissions.length > 1 ? "s" : ""} pending staff review. Visible only to you until approved.
+                </span>
+              </div>
+            )}
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => <SkeletonPostCard key={i} />)
             ) : displayFeed.length === 0 ? (

@@ -8,7 +8,7 @@ export type PublishedSubmission = {
   id: string;
   title: string;
   description: string;
-  status: "approved" | "in_progress" | "resolved";
+  status: "approved" | "in_progress" | "resolved" | "pending";
   vote_count: number;
   created_at: string;
   user_id?: string | null;
@@ -224,7 +224,7 @@ export async function loadSingleSubmission(id: string): Promise<PublishedSubmiss
         .from("submissions")
         .select("id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
         .eq("id", id)
-        .in("status", ["approved", "in_progress", "resolved"])
+        .in("status", ["approved", "in_progress", "resolved", "pending"])
         .maybeSingle();
 
       if (error) throw error;
@@ -235,6 +235,65 @@ export async function loadSingleSubmission(id: string): Promise<PublishedSubmiss
       } as PublishedSubmission;
     },
     { ttlMs: 5 * 60 * 1000 }
+  );
+}
+
+export async function loadAuthorPendingSubmissions(
+  userId?: string,
+  trackingCodes: string[] = [],
+  deviceFingerprint?: string
+): Promise<PublishedSubmission[]> {
+  const pendingMap = new Map<string, PublishedSubmission>();
+
+  // 1. If user is authenticated, query their pending submissions directly from Supabase
+  if (userId) {
+    try {
+      const { data, error } = await supabase
+        .from("submissions")
+        .select(
+          "id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)"
+        )
+        .eq("user_id", userId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        data.forEach((item: any) => {
+          pendingMap.set(item.id, {
+            ...item,
+            comment_count: item.comments?.[0]?.count ?? 0,
+          } as PublishedSubmission);
+        });
+      }
+    } catch (e) {
+      console.error("Failed to load user pending submissions", e);
+    }
+  }
+
+  // 2. If anonymous tracking codes or device fingerprint are provided, also query via my-activity
+  if (trackingCodes.length > 0 || deviceFingerprint) {
+    try {
+      const { getAnonToken } = await import("./anon-token");
+      const activity = await loadMyActivity(getAnonToken(), trackingCodes, deviceFingerprint);
+      if (activity?.submissions) {
+        activity.submissions
+          .filter((s) => s.status === "pending")
+          .forEach((s) => {
+            if (!pendingMap.has(s.id)) {
+              pendingMap.set(s.id, {
+                ...s,
+                comment_count: s.comment_count ?? 0,
+              });
+            }
+          });
+      }
+    } catch (e) {
+      console.error("Failed to load anonymous pending submissions", e);
+    }
+  }
+
+  return Array.from(pendingMap.values()).sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 }
 

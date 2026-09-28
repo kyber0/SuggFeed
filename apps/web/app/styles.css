@@ -8585,3 +8585,31 @@ input.feed-search {
   transition: transform 0.2s;
 }
 .sf-track-result-timeline[open] summary::before { transform: rotate(90deg); }
+
+/* ── Pending Status Banner & Author Pending Feed Banner ── */
+.detail-status-banner.pending {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.22);
+  color: #f59e0b;
+}
+
+.author-pending-feed-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-card, 12px);
+  font-size: 13px;
+  color: #d97706;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease;
+}
+
+[data-theme="dark"] .author-pending-feed-banner {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+}

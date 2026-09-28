@@ -31,6 +31,7 @@ import {
   EyeOff,
   Bell,
   Trash2,
+  ShieldCheck,
 } from "lucide-react";
 import { readableStatus } from "../lib/format";
 import { supabase } from "../lib/supabase";
@@ -116,7 +117,7 @@ function ActivityCard({
 }
 
 export function ProfileDashboard() {
-  const { user, openAuthModal } = useAuth();
+  const { user, isStaff, openAuthModal } = useAuth();
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<PublishedSubmission[]>([]);
   const [bookmarks, setBookmarks] = useState<PublishedSubmission[]>([]);
@@ -276,7 +277,14 @@ export function ProfileDashboard() {
                 ) : shownName}
               </h1>
               {user && (
-                <p className="prof-hero-email">{user.email}</p>
+                <p className="prof-hero-email">
+                  {user.email}
+                  {isStaff && (
+                    <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 12, background: "rgba(11, 56, 87, 0.12)", color: "var(--navy)" }}>
+                      Staff / Admin
+                    </span>
+                  )}
+                </p>
               )}
               <div className="prof-hero-badges">
                 <span className="prof-hero-badge">
@@ -309,9 +317,21 @@ export function ProfileDashboard() {
                 Sign in
               </button>
             ) : (
-              <Link href="#settings" className="prof-settings-link">
-                <Settings size={16} />
-              </Link>
+              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                {isStaff && (
+                  <Link
+                    href="/admin"
+                    className="btn-primary-sm"
+                    style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
+                  >
+                    <ShieldCheck size={13} strokeWidth={2.2} />
+                    Staff Portal
+                  </Link>
+                )}
+                <Link href="#settings" className="prof-settings-link" title="Profile Settings">
+                  <Settings size={16} />
+                </Link>
+              </div>
             )}
           </div>
         </div>

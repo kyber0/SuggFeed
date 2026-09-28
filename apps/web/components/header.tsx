@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, User, Settings } from "lucide-react";
+import { ChevronDown, LogOut, User, Settings, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "./auth-context";
@@ -9,7 +9,7 @@ import { ProfilePanel } from "./profile-panel";
 import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
-  const { user, signOut, openAuthModal } = useAuth();
+  const { user, isStaff, signOut, openAuthModal } = useAuth();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -55,6 +55,15 @@ export function Header() {
           >
             <User size={14} /> My Profile & Ideas
           </Link>
+          {isStaff && (
+            <Link
+              href="/admin"
+              onClick={() => setDropdownOpen(false)}
+              style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "inherit", padding: "8px 12px", fontWeight: 600 }}
+            >
+              <ShieldCheck size={14} color="var(--navy)" /> Staff Portal
+            </Link>
+          )}
           <div className="divider" />
           <button
             className="danger"
