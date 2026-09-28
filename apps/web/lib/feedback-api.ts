@@ -158,8 +158,8 @@ function sanitizeSearchTerm(term: string): string {
  * This reduces per-page payload by ~60%.
  */
 const FEED_LIST_SELECT =
-  "id,title,description,status,vote_count,created_at,user_id,category_id," +
-  "categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)";
+  "id,title,description,status,vote_count,comment_count,created_at,user_id,category_id," +
+  "categories(name),attachments(id),author:profiles!submissions_user_id_fkey(display_name)";
 
 export async function loadPublishedSubmissions(
   sortBy: "popular" | "newest" | "oldest" = "popular",
@@ -206,7 +206,7 @@ export async function loadPublishedSubmissions(
   if (error) throw error;
   const submissions = (data ?? []).map((item: any) => ({
     ...item,
-    comment_count: item.comments?.[0]?.count ?? 0,
+    comment_count: item.comment_count ?? item.comments?.[0]?.count ?? 0,
   }));
   return { submissions: submissions as PublishedSubmission[], count: count ?? 0 };
 }

@@ -243,33 +243,25 @@ export function AdminDashboard({
     return () => window.removeEventListener("popstate", handlePopState);
   }, [submissions]);
 
-  // Load Submissions with cache & SWR
-  async function loadSubmissions(forceRefresh = false) {
-    if (!forceRefresh) {
-      const cached = getCacheItem<Submission[]>("admin_submissions");
-      if (cached) {
-        setSubmissions(cached.data);
-        if (!cached.isStale) return;
-      }
-    }
-
+  // Load Submissions directly from Supabase for admin management
+  async function loadSubmissions(_forceRefresh?: boolean) {
     setBusy(true);
     try {
       const { data, error } = await supabase
         .from("submissions")
-        .select("id,title,description,status,created_at,categories(name),vote_count,attachments(id,storage_path)")
+        .select("id,title,description,status,created_at,user_id,category_id,categories(name),vote_count,attachments(id),author:profiles!submissions_user_id_fkey(display_name)")
         .order("created_at", { ascending: false })
         .limit(2000);
 
       if (error) {
-        toast("Access restricted: Staff or moderator credentials required.", "error");
+        console.error("Admin query error:", error);
+        toast(`Unable to load submissions: ${error.message}`, "error");
         return;
       }
       const subs = (data ?? []) as unknown as Submission[];
       setSubmissions(subs);
-      setCacheItem("admin_submissions", subs, { ttlMs: 3 * 60 * 1000 });
     } catch (err) {
-      console.error(err);
+      console.error("Admin load exception:", err);
     } finally {
       setBusy(false);
     }
