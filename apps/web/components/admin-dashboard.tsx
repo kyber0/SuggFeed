@@ -115,9 +115,13 @@ export function AdminDashboard({
     defaultViewMode === "analytics" ? "analytics" : "queue"
   );
 
-  // Submissions data
+  // Submissions data (moderation queue — filtered by filterStatus)
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [busy, setBusy] = useState(false);
+
+  // Analytics data — always all statuses, loaded independently
+  const [analyticsSubmissions, setAnalyticsSubmissions] = useState<Submission[]>([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   // Flagged comments data
   const [flaggedComments, setFlaggedComments] = useState<FlaggedComment[]>([]);
@@ -460,12 +464,52 @@ export function AdminDashboard({
     };
   }, [authSession, contextRole, authLoading]);
 
+  // Load ALL submissions for analytics (ignores status filter — always fetches every status)
+  const loadAnalytics = useCallback(async () => {
+    setAnalyticsLoading(true);
+    const BATCH = 500;
+    try {
+      const allRows: Submission[] = [];
+      let offset = 0;
+      let keepFetching = true;
+
+      while (keepFetching) {
+        const { data, error } = await supabase
+          .from("submissions")
+          .select("id,title,description,status,created_at,user_id,category_id,categories(name),vote_count,attachments(id),author:profiles!submissions_user_id_fkey(display_name)")
+          .order("created_at", { ascending: false })
+          .range(offset, offset + BATCH - 1);
+
+        if (error) {
+          console.error("Analytics query error:", error);
+          break;
+        }
+
+        const batch = (data ?? []) as unknown as Submission[];
+        allRows.push(...batch);
+
+        if (batch.length < BATCH) {
+          keepFetching = false;
+        } else {
+          offset += BATCH;
+        }
+
+        setAnalyticsSubmissions([...allRows]);
+      }
+    } catch (err) {
+      console.error("Analytics load exception:", err);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, []);
+
   // Fetch contextual tab data
   useEffect(() => {
     if (!accessToken) return;
     if (activeTab === "flagged") loadFlaggedComments();
     if (activeTab === "audit") loadAuditLog();
-  }, [activeTab, accessToken]);
+    if (activeTab === "analytics" && analyticsSubmissions.length === 0) loadAnalytics();
+  }, [activeTab, accessToken, loadAnalytics]);
 
   // Re-fetch submissions with server-side status filter when filterStatus changes
   useEffect(() => {
@@ -1221,9 +1265,9 @@ export function AdminDashboard({
         {/* ── Tab: Analytics View (Keeps existing analytics intact) ── */}
         {activeTab === "analytics" ? (
           <AnalyticsDashboard
-            submissions={submissions}
-            isLoading={busy}
-            onRefresh={loadSubmissions}
+            submissions={analyticsSubmissions}
+            isLoading={analyticsLoading && analyticsSubmissions.length === 0}
+            onRefresh={loadAnalytics}
           />
         ) : activeTab === "flagged" ? (
           /* ── Tab: Flagged Comments View ── */
