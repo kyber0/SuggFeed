@@ -7,9 +7,11 @@ import {
   setStoredPreference,
   getSessionPreference,
   setSessionPreference,
+  invalidateCache,
 } from "../lib/cache-manager";
 import { Header } from "./header";
 import { useToast } from "./toast";
+import { useAuth } from "./auth-context";
 import Link from "next/link";
 import {
   Sparkles,
@@ -31,6 +33,8 @@ import {
   Check,
   ChevronRight,
   ChevronDown,
+  ShieldCheck,
+  Lock,
   User as UserIcon,
 } from "lucide-react";
 
@@ -158,6 +162,7 @@ interface RoadmapColumnProps {
   handleDropCol: (e: React.DragEvent, colKey: RoadmapStatus) => void;
   setSelectedItem: (item: RoadmapItem) => void;
   setActionSheetItem: (item: RoadmapItem) => void;
+  isStaff: boolean;
 }
 
 function RoadmapBoardColumn({
@@ -178,6 +183,7 @@ function RoadmapBoardColumn({
   handleDropCol,
   setSelectedItem,
   setActionSheetItem,
+  isStaff,
 }: RoadmapColumnProps) {
   const [visibleCount, setVisibleCount] = useState(COL_PAGE_SIZE);
   const colContentRef = useRef<HTMLDivElement>(null);
@@ -258,10 +264,10 @@ function RoadmapBoardColumn({
         ref={colContentRef}
         role="list"
         aria-label={`${col.label} column`}
-        className={`rm-col-content${isOver ? " rm-col-content--dragover" : ""}`}
-        onDragOver={(e) => handleDragOverCol(e, col.key)}
-        onDragLeave={handleDragLeaveCol}
-        onDrop={(e) => handleDropCol(e, col.key)}
+        className={`rm-col-content${isOver && isStaff ? " rm-col-content--dragover" : ""}`}
+        onDragOver={isStaff ? (e) => handleDragOverCol(e, col.key) : undefined}
+        onDragLeave={isStaff ? handleDragLeaveCol : undefined}
+        onDrop={isStaff ? (e) => handleDropCol(e, col.key) : undefined}
       >
         {loading ? (
           <>
@@ -277,19 +283,19 @@ function RoadmapBoardColumn({
           <>
             {visibleItems.map((item) => {
               const matches = isCardMatchingFilters(item);
-              const isDragging = draggingId === item.id;
+              const isDragging = isStaff && draggingId === item.id;
 
               return (
                 <div
                   key={item.id}
                   role="listitem"
                   tabIndex={0}
-                  draggable={true}
-                  onDragStart={(e) => handleDragStart(e, item.id)}
-                  onDragEnd={handleDragEnd}
-                  onTouchStart={() => handleTouchStart(item)}
-                  onTouchEnd={handleTouchEndOrMove}
-                  onTouchMove={handleTouchEndOrMove}
+                  draggable={isStaff}
+                  onDragStart={isStaff ? (e) => handleDragStart(e, item.id) : undefined}
+                  onDragEnd={isStaff ? handleDragEnd : undefined}
+                  onTouchStart={isStaff ? () => handleTouchStart(item) : undefined}
+                  onTouchEnd={isStaff ? handleTouchEndOrMove : undefined}
+                  onTouchMove={isStaff ? handleTouchEndOrMove : undefined}
                   onClick={() => setSelectedItem(item)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -337,19 +343,21 @@ function RoadmapBoardColumn({
                         </span>
                       ))}
 
-                      {/* Quick move trigger */}
-                      <button
-                        type="button"
-                        className="rm-card-menu-btn"
-                        title="Move or manage item"
-                        aria-label="Manage roadmap item"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActionSheetItem(item);
-                        }}
-                      >
-                        <MoreHorizontal size={14} />
-                      </button>
+                      {/* Quick move trigger — staff & admin only */}
+                      {isStaff && (
+                        <button
+                          type="button"
+                          className="rm-card-menu-btn"
+                          title="Move or manage item"
+                          aria-label="Manage roadmap item"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActionSheetItem(item);
+                          }}
+                        >
+                          <MoreHorizontal size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -571,6 +579,7 @@ function RoadmapTimelineQuarterGroup({
 
 export function RoadmapBoard() {
   const { toast } = useToast();
+  const { isStaff, session } = useAuth();
   const [items, setItems] = useState<RoadmapItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -754,14 +763,20 @@ export function RoadmapBoard() {
     }
   }, []);
 
-  // Move Item (Drag-and-Drop or Menu or Drawer)
+  // Move Item (Drag-and-Drop or Menu or Drawer) - Staff & Admin only
   const moveItem = useCallback(
-    (id: string, targetStatus: RoadmapStatus) => {
+    async (id: string, targetStatus: RoadmapStatus) => {
+      if (!isStaff) {
+        toast("Only staff and administrators can change roadmap phases.", "error");
+        return;
+      }
+
       const item = items.find((i) => i.id === id);
       if (!item || item.status === targetStatus) return;
 
       const colTarget = COLUMNS.find((c) => c.key === targetStatus);
       const prevStatus = item.status;
+      const dbStatus = targetStatus === "now" ? "in_progress" : targetStatus === "next" ? "approved" : "resolved";
 
       // Optimistic update
       const updated = items.map((i) => {
@@ -784,13 +799,46 @@ export function RoadmapBoard() {
         setSelectedItem((prev) => (prev ? { ...prev, status: targetStatus } : null));
       }
 
+      // Persist to Supabase if authenticated staff session exists
+      if (session?.access_token) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/review-submission`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                submissionId: id,
+                status: dbStatus,
+                note: `Moved to ${targetStatus.toUpperCase()} on public roadmap`,
+              }),
+            }
+          );
+          if (!response.ok) {
+            const errJson = await response.json().catch(() => ({}));
+            throw new Error(errJson.error ?? "Failed to update submission phase on server");
+          }
+          invalidateCache("roadmap_");
+          invalidateCache("feed_");
+        } catch (err) {
+          console.error("Failed to sync roadmap status to server:", err);
+          toast(err instanceof Error ? err.message : "Unable to sync phase with server", "error");
+          return;
+        }
+      }
+
       toast(`Moved "${item.title.slice(0, 24)}..." to ${colTarget?.label ?? targetStatus}`, "success");
     },
-    [items, selectedItem, saveItems, toast]
+    [isStaff, session, items, selectedItem, saveItems, toast]
   );
 
-  // Touch Handlers for Mobile Long-Press Action Sheet
+  // Touch Handlers for Mobile Long-Press Action Sheet (Staff only)
   const handleTouchStart = (item: RoadmapItem) => {
+    if (!isStaff) return;
     touchTimerRef.current = setTimeout(() => {
       setActionSheetItem(item);
     }, 380);
@@ -803,8 +851,9 @@ export function RoadmapBoard() {
     }
   };
 
-  // Drag and drop handlers
+  // Drag and drop handlers (Staff only)
   const handleDragStart = (e: React.DragEvent, id: string) => {
+    if (!isStaff) return;
     e.dataTransfer.setData("text/plain", id);
     setDraggingId(id);
   };
@@ -815,6 +864,7 @@ export function RoadmapBoard() {
   };
 
   const handleDragOverCol = (e: React.DragEvent, colKey: RoadmapStatus) => {
+    if (!isStaff) return;
     e.preventDefault();
     if (dragOverCol !== colKey) setDragOverCol(colKey);
   };
@@ -824,6 +874,7 @@ export function RoadmapBoard() {
   };
 
   const handleDropCol = (e: React.DragEvent, colKey: RoadmapStatus) => {
+    if (!isStaff) return;
     e.preventDefault();
     const id = e.dataTransfer.getData("text/plain") || draggingId;
     if (id) {
@@ -913,6 +964,45 @@ export function RoadmapBoard() {
                 Product Roadmap
               </h1>
               <span className="rm-toolbar-badge">Live Campus Tracker</span>
+              {isStaff ? (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "3px 10px",
+                    background: "rgba(11, 56, 87, 0.08)",
+                    color: "var(--navy)",
+                    borderRadius: "9999px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    border: "1px solid rgba(11, 56, 87, 0.2)",
+                  }}
+                  title="Staff & Admin permissions enabled"
+                >
+                  <ShieldCheck size={13} />
+                  Staff Editor
+                </span>
+              ) : (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "3px 10px",
+                    background: "var(--bg)",
+                    color: "var(--muted)",
+                    borderRadius: "9999px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    border: "1px solid var(--line-2)",
+                  }}
+                  title="Phase changes are restricted to staff and administrators"
+                >
+                  <Lock size={11} />
+                  Read-only
+                </span>
+              )}
             </div>
 
             <div className="rm-toolbar-actions">
@@ -1056,6 +1146,7 @@ export function RoadmapBoard() {
                     handleDropCol={handleDropCol}
                     setSelectedItem={openDrawer}
                     setActionSheetItem={setActionSheetItem}
+                    isStaff={isStaff}
                   />
                 );
               })}
@@ -1122,113 +1213,164 @@ export function RoadmapBoard() {
                   <label className="rm-drawer-field-label" style={{ display: "block", marginBottom: 6 }}>
                     Title
                   </label>
-                  <input
-                    type="text"
-                    className="rm-drawer-title-input"
-                    value={selectedItem.title}
-                    onChange={(e) => {
-                      const newTitleVal = e.target.value;
-                      const updated = items.map((i) =>
-                        i.id === selectedItem.id ? { ...i, title: newTitleVal } : i
-                      );
-                      saveItems(updated);
-                      setSelectedItem((prev) => (prev ? { ...prev, title: newTitleVal } : null));
-                    }}
-                  />
+                  {isStaff ? (
+                    <input
+                      type="text"
+                      className="rm-drawer-title-input"
+                      value={selectedItem.title}
+                      onChange={(e) => {
+                        const newTitleVal = e.target.value;
+                        const updated = items.map((i) =>
+                          i.id === selectedItem.id ? { ...i, title: newTitleVal } : i
+                        );
+                        saveItems(updated);
+                        setSelectedItem((prev) => (prev ? { ...prev, title: newTitleVal } : null));
+                      }}
+                    />
+                  ) : (
+                    <div style={{ fontSize: 18, fontWeight: 700, color: "var(--ink)", padding: "2px 0" }}>
+                      {selectedItem.title}
+                    </div>
+                  )}
                 </div>
 
                 {/* Status Segmented Control */}
                 <div>
-                  <label className="rm-drawer-field-label" style={{ display: "block", marginBottom: 8 }}>
-                    Phase / Status (drives column placement)
-                  </label>
-                  <div className="rm-drawer-status-seg">
-                    {COLUMNS.map((col) => {
-                      const isActive = selectedItem.status === col.key;
-                      return (
-                        <button
-                          key={col.key}
-                          type="button"
-                          className={`rm-drawer-status-btn${
-                            isActive ? " rm-drawer-status-btn--active" : ""
-                          }`}
-                          style={{ "--col-color": col.colorHex } as React.CSSProperties}
-                          onClick={() => moveItem(selectedItem.id, col.key)}
-                        >
-                          <col.Icon size={14} style={{ color: col.colorHex }} />
-                          <span>{col.label}</span>
-                        </button>
-                      );
-                    })}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <label className="rm-drawer-field-label" style={{ margin: 0 }}>
+                      Phase / Status
+                    </label>
+                    {!isStaff && (
+                      <span style={{ fontSize: 11, color: "var(--muted)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <Lock size={11} /> Staff & Admin only
+                      </span>
+                    )}
                   </div>
+                  {isStaff ? (
+                    <div className="rm-drawer-status-seg">
+                      {COLUMNS.map((col) => {
+                        const isActive = selectedItem.status === col.key;
+                        return (
+                          <button
+                            key={col.key}
+                            type="button"
+                            className={`rm-drawer-status-btn${
+                              isActive ? " rm-drawer-status-btn--active" : ""
+                            }`}
+                            style={{ "--col-color": col.colorHex } as React.CSSProperties}
+                            onClick={() => moveItem(selectedItem.id, col.key)}
+                          >
+                            <col.Icon size={14} style={{ color: col.colorHex }} />
+                            <span>{col.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "var(--bg)", borderRadius: "var(--r-md)", border: "1px solid var(--line)" }}>
+                      <span
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          background: COLUMNS.find((c) => c.key === selectedItem.status)?.colorHex,
+                          display: "inline-block",
+                        }}
+                      />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>
+                        {COLUMNS.find((c) => c.key === selectedItem.status)?.label}
+                      </span>
+                      <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                        — {COLUMNS.find((c) => c.key === selectedItem.status)?.desc}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Attributes Grid (Effort, Target Quarter, Owner, Tags) */}
                 <div className="rm-drawer-grid">
                   <div className="rm-drawer-field">
                     <span className="rm-drawer-field-label">Effort</span>
-                    <select
-                      className="rm-drawer-select"
-                      value={selectedItem.effort}
-                      onChange={(e) => {
-                        const val = e.target.value as EffortLevel;
-                        const updated = items.map((i) =>
-                          i.id === selectedItem.id ? { ...i, effort: val } : i
-                        );
-                        saveItems(updated);
-                        setSelectedItem((prev) => (prev ? { ...prev, effort: val } : null));
-                      }}
-                    >
-                      {EFFORT_OPTIONS.map((eff) => (
-                        <option key={eff} value={eff}>
-                          {eff} ({eff === "XS" ? "1-2 days" : eff === "S" ? "1 week" : eff === "M" ? "2-3 weeks" : eff === "L" ? "1-2 months" : "Multi-month"})
-                        </option>
-                      ))}
-                    </select>
+                    {isStaff ? (
+                      <select
+                        className="rm-drawer-select"
+                        value={selectedItem.effort}
+                        onChange={(e) => {
+                          const val = e.target.value as EffortLevel;
+                          const updated = items.map((i) =>
+                            i.id === selectedItem.id ? { ...i, effort: val } : i
+                          );
+                          saveItems(updated);
+                          setSelectedItem((prev) => (prev ? { ...prev, effort: val } : null));
+                        }}
+                      >
+                        {EFFORT_OPTIONS.map((eff) => (
+                          <option key={eff} value={eff}>
+                            {eff} ({eff === "XS" ? "1-2 days" : eff === "S" ? "1 week" : eff === "M" ? "2-3 weeks" : eff === "L" ? "1-2 months" : "Multi-month"})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", padding: "6px 0" }}>
+                        {selectedItem.effort}
+                      </div>
+                    )}
                   </div>
 
                   <div className="rm-drawer-field">
                     <span className="rm-drawer-field-label">Target Delivery</span>
-                    <select
-                      className="rm-drawer-select"
-                      value={selectedItem.quarter}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const updated = items.map((i) =>
-                          i.id === selectedItem.id ? { ...i, quarter: val } : i
-                        );
-                        saveItems(updated);
-                        setSelectedItem((prev) => (prev ? { ...prev, quarter: val } : null));
-                      }}
-                    >
-                      {QUARTERS.map((q) => (
-                        <option key={q} value={q}>
-                          {q}
-                        </option>
-                      ))}
-                    </select>
+                    {isStaff ? (
+                      <select
+                        className="rm-drawer-select"
+                        value={selectedItem.quarter}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const updated = items.map((i) =>
+                            i.id === selectedItem.id ? { ...i, quarter: val } : i
+                          );
+                          saveItems(updated);
+                          setSelectedItem((prev) => (prev ? { ...prev, quarter: val } : null));
+                        }}
+                      >
+                        {QUARTERS.map((q) => (
+                          <option key={q} value={q}>
+                            {q}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", padding: "6px 0" }}>
+                        {selectedItem.quarter}
+                      </div>
+                    )}
                   </div>
 
                   <div className="rm-drawer-field" style={{ gridColumn: "span 2" }}>
                     <span className="rm-drawer-field-label">Lead Owner</span>
-                    <select
-                      className="rm-drawer-select"
-                      value={selectedItem.owner.name}
-                      onChange={(e) => {
-                        const ownerObj = OWNERS.find((o) => o.name === e.target.value) || OWNERS[0];
-                        const updated = items.map((i) =>
-                          i.id === selectedItem.id ? { ...i, owner: ownerObj } : i
-                        );
-                        saveItems(updated);
-                        setSelectedItem((prev) => (prev ? { ...prev, owner: ownerObj } : null));
-                      }}
-                    >
-                      {OWNERS.map((o) => (
-                        <option key={o.name} value={o.name}>
-                          {o.name} ({o.role})
-                        </option>
-                      ))}
-                    </select>
+                    {isStaff ? (
+                      <select
+                        className="rm-drawer-select"
+                        value={selectedItem.owner.name}
+                        onChange={(e) => {
+                          const ownerObj = OWNERS.find((o) => o.name === e.target.value) || OWNERS[0];
+                          const updated = items.map((i) =>
+                            i.id === selectedItem.id ? { ...i, owner: ownerObj } : i
+                          );
+                          saveItems(updated);
+                          setSelectedItem((prev) => (prev ? { ...prev, owner: ownerObj } : null));
+                        }}
+                      >
+                        {OWNERS.map((o) => (
+                          <option key={o.name} value={o.name}>
+                            {o.name} ({o.role})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", padding: "6px 0" }}>
+                        {selectedItem.owner.name} ({selectedItem.owner.role})
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1324,30 +1466,33 @@ export function RoadmapBoard() {
             <div className="rm-action-sheet" role="dialog" aria-label="Quick Move Options">
               <div className="rm-action-sheet-head">
                 <h3 className="rm-action-sheet-title">{actionSheetItem.title}</h3>
-                <p className="rm-action-sheet-sub">Reassign stage or view detailed progress</p>
+                <p className="rm-action-sheet-sub">
+                  {isStaff ? "Reassign stage or view detailed progress" : "View detailed progress"}
+                </p>
               </div>
 
               <div className="rm-action-sheet-options">
-                {COLUMNS.map((col) => {
-                  const isCurrent = actionSheetItem.status === col.key;
-                  return (
-                    <button
-                      key={col.key}
-                      type="button"
-                      className="rm-action-sheet-btn"
-                      onClick={() => {
-                        moveItem(actionSheetItem.id, col.key);
-                        setActionSheetItem(null);
-                      }}
-                    >
-                      <col.Icon size={16} style={{ color: col.colorHex }} />
-                      <span style={{ flex: 1 }}>
-                        Move to <strong>{col.label}</strong> ({col.desc})
-                      </span>
-                      {isCurrent && <Check size={16} style={{ color: "var(--navy)" }} />}
-                    </button>
-                  );
-                })}
+                {isStaff &&
+                  COLUMNS.map((col) => {
+                    const isCurrent = actionSheetItem.status === col.key;
+                    return (
+                      <button
+                        key={col.key}
+                        type="button"
+                        className="rm-action-sheet-btn"
+                        onClick={() => {
+                          moveItem(actionSheetItem.id, col.key);
+                          setActionSheetItem(null);
+                        }}
+                      >
+                        <col.Icon size={16} style={{ color: col.colorHex }} />
+                        <span style={{ flex: 1 }}>
+                          Move to <strong>{col.label}</strong> ({col.desc})
+                        </span>
+                        {isCurrent && <Check size={16} style={{ color: "var(--navy)" }} />}
+                      </button>
+                    );
+                  })}
 
                 <button
                   type="button"
