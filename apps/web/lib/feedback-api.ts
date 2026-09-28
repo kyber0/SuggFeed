@@ -197,7 +197,12 @@ export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
 }
 
 export async function loadMyActivity(anonToken?: string, trackingCodes?: string[]) {
-  return invoke<{ submissions: PublishedSubmission[]; votedSubmissions: PublishedSubmission[] }>(
+  return invoke<{
+    submissions: PublishedSubmission[];
+    votedSubmissions: PublishedSubmission[];
+    bookmarkedSubmissions?: PublishedSubmission[];
+    sharedSubmissions?: PublishedSubmission[];
+  }>(
     "my-activity",
     { anonToken, trackingCodes }
   );
@@ -305,10 +310,107 @@ export async function addComment(payload: {
   return result;
 }
 
-export async function reportComment(commentId: string) {
-  const { error } = await supabase.rpc("report_comment", { target_id: commentId });
+export async function loadUserBookmarkIds(): Promise<string[]> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return [];
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select("submission_id")
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("Failed to load user bookmarks", error);
+    return [];
+  }
+  return (data ?? []).map((row: any) => row.submission_id);
+}
+
+export async function toggleUserBookmark(submissionId: string, shouldBookmark: boolean): Promise<boolean> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) throw new Error("Authentication required");
+
+  if (shouldBookmark) {
+    const { error } = await supabase
+      .from("bookmarks")
+      .upsert({ user_id: session.user.id, submission_id: submissionId }, { onConflict: "user_id,submission_id" });
+    if (error) throw error;
+    return true;
+  } else {
+    const { error } = await supabase
+      .from("bookmarks")
+      .delete()
+      .match({ user_id: session.user.id, submission_id: submissionId });
+    if (error) throw error;
+    return false;
+  }
+}
+
+export async function recordUserShare(submissionId: string): Promise<boolean> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return false;
+  const { error } = await supabase
+    .from("shared_posts")
+    .upsert({ user_id: session.user.id, submission_id: submissionId }, { onConflict: "user_id,submission_id" });
+  if (error) {
+    console.error("Failed to record share", error);
+    return false;
+  }
+  return true;
+}
+
+export async function loadUserSharedIds(): Promise<string[]> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return [];
+  const { data, error } = await supabase
+    .from("shared_posts")
+    .select("submission_id")
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("Failed to load shared posts", error);
+    return [];
+  }
+  return (data ?? []).map((row: any) => row.submission_id);
+}
+
+export async function reportSubmission(submissionId: string, reason = "inappropriate") {
+  const { data, error } = await supabase.rpc("report_submission", {
+    target_id: submissionId,
+    report_reason: reason,
+  });
   if (error) throw error;
-  return { success: true };
+  return data as { success: boolean; message?: string };
+}
+
+export async function reportComment(commentId: string, reason = "inappropriate") {
+  const { data, error } = await supabase.rpc("report_comment", {
+    target_id: commentId,
+    report_reason: reason,
+  });
+  if (error) throw error;
+  return data as { success: boolean; message?: string };
+}
+
+export async function loadUserReportedIds(): Promise<{
+  reportedSubmissions: Set<string>;
+  reportedComments: Set<string>;
+}> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
+    return { reportedSubmissions: new Set(), reportedComments: new Set() };
+  }
+  const { data, error } = await supabase
+    .from("reports")
+    .select("submission_id, comment_id");
+  if (error) {
+    console.error("Failed to load user reports", error);
+    return { reportedSubmissions: new Set(), reportedComments: new Set() };
+  }
+  const subs = new Set<string>();
+  const comments = new Set<string>();
+  (data ?? []).forEach((r: any) => {
+    if (r.submission_id) subs.add(r.submission_id);
+    if (r.comment_id) comments.add(r.comment_id);
+  });
+  return { reportedSubmissions: subs, reportedComments: comments };
 }
 
 export async function fileToPayload(file: File): Promise<AttachmentPayload> {

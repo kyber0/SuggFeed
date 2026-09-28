@@ -13,9 +13,10 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { type Comment, reportComment } from "../lib/feedback-api";
+import { type Comment, reportComment, loadUserReportedIds } from "../lib/feedback-api";
 import { relativeDateShort as relativeDate } from "../lib/format";
 import { useToast } from "./toast";
+import { useAuth } from "./auth-context";
 
 export interface CommentNode extends Comment {
   children: CommentNode[];
@@ -42,6 +43,7 @@ export function CommentTree({
   onReply,
 }: CommentTreeProps) {
   const { toast } = useToast();
+  const { user, openAuthModal } = useAuth();
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [threadFilter, setThreadFilter] = useState<ThreadFilter>("newest");
   const [hiddenComments, setHiddenComments] = useState<Set<string>>(new Set());
@@ -49,6 +51,17 @@ export function CommentTree({
   const [revealedSpoilers, setRevealedSpoilers] = useState<Set<string>>(new Set());
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [viewportWidth, setViewportWidth] = useState<number>(1280);
+
+  // Load user reported comments from database
+  useEffect(() => {
+    if (user) {
+      loadUserReportedIds()
+        .then(({ reportedComments: rc }) => setReportedComments(rc))
+        .catch(console.error);
+    } else {
+      setReportedComments(new Set());
+    }
+  }, [user]);
 
   // Track viewport width for responsive nesting depth
   useEffect(() => {
@@ -129,11 +142,26 @@ export function CommentTree({
 
   // Report a comment
   const handleReport = async (commentId: string) => {
+    if (!user) {
+      toast("Please sign in to report comments.", "info");
+      openAuthModal("signin");
+      setActiveMenuId(null);
+      return;
+    }
+    if (reportedComments.has(commentId)) {
+      toast("You have already reported this comment.", "info");
+      setActiveMenuId(null);
+      return;
+    }
     try {
-      await reportComment(commentId);
+      const res = await reportComment(commentId);
+      if (res?.message === "already_reported") {
+        toast("You have already reported this comment.", "info");
+      } else {
+        toast("Comment reported to moderators. Thank you for keeping SuggFeed safe.", "success");
+      }
       setReportedComments((prev) => new Set(prev).add(commentId));
       setActiveMenuId(null);
-      toast("Comment reported to moderators. Thank you for keeping SuggFeed safe.", "success");
     } catch {
       toast("Couldn't submit report right now.", "error");
     }

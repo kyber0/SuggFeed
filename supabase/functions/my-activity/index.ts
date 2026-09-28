@@ -50,9 +50,55 @@ Deno.serve(async (request) => {
       }
     }
 
+    // 3. Find the user's bookmarks
+    let bookmarkedSubmissions: any[] = [];
+    if (user) {
+      const { data: bMarks } = await client
+        .from("bookmarks")
+        .select("submission_id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (bMarks && bMarks.length > 0) {
+        const bIds = bMarks.map((b: any) => b.submission_id);
+        const { data: bData } = await client
+          .from("submissions")
+          .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)")
+          .in("id", bIds)
+          .in("status", ["approved", "in_progress", "resolved"]);
+        if (bData) {
+          const map = new Map(bData.map((d: any) => [d.id, d]));
+          bookmarkedSubmissions = bIds.map((id: string) => map.get(id)).filter(Boolean);
+        }
+      }
+    }
+
+    // 4. Find the user's shared ideas
+    let sharedSubmissions: any[] = [];
+    if (user) {
+      const { data: sPosts } = await client
+        .from("shared_posts")
+        .select("submission_id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (sPosts && sPosts.length > 0) {
+        const sIds = sPosts.map((s: any) => s.submission_id);
+        const { data: sData } = await client
+          .from("submissions")
+          .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)")
+          .in("id", sIds)
+          .in("status", ["approved", "in_progress", "resolved"]);
+        if (sData) {
+          const map = new Map(sData.map((d: any) => [d.id, d]));
+          sharedSubmissions = sIds.map((id: string) => map.get(id)).filter(Boolean);
+        }
+      }
+    }
+
     return json({
       submissions,
-      votedSubmissions
+      votedSubmissions,
+      bookmarkedSubmissions,
+      sharedSubmissions,
     });
   } catch (error) {
     console.error("my-activity failed", error);

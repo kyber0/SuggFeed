@@ -31,10 +31,13 @@ import { getAnonToken } from "../lib/anon-token";
 import { useSubmitIdea } from "./submit-idea-context";
 import { useVoting, isRecentlyVoted } from "../hooks/use-voting";
 import { useToast } from "./toast";
+import { useAuth } from "./auth-context";
 import { supabase } from "../lib/supabase";
 import {
   loadPublishedSubmissions,
   loadSingleSubmission,
+  loadUserBookmarkIds,
+  toggleUserBookmark,
   DEFAULT_CATEGORIES,
   type PublishedSubmission,
 } from "../lib/feedback-api";
@@ -52,6 +55,7 @@ const PER_PAGE = 15;
 
 export function CommunityFeed() {
   const { toast } = useToast();
+  const { user, openAuthModal } = useAuth();
   const { openSubmitPanel } = useSubmitIdea();
 
   // Feed items & pagination
@@ -120,17 +124,19 @@ export function CommunityFeed() {
   const isFetchingMoreRef = useRef(false); // guards against duplicate observer fires
   const anonToken = useMemo(() => getAnonToken(), []);
 
-  // Load bookmarks from localStorage on mount
+  // Load bookmarks for authenticated user from database
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("suggfeed_bookmarks");
-      if (stored) {
-        setBookmarkedIds(new Set(JSON.parse(stored)));
-      }
-    } catch {
-      // ignore
+    if (user) {
+      loadUserBookmarkIds()
+        .then((ids) => {
+          setBookmarkedIds(new Set(ids));
+        })
+        .catch(console.error);
+    } else {
+      setBookmarkedIds(new Set());
+      setShowBookmarksOnly(false);
     }
-  }, []);
+  }, [user]);
 
   // Hydrate stored filter preferences on mount
   useEffect(() => {
@@ -217,25 +223,38 @@ export function CommunityFeed() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [feed]);
 
-  const toggleBookmark = (id: string) => {
+  const toggleBookmark = async (id: string) => {
+    if (!user) {
+      toast("Please sign in to bookmark ideas.", "info");
+      openAuthModal("signin");
+      return;
+    }
+
+    const isCurrentlyBookmarked = bookmarkedIds.has(id);
     setBookmarkedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
+      if (isCurrentlyBookmarked) {
         next.delete(id);
         toast("Removed from bookmarks", "info");
       } else {
         next.add(id);
         toast("Saved to bookmarks", "success");
       }
-      try {
-        const arr = Array.from(next);
-        localStorage.setItem("suggfeed_bookmarks", JSON.stringify(arr));
-        localStorage.setItem("sf_bookmarks", JSON.stringify(arr));
-      } catch {
-        // ignore
-      }
       return next;
     });
+
+    try {
+      await toggleUserBookmark(id, !isCurrentlyBookmarked);
+    } catch {
+      // Revert state on error
+      setBookmarkedIds((prev) => {
+        const next = new Set(prev);
+        if (isCurrentlyBookmarked) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+      toast("Failed to update bookmark.", "error");
+    }
   };
 
   // Debounce search input
@@ -497,7 +516,14 @@ export function CommunityFeed() {
               <button
                 type="button"
                 className={`nav-item ${showBookmarksOnly ? "active" : ""}`}
-                onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
+                onClick={() => {
+                  if (!user) {
+                    toast("Please sign in to view your saved ideas.", "info");
+                    openAuthModal("signin");
+                    return;
+                  }
+                  setShowBookmarksOnly(!showBookmarksOnly);
+                }}
               >
                 <Bookmark size={17} />
                 <span>Saved Ideas</span>

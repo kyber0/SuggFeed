@@ -28,9 +28,12 @@ import {
   addComment,
   loadAttachments,
   loadComments,
+  recordUserShare,
 } from "../lib/feedback-api";
 import { CommentTree } from "./comment-tree";
 import { TurnstileWidget } from "./turnstile-widget";
+import { useAuth } from "./auth-context";
+import { useToast } from "./toast";
 import { readableStatus, relativeDateShort as relativeDate } from "../lib/format";
 
 const CATEGORY_THEME: Record<string, { bg: string; text: string; border: string }> = {
@@ -101,6 +104,8 @@ export function IdeaDetailPanel({
   anonToken,
   initialTab = "comments",
 }: Props) {
+  const { user, openAuthModal } = useAuth();
+  const { toast } = useToast();
   const [mobileTab, setMobileTab]                   = useState<"details" | "comments">(initialTab);
   const [comments, setComments]                     = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading]       = useState(true);
@@ -297,10 +302,15 @@ export function IdeaDetailPanel({
             <button
               className="panel-action-btn"
               onClick={() => {
+                if (!user) {
+                  toast("Please sign in to share ideas.", "info");
+                  openAuthModal("signin");
+                  return;
+                }
                 const url = `${window.location.origin}/idea/${idea.id}`;
                 navigator.clipboard.writeText(url);
-                const toast = (window as any).toast;
-                if (toast) toast("Link copied to clipboard!", "success");
+                recordUserShare(idea.id);
+                toast("Link copied to clipboard! Added to shared ideas.", "success");
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }}

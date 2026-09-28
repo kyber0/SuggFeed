@@ -18,7 +18,7 @@ import {
   Flame,
   Link as LinkIcon,
 } from "lucide-react";
-import type { PublishedSubmission } from "../lib/feedback-api";
+import { recordUserShare, reportSubmission, type PublishedSubmission } from "../lib/feedback-api";
 import { relativeDateShort as relativeDate } from "../lib/format";
 import { useToast } from "./toast";
 import { useAuth } from "./auth-context";
@@ -83,13 +83,15 @@ export function PostCard({
   isKeyboardFocused = false,
 }: PostCardProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [isSensitive, setIsSensitive] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [bodyExpanded, setBodyExpanded] = useState(false);
+  const [isReported, setIsReported] = useState(false);
+  const [reporting, setReporting] = useState(false);
 
   // Author name & handle resolution:
   // 1. If author object is populated with a display_name -> use it
@@ -164,26 +166,18 @@ export function PostCard({
     });
   }, [item.description]);
 
-  const recordSharedPost = (id: string) => {
-    try {
-      const raw = localStorage.getItem("sf_shared_posts") ?? localStorage.getItem("suggfeed_shared_posts");
-      const list: string[] = raw ? JSON.parse(raw) : [];
-      if (!list.includes(id)) {
-        list.unshift(id);
-        const str = JSON.stringify(list.slice(0, 100));
-        localStorage.setItem("sf_shared_posts", str);
-        localStorage.setItem("suggfeed_shared_posts", str);
-      }
-    } catch {
-      // ignore
-    }
-  };
-
   const handleCopyLink = (e: MouseEvent) => {
     e.stopPropagation();
+    if (!user) {
+      toast("Please sign in to share ideas.", "info");
+      openAuthModal("signin");
+      setMenuOpen(false);
+      setShareMenuOpen(false);
+      return;
+    }
     const url = `${window.location.origin}/idea/${item.id}`;
     navigator.clipboard.writeText(url);
-    recordSharedPost(item.id);
+    recordUserShare(item.id);
     setCopied(true);
     toast("Link copied to clipboard! Added to shared ideas.", "success");
     setTimeout(() => setCopied(false), 2000);
@@ -193,7 +187,12 @@ export function PostCard({
 
   const handleShare = (e: MouseEvent) => {
     e.stopPropagation();
-    recordSharedPost(item.id);
+    if (!user) {
+      toast("Please sign in to share ideas.", "info");
+      openAuthModal("signin");
+      return;
+    }
+    recordUserShare(item.id);
     // Use Web Share API if available (mobile), else show share menu
     if (navigator.share) {
       navigator.share({
@@ -206,10 +205,42 @@ export function PostCard({
     }
   };
 
-  const handleReport = (e: MouseEvent) => {
+  const handleReport = async (e: MouseEvent) => {
     e.stopPropagation();
-    toast("Post reported to community moderators. Thank you.", "info");
     setMenuOpen(false);
+    if (!user) {
+      toast("Please sign in to report content.", "info");
+      openAuthModal("signin");
+      return;
+    }
+    if (isReported) {
+      toast("You have already reported this post.", "info");
+      return;
+    }
+    setReporting(true);
+    try {
+      const res = await reportSubmission(item.id);
+      if (res?.message === "already_reported") {
+        toast("You have already reported this post.", "info");
+      } else {
+        toast("Post reported to community moderators. Thank you.", "success");
+      }
+      setIsReported(true);
+    } catch {
+      toast("Couldn't submit report right now.", "error");
+    } finally {
+      setReporting(false);
+    }
+  };
+
+  const handleBookmarkClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    if (!user) {
+      toast("Please sign in to bookmark ideas.", "info");
+      openAuthModal("signin");
+      return;
+    }
+    onBookmarkToggle?.(item.id);
   };
 
   return (
@@ -302,9 +333,14 @@ export function PostCard({
                 {isSensitive ? <Eye size={14} /> : <EyeOff size={14} />}
                 <span>{isSensitive ? "Unhide preview" : "Mark as spoiler / blur"}</span>
               </button>
-              <button type="button" onClick={handleReport} className="dropdown-action danger">
+              <button
+                type="button"
+                onClick={handleReport}
+                className={`dropdown-action danger ${isReported ? "disabled" : ""}`}
+                disabled={isReported || reporting}
+              >
                 <Flag size={14} />
-                <span>Report post</span>
+                <span>{isReported ? "Reported" : "Report post"}</span>
               </button>
             </div>
           )}
@@ -424,7 +460,7 @@ export function PostCard({
         <button
           type="button"
           className={`action-btn action-bookmark ${isBookmarked ? "active" : ""}`}
-          onClick={() => onBookmarkToggle?.(item.id)}
+          onClick={handleBookmarkClick}
           aria-label={isBookmarked ? "Remove bookmark" : "Bookmark post"}
           title={isBookmarked ? "Remove bookmark" : "Bookmark this idea"}
         >

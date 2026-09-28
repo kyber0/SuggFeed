@@ -2,9 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { getAnonToken } from "../lib/anon-token";
-import { loadMyActivity, loadSubmissionsByIds, type PublishedSubmission } from "../lib/feedback-api";
+import {
+  loadMyActivity,
+  loadSubmissionsByIds,
+  loadUserBookmarkIds,
+  loadUserSharedIds,
+  toggleUserBookmark,
+  type PublishedSubmission,
+} from "../lib/feedback-api";
 import { Header } from "./header";
 import { useAuth } from "./auth-context";
+import { useToast } from "./toast";
 import Link from "next/link";
 import {
   ThumbsUp,
@@ -108,6 +116,7 @@ function ActivityCard({
 
 export function ProfileDashboard() {
   const { user, openAuthModal } = useAuth();
+  const { toast } = useToast();
   const [submissions, setSubmissions] = useState<PublishedSubmission[]>([]);
   const [bookmarks, setBookmarks] = useState<PublishedSubmission[]>([]);
   const [sharedPosts, setSharedPosts] = useState<PublishedSubmission[]>([]);
@@ -171,43 +180,43 @@ export function ProfileDashboard() {
       );
     } catch { /* ignore */ }
 
-    let bookmarkIds: string[] = [];
-    try {
-      const raw = localStorage.getItem("suggfeed_bookmarks") || localStorage.getItem("sf_bookmarks");
-      if (raw) bookmarkIds = JSON.parse(raw);
-    } catch { /* ignore */ }
-
-    let sharedIds: string[] = [];
-    try {
-      const raw = localStorage.getItem("sf_shared_posts") || localStorage.getItem("suggfeed_shared_posts");
-      if (raw) sharedIds = JSON.parse(raw);
-    } catch { /* ignore */ }
-
-    Promise.all([
-      loadMyActivity(getAnonToken(), trackingCodes),
-      loadSubmissionsByIds(bookmarkIds),
-      loadSubmissionsByIds(sharedIds),
-    ])
-      .then(([res, bMarks, sPosts]) => {
-        setSubmissions(res.submissions);
-        setVoted(res.votedSubmissions);
-        setBookmarks(bMarks);
-        setSharedPosts(sPosts);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    if (user) {
+      setLoading(true);
+      Promise.all([
+        loadMyActivity(getAnonToken(), trackingCodes),
+        loadUserBookmarkIds().then((ids) => loadSubmissionsByIds(ids)),
+        loadUserSharedIds().then((ids) => loadSubmissionsByIds(ids)),
+      ])
+        .then(([res, bMarks, sPosts]) => {
+          setSubmissions(res.submissions ?? []);
+          setVoted(res.votedSubmissions ?? []);
+          setBookmarks(bMarks);
+          setSharedPosts(sPosts);
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(true);
+      loadMyActivity(getAnonToken(), trackingCodes)
+        .then((res) => {
+          setSubmissions(res.submissions ?? []);
+          setVoted(res.votedSubmissions ?? []);
+          setBookmarks([]);
+          setSharedPosts([]);
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
   }, [user]);
 
-  function handleRemoveBookmark(id: string) {
+  async function handleRemoveBookmark(id: string) {
+    if (!user) return;
     setBookmarks((prev) => prev.filter((item) => item.id !== id));
     try {
-      const raw = localStorage.getItem("suggfeed_bookmarks") || localStorage.getItem("sf_bookmarks");
-      const list: string[] = raw ? JSON.parse(raw) : [];
-      const next = list.filter((i) => i !== id);
-      localStorage.setItem("suggfeed_bookmarks", JSON.stringify(next));
-      localStorage.setItem("sf_bookmarks", JSON.stringify(next));
+      await toggleUserBookmark(id, false);
+      toast("Removed from bookmarks", "info");
     } catch {
-      // ignore
+      toast("Failed to remove bookmark", "error");
     }
   }
 
@@ -458,21 +467,55 @@ export function ProfileDashboard() {
                   {activeTab === "bookmarks" && (
                     <>
                       <Bookmark size={32} strokeWidth={1.5} className="prof-empty-icon" />
-                      <p className="prof-empty-title">No bookmarked ideas</p>
-                      <p className="prof-empty-text">Save ideas you want to keep track of from the ideas feed.</p>
-                      <Link href="/feed" className="btn-primary-sm" style={{ marginTop: 12 }}>
-                        Browse Ideas Stream
-                      </Link>
+                      <p className="prof-empty-title">
+                        {!user ? "Sign in to view saved bookmarks" : "No bookmarked ideas"}
+                      </p>
+                      <p className="prof-empty-text">
+                        {!user
+                          ? "Bookmarks are saved to your account so you can access them on any device."
+                          : "Save ideas you want to keep track of from the ideas feed."}
+                      </p>
+                      {!user ? (
+                        <button
+                          type="button"
+                          className="btn-primary-sm"
+                          style={{ marginTop: 12 }}
+                          onClick={() => openAuthModal("signin")}
+                        >
+                          Sign In to Bookmark
+                        </button>
+                      ) : (
+                        <Link href="/feed" className="btn-primary-sm" style={{ marginTop: 12 }}>
+                          Browse Ideas Stream
+                        </Link>
+                      )}
                     </>
                   )}
                   {activeTab === "shared" && (
                     <>
                       <Share2 size={32} strokeWidth={1.5} className="prof-empty-icon" />
-                      <p className="prof-empty-title">No shared ideas yet</p>
-                      <p className="prof-empty-text">Ideas you share with classmates or groups will appear here.</p>
-                      <Link href="/feed" className="btn-primary-sm" style={{ marginTop: 12 }}>
-                        Explore & Share Ideas
-                      </Link>
+                      <p className="prof-empty-title">
+                        {!user ? "Sign in to view shared ideas" : "No shared ideas yet"}
+                      </p>
+                      <p className="prof-empty-text">
+                        {!user
+                          ? "Sign in to your account to share ideas and track them across devices."
+                          : "Ideas you share with classmates or groups will appear here."}
+                      </p>
+                      {!user ? (
+                        <button
+                          type="button"
+                          className="btn-primary-sm"
+                          style={{ marginTop: 12 }}
+                          onClick={() => openAuthModal("signin")}
+                        >
+                          Sign In to Share
+                        </button>
+                      ) : (
+                        <Link href="/feed" className="btn-primary-sm" style={{ marginTop: 12 }}>
+                          Explore & Share Ideas
+                        </Link>
+                      )}
                     </>
                   )}
                   {activeTab === "voted" && (

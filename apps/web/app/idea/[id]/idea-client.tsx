@@ -30,10 +30,12 @@ import {
   loadAttachments,
   loadComments,
   voteSubmission,
+  recordUserShare,
 } from "../../../lib/feedback-api";
 import { CommentTree } from "../../../components/comment-tree";
 import { TurnstileWidget } from "../../../components/turnstile-widget";
 import { getAnonToken } from "../../../lib/anon-token";
+import { useAuth } from "../../../components/auth-context";
 import Link from "next/link";
 import { useToast } from "../../../components/toast";
 import { readableStatus, relativeDateShort as relativeDate } from "../../../lib/format";
@@ -94,6 +96,7 @@ interface Props {
 
 export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
   const { toast } = useToast();
+  const { user, openAuthModal } = useAuth();
   const [idea, setIdea]                             = useState(initialIdea);
   const [comments, setComments]                     = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading]       = useState(true);
@@ -286,9 +289,15 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
             <button
               className="panel-action-btn"
               onClick={() => {
+                if (!user) {
+                  toast("Please sign in to share ideas.", "info");
+                  openAuthModal("signin");
+                  return;
+                }
                 const url = window.location.href;
                 navigator.clipboard.writeText(url);
-                toast("Link copied to clipboard!", "success");
+                recordUserShare(idea.id);
+                toast("Link copied to clipboard! Added to shared ideas.", "success");
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }}
