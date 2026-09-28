@@ -17,11 +17,14 @@ Deno.serve(async (request) => {
     const ip = requestIp(request);
     const ipHash = await sha256(`suggfeed_ip:${ip}`);
 
-    // Compute device hash (combines client fingerprint + IP address)
+    // Compute device hash — ONLY from the client fingerprint.
+    // We intentionally do NOT fall back to IP here because multiple legitimate
+    // devices can share the same public-facing IP (e.g. shared Wi-Fi, corporate
+    // networks). Using IP as identity would wrongly block those users.
     const rawFingerprint = input.deviceFingerprint?.trim() || "";
     const deviceHash = rawFingerprint
       ? await sha256(`suggfeed_device:${rawFingerprint}`)
-      : ipHash;
+      : null; // No fingerprint → no device identity; anon_token is the fallback
 
     // Rate limit per IP: max 60 vote actions per hour
     await enforceSlidingWindow("vote-ip", ip, 60, 60 * 60);
@@ -96,24 +99,25 @@ Deno.serve(async (request) => {
       // Query any anonymous votes for this submission
       const { data: anonVotes, error: anonFindErr } = await client
         .from("votes")
-        .select("submission_id, anon_token, device_hash, ip_hash")
+        .select("submission_id, anon_token, device_hash")
         .eq("submission_id", input.submissionId)
         .is("user_id", null);
 
       if (anonFindErr) throw anonFindErr;
 
-      // Match by device_hash, ip_hash, or anon_token
+      // Match ONLY by device_hash or anon_token — NOT by IP.
+      // IP is not used for identity because many legitimate users share
+      // the same public IP (school Wi-Fi, office networks, etc.).
       const existing = (anonVotes ?? []).find((v) =>
         (deviceHash && v.device_hash === deviceHash) ||
-        (ipHash && v.ip_hash === ipHash) ||
         (anonToken && v.anon_token === anonToken)
       );
 
       if (existing) {
-        // Device or address has already voted on this submission
+        // This browser has already voted on this submission
         if (action === "vote") {
           return json({
-            error: "You have already voted on this idea from this device or network. Please sign in to vote with your account.",
+            error: "You have already supported this idea from this browser. Sign in to vote with your account.",
             voteCount: submission.vote_count,
             voted: true,
             alreadyVoted: true,
@@ -129,7 +133,6 @@ Deno.serve(async (request) => {
 
         const deleteFilters: string[] = [];
         if (existing.device_hash) deleteFilters.push(`device_hash.eq.${existing.device_hash}`);
-        if (existing.ip_hash) deleteFilters.push(`ip_hash.eq.${existing.ip_hash}`);
         if (existing.anon_token) deleteFilters.push(`anon_token.eq.${existing.anon_token}`);
 
         const { error } = deleteFilters.length > 0
@@ -155,7 +158,7 @@ Deno.serve(async (request) => {
         if (insertError) {
           if ((insertError as { code?: string }).code === "23505") {
             return json({
-              error: "You have already voted on this idea from this device or network.",
+              error: "You have already supported this idea from this browser.",
               voteCount: submission.vote_count,
               voted: true,
               alreadyVoted: true,

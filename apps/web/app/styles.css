@@ -3485,6 +3485,11 @@ input.feed-search {
   border-radius: 12px;
 }
 
+/* Standalone idea page is NOT a bottom sheet - never show drag pill */
+.standalone-split .mobile-drag-handle {
+  display: none !important;
+}
+
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    ROADMAP PAGE  (rm-* namespace)
    Responsive 3-Column Kanban Board (Now / Next / Later)
@@ -4221,6 +4226,22 @@ input.feed-search {
 
   .rm-toolbar-title {
     font-size: 19px;
+  }
+
+  /* Hide Live Campus Tracker badge - too bulky on mobile */
+  .rm-toolbar-badge {
+    display: none;
+  }
+
+  /* Collapse Read-only/Staff Editor to icon-only on mobile */
+  .rm-toolbar-title-wrap > span:not(.rm-toolbar-title):not(.rm-toolbar-badge) {
+    padding: 3px 6px;
+    font-size: 0;
+    gap: 0;
+    min-width: 0;
+  }
+  .rm-toolbar-title-wrap > span:not(.rm-toolbar-title):not(.rm-toolbar-badge) svg {
+    font-size: 12px;
   }
 
   .rm-search-box {
@@ -7841,7 +7862,7 @@ input.feed-search {
 .am-form-wrapper { padding-top: 8px; }
 
 /* -----------------------------------------------------------------------
-   SIP � Submit Idea Panel  (sip- namespace)
+   SIP � Submit Idea Panel  (sip- namespace)
    ----------------------------------------------------------------------- */
 
 /* -- Panel size override -- */
