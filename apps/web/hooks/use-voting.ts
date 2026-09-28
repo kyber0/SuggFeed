@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { voteSubmission } from "../lib/feedback-api";
+import { voteSubmission, loadMyActivity } from "../lib/feedback-api";
 import { getAnonToken } from "../lib/anon-token";
 import { getDeviceFingerprint } from "../lib/device-fingerprint";
 import { supabase } from "../lib/supabase";
@@ -39,13 +39,14 @@ export function useVoting(feed: PublishedSubmission[], setFeed: React.Dispatch<R
   // Sync user's voted IDs:
   // 1. Initial fast hydration from localStorage
   // 2. If logged in, fetch from Supabase 'votes' table by user_id
+  // 3. If anonymous, sync device-level votes using cross-browser hardware fingerprint
   useEffect(() => {
     try {
       const raw = localStorage.getItem("sf_voted") ?? localStorage.getItem("cv_voted");
       if (raw) setVotedIds(new Set(JSON.parse(raw) as string[]));
     } catch { /* ignore */ }
 
-    async function syncAuthVotes() {
+    async function syncVotes() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         const { data: userVotes } = await supabase
@@ -57,10 +58,30 @@ export function useVoting(feed: PublishedSubmission[], setFeed: React.Dispatch<R
           setVotedIds(authIds);
           localStorage.setItem("sf_voted", JSON.stringify([...authIds]));
         }
+      } else {
+        // Anonymous: sync existing device votes via hardware fingerprint
+        try {
+          const deviceFp = await getDeviceFingerprint();
+          if (deviceFp) {
+            const activity = await loadMyActivity(getAnonToken(), [], deviceFp);
+            if (activity?.votedSubmissions && activity.votedSubmissions.length > 0) {
+              const deviceVoted = activity.votedSubmissions.map((s) => s.id);
+              setVotedIds((prev) => {
+                const merged = new Set([...prev, ...deviceVoted]);
+                try {
+                  localStorage.setItem("sf_voted", JSON.stringify([...merged]));
+                } catch { /* ignore */ }
+                return merged;
+              });
+            }
+          }
+        } catch {
+          /* ignore offline */
+        }
       }
     }
 
-    syncAuthVotes();
+    syncVotes();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {

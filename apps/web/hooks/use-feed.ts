@@ -71,10 +71,11 @@ export function useFeed() {
           event: "UPDATE",
           schema: "public",
           table: "submissions",
-          filter: "status=in.(approved,in_progress,resolved)",
         },
         (payload) => {
           const updated = payload.new as Partial<PublishedSubmission> & { id: string };
+          if (!updated?.id) return;
+          if (updated.status && !["approved", "in_progress", "resolved"].includes(updated.status)) return;
           setFeed((cur) =>
             cur.map((item) => {
               if (item.id !== updated.id) return item;

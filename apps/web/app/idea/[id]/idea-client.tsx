@@ -29,6 +29,7 @@ import {
   addComment,
   loadAttachments,
   loadComments,
+  loadMyActivity,
   voteSubmission,
   recordUserShare,
 } from "../../../lib/feedback-api";
@@ -144,7 +145,51 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
             });
           }
         });
+    } else {
+      getDeviceFingerprint().then((deviceFp) => {
+        if (!deviceFp) return;
+        loadMyActivity(getAnonToken(), [], deviceFp)
+          .then((res) => {
+            if (res?.votedSubmissions?.some((s) => s.id === idea.id)) {
+              setVotedIds((prev) => {
+                const next = new Set(prev);
+                next.add(idea.id);
+                try { localStorage.setItem("sf_voted", JSON.stringify([...next])); } catch {}
+                return next;
+              });
+            }
+          })
+          .catch(() => {});
+      });
     }
+
+    // Live Realtime updates for this idea's vote count and status
+    const channel = supabase
+      .channel(`public:submissions:${idea.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "submissions",
+          filter: `id=eq.${idea.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as Partial<PublishedSubmission>;
+          if (typeof updated?.vote_count === "number") {
+            setIdea((prev) => ({
+              ...prev,
+              vote_count: updated.vote_count!,
+              status: updated.status ?? prev.status,
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, [user, idea.id]);
 
   useEffect(() => {
