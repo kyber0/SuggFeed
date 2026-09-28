@@ -5,6 +5,7 @@ import { useAuth } from "./auth-context";
 import { useToast } from "./toast";
 import { getStoredPreference, setStoredPreference } from "../lib/cache-manager";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, X, KeyRound, ArrowLeft } from "lucide-react";
+import { useSwipeDismiss } from "../hooks/use-swipe-dismiss";
 
 /* ── Google G logo (full-color inline SVG) ── */
 function GoogleLogo() {
@@ -31,6 +32,7 @@ export function AuthModal() {
   const [magicSent, setMagicSent] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const { toast } = useToast();
+  const cardRef = useSwipeDismiss<HTMLDivElement>({ onDismiss: closeAuthModal });
 
   // Keep local tab in sync when the context tab changes (e.g. PASSWORD_RECOVERY event)
   useEffect(() => {
@@ -139,6 +141,7 @@ export function AuthModal() {
       role="presentation"
     >
       <div
+        ref={cardRef}
         className="am-card"
         role="dialog"
         aria-modal="true"

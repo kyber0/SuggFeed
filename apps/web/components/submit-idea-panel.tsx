@@ -13,6 +13,7 @@ import { addDraft } from "../lib/offline-queue";
 import { FileDropzone } from "./file-dropzone";
 import { TurnstileWidget } from "./turnstile-widget";
 import { Confetti } from "./confetti";
+import { useSwipeDismiss } from "../hooks/use-swipe-dismiss";
 
 /* ── Types ── */
 const CATEGORIES = [
@@ -184,12 +185,17 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
 
   const selectedCat = CATEGORIES.find((c) => c.id === submission.category);
 
+  const panelRef = useSwipeDismiss<HTMLElement>({ onDismiss: closeSubmitPanel });
+
   return (
     <>
       <Confetti trigger={confetti} />
       <div className="panel-overlay" onClick={closeSubmitPanel} aria-hidden="true" />
 
-      <aside className="detail-panel sip-panel" role="dialog" aria-modal="true" aria-label="Share feedback">
+      <aside ref={panelRef} className="detail-panel sip-panel" role="dialog" aria-modal="true" aria-label="Share feedback">
+
+        {/* ── Mobile drag handle ── */}
+        <div className="mobile-drag-handle" aria-hidden="true" />
 
         {/* ── Header ── */}
         <div className="sip-header">

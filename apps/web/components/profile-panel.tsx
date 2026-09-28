@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { X, User, EyeOff, LogIn, LogOut, Save, Check, Bell } from "lucide-react";
 import { useAuth } from "./auth-context";
 import { supabase } from "../lib/supabase";
+import { useSwipeDismiss } from "../hooks/use-swipe-dismiss";
 
 interface Props {
   onClose: () => void;
@@ -17,7 +18,7 @@ export function ProfilePanel({ onClose }: Props) {
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const panelRef = useSwipeDismiss<HTMLElement>({ onDismiss: onClose });
 
   // Load persisted prefs from localStorage after mount
   useEffect(() => {
@@ -94,6 +95,8 @@ export function ProfilePanel({ onClose }: Props) {
     <>
       <div className="panel-overlay" onClick={onClose} aria-hidden="true" />
       <aside className="detail-panel profile-panel" ref={panelRef} role="dialog" aria-modal="true" aria-label="Your profile">
+        {/* Mobile drag handle */}
+        <div className="mobile-drag-handle" aria-hidden="true" />
         {/* Header */}
         <div className="detail-panel-header">
           <div className="detail-panel-badges">

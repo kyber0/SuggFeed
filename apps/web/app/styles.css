@@ -8349,3 +8349,70 @@ input.feed-search {
 
   .sip-cat-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* -------------------------------------------------------------------
+   Swipe-to-dismiss gesture enhancements
+   ------------------------------------------------------------------- */
+
+/* Make all swipeable panels use will-change for smooth GPU animation */
+.detail-panel,
+.sip-panel,
+.am-card,
+.profile-panel {
+  will-change: transform;
+}
+
+/* Slightly larger, more tactile drag pill on mobile */
+@media (max-width: 640px) {
+  .mobile-drag-handle {
+    display: block;
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--line-2);
+    margin: 0 auto 4px;
+    position: relative;
+    flex-shrink: 0;
+    cursor: grab;
+    transition: background 150ms ease, width 150ms ease;
+  }
+
+  /* Panels that use the handle inside sip-header need positioning */
+  .sip-panel .mobile-drag-handle {
+    margin: 0 auto;
+    padding: 12px 0 4px;
+    width: 44px;
+  }
+
+  /* Highlight handle on touch */
+  .detail-panel:active .mobile-drag-handle,
+  .sip-panel:active .mobile-drag-handle,
+  .am-card:active .am-handle,
+  .profile-panel:active .mobile-drag-handle {
+    background: var(--navy);
+    width: 52px;
+  }
+
+  /* Auth modal bottom-sheet drag handle */
+  .am-handle {
+    display: block;
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--line-2);
+    margin: 0 auto 16px;
+    cursor: grab;
+    transition: background 150ms ease, width 150ms ease;
+  }
+
+  /* Sip-body: mark it as the scrollable region for gesture detection */
+  .sip-body {
+    overscroll-behavior: contain;
+  }
+
+  /* Detail panel body scroll container */
+  .detail-panel-body,
+  .detail-panel-columns {
+    overscroll-behavior: contain;
+  }
+}

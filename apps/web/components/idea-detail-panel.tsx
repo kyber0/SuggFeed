@@ -35,6 +35,7 @@ import { TurnstileWidget } from "./turnstile-widget";
 import { useAuth } from "./auth-context";
 import { useToast } from "./toast";
 import { readableStatus, relativeDateShort as relativeDate } from "../lib/format";
+import { useSwipeDismiss } from "../hooks/use-swipe-dismiss";
 
 const CATEGORY_THEME: Record<string, { bg: string; text: string; border: string }> = {
   Facilities:    { bg: "rgba(11, 56, 87, 0.08)", text: "var(--navy)", border: "rgba(11, 56, 87, 0.2)" },
@@ -119,8 +120,9 @@ export function IdeaDetailPanel({
   const [copied, setCopied]                         = useState(false);
   const [isFocused, setIsFocused]                   = useState(false);
   const [replyingTo, setReplyingTo]                 = useState<{ id: string; name: string } | null>(null);
-  const commentListRef                              = useRef<HTMLDivElement>(null);
-  const formRef                                     = useRef<HTMLFormElement>(null);
+  const commentListRef = useRef<HTMLDivElement>(null);
+  const formRef        = useRef<HTMLFormElement>(null);
+  const panelRef       = useSwipeDismiss<HTMLElement>({ onDismiss: onClose });
 
   useEffect(() => {
     if (initialTab) {
@@ -263,6 +265,7 @@ export function IdeaDetailPanel({
 
       {/* Wide two-column modal */}
       <aside
+        ref={panelRef}
         className="detail-panel detail-panel-split"
         role="dialog"
         aria-modal="true"
