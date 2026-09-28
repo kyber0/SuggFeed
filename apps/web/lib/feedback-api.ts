@@ -232,7 +232,7 @@ export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
     async () => {
       const { data, error } = await supabase
         .from("submissions")
-        .select("id,title,description,status,vote_count,created_at,user_id,category_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
+        .select("id,title,description,status,vote_count,comment_count,created_at,user_id,category_id,categories(name),attachments(id),author:profiles!submissions_user_id_fkey(display_name)")
         .in("status", ["in_progress", "resolved"])
         .order("vote_count", { ascending: false })
         .limit(100);
@@ -240,7 +240,7 @@ export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
       if (error) throw error;
       return (data ?? []).map((item: any) => ({
         ...item,
-        comment_count: item.comments?.[0]?.count ?? 0,
+        comment_count: item.comment_count ?? item.comments?.[0]?.count ?? 0,
       })) as PublishedSubmission[];
     },
     { ttlMs: 3 * 60 * 1000 }
@@ -266,7 +266,7 @@ export async function loadSingleSubmission(id: string): Promise<PublishedSubmiss
       // Full select including description for the detail panel
       const { data, error } = await supabase
         .from("submissions")
-        .select("id,title,description,status,vote_count,created_at,user_id,category_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
+        .select("id,title,description,status,vote_count,comment_count,created_at,user_id,category_id,categories(name),attachments(id),author:profiles!submissions_user_id_fkey(display_name)")
         .eq("id", id)
         .in("status", ["approved", "in_progress", "resolved", "pending"])
         .maybeSingle();
@@ -275,7 +275,7 @@ export async function loadSingleSubmission(id: string): Promise<PublishedSubmiss
       if (!data) return null;
       return {
         ...(data as any),
-        comment_count: (data as any).comments?.[0]?.count ?? 0,
+        comment_count: (data as any).comment_count ?? (data as any).comments?.[0]?.count ?? 0,
       } as PublishedSubmission;
     },
     { ttlMs: 5 * 60 * 1000 }
@@ -303,7 +303,7 @@ export async function loadAuthorPendingSubmissions(
       const { data, error } = await supabase
         .from("submissions")
         .select(
-          "id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)"
+          "id,title,description,status,vote_count,comment_count,created_at,user_id,categories(name),attachments(id),author:profiles!submissions_user_id_fkey(display_name)"
         )
         .eq("user_id", userId)
         .eq("status", "pending")
@@ -313,7 +313,7 @@ export async function loadAuthorPendingSubmissions(
         data.forEach((item: any) => {
           pendingMap.set(item.id, {
             ...item,
-            comment_count: item.comments?.[0]?.count ?? 0,
+            comment_count: item.comment_count ?? item.comments?.[0]?.count ?? 0,
           } as PublishedSubmission);
         });
       }
@@ -355,7 +355,7 @@ export async function loadSubmissionsByIds(ids: string[]): Promise<PublishedSubm
   if (uniqueIds.length === 0) return [];
   const { data, error } = await supabase
     .from("submissions")
-    .select("id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
+    .select("id,title,description,status,vote_count,comment_count,created_at,user_id,categories(name),attachments(id),author:profiles!submissions_user_id_fkey(display_name)")
     .in("id", uniqueIds)
     .in("status", ["approved", "in_progress", "resolved"]);
 
@@ -364,7 +364,7 @@ export async function loadSubmissionsByIds(ids: string[]): Promise<PublishedSubm
   (data ?? []).forEach((item: any) => {
     map.set(item.id, {
       ...item,
-      comment_count: item.comments?.[0]?.count ?? 0,
+      comment_count: item.comment_count ?? item.comments?.[0]?.count ?? 0,
     } as PublishedSubmission);
   });
   // Maintain the caller's ID order (e.g. most recently bookmarked/shared first)
