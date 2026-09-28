@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { voteSubmission } from "../lib/feedback-api";
 import { getAnonToken } from "../lib/anon-token";
+import { getDeviceFingerprint } from "../lib/device-fingerprint";
+import { supabase } from "../lib/supabase";
 import { useToast } from "../components/toast";
 import type { PublishedSubmission } from "../lib/feedback-api";
 
@@ -26,24 +28,73 @@ export function isRecentlyVoted(id: string): boolean {
 
 /**
  * Shared optimistic-voting hook.
- * Previously duplicated identically in sugg-feed.tsx and community-feed.tsx.
+ * - Anonymous users: votes tracked with device fingerprint + anon_token (prevents repeat voting on same device).
+ * - Logged-in accounts: votes tracked by user_id and synced from Supabase (exempt from device limits).
  */
 export function useVoting(feed: PublishedSubmission[], setFeed: React.Dispatch<React.SetStateAction<PublishedSubmission[]>>) {
   const { toast } = useToast();
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
   const [votingId, setVotingId] = useState<string | null>(null);
 
-  // Hydrate from localStorage after mount
+  // Sync user's voted IDs:
+  // 1. Initial fast hydration from localStorage
+  // 2. If logged in, fetch from Supabase 'votes' table by user_id
   useEffect(() => {
     try {
       const raw = localStorage.getItem("sf_voted") ?? localStorage.getItem("cv_voted");
       if (raw) setVotedIds(new Set(JSON.parse(raw) as string[]));
     } catch { /* ignore */ }
+
+    async function syncAuthVotes() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: userVotes } = await supabase
+          .from("votes")
+          .select("submission_id")
+          .eq("user_id", session.user.id);
+        if (userVotes) {
+          const authIds = new Set(userVotes.map((v) => v.submission_id));
+          setVotedIds(authIds);
+          localStorage.setItem("sf_voted", JSON.stringify([...authIds]));
+        }
+      }
+    }
+
+    syncAuthVotes();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        supabase
+          .from("votes")
+          .select("submission_id")
+          .eq("user_id", session.user.id)
+          .then(({ data }) => {
+            if (data) {
+              const ids = new Set(data.map((v) => v.submission_id));
+              setVotedIds(ids);
+              localStorage.setItem("sf_voted", JSON.stringify([...ids]));
+            }
+          });
+      } else if (event === "SIGNED_OUT") {
+        // Clear account votes and revert to device local votes
+        try {
+          const raw = localStorage.getItem("sf_voted");
+          setVotedIds(raw ? new Set(JSON.parse(raw)) : new Set());
+        } catch {
+          setVotedIds(new Set());
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function handleVote(id: string) {
     if (votingId) return; // prevent double-fire
     const isUnvote = votedIds.has(id);
+    const action = isUnvote ? "unvote" : "vote";
 
     // Mark as recently voted immediately to block stale Realtime trigger broadcasts
     markRecentlyVoted(id);
@@ -68,27 +119,44 @@ export function useVoting(feed: PublishedSubmission[], setFeed: React.Dispatch<R
     // ── Background sync ───────────────────────────────
     setVotingId(id);
     try {
-      const { voteCount } = await voteSubmission(id, getAnonToken());
+      const deviceFp = await getDeviceFingerprint();
+      const { voteCount } = await voteSubmission(id, getAnonToken(), deviceFp, action);
+
       // Refresh recently-voted timestamp so trailing DB trigger broadcasts don't override
       markRecentlyVoted(id);
+
       // Only apply server count if it's a valid non-negative number
       if (typeof voteCount === "number" && voteCount >= 0) {
         setFeed((cur) => cur.map((item) => item.id === id ? { ...item, vote_count: voteCount } : item));
       }
     } catch (error) {
       recentVoteMap.delete(id);
-      // Revert to pre-vote snapshot (not stale closure)
-      const revertVotedIds = new Set(votedIds); // original state before this vote
-      setVotedIds(revertVotedIds);
-      setFeed((cur) =>
-        cur.map((item) =>
-          item.id === id
-            ? { ...item, vote_count: preVoteCount }
-            : item
-        )
+      const isAlreadyVoted = error instanceof Error && (
+        error.message.includes("already supported") ||
+        error.message.includes("already voted")
       );
-      localStorage.setItem("sf_voted", JSON.stringify([...revertVotedIds]));
-      toast(error instanceof Error ? error.message : "Couldn't record your vote.", "error");
+
+      if (isAlreadyVoted) {
+        // Device already voted anonymously: keep as voted in UI so state is accurate
+        const syncedVoted = new Set(votedIds);
+        syncedVoted.add(id);
+        setVotedIds(syncedVoted);
+        localStorage.setItem("sf_voted", JSON.stringify([...syncedVoted]));
+        toast(error.message, "info");
+      } else {
+        // Revert to pre-vote snapshot
+        const revertVotedIds = new Set(votedIds);
+        setVotedIds(revertVotedIds);
+        setFeed((cur) =>
+          cur.map((item) =>
+            item.id === id
+              ? { ...item, vote_count: preVoteCount }
+              : item
+          )
+        );
+        localStorage.setItem("sf_voted", JSON.stringify([...revertVotedIds]));
+        toast(error instanceof Error ? error.message : "Couldn't record your vote.", "error");
+      }
     } finally { setVotingId(null); }
   }
 

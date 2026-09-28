@@ -196,7 +196,7 @@ export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
   );
 }
 
-export async function loadMyActivity(anonToken?: string, trackingCodes?: string[]) {
+export async function loadMyActivity(anonToken?: string, trackingCodes?: string[], deviceFingerprint?: string) {
   return invoke<{
     submissions: PublishedSubmission[];
     votedSubmissions: PublishedSubmission[];
@@ -204,7 +204,7 @@ export async function loadMyActivity(anonToken?: string, trackingCodes?: string[
     sharedSubmissions?: PublishedSubmission[];
   }>(
     "my-activity",
-    { anonToken, trackingCodes }
+    { anonToken, trackingCodes, deviceFingerprint }
   );
 }
 
@@ -262,8 +262,18 @@ export async function loadAttachments(submissionId: string): Promise<AttachmentF
   return result.files ?? [];
 }
 
-export async function voteSubmission(submissionId: string, anonToken: string) {
-  const result = await invoke<{ voteCount: number; voted: boolean }>("vote-submission", { submissionId, anonToken });
+export async function voteSubmission(
+  submissionId: string,
+  anonToken: string,
+  deviceFingerprint?: string,
+  action?: "vote" | "unvote" | "toggle"
+) {
+  const result = await invoke<{ voteCount: number; voted: boolean }>("vote-submission", {
+    submissionId,
+    anonToken,
+    deviceFingerprint,
+    action,
+  });
   // NOTE: Do NOT invalidate feed_ cache here. The optimistic update in use-voting.ts
   // already handles the UI count, and the server-returned voteCount patches it correctly.
   // Blowing the cache causes a stale re-fetch race that makes vote_count appear to reset.

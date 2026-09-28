@@ -5,7 +5,7 @@ Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   
   try {
-    const { anonToken, trackingCodes } = await request.json().catch(() => ({ anonToken: null, trackingCodes: [] }));
+    const { anonToken, trackingCodes, deviceFingerprint } = await request.json().catch(() => ({ anonToken: null, trackingCodes: [], deviceFingerprint: null }));
     const serviceKey = Deno.env.get("PROJECT_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const client = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
     const user = await authenticatedUser(client, request);
@@ -31,10 +31,21 @@ Deno.serve(async (request) => {
 
     // 2. Find the user's voted ideas
     let votedSubmissions: any[] = [];
-    if (user || anonToken) {
+    if (user || anonToken || deviceFingerprint) {
       let query = client.from("votes").select("submission_id");
-      if (user) query = query.eq("user_id", user.id);
-      else query = query.eq("anon_token", anonToken);
+      if (user) {
+        query = query.eq("user_id", user.id);
+      } else {
+        const filters: string[] = [];
+        if (anonToken) filters.push(`anon_token.eq.${anonToken}`);
+        if (deviceFingerprint) {
+          const deviceHash = await sha256(`suggfeed_device:${deviceFingerprint}`);
+          filters.push(`device_hash.eq.${deviceHash}`);
+        }
+        if (filters.length > 0) {
+          query = query.is("user_id", null).or(filters.join(","));
+        }
+      }
       
       const { data: votes } = await query;
       if (votes && votes.length > 0) {

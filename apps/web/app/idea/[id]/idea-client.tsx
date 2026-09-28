@@ -35,6 +35,8 @@ import {
 import { CommentTree } from "../../../components/comment-tree";
 import { TurnstileWidget } from "../../../components/turnstile-widget";
 import { getAnonToken } from "../../../lib/anon-token";
+import { getDeviceFingerprint } from "../../../lib/device-fingerprint";
+import { supabase } from "../../../lib/supabase";
 import { useAuth } from "../../../components/auth-context";
 import Link from "next/link";
 import { useToast } from "../../../components/toast";
@@ -124,7 +126,26 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
       const raw = localStorage.getItem("sf_voted") ?? localStorage.getItem("cv_voted");
       if (raw) setVotedIds(new Set(JSON.parse(raw) as string[]));
     } catch { /* ignore */ }
-  }, []);
+
+    if (user) {
+      supabase
+        .from("votes")
+        .select("submission_id")
+        .eq("submission_id", idea.id)
+        .eq("user_id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            setVotedIds((prev) => {
+              const next = new Set(prev);
+              next.add(idea.id);
+              try { localStorage.setItem("sf_voted", JSON.stringify([...next])); } catch {}
+              return next;
+            });
+          }
+        });
+    }
+  }, [user, idea.id]);
 
   useEffect(() => {
     setCommentsLoading(true);
@@ -184,18 +205,37 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
       return next;
     });
 
+    const action = wasVoted ? "unvote" : "vote";
     try {
-      await voteSubmission(idea.id, anonToken);
-    } catch {
-      // Rollback
-      setIdea((prev) => ({ ...prev, vote_count: wasVoted ? prev.vote_count + 1 : prev.vote_count - 1 }));
-      setVotedIds((prev) => {
-        const next = new Set(prev);
-        if (wasVoted) next.add(idea.id);
-        else next.delete(idea.id);
-        return next;
-      });
-      toast("Couldn't update vote.", "error");
+      const deviceFp = await getDeviceFingerprint();
+      const res = await voteSubmission(idea.id, anonToken, deviceFp, action);
+      if (typeof res?.voteCount === "number") {
+        setIdea((prev) => ({ ...prev, vote_count: res.voteCount }));
+      }
+    } catch (err) {
+      const isAlreadyVoted = err instanceof Error && (
+        err.message.includes("already supported") ||
+        err.message.includes("already voted")
+      );
+      if (isAlreadyVoted) {
+        toast(err.message, "info");
+        setVotedIds((prev) => {
+          const next = new Set(prev);
+          next.add(idea.id);
+          try { localStorage.setItem("sf_voted", JSON.stringify([...next])); } catch {}
+          return next;
+        });
+      } else {
+        // Rollback
+        setIdea((prev) => ({ ...prev, vote_count: wasVoted ? prev.vote_count + 1 : prev.vote_count - 1 }));
+        setVotedIds((prev) => {
+          const next = new Set(prev);
+          if (wasVoted) next.add(idea.id);
+          else next.delete(idea.id);
+          return next;
+        });
+        toast(err instanceof Error ? err.message : "Couldn't update vote.", "error");
+      }
     } finally {
       setVotingId(null);
     }

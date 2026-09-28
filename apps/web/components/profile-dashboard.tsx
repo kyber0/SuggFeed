@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getAnonToken } from "../lib/anon-token";
+import { getDeviceFingerprint } from "../lib/device-fingerprint";
 import {
   loadMyActivity,
   loadSubmissionsByIds,
@@ -180,33 +181,35 @@ export function ProfileDashboard() {
       );
     } catch { /* ignore */ }
 
-    if (user) {
+    async function fetchActivity() {
       setLoading(true);
-      Promise.all([
-        loadMyActivity(getAnonToken(), trackingCodes),
-        loadUserBookmarkIds().then((ids) => loadSubmissionsByIds(ids)),
-        loadUserSharedIds().then((ids) => loadSubmissionsByIds(ids)),
-      ])
-        .then(([res, bMarks, sPosts]) => {
+      try {
+        const deviceFp = await getDeviceFingerprint();
+        if (user) {
+          const [res, bMarks, sPosts] = await Promise.all([
+            loadMyActivity(getAnonToken(), trackingCodes, deviceFp),
+            loadUserBookmarkIds().then((ids) => loadSubmissionsByIds(ids)),
+            loadUserSharedIds().then((ids) => loadSubmissionsByIds(ids)),
+          ]);
           setSubmissions(res.submissions ?? []);
           setVoted(res.votedSubmissions ?? []);
           setBookmarks(bMarks);
           setSharedPosts(sPosts);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(true);
-      loadMyActivity(getAnonToken(), trackingCodes)
-        .then((res) => {
+        } else {
+          const res = await loadMyActivity(getAnonToken(), trackingCodes, deviceFp);
           setSubmissions(res.submissions ?? []);
           setVoted(res.votedSubmissions ?? []);
           setBookmarks([]);
           setSharedPosts([]);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    fetchActivity();
   }, [user]);
 
   async function handleRemoveBookmark(id: string) {
