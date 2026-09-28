@@ -2,7 +2,7 @@ import { supabase } from "./supabase";
 import { fetchWithCache, invalidateCache } from "./cache-manager";
 
 export type AttachmentPayload = { name: string; type: string; base64: string };
-export type SubmitPayload = { title: string; description: string; category: string; isAnonymous: boolean; consent: true; turnstileToken: string; attachments: AttachmentPayload[] };
+export type SubmitPayload = { title: string; description: string; category: string; isAnonymous: boolean; consent: true; turnstileToken: string; attachments: AttachmentPayload[]; deviceFingerprint?: string };
 export type AttachmentFile = { id: string; mime_type: string; size_bytes: number; url: string | null; name: string };
 export type PublishedSubmission = {
   id: string;

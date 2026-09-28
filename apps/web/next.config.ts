@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+// @ts-ignore - withSentryConfig is exported by @sentry/nextjs
 import { withSentryConfig } from "@sentry/nextjs";
 
 const IS_PROD = process.env.NODE_ENV === "production";

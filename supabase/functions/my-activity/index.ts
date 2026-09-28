@@ -19,14 +19,24 @@ Deno.serve(async (request) => {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       if (data) submissions = data;
-    } else if (Array.isArray(trackingCodes) && trackingCodes.length > 0) {
-      const hashes = await Promise.all(trackingCodes.map((code: string) => sha256(code.toUpperCase())));
-      const { data } = await client
-        .from("submissions")
-        .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)")
-        .in("anonymous_tracking_hash", hashes)
-        .order("created_at", { ascending: false });
-      if (data) submissions = data;
+    } else {
+      const filters: string[] = [];
+      if (Array.isArray(trackingCodes) && trackingCodes.length > 0) {
+        const hashes = await Promise.all(trackingCodes.map((code: string) => sha256(code.toUpperCase())));
+        filters.push(`anonymous_tracking_hash.in.(${hashes.join(",")})`);
+      }
+      if (deviceFingerprint) {
+        const deviceHash = await sha256(`suggfeed_device:${deviceFingerprint}`);
+        filters.push(`device_hash.eq.${deviceHash}`);
+      }
+      if (filters.length > 0) {
+        const { data } = await client
+          .from("submissions")
+          .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id)")
+          .or(filters.join(","))
+          .order("created_at", { ascending: false });
+        if (data) submissions = data;
+      }
     }
 
     // 2. Find the user's voted ideas

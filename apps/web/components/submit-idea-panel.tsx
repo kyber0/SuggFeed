@@ -9,6 +9,7 @@ import {
 import { useSubmitIdea } from "./submit-idea-context";
 import { useToast } from "./toast";
 import { fileToPayload, submitFeedback } from "../lib/feedback-api";
+import { getDeviceFingerprint } from "../lib/device-fingerprint";
 import { addDraft } from "../lib/offline-queue";
 import { FileDropzone } from "./file-dropzone";
 import { TurnstileWidget } from "./turnstile-widget";
@@ -165,8 +166,17 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
 
     setSubmitting(true);
     try {
-      const attachments = await Promise.all(files.map(fileToPayload));
-      const result = await submitFeedback({ ...body, consent: true, attachments, turnstileToken });
+      const [attachments, deviceFingerprint] = await Promise.all([
+        Promise.all(files.map(fileToPayload)),
+        getDeviceFingerprint(),
+      ]);
+      const result = await submitFeedback({
+        ...body,
+        consent: true,
+        attachments,
+        turnstileToken,
+        deviceFingerprint,
+      });
 
       if (result.trackingCode) {
         toast(`Submitted! 🎉 Save your tracking code: ${result.trackingCode}`, "success");

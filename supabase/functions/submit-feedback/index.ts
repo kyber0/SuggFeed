@@ -5,7 +5,8 @@ import { authenticatedUser, corsHeaders, decodeAttachment, enforceSlidingWindow,
 const submissionInput = z.object({
   title: z.string().trim().min(8).max(120), description: z.string().trim().min(20).max(2000),
   category: z.enum(["Facilities", "Learning", "Safety", "Student life", "Other"]), isAnonymous: z.boolean(), consent: z.literal(true),
-  turnstileToken: z.string(), attachments: z.array(z.object({ name: z.string(), type: z.string(), base64: z.string() })).max(3).default([])
+  turnstileToken: z.string(), attachments: z.array(z.object({ name: z.string(), type: z.string(), base64: z.string() })).max(3).default([]),
+  deviceFingerprint: z.string().optional(),
 });
 const extension: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "application/pdf": "pdf" };
 
@@ -23,7 +24,16 @@ Deno.serve(async (request) => {
     if (!category) return json({ error: "That category is no longer available" }, 400);
     const attachments = input.attachments.map(decodeAttachment);
     const trackingCode = input.isAnonymous ? `CV-${crypto.randomUUID().replaceAll("-", "").toUpperCase()}` : null;
-    const { data: submission, error } = await client.from("submissions").insert({ title: input.title, description: input.description, category_id: category.id, user_id: input.isAnonymous ? null : user!.id, anonymous_tracking_hash: trackingCode ? await sha256(trackingCode) : null }).select("id").single();
+    const rawFingerprint = input.deviceFingerprint?.trim() || "";
+    const deviceHash = rawFingerprint ? await sha256(`suggfeed_device:${rawFingerprint}`) : null;
+    const { data: submission, error } = await client.from("submissions").insert({
+      title: input.title,
+      description: input.description,
+      category_id: category.id,
+      user_id: input.isAnonymous ? null : user!.id,
+      anonymous_tracking_hash: trackingCode ? await sha256(trackingCode) : null,
+      device_hash: deviceHash,
+    }).select("id").single();
     if (error || !submission) throw error ?? new Error("Unable to create submission");
     try {
       for (const attachment of attachments) {
