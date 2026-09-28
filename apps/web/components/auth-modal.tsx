@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "./auth-context";
 import { useToast } from "./toast";
 import { getStoredPreference, setStoredPreference } from "../lib/cache-manager";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, X } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, X, KeyRound, ArrowLeft } from "lucide-react";
 
 /* ── Google G logo (full-color inline SVG) ── */
 function GoogleLogo() {
@@ -19,15 +19,23 @@ function GoogleLogo() {
 }
 
 export function AuthModal() {
-  const { authModalOpen, authModalTab, closeAuthModal } = useAuth();
-  const [tab, setTab] = useState<"signin" | "signup">(authModalTab);
+  const { authModalOpen, authModalTab, closeAuthModal, openAuthModal } = useAuth();
+  const [tab, setTab] = useState<"signin" | "signup" | "forgot" | "reset">(authModalTab);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const { toast } = useToast();
+
+  // Keep local tab in sync when the context tab changes (e.g. PASSWORD_RECOVERY event)
+  useEffect(() => {
+    setTab(authModalTab);
+  }, [authModalTab]);
 
   useEffect(() => {
     const savedEmail = getStoredPreference<string>("auth_email", "");
@@ -37,11 +45,14 @@ export function AuthModal() {
   if (!authModalOpen) return null;
 
   function reset() {
-    setPassword(""); setName("");
-    setBusy(false); setMagicSent(false); setShowPassword(false);
+    setPassword(""); setConfirmPassword(""); setName("");
+    setBusy(false); setMagicSent(false); setResetSent(false); setShowPassword(false); setShowConfirm(false);
   }
 
-  function switchTab(t: "signin" | "signup") { setTab(t); reset(); }
+  function switchTab(t: "signin" | "signup" | "forgot" | "reset") {
+    setTab(t);
+    reset();
+  }
 
   async function handleSignIn(e: FormEvent) {
     e.preventDefault(); setBusy(true);
@@ -84,7 +95,42 @@ export function AuthModal() {
     if (error) { toast(error.message, "error"); setBusy(false); }
   }
 
+  async function handleForgotPassword(e: FormEvent) {
+    e.preventDefault();
+    if (!email) { toast("Enter your email address first.", "error"); return; }
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/`,
+    });
+    setBusy(false);
+    if (error) { toast(error.message, "error"); return; }
+    setResetSent(true);
+  }
+
+  async function handleSetNewPassword(e: FormEvent) {
+    e.preventDefault();
+    if (password.length < 8) {
+      toast("Password must be at least 8 characters.", "error");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast("Passwords do not match.", "error");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setBusy(false);
+    if (error) {
+      toast(error.message, "error");
+    } else {
+      toast("Password updated successfully! You are now signed in.", "success");
+      closeAuthModal();
+      reset();
+    }
+  }
+
   const isSignIn = tab === "signin";
+  const showTabs = tab === "signin" || tab === "signup";
 
   return (
     <div
@@ -96,7 +142,11 @@ export function AuthModal() {
         className="am-card"
         role="dialog"
         aria-modal="true"
-        aria-label={isSignIn ? "Sign in to SuggFeed" : "Create your SuggFeed account"}
+        aria-label={
+          tab === "forgot" ? "Reset your password" :
+          tab === "reset" ? "Set a new password" :
+          isSignIn ? "Sign in to SuggFeed" : "Create your SuggFeed account"
+        }
       >
         {/* Mobile drag handle */}
         <div className="am-handle" aria-hidden="true" />
@@ -106,209 +156,365 @@ export function AuthModal() {
           <X size={16} strokeWidth={2.5} />
         </button>
 
-        {magicSent ? (
-          /* ── Magic link sent ── */
-          <div className="am-magic-confirm">
-            <div className="am-magic-icon" aria-hidden="true">📬</div>
-            <h2 className="am-magic-heading">Check your inbox</h2>
-            <p className="am-magic-body">
-              We sent a sign-in link to <strong>{email}</strong>. Click the link in the email to sign in instantly — no password needed.
-            </p>
-            <button type="button" className="am-btn-ghost" onClick={() => setMagicSent(false)}>
-              ← Try another way
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* ── Tab switcher ── */}
-            <div className="am-tabs" role="tablist">
-              <button
-                role="tab"
-                aria-selected={isSignIn}
-                className={`am-tab${isSignIn ? " am-tab--active" : ""}`}
-                onClick={() => switchTab("signin")}
-              >
-                Sign in
-              </button>
-              <button
-                role="tab"
-                aria-selected={!isSignIn}
-                className={`am-tab${!isSignIn ? " am-tab--active" : ""}`}
-                onClick={() => switchTab("signup")}
-              >
-                Create account
-              </button>
-            </div>
-
-            {/* ── Brand header ── */}
+        {/* ── Set New Password (PASSWORD_RECOVERY flow) ── */}
+        {tab === "reset" && (
+          <div className="am-form-wrapper">
             <div className="am-brand">
               <div className="am-brand-icon" aria-hidden="true">
-                <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="10" fill="var(--navy)" />
-                  <path d="M8 12h16M8 16h10M8 20h12" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
-                </svg>
+                <KeyRound size={26} strokeWidth={2} style={{ color: "var(--navy)" }} />
               </div>
               <div>
-                <h1 className="am-heading">
-                  {isSignIn ? "Welcome back" : "Join SuggFeed"}
-                </h1>
-                <p className="am-subtext">
-                  {isSignIn ? "Sign in to your campus account" : "Make your campus voice heard"}
-                </p>
+                <h1 className="am-heading">Set new password</h1>
+                <p className="am-subtext">Choose a secure password for your account</p>
               </div>
             </div>
 
-            {/* ── Google SSO ── */}
-            <button type="button" className="am-btn-google" onClick={handleGoogleSignIn} disabled={busy}>
-              <GoogleLogo />
-              <span>Continue with Google</span>
-            </button>
-
-            <div className="am-divider"><span>or</span></div>
-
-            {/* ── Sign In Form ── */}
-            {isSignIn ? (
-              <form onSubmit={handleSignIn} className="am-form" noValidate>
-                <div className="am-field">
-                  <label className="am-label" htmlFor="am-email-signin">Email address</label>
-                  <div className="am-input-wrap">
-                    <Mail size={15} className="am-input-icon" aria-hidden="true" />
-                    <input
-                      id="am-email-signin"
-                      className="am-input"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@university.edu"
-                      autoComplete="email"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="am-field">
-                  <label className="am-label" htmlFor="am-password-signin">Password</label>
-                  <div className="am-input-wrap">
-                    <Lock size={15} className="am-input-icon" aria-hidden="true" />
-                    <input
-                      id="am-password-signin"
-                      className="am-input am-input--has-toggle"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="am-pw-toggle"
-                      onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                    </button>
-                  </div>
-                </div>
-
-                <button className="am-btn-primary" type="submit" disabled={busy}>
-                  {busy
-                    ? <Loader2 size={16} className="am-spinner" />
-                    : <><span>Sign in</span><ArrowRight size={15} strokeWidth={2.5} /></>}
-                </button>
-
-                <button type="button" className="am-btn-ghost" onClick={handleMagicLink} disabled={busy}>
-                  <Mail size={14} />
-                  Email me a sign-in link
-                </button>
-
-                <p className="am-switch-hint">
-                  Don&rsquo;t have an account?{" "}
-                  <button type="button" className="am-switch-link" onClick={() => switchTab("signup")}>
-                    Create one
+            <form onSubmit={handleSetNewPassword} className="am-form" noValidate>
+              <div className="am-field">
+                <label className="am-label" htmlFor="am-new-password">New password</label>
+                <div className="am-input-wrap">
+                  <Lock size={15} className="am-input-icon" aria-hidden="true" />
+                  <input
+                    id="am-new-password"
+                    className="am-input am-input--has-toggle"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 8 characters"
+                    autoComplete="new-password"
+                    minLength={8}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="am-pw-toggle"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
+                </div>
+                {password.length > 0 && password.length < 8 && (
+                  <p className="am-field-error">At least 8 characters required</p>
+                )}
+              </div>
+
+              <div className="am-field">
+                <label className="am-label" htmlFor="am-confirm-password">Confirm password</label>
+                <div className="am-input-wrap">
+                  <Lock size={15} className="am-input-icon" aria-hidden="true" />
+                  <input
+                    id="am-confirm-password"
+                    className="am-input am-input--has-toggle"
+                    type={showConfirm ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repeat your password"
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="am-pw-toggle"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    aria-label={showConfirm ? "Hide password" : "Show password"}
+                  >
+                    {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                {confirmPassword.length > 0 && password !== confirmPassword && (
+                  <p className="am-field-error">Passwords do not match</p>
+                )}
+              </div>
+
+              <button className="am-btn-primary" type="submit" disabled={busy}>
+                {busy
+                  ? <Loader2 size={16} className="am-spinner" />
+                  : <><span>Update password</span><ArrowRight size={15} strokeWidth={2.5} /></>}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* ── Forgot Password ── */}
+        {tab === "forgot" && (
+          <div className="am-form-wrapper">
+            {resetSent ? (
+              <div className="am-magic-confirm">
+                <div className="am-magic-icon" aria-hidden="true">📬</div>
+                <h2 className="am-magic-heading">Check your inbox</h2>
+                <p className="am-magic-body">
+                  We sent password reset instructions to <strong>{email}</strong>. Click the link in the email to set a new password.
                 </p>
-              </form>
+                <button type="button" className="am-btn-ghost" onClick={() => { setResetSent(false); switchTab("signin"); }}>
+                  ← Back to sign in
+                </button>
+              </div>
             ) : (
-              /* ── Create Account Form ── */
-              <form onSubmit={handleSignUp} className="am-form" noValidate>
-                <div className="am-field">
-                  <label className="am-label" htmlFor="am-name-signup">
-                    Full name <span className="am-label-hint">(optional)</span>
-                  </label>
-                  <div className="am-input-wrap">
-                    <User size={15} className="am-input-icon" aria-hidden="true" />
-                    <input
-                      id="am-name-signup"
-                      className="am-input"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Your display name"
-                      autoComplete="name"
-                    />
+              <>
+                <div className="am-brand">
+                  <div className="am-brand-icon" aria-hidden="true">
+                    <KeyRound size={26} strokeWidth={2} style={{ color: "var(--navy)" }} />
+                  </div>
+                  <div>
+                    <h1 className="am-heading">Reset password</h1>
+                    <p className="am-subtext">We'll email you a secure reset link</p>
                   </div>
                 </div>
 
-                <div className="am-field">
-                  <label className="am-label" htmlFor="am-email-signup">Email address</label>
-                  <div className="am-input-wrap">
-                    <Mail size={15} className="am-input-icon" aria-hidden="true" />
-                    <input
-                      id="am-email-signup"
-                      className="am-input"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@university.edu"
-                      autoComplete="email"
-                      required
-                    />
+                <form onSubmit={handleForgotPassword} className="am-form" noValidate>
+                  <div className="am-field">
+                    <label className="am-label" htmlFor="am-email-forgot">Email address</label>
+                    <div className="am-input-wrap">
+                      <Mail size={15} className="am-input-icon" aria-hidden="true" />
+                      <input
+                        id="am-email-forgot"
+                        className="am-input"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@university.edu"
+                        autoComplete="email"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="am-field">
-                  <label className="am-label" htmlFor="am-password-signup">Password</label>
-                  <div className="am-input-wrap">
-                    <Lock size={15} className="am-input-icon" aria-hidden="true" />
-                    <input
-                      id="am-password-signup"
-                      className="am-input am-input--has-toggle"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="At least 8 characters"
-                      autoComplete="new-password"
-                      minLength={8}
-                      required
-                    />
+                  <button className="am-btn-primary" type="submit" disabled={busy}>
+                    {busy
+                      ? <Loader2 size={16} className="am-spinner" />
+                      : <><span>Send reset link</span><ArrowRight size={15} strokeWidth={2.5} /></>}
+                  </button>
+
+                  <button type="button" className="am-btn-ghost" onClick={() => switchTab("signin")}>
+                    <ArrowLeft size={14} />
+                    Back to sign in
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── Sign In / Sign Up ── */}
+        {(tab === "signin" || tab === "signup") && (
+          <>
+            {magicSent ? (
+              /* ── Magic link sent ── */
+              <div className="am-magic-confirm">
+                <div className="am-magic-icon" aria-hidden="true">📬</div>
+                <h2 className="am-magic-heading">Check your inbox</h2>
+                <p className="am-magic-body">
+                  We sent a sign-in link to <strong>{email}</strong>. Click the link in the email to sign in instantly — no password needed.
+                </p>
+                <button type="button" className="am-btn-ghost" onClick={() => setMagicSent(false)}>
+                  ← Try another way
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* ── Tab switcher ── */}
+                {showTabs && (
+                  <div className="am-tabs" role="tablist">
                     <button
-                      type="button"
-                      className="am-pw-toggle"
-                      onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      role="tab"
+                      aria-selected={isSignIn}
+                      className={`am-tab${isSignIn ? " am-tab--active" : ""}`}
+                      onClick={() => switchTab("signin")}
                     >
-                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      Sign in
+                    </button>
+                    <button
+                      role="tab"
+                      aria-selected={!isSignIn}
+                      className={`am-tab${!isSignIn ? " am-tab--active" : ""}`}
+                      onClick={() => switchTab("signup")}
+                    >
+                      Create account
                     </button>
                   </div>
-                  {password.length > 0 && password.length < 8 && (
-                    <p className="am-field-error">At least 8 characters required</p>
-                  )}
+                )}
+
+                {/* ── Brand header ── */}
+                <div className="am-brand">
+                  <div className="am-brand-icon" aria-hidden="true">
+                    <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+                      <rect width="32" height="32" rx="10" fill="var(--navy)" />
+                      <path d="M8 12h16M8 16h10M8 20h12" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h1 className="am-heading">
+                      {isSignIn ? "Welcome back" : "Join SuggFeed"}
+                    </h1>
+                    <p className="am-subtext">
+                      {isSignIn ? "Sign in to your campus account" : "Make your campus voice heard"}
+                    </p>
+                  </div>
                 </div>
 
-                <button className="am-btn-primary" type="submit" disabled={busy}>
-                  {busy
-                    ? <Loader2 size={16} className="am-spinner" />
-                    : <><span>Create account</span><ArrowRight size={15} strokeWidth={2.5} /></>}
+                {/* ── Google SSO ── */}
+                <button type="button" className="am-btn-google" onClick={handleGoogleSignIn} disabled={busy}>
+                  <GoogleLogo />
+                  <span>Continue with Google</span>
                 </button>
 
-                <p className="am-switch-hint">
-                  Already have an account?{" "}
-                  <button type="button" className="am-switch-link" onClick={() => switchTab("signin")}>
-                    Sign in
-                  </button>
-                </p>
-              </form>
+                <div className="am-divider"><span>or</span></div>
+
+                {/* ── Sign In Form ── */}
+                {isSignIn ? (
+                  <form onSubmit={handleSignIn} className="am-form" noValidate>
+                    <div className="am-field">
+                      <label className="am-label" htmlFor="am-email-signin">Email address</label>
+                      <div className="am-input-wrap">
+                        <Mail size={15} className="am-input-icon" aria-hidden="true" />
+                        <input
+                          id="am-email-signin"
+                          className="am-input"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@university.edu"
+                          autoComplete="email"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="am-field">
+                      <div className="am-label-row">
+                        <label className="am-label" htmlFor="am-password-signin">Password</label>
+                        <button
+                          type="button"
+                          className="am-forgot-link"
+                          onClick={() => switchTab("forgot")}
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                      <div className="am-input-wrap">
+                        <Lock size={15} className="am-input-icon" aria-hidden="true" />
+                        <input
+                          id="am-password-signin"
+                          className="am-input am-input--has-toggle"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          autoComplete="current-password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="am-pw-toggle"
+                          onClick={() => setShowPassword((v) => !v)}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <button className="am-btn-primary" type="submit" disabled={busy}>
+                      {busy
+                        ? <Loader2 size={16} className="am-spinner" />
+                        : <><span>Sign in</span><ArrowRight size={15} strokeWidth={2.5} /></>}
+                    </button>
+
+                    <button type="button" className="am-btn-ghost" onClick={handleMagicLink} disabled={busy}>
+                      <Mail size={14} />
+                      Email me a sign-in link
+                    </button>
+
+                    <p className="am-switch-hint">
+                      Don&rsquo;t have an account?{" "}
+                      <button type="button" className="am-switch-link" onClick={() => switchTab("signup")}>
+                        Create one
+                      </button>
+                    </p>
+                  </form>
+                ) : (
+                  /* ── Create Account Form ── */
+                  <form onSubmit={handleSignUp} className="am-form" noValidate>
+                    <div className="am-field">
+                      <label className="am-label" htmlFor="am-name-signup">
+                        Full name <span className="am-label-hint">(optional)</span>
+                      </label>
+                      <div className="am-input-wrap">
+                        <User size={15} className="am-input-icon" aria-hidden="true" />
+                        <input
+                          id="am-name-signup"
+                          className="am-input"
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Your display name"
+                          autoComplete="name"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="am-field">
+                      <label className="am-label" htmlFor="am-email-signup">Email address</label>
+                      <div className="am-input-wrap">
+                        <Mail size={15} className="am-input-icon" aria-hidden="true" />
+                        <input
+                          id="am-email-signup"
+                          className="am-input"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@university.edu"
+                          autoComplete="email"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="am-field">
+                      <label className="am-label" htmlFor="am-password-signup">Password</label>
+                      <div className="am-input-wrap">
+                        <Lock size={15} className="am-input-icon" aria-hidden="true" />
+                        <input
+                          id="am-password-signup"
+                          className="am-input am-input--has-toggle"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="At least 8 characters"
+                          autoComplete="new-password"
+                          minLength={8}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="am-pw-toggle"
+                          onClick={() => setShowPassword((v) => !v)}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                      {password.length > 0 && password.length < 8 && (
+                        <p className="am-field-error">At least 8 characters required</p>
+                      )}
+                    </div>
+
+                    <button className="am-btn-primary" type="submit" disabled={busy}>
+                      {busy
+                        ? <Loader2 size={16} className="am-spinner" />
+                        : <><span>Create account</span><ArrowRight size={15} strokeWidth={2.5} /></>}
+                    </button>
+
+                    <p className="am-switch-hint">
+                      Already have an account?{" "}
+                      <button type="button" className="am-switch-link" onClick={() => switchTab("signin")}>
+                        Sign in
+                      </button>
+                    </p>
+                  </form>
+                )}
+              </>
             )}
           </>
         )}
@@ -316,4 +522,3 @@ export function AuthModal() {
     </div>
   );
 }
-

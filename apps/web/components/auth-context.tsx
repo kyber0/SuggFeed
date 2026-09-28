@@ -10,10 +10,10 @@ type AuthCtx = {
   isStaff: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
-  openAuthModal: (defaultTab?: "signin" | "signup") => void;
+  openAuthModal: (defaultTab?: "signin" | "signup" | "forgot" | "reset") => void;
   closeAuthModal: () => void;
   authModalOpen: boolean;
-  authModalTab: "signin" | "signup";
+  authModalTab: "signin" | "signup" | "forgot" | "reset";
 };
 
 const Ctx = createContext<AuthCtx>({
@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isStaff, setIsStaff] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin");
+  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup" | "forgot" | "reset">("signin");
 
   const syncRole = useCallback(async (userId: string | undefined) => {
     if (!userId) {
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user?.id) {
@@ -73,6 +73,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setRole(null);
         setIsStaff(false);
+      }
+
+      // When Supabase delivers a password-recovery token, open the reset modal
+      if (event === "PASSWORD_RECOVERY") {
+        setAuthModalTab("reset");
+        setAuthModalOpen(true);
       }
     });
     return () => subscription.unsubscribe();
@@ -86,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsStaff(false);
   }, []);
 
-  const openAuthModal = useCallback((tab: "signin" | "signup" = "signin") => {
+  const openAuthModal = useCallback((tab: "signin" | "signup" | "forgot" | "reset" = "signin") => {
     setAuthModalTab(tab);
     setAuthModalOpen(true);
   }, []);
