@@ -73,8 +73,10 @@ Deno.serve(async (request) => {
 
     if (insertError) throw insertError;
     
-    // Notify the author (fire and forget)
-    notifyComment(client, submission, comment).catch(console.error);
+    // Notify the author (fire and forget) - only if comment was not posted by the author
+    if (!user || user.id !== submission.user_id) {
+      notifyComment(client, submission, comment).catch(console.error);
+    }
     
     return json({ comment });
   } catch (error) {
