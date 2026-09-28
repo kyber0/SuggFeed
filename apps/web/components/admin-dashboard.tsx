@@ -132,6 +132,14 @@ export function AdminDashboard({
   const [filterStatus, setFilterStatus] = useState<Status | "all">("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"newest" | "votes" | "oldest" | "title">("newest");
+  const [dbCounts, setDbCounts] = useState<Record<Status | "all", number>>({
+    all: 0,
+    pending: 0,
+    approved: 0,
+    in_progress: 0,
+    resolved: 0,
+    rejected: 0,
+  });
 
   // Lazy loading / pagination
   const PAGE_SIZE = 25;
@@ -243,29 +251,83 @@ export function AdminDashboard({
     return () => window.removeEventListener("popstate", handlePopState);
   }, [submissions]);
 
-  // Load Submissions directly from Supabase for admin management
-  async function loadSubmissions(_forceRefresh?: boolean) {
-    setBusy(true);
+  // Load real-time database counts for KPI cards and status chips
+  const loadCounts = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from("submissions")
-        .select("id,title,description,status,created_at,user_id,category_id,categories(name),vote_count,attachments(id),author:profiles!submissions_user_id_fkey(display_name)")
-        .order("created_at", { ascending: false })
-        .limit(2000);
-
-      if (error) {
-        console.error("Admin query error:", error);
-        toast(`Unable to load submissions: ${error.message}`, "error");
-        return;
-      }
-      const subs = (data ?? []) as unknown as Submission[];
-      setSubmissions(subs);
-    } catch (err) {
-      console.error("Admin load exception:", err);
-    } finally {
-      setBusy(false);
+      const [totalRes, pendingRes, approvedRes, inProgressRes, resolvedRes, rejectedRes] = await Promise.all([
+        supabase.from("submissions").select("*", { count: "exact", head: true }),
+        supabase.from("submissions").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("submissions").select("*", { count: "exact", head: true }).eq("status", "approved"),
+        supabase.from("submissions").select("*", { count: "exact", head: true }).eq("status", "in_progress"),
+        supabase.from("submissions").select("*", { count: "exact", head: true }).eq("status", "resolved"),
+        supabase.from("submissions").select("*", { count: "exact", head: true }).eq("status", "rejected"),
+      ]);
+      setDbCounts({
+        all: totalRes.count ?? 0,
+        pending: pendingRes.count ?? 0,
+        approved: approvedRes.count ?? 0,
+        in_progress: inProgressRes.count ?? 0,
+        resolved: resolvedRes.count ?? 0,
+        rejected: rejectedRes.count ?? 0,
+      });
+    } catch (e) {
+      console.error("Failed to load counts", e);
     }
-  }
+  }, []);
+
+  // Load ALL Submissions via batched requests (500/batch) to bypass PostgREST row limit
+  const loadSubmissions = useCallback(
+    async (statusOverride?: Status | "all" | boolean, _forceRefresh?: boolean) => {
+      setBusy(true);
+      loadCounts();
+      const effectiveStatus = typeof statusOverride === "string" ? statusOverride : filterStatus;
+      const BATCH = 500;
+      try {
+        const allRows: Submission[] = [];
+        let offset = 0;
+        let keepFetching = true;
+
+        while (keepFetching) {
+          let query = supabase
+            .from("submissions")
+            .select("id,title,description,status,created_at,user_id,category_id,categories(name),vote_count,attachments(id),author:profiles!submissions_user_id_fkey(display_name)")
+            .order("created_at", { ascending: false })
+            .range(offset, offset + BATCH - 1);
+
+          if (effectiveStatus !== "all") {
+            query = query.eq("status", effectiveStatus);
+          }
+
+          const { data, error } = await query;
+
+          if (error) {
+            console.error("Admin query error:", error);
+            toast(`Unable to load submissions: ${error.message}`, "error");
+            keepFetching = false;
+            break;
+          }
+
+          const batch = (data ?? []) as unknown as Submission[];
+          allRows.push(...batch);
+
+          if (batch.length < BATCH) {
+            // Fetched less than a full batch — we're done
+            keepFetching = false;
+          } else {
+            offset += BATCH;
+          }
+
+          // Update UI progressively so admin sees rows load in
+          setSubmissions([...allRows]);
+        }
+      } catch (err) {
+        console.error("Admin load exception:", err);
+      } finally {
+        setBusy(false);
+      }
+    },
+    [filterStatus, loadCounts]
+  );
 
   // Load Flagged Comments
   async function loadFlaggedComments() {
@@ -404,6 +466,13 @@ export function AdminDashboard({
     if (activeTab === "flagged") loadFlaggedComments();
     if (activeTab === "audit") loadAuditLog();
   }, [activeTab, accessToken]);
+
+  // Re-fetch submissions with server-side status filter when filterStatus changes
+  useEffect(() => {
+    if (userRole === "moderator" || userRole === "admin") {
+      loadSubmissions(filterStatus);
+    }
+  }, [filterStatus, userRole, loadSubmissions]);
 
   // Load Attachments for currently inspected idea
   useEffect(() => {
@@ -661,22 +730,24 @@ export function AdminDashboard({
     toast("Staff session ended.", "info");
   }
 
-  // Metrics computation
+  // Metrics computation from live database counters
   const counts = useMemo(() => {
-    return ALL_STATUSES.reduce(
-      (acc, s) => {
-        acc[s] = submissions.filter((x) => x.status === s).length;
-        return acc;
-      },
-      {} as Record<Status, number>
-    );
-  }, [submissions]);
+    return {
+      all: dbCounts.all || submissions.length,
+      pending: dbCounts.pending,
+      approved: dbCounts.approved,
+      in_progress: dbCounts.in_progress,
+      resolved: dbCounts.resolved,
+      rejected: dbCounts.rejected,
+    };
+  }, [dbCounts, submissions.length]);
 
   const resolutionRate = useMemo(() => {
-    if (submissions.length === 0) return 0;
+    const total = dbCounts.all || submissions.length;
+    if (total === 0) return 0;
     const resolvedCount = counts.resolved || 0;
-    return Math.round((resolvedCount / submissions.length) * 100);
-  }, [submissions.length, counts.resolved]);
+    return Math.round((resolvedCount / total) * 100);
+  }, [dbCounts.all, submissions.length, counts.resolved]);
 
   // Categories list
   const availableCategories = useMemo(() => {
@@ -1122,7 +1193,7 @@ export function AdminDashboard({
               type="button"
               className="sp-btn-action"
               onClick={() => {
-                loadSubmissions(true);
+                loadSubmissions(filterStatus, true);
                 if (activeTab === "flagged") loadFlaggedComments();
                 if (activeTab === "audit") loadAuditLog();
               }}
@@ -1495,7 +1566,7 @@ export function AdminDashboard({
                     <Inbox size={16} />
                   </div>
                 </div>
-                <div className="sp-kpi-num">{submissions.length}</div>
+                <div className="sp-kpi-num">{counts.all}</div>
                 <div className="sp-kpi-sub">{resolutionRate}% resolution rate</div>
               </button>
             </div>
@@ -1562,7 +1633,7 @@ export function AdminDashboard({
                   onClick={() => setFilterStatus("all")}
                 >
                   <span>All Ideas</span>
-                  <span className="sp-chip-count">({submissions.length})</span>
+                  <span className="sp-chip-count">({counts.all})</span>
                 </button>
 
                 {ALL_STATUSES.map((status) => {
