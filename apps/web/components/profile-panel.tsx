@@ -5,6 +5,7 @@ import { X, User, EyeOff, LogIn, LogOut, Save, Check, Bell } from "lucide-react"
 import { useAuth } from "./auth-context";
 import { supabase } from "../lib/supabase";
 import { useSwipeDismiss } from "../hooks/use-swipe-dismiss";
+import { usePanelHistory } from "../hooks/use-panel-history";
 
 interface Props {
   onClose: () => void;
@@ -19,6 +20,8 @@ export function ProfilePanel({ onClose }: Props) {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const panelRef = useSwipeDismiss<HTMLElement>({ onDismiss: onClose });
+  // Back button / Android gesture closes the panel
+  usePanelHistory("profile-panel", onClose);
 
   // Load persisted prefs from localStorage after mount
   useEffect(() => {

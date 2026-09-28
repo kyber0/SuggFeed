@@ -96,16 +96,29 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
     }
   }, [submission, draftLoaded]);
 
-  /* ── Body scroll lock ── */
+  /* ── Body scroll lock + back-button history ── */
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      // Push a synthetic history entry so the browser back button closes the panel
+      history.pushState({ panel: "submit-panel" }, "");
+      const handlePop = (e: PopStateEvent) => {
+        if (!e.state || e.state.panel !== "submit-panel") closeSubmitPanel();
+      };
+      window.addEventListener("popstate", handlePop);
+      return () => {
+        window.removeEventListener("popstate", handlePop);
+        document.body.style.overflow = "";
+        setStep(1);
+        // Remove our synthetic entry if panel was closed normally (not via back)
+        if (history.state?.panel === "submit-panel") history.back();
+      };
     } else {
       document.body.style.overflow = "";
       setStep(1); // reset step when closed
     }
     return () => { document.body.style.overflow = ""; };
-  }, [isOpen]);
+  }, [isOpen, closeSubmitPanel]);
 
   if (!isOpen) return null;
 

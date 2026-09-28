@@ -36,6 +36,7 @@ import { useAuth } from "./auth-context";
 import { useToast } from "./toast";
 import { readableStatus, relativeDateShort as relativeDate } from "../lib/format";
 import { useSwipeDismiss } from "../hooks/use-swipe-dismiss";
+import { usePanelHistory } from "../hooks/use-panel-history";
 
 const CATEGORY_THEME: Record<string, { bg: string; text: string; border: string }> = {
   Facilities:    { bg: "rgba(11, 56, 87, 0.08)", text: "var(--navy)", border: "rgba(11, 56, 87, 0.2)" },
@@ -123,6 +124,8 @@ export function IdeaDetailPanel({
   const commentListRef = useRef<HTMLDivElement>(null);
   const formRef        = useRef<HTMLFormElement>(null);
   const panelRef       = useSwipeDismiss<HTMLElement>({ onDismiss: onClose });
+  // Back button / Android gesture closes the panel
+  usePanelHistory("idea-panel", onClose);
 
   useEffect(() => {
     if (initialTab) {
