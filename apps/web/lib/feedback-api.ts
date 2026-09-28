@@ -11,6 +11,8 @@ export type PublishedSubmission = {
   status: "approved" | "in_progress" | "resolved";
   vote_count: number;
   created_at: string;
+  user_id?: string | null;
+  author?: { display_name: string | null } | null;
   categories: { name: string } | null;
   attachments: { id: string }[];
   comments?: { count: number }[];
@@ -127,7 +129,7 @@ export async function loadPublishedSubmissions(
   const fetcher = async () => {
     let query = supabase
       .from("submissions")
-      .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id),comments(count)", { count: "exact" })
+      .select("id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)", { count: "exact" })
       .in("status", ["approved", "in_progress", "resolved"]);
 
     // Server-side category filter
@@ -175,7 +177,7 @@ export async function loadRoadmapSubmissions(): Promise<PublishedSubmission[]> {
     async () => {
       const { data, error } = await supabase
         .from("submissions")
-        .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id),comments(count)")
+        .select("id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
         .in("status", ["approved", "in_progress", "resolved"])
         .order("vote_count", { ascending: false })
         .limit(100);
@@ -203,7 +205,7 @@ export async function loadSingleSubmission(id: string): Promise<PublishedSubmiss
     async () => {
       const { data, error } = await supabase
         .from("submissions")
-        .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id),comments(count)")
+        .select("id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
         .eq("id", id)
         .in("status", ["approved", "in_progress", "resolved"])
         .maybeSingle();
@@ -225,7 +227,7 @@ export async function loadSubmissionsByIds(ids: string[]): Promise<PublishedSubm
   if (uniqueIds.length === 0) return [];
   const { data, error } = await supabase
     .from("submissions")
-    .select("id,title,description,status,vote_count,created_at,categories(name),attachments(id),comments(count)")
+    .select("id,title,description,status,vote_count,created_at,user_id,categories(name),attachments(id),comments(count),author:profiles!submissions_user_id_fkey(display_name)")
     .in("id", uniqueIds)
     .in("status", ["approved", "in_progress", "resolved"]);
 

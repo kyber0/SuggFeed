@@ -76,17 +76,13 @@ Deno.serve(async (request) => {
       }
     }
 
-    // Count the actual votes in the DB — this is what the trigger would do.
-    // We do it explicitly here so vote_count is persisted correctly even if
-    // the trigger hasn't been applied or hasn't propagated yet.
-    const { count: actualCount } = await client
-      .from("votes")
-      .select("*", { count: "exact", head: true })
-      .eq("submission_id", input.submissionId);
+    // Update vote_count incrementally on the submission.
+    // Do NOT count(*) from votes table because seed/pre-existing submissions
+    // have initial vote counts without individual vote rows in votes table;
+    // counting would wipe those totals down to 1 or 0.
+    const currentVotes = typeof submission.vote_count === "number" ? submission.vote_count : 0;
+    const voteCount = Math.max(0, currentVotes + (didVote ? 1 : -1));
 
-    const voteCount = actualCount ?? Math.max(0, (submission.vote_count as number) + (didVote ? 1 : -1));
-
-    // Write the accurate count back to submissions so the next feed refresh sees it
     await client
       .from("submissions")
       .update({ vote_count: voteCount })

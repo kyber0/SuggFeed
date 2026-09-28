@@ -91,40 +91,39 @@ export function PostCard({
   const [revealed, setRevealed] = useState(false);
   const [bodyExpanded, setBodyExpanded] = useState(false);
 
-  // Display name: auth profile > localStorage > anon fallback
-  const [resolvedDisplayName, setResolvedDisplayName] = useState<string | null>(null);
-  const [resolvedAnon, setResolvedAnon] = useState(false);
+  // Author name & handle resolution:
+  // 1. If author object is populated with a display_name -> use it
+  // 2. If this post belongs to the currently logged in user -> show their name / You
+  // 3. Otherwise (anonymous submission or no user_id) -> "Anonymous" and "@anon"
+  const isOwnPost = Boolean(user?.id && item.user_id && item.user_id === user.id);
+  const authorDisplayName =
+    item.author?.display_name ||
+    (isOwnPost
+      ? user?.user_metadata?.full_name ??
+        user?.user_metadata?.display_name ??
+        user?.email?.split("@")[0]
+      : null);
 
-  useEffect(() => {
-    const storedName = localStorage.getItem("sf_display_name") ?? localStorage.getItem("cv_display_name") ?? "";
-    const isAnon = (localStorage.getItem("sf_anon_pref") ?? localStorage.getItem("cv_anon_pref")) === "true";
-    setResolvedAnon(isAnon);
+  const isAnon = !authorDisplayName;
 
-    if (!isAnon && storedName) {
-      setResolvedDisplayName(storedName);
-    } else if (!isAnon && user) {
-      const name = user.user_metadata?.full_name ?? user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? null;
-      setResolvedDisplayName(name);
-    } else {
-      setResolvedDisplayName(null);
-    }
-  }, [user]);
-
-  const authorName = resolvedAnon
+  const authorName = isAnon
     ? "Anonymous"
-    : (resolvedDisplayName || "Community Member");
+    : isOwnPost
+      ? `${authorDisplayName} (You)`
+      : authorDisplayName;
 
-  const authorHandle = resolvedAnon
+  const authorHandle = isAnon
     ? "@anon"
-    : resolvedDisplayName
-      ? `@${resolvedDisplayName.toLowerCase().replace(/\s+/g, "")}`
-      : "@member";
+    : `@${authorDisplayName.toLowerCase().replace(/\s+/g, "")}`;
 
   // Show "Show more" if body is longer than ~200 chars (likely to be clipped by CSS)
   const isLongBody = item.description.length > 200;
 
-  // Generate deterministic avatar gradient from item.id
+  // Generate deterministic avatar gradient
   const avatarBg = useMemo(() => {
+    if (isAnon) {
+      return "linear-gradient(135deg, #64748B 0%, #475569 100%)";
+    }
     const colors = [
       "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
       "linear-gradient(135deg, #10B981 0%, #047857 100%)",
@@ -134,15 +133,16 @@ export function PostCard({
       "linear-gradient(135deg, #06B6D4 0%, #0E7490 100%)",
     ];
     let hash = 0;
-    for (let i = 0; i < item.id.length; i++) {
-      hash = item.id.charCodeAt(i) + ((hash << 5) - hash);
+    const seed = authorDisplayName;
+    for (let i = 0; i < seed.length; i++) {
+      hash = seed.charCodeAt(i) + ((hash << 5) - hash);
     }
     return colors[Math.abs(hash) % colors.length];
-  }, [item.id]);
+  }, [isAnon, authorDisplayName]);
 
-  const avatarInitial = resolvedAnon
+  const avatarInitial = isAnon
     ? "?"
-    : (resolvedDisplayName?.[0]?.toUpperCase() ?? authorName[0]?.toUpperCase() ?? "C");
+    : (authorDisplayName?.[0]?.toUpperCase() ?? "A");
 
   const catName = item.categories?.name ?? "Other";
   const catStyle = CATEGORY_COLORS[catName] || CATEGORY_COLORS.Other;

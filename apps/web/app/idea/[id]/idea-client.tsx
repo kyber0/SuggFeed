@@ -335,9 +335,17 @@ export function IdeaClient({ initialIdea, turnstileSiteKey }: Props) {
             <div className="detail-author-row">
               <div className="detail-author-profile">
                 <div className="detail-author-avatar">
-                  <EyeOff size={13} strokeWidth={2} />
+                  {idea.author?.display_name ? (
+                    <span style={{ fontSize: 11, fontWeight: 700 }}>
+                      {idea.author.display_name[0]?.toUpperCase()}
+                    </span>
+                  ) : (
+                    <EyeOff size={13} strokeWidth={2} />
+                  )}
                 </div>
-                <span className="detail-author-name">Anonymous Student</span>
+                <span className="detail-author-name">
+                  {idea.author?.display_name || "Anonymous Student"}
+                </span>
               </div>
               <span className="detail-date-badge">
                 <Calendar size={13} strokeWidth={2} />
