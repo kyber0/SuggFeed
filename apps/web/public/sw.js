@@ -4,7 +4,7 @@
 //   - Supabase API / Edge Functions: Network-first, fallback to cache
 //   - Navigation (HTML): Network-first, fallback to offline shell
 
-const CACHE_VERSION = "cv-v1";
+const CACHE_VERSION = "cv-v2";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
@@ -43,9 +43,10 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET, chrome-extension, and sw.js itself
+  // Skip non-GET, chrome-extension, sw.js itself, and range requests (audio/video/streaming)
   if (request.method !== "GET") return;
   if (url.pathname === "/sw.js") return;
+  if (request.headers.has("range")) return;
 
   // Supabase / edge function calls — network-first
   if (url.hostname.endsWith(".supabase.co") || url.pathname.startsWith("/functions/")) {
@@ -106,11 +107,16 @@ self.addEventListener("notificationclick", (event) => {
 });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+// Cache API only supports complete responses (HTTP 200); partial content (HTTP 206) throws TypeError.
+function isCacheable(response) {
+  return response && response.status === 200;
+}
+
 async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
   const response = await fetch(request);
-  if (response.ok) {
+  if (isCacheable(response)) {
     const cache = await caches.open(cacheName);
     cache.put(request, response.clone());
   }
@@ -120,7 +126,7 @@ async function cacheFirst(request, cacheName) {
 async function networkFirst(request, cacheName) {
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (isCacheable(response)) {
       const cache = await caches.open(cacheName);
       cache.put(request, response.clone());
     }
@@ -137,7 +143,7 @@ async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
   const networkPromise = fetch(request).then((response) => {
-    if (response.ok) cache.put(request, response.clone());
+    if (isCacheable(response)) cache.put(request, response.clone());
     return response;
   });
   return cached ?? networkPromise;
