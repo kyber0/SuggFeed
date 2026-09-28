@@ -363,7 +363,7 @@ export function IdeaDetailPanel({
         {/* ── Two-column body ── */}
         <div className="detail-panel-columns" data-mobile-tab={mobileTab}>
           {/* ── LEFT: Idea details & Impact (50%) ── */}
-          <div className="detail-col detail-col-left">
+          <div className="detail-col detail-col-left" data-swipe-scroll>
             {/* Author & Date strip */}
             <div className="detail-author-row">
               <div className="detail-author-profile">
@@ -526,7 +526,7 @@ export function IdeaDetailPanel({
             </div>
 
             {/* Scrollable discussions list */}
-            <div className="detail-comments-scrollable" ref={commentListRef}>
+            <div className="detail-comments-scrollable" ref={commentListRef} data-swipe-scroll>
               <CommentTree
                 submissionId={idea.id}
                 comments={comments}

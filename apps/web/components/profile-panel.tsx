@@ -108,7 +108,7 @@ export function ProfilePanel({ onClose }: Props) {
           </button>
         </div>
 
-        <div className="detail-panel-body">
+        <div className="detail-panel-body" data-swipe-scroll>
           {/* Avatar */}
           <div className="profile-avatar-block">
             <div className="profile-avatar-large">{initial}</div>

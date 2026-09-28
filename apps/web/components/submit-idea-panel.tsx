@@ -53,6 +53,7 @@ const emptySubmission = {
 export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   const { isOpen, closeSubmitPanel } = useSubmitIdea();
   const { toast } = useToast();
+  const panelRef = useSwipeDismiss<HTMLElement>({ onDismiss: closeSubmitPanel });
 
   const [step, setStep] = useState<Step>(1);
   const [online, setOnline] = useState(true);
@@ -185,8 +186,6 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
 
   const selectedCat = CATEGORIES.find((c) => c.id === submission.category);
 
-  const panelRef = useSwipeDismiss<HTMLElement>({ onDismiss: closeSubmitPanel });
-
   return (
     <>
       <Confetti trigger={confetti} />
@@ -232,7 +231,7 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
         </div>
 
         {/* ── Body ── */}
-        <div className="sip-body">
+        <div className="sip-body" data-swipe-scroll>
 
           {/* ══ STEP 1: Category ══ */}
           {step === 1 && (
