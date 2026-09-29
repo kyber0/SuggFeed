@@ -220,6 +220,70 @@ export function AdminDashboard({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [profileJoinedAt, setProfileJoinedAt] = useState<string | null>(null);
 
+  // Header Profile Dropdown state
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  const adminDisplayName =
+    profileDisplayName ||
+    authSession?.user?.user_metadata?.full_name ||
+    authSession?.user?.email?.split("@")[0] ||
+    "Staff";
+  const adminEmail = profileEmail || authSession?.user?.email || "";
+  const adminInitial = adminDisplayName[0]?.toUpperCase() || "S";
+  const adminAvatarUrl = authSession?.user?.user_metadata?.avatar_url;
+
+  // Hydrate profile data when authSession is available
+  useEffect(() => {
+    if (authSession?.user) {
+      setProfileEmail(authSession.user.email ?? "");
+      setProfileJoinedAt(authSession.user.created_at ?? null);
+      supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", authSession.user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.display_name) setProfileDisplayName(data.display_name);
+        });
+    }
+  }, [authSession?.user]);
+
+  // Click outside listener for profile dropdown
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    }
+    if (profileDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [profileDropdownOpen]);
+
+  // Handler to switch to profile tab and refresh profile info
+  const openProfileView = useCallback(() => {
+    setActiveTab("profile");
+    setProfileDropdownOpen(false);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setProfileEmail(session.user.email ?? "");
+        setProfileJoinedAt(session.user.created_at ?? null);
+      }
+    });
+    if (authSession?.user?.id) {
+      supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", authSession.user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.display_name) setProfileDisplayName(data.display_name);
+        });
+    }
+  }, [authSession?.user?.id]);
+
   // Staff Management state
   type StaffMember = { id: string; display_name: string | null; role: string; created_at: string; email?: string };
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
@@ -1188,10 +1252,177 @@ export function AdminDashboard({
           <a href="/roadmap" className="nav-link-hide-mobile">
             Roadmap
           </a>
-          <button onClick={signOut} className="btn-ghost" title="Sign out of staff portal">
-            <LogOut size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
-            <span className="admin-signout-label">Sign out</span>
-          </button>
+          {/* Staff Profile in Header */}
+          <div style={{ position: "relative" }} ref={profileDropdownRef}>
+            <button
+              type="button"
+              className={`avatar-chip ${activeTab === "profile" ? "avatar-chip--active" : ""}`}
+              onClick={() => setProfileDropdownOpen((v) => !v)}
+              aria-expanded={profileDropdownOpen}
+              aria-label="Staff profile menu"
+              title="Staff Profile & Settings"
+              style={{
+                cursor: "pointer",
+                background: activeTab === "profile" ? "var(--bg)" : "var(--surface)",
+                borderColor: activeTab === "profile" ? "var(--navy)" : "var(--line-2)",
+              }}
+            >
+              <div
+                className="avatar-circle"
+                style={{
+                  background:
+                    userRole === "admin"
+                      ? "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
+                      : "linear-gradient(135deg, #0b3857 0%, #2563eb 100%)",
+                }}
+              >
+                {adminAvatarUrl ? (
+                  <img
+                    src={adminAvatarUrl}
+                    alt={adminInitial}
+                    style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  adminInitial
+                )}
+              </div>
+              <span style={{ maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {adminDisplayName}
+              </span>
+              <ChevronDown
+                size={13}
+                color="var(--muted)"
+                style={{
+                  transform: profileDropdownOpen ? "rotate(180deg)" : "none",
+                  transition: "transform 0.15s ease",
+                  flexShrink: 0,
+                }}
+              />
+            </button>
+
+            {profileDropdownOpen && (
+              <div
+                className="dropdown-menu"
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 8px)",
+                  right: 0,
+                  minWidth: 230,
+                  zIndex: 300,
+                }}
+              >
+                <div className="dropdown-user-header">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                    <div className="dropdown-user-name" style={{ fontSize: 13.5 }}>
+                      {adminDisplayName}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        padding: "2px 6px",
+                        borderRadius: 6,
+                        background: userRole === "admin" ? "rgba(234, 88, 12, 0.12)" : "rgba(11, 56, 87, 0.12)",
+                        color: userRole === "admin" ? "#ea580c" : "var(--navy)",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 3,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {userRole === "admin" ? <Crown size={10} /> : <ShieldCheck size={10} />}
+                      {userRole === "admin" ? "Admin" : "Moderator"}
+                    </span>
+                  </div>
+                  {adminEmail && (
+                    <div className="dropdown-user-email" style={{ fontSize: 11.5 }}>
+                      {adminEmail}
+                    </div>
+                  )}
+                </div>
+
+                <div className="divider" style={{ margin: "4px 0" }} />
+
+                <button
+                  type="button"
+                  onClick={openProfileView}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 9,
+                    width: "100%",
+                    padding: "9px 14px",
+                    background: activeTab === "profile" ? "var(--bg)" : "transparent",
+                    color: activeTab === "profile" ? "var(--accent)" : "var(--ink)",
+                    fontWeight: activeTab === "profile" ? 600 : 500,
+                    border: "none",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontSize: 13,
+                  }}
+                >
+                  <User size={14} color={activeTab === "profile" ? "var(--accent)" : "currentColor"} />
+                  <span>Profile & Settings</span>
+                </button>
+
+                {userRole === "admin" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("staff");
+                      setProfileDropdownOpen(false);
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 9,
+                      width: "100%",
+                      padding: "9px 14px",
+                      background: activeTab === "staff" ? "var(--bg)" : "transparent",
+                      color: activeTab === "staff" ? "var(--accent)" : "var(--ink)",
+                      fontWeight: activeTab === "staff" ? 600 : 500,
+                      border: "none",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      fontSize: 13,
+                    }}
+                  >
+                    <Crown size={14} color={activeTab === "staff" ? "var(--accent)" : "currentColor"} />
+                    <span>Staff Management</span>
+                  </button>
+                )}
+
+                <div className="divider" style={{ margin: "4px 0" }} />
+
+                <button
+                  type="button"
+                  className="danger"
+                  onClick={async () => {
+                    setProfileDropdownOpen(false);
+                    await signOut();
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 9,
+                    width: "100%",
+                    padding: "9px 14px",
+                    color: "var(--danger, #dc2626)",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontSize: 13,
+                  }}
+                >
+                  <LogOut size={14} />
+                  <span>Sign out</span>
+                </button>
+              </div>
+            )}
+          </div>
           <div style={{ width: 1, height: 24, background: "var(--line-2)", margin: "0 4px" }} />
           <ThemeToggle />
         </nav>
@@ -1279,19 +1510,7 @@ export function AdminDashboard({
                 role="tab"
                 aria-selected={activeTab === "profile"}
                 className={`sp-nav-tab${activeTab === "profile" ? " sp-nav-tab--active" : ""}`}
-                onClick={() => {
-                  setActiveTab("profile");
-                  // Pre-fill profile fields from current session
-                  supabase.auth.getSession().then(({ data: { session } }) => {
-                    if (session?.user) {
-                      setProfileEmail(session.user.email ?? "");
-                      setProfileJoinedAt(session.user.created_at ?? null);
-                    }
-                  });
-                  supabase.from("profiles").select("display_name").eq("id", authSession?.user?.id ?? "").maybeSingle().then(({ data }) => {
-                    if (data?.display_name) setProfileDisplayName(data.display_name);
-                  });
-                }}
+                onClick={openProfileView}
               >
                 <User size={14} />
                 <span>Profile</span>
