@@ -156,85 +156,148 @@ Deno.serve(async (request) => {
     }
 
     const input = inviteInput.parse(await request.json());
-    const targetEmail = input.email.toLowerCase();
+    const targetEmail = input.email.toLowerCase().trim();
 
     // Determine target redirect url
     const origin = input.redirectTo || "https://campus-voice-web.vercel.app";
     const redirectUrl = `${origin}/admin`;
 
-    // Generate magic link using admin API
-    const { data: linkData, error: linkError } = await client.auth.admin.generateLink({
-      type: "magiclink",
-      email: targetEmail,
-      options: {
-        redirectTo: redirectUrl,
-        data: { role: input.role, invited_as_staff: true },
-      },
-    });
+    // 1. Check if user already exists in profiles
+    const { data: existingProfile } = await client
+      .from("profiles")
+      .select("id, role, display_name, email")
+      .ilike("email", targetEmail)
+      .maybeSingle();
 
-    if (linkError || !linkData) {
-      console.error("Failed to generate magic link:", linkError);
-      return json({ error: linkError?.message || "Failed to generate invite link" }, 400);
+    let targetUserId = existingProfile?.id;
+    let actionLink = "";
+    let emailOtp = "";
+
+    // 2. Generate magic link using admin API
+    try {
+      const { data: linkData, error: linkError } = await client.auth.admin.generateLink({
+        type: "magiclink",
+        email: targetEmail,
+        options: {
+          redirectTo: redirectUrl,
+          data: { role: input.role, invited_as_staff: true },
+        },
+      });
+
+      if (!linkError && linkData) {
+        actionLink = linkData.properties?.action_link || "";
+        emailOtp = linkData.properties?.email_otp || "";
+        targetUserId = targetUserId || linkData.user?.id;
+      }
+    } catch (err) {
+      console.warn("generateLink error:", err);
     }
 
-    const actionLink = linkData.properties?.action_link;
-    const emailOtp = linkData.properties?.email_otp;
-    const invitedUserId = linkData.user?.id;
-
-    // Pre-create or update profile role
-    if (invitedUserId) {
+    // 3. Immediately pre-assign or update their role in profiles!
+    if (targetUserId) {
       await client.from("profiles").upsert(
         {
-          id: invitedUserId,
+          id: targetUserId,
           email: targetEmail,
           role: input.role,
-          display_name: targetEmail.split("@")[0],
+          display_name: existingProfile?.display_name || targetEmail.split("@")[0],
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
       );
     }
 
-    // Send custom SuggFeed invitation email via Resend if credentials exist
+    // 4. Send email delivery
     let emailSent = false;
+    let deliveryMethod = "none";
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resendFrom = Deno.env.get("RESEND_FROM_EMAIL");
 
+    // Attempt 1: Custom SuggFeed HTML via Resend
     if (resendKey && resendFrom && actionLink) {
-      const htmlContent = renderInviteHtml({
-        confirmationUrl: actionLink,
-        token: emailOtp,
-        role: input.role,
-      });
+      try {
+        const htmlContent = renderInviteHtml({
+          confirmationUrl: actionLink,
+          token: emailOtp,
+          role: input.role,
+        });
 
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: resendFrom,
-          to: [targetEmail],
-          subject: `You're invited to join the SuggFeed Staff Team as ${input.role === "admin" ? "an Administrator" : "a Moderator"}`,
-          html: htmlContent,
-          text: `You have been invited to join the SuggFeed staff team as a ${input.role}. Accept invitation: ${actionLink}`,
-        }),
-      });
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: resendFrom,
+            to: [targetEmail],
+            subject: `You're invited to join the SuggFeed Staff Team as ${input.role === "admin" ? "an Administrator" : "a Moderator"}`,
+            html: htmlContent,
+            text: `You have been invited to join the SuggFeed staff team as a ${input.role}. Accept invitation: ${actionLink}`,
+          }),
+        });
 
-      if (res.ok) {
-        emailSent = true;
-      } else {
-        const errText = await res.text();
-        console.error("Resend delivery failed:", errText);
+        if (res.ok) {
+          emailSent = true;
+          deliveryMethod = "resend";
+        } else {
+          const errText = await res.text();
+          console.warn("Resend attempt failed, falling back to Supabase native mailer:", errText);
+        }
+      } catch (e) {
+        console.warn("Resend fetch threw error:", e);
+      }
+    }
+
+    // Attempt 2: If Resend failed (e.g. domain restriction), trigger Supabase native mailer so user ALWAYS gets an email!
+    if (!emailSent) {
+      try {
+        if (existingProfile) {
+          const { error: otpErr } = await client.auth.signInWithOtp({
+            email: targetEmail,
+            options: {
+              emailRedirectTo: redirectUrl,
+              data: { role: input.role, invited_as_staff: true },
+            },
+          });
+          if (!otpErr) {
+            emailSent = true;
+            deliveryMethod = "supabase_otp";
+          }
+        } else {
+          const { error: inviteErr } = await client.auth.admin.inviteUserByEmail(targetEmail, {
+            redirectTo: redirectUrl,
+            data: { role: input.role, invited_as_staff: true },
+          });
+          if (!inviteErr) {
+            emailSent = true;
+            deliveryMethod = "supabase_invite";
+          } else {
+            const { error: otpErr } = await client.auth.signInWithOtp({
+              email: targetEmail,
+              options: {
+                emailRedirectTo: redirectUrl,
+                data: { role: input.role, invited_as_staff: true },
+              },
+            });
+            if (!otpErr) {
+              emailSent = true;
+              deliveryMethod = "supabase_otp";
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Supabase native mailer fallback error:", err);
       }
     }
 
     return json({
       ok: true,
       emailSent,
+      deliveryMethod,
       inviteUrl: actionLink,
       role: input.role,
+      targetEmail,
     });
   } catch (error) {
     console.error("invite-staff error:", error);

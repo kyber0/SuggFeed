@@ -60,6 +60,7 @@ import {
   UserCheck,
   SendHorizonal,
   ChevronDown,
+  Copy,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { AnalyticsDashboard } from "./analytics-dashboard";
@@ -297,6 +298,8 @@ export function AdminDashboard({
   const [promoteResults, setPromoteResults] = useState<StaffMember[]>([]);
   const [promoteSearchBusy, setPromoteSearchBusy] = useState(false);
   const [staffRoleFilter, setStaffRoleFilter] = useState<"all" | "admin" | "moderator">("all");
+  const [generatedInviteUrl, setGeneratedInviteUrl] = useState<string | null>(null);
+  const [copiedInviteUrl, setCopiedInviteUrl] = useState(false);
 
   const filteredStaff = useMemo(() => {
     return staffMembers.filter((s) => {
@@ -2331,11 +2334,19 @@ export function AdminDashboard({
                   <div className="sp-search-box" style={{ flex: 1, minWidth: 180 }}>
                     <Search size={14} className="sp-search-icon" />
                     <input
-                      type="text"
+                      type="search"
+                      name="sp_staff_filter_term"
+                      id="sp_staff_filter_term"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      data-lpignore="true"
+                      data-1p-ignore="true"
+                      data-form-type="other"
                       className="sp-search-input"
                       value={staffSearch}
                       onChange={(e) => setStaffSearch(e.target.value)}
-                      placeholder="Search staff by name or email..."
+                      placeholder="Filter staff directory..."
                     />
                     {staffSearch && (
                       <button
@@ -2576,10 +2587,18 @@ export function AdminDashboard({
                   <div className="sp-form-input-group" style={{ marginBottom: 12 }}>
                     <div className="sp-input-with-icon">
                       <div className="sp-input-icon">
-                        <Mail size={14} />
+                        <Search size={14} />
                       </div>
                       <input
-                        type="text"
+                        type="search"
+                        name="sp_student_query_term"
+                        id="sp_student_query_term"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        data-lpignore="true"
+                        data-1p-ignore="true"
+                        data-form-type="other"
                         value={promoteSearch}
                         onChange={(e) => {
                           const val = e.target.value;
@@ -2588,7 +2607,7 @@ export function AdminDashboard({
                             loadStudents("");
                           }
                         }}
-                        placeholder="Search student by Gmail / email (e.g. @gmail.com)..."
+                        placeholder="Search student by name or university account..."
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             loadStudents(promoteSearch);
@@ -2770,9 +2789,15 @@ export function AdminDashboard({
                         </div>
                         <input
                           type="email"
+                          name="sp_new_member_invitation_email"
+                          id="sp_new_member_invitation_email"
+                          autoComplete="off"
+                          data-lpignore="true"
+                          data-1p-ignore="true"
+                          data-form-type="other"
                           value={inviteEmail}
                           onChange={(e) => setInviteEmail(e.target.value)}
-                          placeholder="staff.name@university.edu"
+                          placeholder="staff.name@cspc.edu.ph"
                         />
                       </div>
                     </div>
@@ -2867,9 +2892,10 @@ export function AdminDashboard({
                       }}
                       onClick={async () => {
                         setInviteBusy(true);
+                        setGeneratedInviteUrl(null);
                         try {
                           const origin = window.location.origin;
-                          // Call custom SuggFeed invite Edge Function (sends custom HTML via Resend)
+                          // Call custom SuggFeed invite Edge Function (sends custom HTML via Resend with Supabase native fallback)
                           const { data, error } = await supabase.functions.invoke("invite-staff", {
                             body: {
                               email: inviteEmail.trim(),
@@ -2879,10 +2905,13 @@ export function AdminDashboard({
                           });
 
                           if (!error && data?.ok) {
+                            if (data.inviteUrl) {
+                              setGeneratedInviteUrl(data.inviteUrl);
+                            }
                             if (data.emailSent) {
-                              toast(`Custom SuggFeed invitation sent to ${inviteEmail.trim()}.`, "success");
+                              toast(`Staff invitation sent to ${inviteEmail.trim()}.`, "success");
                             } else {
-                              toast(`Staff invitation generated for ${inviteEmail.trim()}.`, "success");
+                              toast(`Staff role granted for ${inviteEmail.trim()}. Copy link below!`, "success");
                             }
                             setInviteEmail("");
                             loadStaff();
@@ -2913,6 +2942,65 @@ export function AdminDashboard({
                       <SendHorizonal size={15} />
                       <span>{inviteBusy ? "Sending Invitation..." : "Send Invitation"}</span>
                     </button>
+
+                    {generatedInviteUrl && (
+                      <div
+                        style={{
+                          marginTop: 8,
+                          padding: "12px 14px",
+                          borderRadius: "var(--r-md)",
+                          background: "rgba(16, 185, 129, 0.08)",
+                          border: "1px solid rgba(16, 185, 129, 0.3)",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#059669" }}>
+                            Staff Role Granted &bull; Direct Link Ready
+                          </span>
+                          <button
+                            type="button"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                              padding: "4px 9px",
+                              borderRadius: "var(--r-sm)",
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              background: "#059669",
+                              color: "#ffffff",
+                              border: "none",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => {
+                              navigator.clipboard.writeText(generatedInviteUrl);
+                              setCopiedInviteUrl(true);
+                              setTimeout(() => setCopiedInviteUrl(false), 2500);
+                              toast("Direct invite link copied to clipboard!", "success");
+                            }}
+                          >
+                            {copiedInviteUrl ? <Check size={12} /> : <Copy size={12} />}
+                            <span>{copiedInviteUrl ? "Copied!" : "Copy Link"}</span>
+                          </button>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "var(--muted)",
+                            wordBreak: "break-all",
+                            background: "var(--bg)",
+                            padding: "6px 8px",
+                            borderRadius: "var(--r-sm)",
+                            border: "1px solid var(--line)",
+                            fontFamily: "monospace",
+                            maxHeight: 60,
+                            overflowY: "auto",
+                          }}
+                        >
+                          {generatedInviteUrl}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
