@@ -8745,6 +8745,45 @@ input.feed-search {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--navy) 15%, transparent) !important;
 }
 
+.sp-btn-inline {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: 42px !important;
+  padding: 0 18px !important;
+  margin: 0 !important;
+  margin-top: 0 !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  background: var(--accent) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: var(--r-md) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast) !important;
+}
+
+.sp-btn-inline:hover:not(:disabled) {
+  background: var(--accent-2) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16) !important;
+}
+
+.sp-btn-inline:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+
 /* ── Staff Tab Layout ── */
 .sp-staff-layout {
   display: grid;

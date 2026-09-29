@@ -1784,9 +1784,8 @@ export function AdminDashboard({
                     </div>
                     <button
                       type="button"
-                      className="btn-primary"
+                      className="sp-btn-inline"
                       disabled={profileBusy || !profileDisplayName.trim()}
-                      style={{ height: 42, padding: "0 20px", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}
                       onClick={async () => {
                         if (!authSession?.user?.id) return;
                         setProfileBusy(true);
@@ -1833,9 +1832,8 @@ export function AdminDashboard({
                     </div>
                     <button
                       type="button"
-                      className="btn-primary"
+                      className="sp-btn-inline"
                       disabled={profileBusy || !profileNewEmail.trim() || profileNewEmail === profileEmail}
-                      style={{ height: 42, padding: "0 20px", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}
                       onClick={async () => {
                         setProfileBusy(true);
                         try {
@@ -1962,13 +1960,13 @@ export function AdminDashboard({
                   <div style={{ marginTop: 4 }}>
                     <button
                       type="button"
-                      className="btn-primary"
+                      className="sp-btn-inline"
                       disabled={
                         profileBusy ||
                         profilePassword.length < 8 ||
                         profilePassword !== profileConfirmPassword
                       }
-                      style={{ height: 42, padding: "0 22px", display: "inline-flex", alignItems: "center", gap: 7 }}
+                      style={{ padding: "0 22px" }}
                       onClick={async () => {
                         setProfileBusy(true);
                         try {
@@ -2494,8 +2492,8 @@ export function AdminDashboard({
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                    <div className="sp-input-with-icon" style={{ flex: 1 }}>
+                  <div className="sp-form-input-group" style={{ marginBottom: 12 }}>
+                    <div className="sp-input-with-icon">
                       <div className="sp-input-icon">
                         <Search size={14} />
                       </div>
@@ -2520,9 +2518,8 @@ export function AdminDashboard({
                     </div>
                     <button
                       type="button"
-                      className="btn-primary"
+                      className="sp-btn-inline"
                       disabled={promoteSearchBusy || !promoteSearch.trim()}
-                      style={{ height: 42, padding: "0 16px", display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
                       onClick={async () => {
                         if (!promoteSearch.trim()) return;
                         setPromoteSearchBusy(true);
