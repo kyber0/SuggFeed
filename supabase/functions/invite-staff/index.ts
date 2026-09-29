@@ -162,7 +162,7 @@ Deno.serve(async (request) => {
     const origin = input.redirectTo || "https://campus-voice-web.vercel.app";
     const redirectUrl = `${origin}/admin`;
 
-    // 1. Check if user already exists in profiles
+    // 1. Check if user already exists in auth.users via profiles
     const { data: existingProfile } = await client
       .from("profiles")
       .select("id, role, display_name, email")
@@ -172,28 +172,52 @@ Deno.serve(async (request) => {
     let targetUserId = existingProfile?.id;
     let actionLink = "";
     let emailOtp = "";
+    const errors: string[] = [];
 
-    // 2. Generate magic link using admin API
+    // 2. Generate a magic link / invite link using admin API
+    // This creates the user if new, or generates a link for existing user
     try {
-      const { data: linkData, error: linkError } = await client.auth.admin.generateLink({
-        type: "magiclink",
-        email: targetEmail,
-        options: {
-          redirectTo: redirectUrl,
-          data: { role: input.role, invited_as_staff: true },
-        },
-      });
-
-      if (!linkError && linkData) {
-        actionLink = linkData.properties?.action_link || "";
-        emailOtp = linkData.properties?.email_otp || "";
-        targetUserId = targetUserId || linkData.user?.id;
+      if (existingProfile) {
+        // User exists — generate magic link so they can sign in and access /admin
+        const { data: linkData, error: linkError } = await client.auth.admin.generateLink({
+          type: "magiclink",
+          email: targetEmail,
+          options: {
+            redirectTo: redirectUrl,
+            data: { role: input.role, invited_as_staff: true },
+          },
+        });
+        if (!linkError && linkData) {
+          actionLink = linkData.properties?.action_link || "";
+          emailOtp = linkData.properties?.email_otp || "";
+        } else {
+          errors.push(`generateLink(existing): ${linkError?.message}`);
+        }
+      } else {
+        // New user — use inviteUserByEmail which sends the Supabase branded invite
+        // AND generates a proper invite link
+        const { data: linkData, error: linkError } = await client.auth.admin.generateLink({
+          type: "invite",
+          email: targetEmail,
+          options: {
+            redirectTo: redirectUrl,
+            data: { role: input.role, invited_as_staff: true },
+          },
+        });
+        if (!linkError && linkData) {
+          actionLink = linkData.properties?.action_link || "";
+          emailOtp = linkData.properties?.email_otp || "";
+          targetUserId = targetUserId || linkData.user?.id;
+        } else {
+          errors.push(`generateLink(new): ${linkError?.message}`);
+        }
       }
     } catch (err) {
+      errors.push(`generateLink threw: ${err}`);
       console.warn("generateLink error:", err);
     }
 
-    // 3. Immediately pre-assign or update their role in profiles!
+    // 3. Pre-assign role in profiles immediately
     if (targetUserId) {
       await client.from("profiles").upsert(
         {
@@ -207,13 +231,13 @@ Deno.serve(async (request) => {
       );
     }
 
-    // 4. Send email delivery
+    // 4. Send email — try Resend first, then Supabase native
     let emailSent = false;
     let deliveryMethod = "none";
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resendFrom = Deno.env.get("RESEND_FROM_EMAIL");
 
-    // Attempt 1: Custom SuggFeed HTML via Resend
+    // Attempt 1: Resend with custom SuggFeed HTML (only works if domain verified or sending to account owner)
     if (resendKey && resendFrom && actionLink) {
       try {
         const htmlContent = renderInviteHtml({
@@ -233,7 +257,7 @@ Deno.serve(async (request) => {
             to: [targetEmail],
             subject: `You're invited to join the SuggFeed Staff Team as ${input.role === "admin" ? "an Administrator" : "a Moderator"}`,
             html: htmlContent,
-            text: `You have been invited to join the SuggFeed staff team as a ${input.role}. Accept invitation: ${actionLink}`,
+            text: `You have been invited to join the SuggFeed staff team as a ${input.role}.\n\nAccept your invitation: ${actionLink}\n\n${emailOtp ? `Your access token: ${emailOtp}` : ""}`,
           }),
         });
 
@@ -241,55 +265,71 @@ Deno.serve(async (request) => {
           emailSent = true;
           deliveryMethod = "resend";
         } else {
-          const errText = await res.text();
-          console.warn("Resend attempt failed, falling back to Supabase native mailer:", errText);
+          const errBody = await res.json().catch(() => ({}));
+          errors.push(`Resend: ${JSON.stringify(errBody)}`);
+          console.warn("Resend failed:", errBody);
         }
       } catch (e) {
+        errors.push(`Resend threw: ${e}`);
         console.warn("Resend fetch threw error:", e);
       }
     }
 
-    // Attempt 2: If Resend failed (e.g. domain restriction), trigger Supabase native mailer so user ALWAYS gets an email!
+    // Attempt 2: Supabase native mailer (always available, sends from Supabase's SMTP)
+    // This is the reliable fallback for any email address
     if (!emailSent) {
       try {
-        if (existingProfile) {
+        // inviteUserByEmail is the most reliable — it works for both new and existing users
+        // For existing users it may return "already registered" but still queues the email
+        const { error: inviteErr } = await client.auth.admin.inviteUserByEmail(targetEmail, {
+          redirectTo: redirectUrl,
+          data: { role: input.role, invited_as_staff: true },
+        });
+
+        if (!inviteErr) {
+          emailSent = true;
+          deliveryMethod = "supabase_invite";
+        } else {
+          errors.push(`inviteUserByEmail: ${inviteErr.message}`);
+
+          // If invite failed (e.g. already registered), use signInWithOtp as last resort
           const { error: otpErr } = await client.auth.signInWithOtp({
             email: targetEmail,
             options: {
               emailRedirectTo: redirectUrl,
-              data: { role: input.role, invited_as_staff: true },
+              shouldCreateUser: false, // don't create if doesn't exist — just send link to existing
             },
           });
+
           if (!otpErr) {
             emailSent = true;
             deliveryMethod = "supabase_otp";
-          }
-        } else {
-          const { error: inviteErr } = await client.auth.admin.inviteUserByEmail(targetEmail, {
-            redirectTo: redirectUrl,
-            data: { role: input.role, invited_as_staff: true },
-          });
-          if (!inviteErr) {
-            emailSent = true;
-            deliveryMethod = "supabase_invite";
           } else {
-            const { error: otpErr } = await client.auth.signInWithOtp({
+            errors.push(`signInWithOtp: ${otpErr.message}`);
+
+            // Final attempt: force OTP even for new users
+            const { error: otpErr2 } = await client.auth.signInWithOtp({
               email: targetEmail,
               options: {
                 emailRedirectTo: redirectUrl,
-                data: { role: input.role, invited_as_staff: true },
+                shouldCreateUser: true,
               },
             });
-            if (!otpErr) {
+            if (!otpErr2) {
               emailSent = true;
-              deliveryMethod = "supabase_otp";
+              deliveryMethod = "supabase_otp_new";
+            } else {
+              errors.push(`signInWithOtp(create): ${otpErr2.message}`);
             }
           }
         }
       } catch (err) {
+        errors.push(`Supabase fallback threw: ${err}`);
         console.warn("Supabase native mailer fallback error:", err);
       }
     }
+
+    console.log("invite-staff result:", { emailSent, deliveryMethod, errors });
 
     return json({
       ok: true,
@@ -298,6 +338,7 @@ Deno.serve(async (request) => {
       inviteUrl: actionLink,
       role: input.role,
       targetEmail,
+      ...(errors.length > 0 ? { _debug: errors } : {}),
     });
   } catch (error) {
     console.error("invite-staff error:", error);

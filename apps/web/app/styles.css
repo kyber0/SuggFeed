@@ -1,7 +1,7 @@
-/* â”€â”€ Google Fonts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+﻿/* Ã¢â€â‚¬Ã¢â€â‚¬ Google Fonts Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* â”€â”€ Design tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Design tokens Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 :root {
   --ink:       #102a43;
   --ink-2:     #243b53;
@@ -44,7 +44,7 @@
   --t-base: 200ms ease;
   --t-slow: 350ms ease;
 
-  /* â”€â”€ Core Feed & Comments Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Core Feed & Comments Tokens Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
   --feed-width-max: 640px;
   --avatar-md: 40px;
   --avatar-sm: 28px;
@@ -69,7 +69,7 @@
   --badge-mod: #10B981;
   --badge-op: #F59E0B;
 
-  /* â”€â”€ Roadmap Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Roadmap Tokens Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
   --roadmap-col-width: 320px;
   --roadmap-card-radius: var(--radius-card);
   --roadmap-card-padding: 12px;
@@ -127,7 +127,7 @@
   color: var(--success);
 }
 
-/* â”€â”€ Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Reset Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; overflow-x: hidden; }
 body {
@@ -139,7 +139,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* â”€â”€ Typography â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Typography Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 800; line-height: 1.06; letter-spacing: -.02em; }
 h2 { font-size: clamp(20px, 3vw, 28px); font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
 h3 { font-size: 17px; font-weight: 600; line-height: 1.4; }
@@ -151,10 +151,10 @@ a  { color: inherit; text-decoration: none; }
   text-transform: uppercase; color: #16806a; margin-bottom: var(--sp-3);
 }
 
-/* â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Layout Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 main { max-width: 1200px; margin: auto; }
 
-/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Header Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 @keyframes header-slide-down {
   from { transform: translateY(-100%); opacity: 0; }
   to   { transform: translateY(0);     opacity: 1; }
@@ -285,7 +285,7 @@ main { max-width: 1200px; margin: auto; }
 .dropdown-menu .danger { color: var(--error); }
 .dropdown-menu .danger:hover { background: color-mix(in srgb, var(--error) 8%, transparent) !important; color: var(--error); }
 
-/* â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Hero Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .hero {
   background: var(--sky);
   padding: 72px 8% 80px;
@@ -320,14 +320,14 @@ main { max-width: 1200px; margin: auto; }
 .impact hr { border: 0; border-top: 1px solid rgba(255,255,255,.15); margin: var(--sp-5) 0; }
 .impact b { font-size: 28px; font-weight: 800; display: block; color: white; }
 
-/* â”€â”€ Workspace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Workspace Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .workspace {
   max-width: 740px; margin: var(--sp-12) auto;
   padding: 0 var(--sp-6);
   animation: fade-up .4s both;
 }
 
-/* â”€â”€ Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Tabs Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .tabs {
   display: flex; gap: 0;
   border-bottom: 2px solid var(--line);
@@ -351,7 +351,7 @@ main { max-width: 1200px; margin: auto; }
 }
 @keyframes tab-slide { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
-/* â”€â”€ Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Card Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -373,7 +373,7 @@ main { max-width: 1200px; margin: auto; }
 .online-badge.online { background: var(--success-bg); color: var(--success); }
 .online-badge.offline { background: var(--error-bg); color: var(--error); }
 
-/* â”€â”€ Form elements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Form elements Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .field { margin-top: var(--sp-5); }
 .field label, label {
   display: block; font-size: 13px; font-weight: 600;
@@ -402,7 +402,7 @@ textarea { height: 130px; resize: vertical; }
 .char-counter.warn { color: var(--warn); }
 .char-counter.danger { color: var(--error); font-weight: 600; }
 
-/* â”€â”€ Category picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Category picker Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .category-picker {
   display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--sp-2);
   margin-top: var(--sp-2);
@@ -425,7 +425,7 @@ textarea { height: 130px; resize: vertical; }
   box-shadow: 0 0 0 3px rgba(11,56,87,.1);
 }
 
-/* â”€â”€ File dropzone â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ File dropzone Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .dropzone {
   border: 2px dashed var(--line-2); border-radius: var(--r-lg);
   padding: var(--sp-5); text-align: center; cursor: pointer;
@@ -466,7 +466,7 @@ textarea { height: 130px; resize: vertical; }
 }
 .file-thumb:hover .remove-btn { opacity: 1; }
 
-/* â”€â”€ Anonymous / consent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Anonymous / consent Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .switch-row {
   display: flex; align-items: flex-start; gap: var(--sp-3);
   margin-top: var(--sp-5); padding: var(--sp-4);
@@ -481,7 +481,7 @@ textarea { height: 130px; resize: vertical; }
 }
 .consent-row input[type=checkbox] { margin-top: 2px; flex-shrink: 0; accent-color: var(--navy); }
 
-/* â”€â”€ Turnstile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Turnstile Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .turnstile {
   margin-top: var(--sp-6);
   display: flex;
@@ -496,7 +496,7 @@ textarea { height: 130px; resize: vertical; }
   border-radius: var(--r-md);
 }
 
-/* â”€â”€ Primary button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Primary button Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .btn-primary,
 .primary {
   display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
@@ -518,7 +518,7 @@ textarea { height: 130px; resize: vertical; }
 .primary:disabled { opacity: .6; cursor: not-allowed; }
 .btn-primary .arrow,
 .primary .arrow { font-size: 18px; }
-/* ── Primary button (small variant) ─────────────── */
+/* â”€â”€ Primary button (small variant) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .btn-primary-sm {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   background: var(--accent); color: white !important; border: none;
@@ -536,7 +536,7 @@ textarea { height: 130px; resize: vertical; }
 .btn-primary-sm:disabled { opacity: .6; cursor: not-allowed; }
 
 
-/* â”€â”€ Ghost button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Ghost button Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .btn-ghost {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
   background: transparent; color: var(--ink); border: 1px solid var(--line-2);
@@ -549,7 +549,7 @@ textarea { height: 130px; resize: vertical; }
   border-color: var(--navy);
 }
 
-/* â”€â”€ Premium button (Rich Aesthetics) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Premium button (Rich Aesthetics) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .btn-premium {
   display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
   margin-top: var(--sp-6); width: 100%;
@@ -595,7 +595,7 @@ textarea { height: 130px; resize: vertical; }
   box-shadow: 0 4px 12px rgba(236, 72, 153, 0.15);
 }
 
-/* â”€â”€ Status stepper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Status stepper Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .status-stepper {
   display: flex; align-items: flex-start; gap: 0;
   margin: var(--sp-6) 0; padding: var(--sp-5);
@@ -621,7 +621,7 @@ textarea { height: 130px; resize: vertical; }
 .step-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: var(--sp-2); text-align: center; }
 .step.done .step-label, .step.active .step-label { color: var(--ink); }
 
-/* â”€â”€ Tracking timeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Tracking timeline Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .timeline { list-style: none; margin-top: var(--sp-5); }
 .timeline li {
   display: flex; gap: var(--sp-4); padding: var(--sp-4) 0;
@@ -639,50 +639,170 @@ textarea { height: 130px; resize: vertical; }
 .timeline span { font-size: 12px; color: var(--muted); }
 .timeline p { font-size: 13px; color: var(--muted); margin-top: var(--sp-1); }
 
-/* â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── SuggFeed Toast System ─────────────────────────────────────────────── */
 .toast-region {
-  position: fixed; bottom: var(--sp-6); right: var(--sp-6);
-  display: flex; flex-direction: column; gap: var(--sp-3);
-  z-index: 999; pointer-events: none;
-  max-width: 380px; width: calc(100vw - 48px);
+  position: fixed; bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 10px;
+  z-index: 9999; pointer-events: none;
+  max-width: 400px; width: calc(100vw - 48px);
 }
-.toast {
-  pointer-events: all;
-  display: flex; align-items: flex-start; gap: var(--sp-3);
-  background: var(--ink-2); color: white;
-  padding: var(--sp-4) var(--sp-5);
-  border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
-  animation: toast-in .25s both;
-  font-size: 14px; line-height: 1.5;
-}
-.toast.leaving { animation: toast-out .2s both; }
-.toast.success { background: #0d6644; }
-.toast.error   { background: #8b2012; }
-.toast.info    { background: var(--navy); }
-.toast-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-.toast-body { flex: 1; }
-.toast-close {
-  background: none; border: none; color: rgba(255,255,255,.6);
-  cursor: pointer; font-size: 18px; line-height: 1; padding: 0;
-  flex-shrink: 0; margin-top: 1px;
-}
-.toast-close:hover { color: white; }
-@keyframes toast-in  { from { opacity:0; transform:translateY(12px) scale(.96); } to { opacity:1; transform:none; } }
-@keyframes toast-out { from { opacity:1; transform:none; } to { opacity:0; transform:translateY(8px) scale(.95); } }
 
-/* â”€â”€ Notice (legacy) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.sf-toast {
+  pointer-events: all;
+  position: relative; overflow: hidden;
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 16px 14px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.18);
+  backdrop-filter: blur(12px);
+  animation: sf-toast-in 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+  font-size: 13.5px; line-height: 1.5; color: #fff;
+}
+.sf-toast--leaving { animation: sf-toast-out 0.26s ease both; }
+
+/* Variants */
+.sf-toast--info    { background: rgba(11,56,87,0.97); border-left: 3px solid #38bdf8; }
+.sf-toast--success { background: rgba(6,78,59,0.97);  border-left: 3px solid #34d399; }
+.sf-toast--error   { background: rgba(127,29,29,0.97); border-left: 3px solid #f87171; }
+.sf-toast--warning { background: rgba(92,45,5,0.97);  border-left: 3px solid #fbbf24; }
+
+/* Progress bar */
+.sf-toast__progress {
+  position: absolute; bottom: 0; left: 0; height: 2px;
+  width: 100%;
+  animation: sf-toast-progress 4.8s linear both;
+  border-radius: 0 0 12px 12px;
+}
+.sf-toast--info    .sf-toast__progress { background: #38bdf8; }
+.sf-toast--success .sf-toast__progress { background: #34d399; }
+.sf-toast--error   .sf-toast__progress { background: #f87171; }
+.sf-toast--warning .sf-toast__progress { background: #fbbf24; }
+
+/* Icon */
+.sf-toast__icon {
+  flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center;
+}
+.sf-toast--info    .sf-toast__icon { color: #38bdf8; }
+.sf-toast--success .sf-toast__icon { color: #34d399; }
+.sf-toast--error   .sf-toast__icon { color: #f87171; }
+.sf-toast--warning .sf-toast__icon { color: #fbbf24; }
+
+/* Body */
+.sf-toast__body    { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sf-toast__title   { font-weight: 700; font-size: 13px; color: #fff; }
+.sf-toast__message { color: rgba(255,255,255,0.85); font-size: 13px; }
+
+/* Close */
+.sf-toast__close {
+  background: none; border: none; color: rgba(255,255,255,0.45);
+  cursor: pointer; padding: 0; flex-shrink: 0;
+  display: flex; align-items: center; margin-top: 1px;
+  transition: color 0.15s;
+}
+.sf-toast__close:hover { color: rgba(255,255,255,0.9); }
+
+/* Animations */
+@keyframes sf-toast-in {
+  from { opacity:0; transform: translateX(24px) scale(0.95); }
+  to   { opacity:1; transform: translateX(0)    scale(1); }
+}
+@keyframes sf-toast-out {
+  from { opacity:1; transform: translateX(0) scale(1); }
+  to   { opacity:0; transform: translateX(16px) scale(0.95); }
+}
+@keyframes sf-toast-progress {
+  from { transform: scaleX(1);   transform-origin: left; }
+  to   { transform: scaleX(0);   transform-origin: left; }
+}
+
+/* ── SuggFeed Confirm Dialog ───────────────────────────────────────────── */
+.sf-dialog-backdrop {
+  position: fixed; inset: 0; z-index: 10000;
+  background: rgba(5, 15, 30, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: sf-backdrop-in 0.2s ease both;
+}
+.sf-dialog {
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 32px 28px 24px;
+  max-width: 400px; width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  text-align: center;
+  animation: sf-dialog-in 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.sf-dialog__icon-wrap {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sf-dialog__icon-wrap--danger {
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+  border: 1.5px solid rgba(239,68,68,0.25);
+}
+.sf-dialog__icon-wrap--info {
+  background: rgba(56,189,248,0.12);
+  color: #38bdf8;
+  border: 1.5px solid rgba(56,189,248,0.2);
+}
+.sf-dialog__body    { display: flex; flex-direction: column; gap: 8px; }
+.sf-dialog__title   { margin: 0; font-size: 17px; font-weight: 700; color: #f1f5f9; line-height: 1.3; }
+.sf-dialog__message { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6; }
+.sf-dialog__actions {
+  display: flex; gap: 10px; width: 100%; margin-top: 4px;
+}
+.sf-dialog__btn {
+  flex: 1; padding: 11px 16px;
+  border-radius: 9px; border: none;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s ease; letter-spacing: 0.01em;
+}
+.sf-dialog__btn--cancel {
+  background: rgba(255,255,255,0.06);
+  color: #94a3b8;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.sf-dialog__btn--cancel:hover { background: rgba(255,255,255,0.1); color: #cbd5e1; }
+.sf-dialog__btn--confirm {
+  background: #0b3857; color: #fff;
+  border: 1px solid rgba(56,189,248,0.2);
+}
+.sf-dialog__btn--confirm:hover { background: #0e4a72; }
+.sf-dialog__btn--danger {
+  background: linear-gradient(135deg, #991b1b, #7f1d1d);
+  color: #fff; border: 1px solid rgba(239,68,68,0.3);
+}
+.sf-dialog__btn--danger:hover { background: linear-gradient(135deg, #b91c1c, #991b1b); }
+
+@keyframes sf-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes sf-dialog-in {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Notice (legacy) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .notice {
   padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
   background: var(--success-bg); color: var(--success);
   font-size: 14px; margin-top: var(--sp-4);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
    AUTH MODAL  (am-* namespace)
    Premium sign-in / create-account dialog
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 
-/* â”€â”€ Backdrop â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Backdrop Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-backdrop {
   position: fixed;
   inset: 0;
@@ -702,7 +822,7 @@ textarea { height: 130px; resize: vertical; }
   to   { opacity: 1; }
 }
 
-/* â”€â”€ Card â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Card Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-card {
   position: relative;
   background: var(--surface);
@@ -729,7 +849,7 @@ textarea { height: 130px; resize: vertical; }
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-/* â”€â”€ Mobile drag handle â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile drag handle Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-handle {
   display: none;
   width: 40px;
@@ -739,7 +859,7 @@ textarea { height: 130px; resize: vertical; }
   margin: 0 auto 16px;
 }
 
-/* â”€â”€ Close button â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Close button Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-close {
   position: absolute;
   top: 16px;
@@ -762,7 +882,7 @@ textarea { height: 130px; resize: vertical; }
   color: var(--ink);
 }
 
-/* â”€â”€ Tab switcher â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Tab switcher Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-tabs {
   display: flex;
   border-bottom: 2px solid var(--line);
@@ -798,7 +918,7 @@ textarea { height: 130px; resize: vertical; }
   border-radius: 2px 2px 0 0;
 }
 
-/* â”€â”€ Brand header â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Brand header Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-brand {
   display: flex;
   align-items: center;
@@ -827,7 +947,7 @@ textarea { height: 130px; resize: vertical; }
   line-height: 1.4;
 }
 
-/* â”€â”€ Google SSO button â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Google SSO button Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-btn-google {
   width: 100%;
   display: flex;
@@ -856,7 +976,7 @@ textarea { height: 130px; resize: vertical; }
 .am-btn-google:active { transform: translateY(0); }
 .am-btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* â”€â”€ "or" divider â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ "or" divider Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-divider {
   display: flex;
   align-items: center;
@@ -875,14 +995,14 @@ textarea { height: 130px; resize: vertical; }
   background: var(--line);
 }
 
-/* â”€â”€ Form â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Form Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-form {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* â”€â”€ Fields â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Fields Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-field {
   display: flex;
   flex-direction: column;
@@ -910,7 +1030,7 @@ textarea { height: 130px; resize: vertical; }
   gap: 4px;
 }
 
-/* â”€â”€ Input wrapper (icon + input + toggle) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Input wrapper (icon + input + toggle) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-input-wrap {
   position: relative;
   display: flex;
@@ -951,7 +1071,7 @@ textarea { height: 130px; resize: vertical; }
   padding-right: 44px !important;
 }
 
-/* â”€â”€ Password show/hide toggle â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Password show/hide toggle Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-pw-toggle {
   position: absolute;
   right: 12px;
@@ -973,7 +1093,7 @@ textarea { height: 130px; resize: vertical; }
   background: var(--line);
 }
 
-/* â”€â”€ Primary CTA button â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Primary CTA button Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-btn-primary {
   width: 100%;
   height: 46px;
@@ -1004,7 +1124,7 @@ textarea { height: 130px; resize: vertical; }
 .am-btn-primary:active { transform: translateY(0); }
 .am-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 
-/* â”€â”€ Ghost secondary button â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Ghost secondary button Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-btn-ghost {
   width: 100%;
   height: 42px;
@@ -1031,7 +1151,7 @@ textarea { height: 130px; resize: vertical; }
 
 .am-btn-ghost:disabled { opacity: 0.55; cursor: not-allowed; }
 
-/* â”€â”€ Spinner â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Spinner Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-spinner {
   animation: am-spin 700ms linear infinite;
 }
@@ -1041,7 +1161,7 @@ textarea { height: 130px; resize: vertical; }
   to   { transform: rotate(360deg); }
 }
 
-/* â”€â”€ Switch-tab hint â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Switch-tab hint Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-switch-hint {
   text-align: center;
   font-size: 13px;
@@ -1065,7 +1185,7 @@ textarea { height: 130px; resize: vertical; }
 
 .am-switch-link:hover { opacity: 0.75; }
 
-/* â”€â”€ Magic link sent confirmation â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Magic link sent confirmation Ã¢â€â‚¬Ã¢â€â‚¬ */
 .am-magic-confirm {
   display: flex;
   flex-direction: column;
@@ -1101,7 +1221,7 @@ textarea { height: 130px; resize: vertical; }
   font-weight: 700;
 }
 
-/* â”€â”€ Mobile: bottom sheet â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile: bottom sheet Ã¢â€â‚¬Ã¢â€â‚¬ */
 @media (max-width: 520px) {
   .am-backdrop {
     align-items: flex-end;
@@ -1124,11 +1244,11 @@ textarea { height: 130px; resize: vertical; }
   .am-handle { display: block; }
 }
 
-/* â”€â”€ Keep old class names working (for any stale references elsewhere) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Keep old class names working (for any stale references elsewhere) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .modal-backdrop { display: none; }
 
 
-/* â”€â”€ Feed section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Feed section Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .feed {
   padding: 64px 8%; background: var(--bg);
   border-top: 1px solid var(--line);
@@ -1227,7 +1347,7 @@ input.feed-search {
 @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 .skeleton-card { border-radius: var(--r-xl); height: 180px; }
 
-/* â”€â”€ Admin & Staff Portal Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Admin & Staff Portal Shell Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .admin-shell {
   max-width: 1400px;
   margin: 0 auto;
@@ -1244,7 +1364,7 @@ input.feed-search {
   padding: 40px 20px;
 }
 
-/* â”€â”€ Header & Command Bar â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Header & Command Bar Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sp-header {
   display: flex;
   align-items: center;
@@ -1386,7 +1506,7 @@ input.feed-search {
   border-color: var(--line-2);
 }
 
-/* â”€â”€ KPI Metric Cards â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ KPI Metric Cards Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sp-kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -1462,7 +1582,7 @@ input.feed-search {
   color: var(--muted);
 }
 
-/* â”€â”€ Filter & Search Toolbar â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Filter & Search Toolbar Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sp-controls-card {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -1600,7 +1720,7 @@ input.feed-search {
   opacity: 0.8;
 }
 
-/* â”€â”€ Queue Table / Card List â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Queue Table / Card List Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sp-table-head {
   display: flex;
   align-items: center;
@@ -1787,7 +1907,7 @@ input.feed-search {
   border-color: var(--navy);
 }
 
-/* â”€â”€ Select All Banner â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Select All Banner Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sp-select-all-banner {
   background: rgba(11, 56, 87, 0.05);
   border-bottom: 1px solid var(--line);
@@ -1821,7 +1941,7 @@ input.feed-search {
   opacity: 0.85;
 }
 
-/* â”€â”€ Lazy Loading Footer & Sentinel â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Lazy Loading Footer & Sentinel Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sp-lazy-footer {
   display: flex;
   flex-direction: column;
@@ -1938,7 +2058,7 @@ input.feed-search {
   animation: rm-shimmer 1.4s infinite ease;
 }
 
-/* â”€â”€ Floating Bulk Action Bar â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Floating Bulk Action Bar Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sp-bulk-bar {
   position: fixed;
   bottom: 24px;
@@ -2015,7 +2135,7 @@ input.feed-search {
   color: var(--ink);
 }
 
-/* â”€â”€ Status Stepper in Drawer â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Status Stepper in Drawer Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sp-stepper {
   display: flex;
   align-items: center;
@@ -2106,7 +2226,7 @@ input.feed-search {
   color: var(--ink);
 }
 
-/* â”€â”€ Login card redesign â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Login card redesign Ã¢â€â‚¬Ã¢â€â‚¬ */
 .login-card {
   max-width: 440px;
   margin: var(--sp-12) auto;
@@ -2124,7 +2244,7 @@ input.feed-search {
   margin: 8px 0 6px;
 }
 
-/* â”€â”€ Site footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Site footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .site-footer {
   text-align: center; padding: var(--sp-10) var(--sp-5);
   color: var(--muted-2); font-size: 13px;
@@ -2132,18 +2252,18 @@ input.feed-search {
 }
 .site-footer span { padding: 0 var(--sp-2); color: var(--accent); }
 
-/* â”€â”€ Confetti canvas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Confetti canvas Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 #confetti-canvas {
   position: fixed; inset: 0; pointer-events: none; z-index: 9999;
 }
 
-/* â”€â”€ Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Animations Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Responsive Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 
 /* Tablet: 900px */
 @media (max-width: 900px) {
@@ -2161,7 +2281,7 @@ input.feed-search {
   .nav-link-hide-mobile { display: none !important; }
   /* Shrink Sign In button so it fits alongside brand on narrow screens */
   .btn-primary-sm { font-size: 12px; padding: 5px 10px; white-space: nowrap; }
-  /* Hide "Profile" text label on mobile â€” keep only the icon */
+  /* Hide "Profile" text label on mobile Ã¢â‚¬â€ keep only the icon */
   .site-header nav .profile-label { display: none; }
 
   /* Hero */
@@ -2193,7 +2313,7 @@ input.feed-search {
   input:not([type=checkbox]):not([type=radio]),
   textarea, select { font-size: 16px; } /* prevents iOS zoom on focus */
 
-  /* Turnstile â€” center it on small screens */
+  /* Turnstile Ã¢â‚¬â€ center it on small screens */
   .turnstile { justify-content: center; }
 
   /* Feed */
@@ -2239,7 +2359,7 @@ input.feed-search {
   body { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
 }
 
-/* â”€â”€ Mobile bottom tab bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile bottom tab bar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .mobile-tab-bar {
   display: none; /* hidden on desktop */
 }
@@ -2298,11 +2418,11 @@ input.feed-search {
 }
 
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   NEW: Clickable cards Â· Detail panel Â· Comments Â· Profile
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   NEW: Clickable cards Ã‚Â· Detail panel Ã‚Â· Comments Ã‚Â· Profile
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 
-/* â”€â”€ Clickable idea card enhancements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Clickable idea card enhancements Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .idea-card.clickable { cursor: pointer; outline: none; }
 .idea-card.clickable:hover {
   box-shadow: var(--shadow-lg); transform: translateY(-3px); border-color: var(--navy);
@@ -2319,7 +2439,7 @@ input.feed-search {
 }
 .idea-card.clickable:hover .card-read-more { opacity: 1; }
 
-/* â”€â”€ Panel backdrop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Panel backdrop Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .panel-overlay {
   position: fixed; inset: 0;
   background: rgba(10, 30, 50, 0.45);
@@ -2328,7 +2448,7 @@ input.feed-search {
 }
 @keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
 
-/* â”€â”€ Centered modal dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Centered modal dialog Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .panel-overlay {
   position: fixed;
   inset: 0;
@@ -3033,7 +3153,7 @@ input.feed-search {
   display: flex; flex-direction: column;
 }
 
-/* â”€â”€ Profile panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Profile panel Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .profile-panel { width: min(420px, 100vw); }
 .profile-avatar-block { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
 .profile-avatar-large {
@@ -3054,14 +3174,14 @@ input.feed-search {
 .danger-ghost { color: var(--error) !important; }
 .danger-ghost:hover { border-color: var(--error) !important; background: var(--error-bg) !important; }
 
-/* â”€â”€ Desktop defaults: mobile-only elements hidden â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Desktop defaults: mobile-only elements hidden Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .detail-mobile-tabs,
 .mobile-comments-context-header,
 .mobile-jump-comments-bar {
   display: none;
 }
 
-/* â”€â”€ Panel responsive (Mobile FB-style comments sheet) â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Panel responsive (Mobile FB-style comments sheet) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 @media (max-width: 768px) {
   .detail-panel {
     /* On mobile: bottom sheet instead of centered modal */
@@ -3105,7 +3225,7 @@ input.feed-search {
     flex-shrink: 0;
   }
 
-  /* â”€â”€ Mobile Tab Navigation (FB-style comments sheet toggle) â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile Tab Navigation (FB-style comments sheet toggle) Ã¢â€â‚¬Ã¢â€â‚¬ */
   .detail-mobile-tabs {
     display: flex;
     gap: 8px;
@@ -3298,7 +3418,7 @@ input.feed-search {
   }
 }
 
-/* â”€â”€ Card attachment badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Card attachment badge Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .card-attachment-badge {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 11px; font-weight: 600;
@@ -3307,7 +3427,7 @@ input.feed-search {
   border-radius: var(--r-full);
 }
 
-/* â”€â”€ Attachment section (detail panel) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Attachment section (detail panel) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .detail-attachments {
   margin-bottom: 20px;
 }
@@ -3353,7 +3473,7 @@ input.feed-search {
 .attachment-file-card:hover { border-color: var(--navy); color: var(--navy); }
 .attachment-skeleton { height: 110px; border-radius: var(--r-lg); }
 
-/* â”€â”€ Lightbox â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Lightbox Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .lightbox-overlay {
   position: fixed; inset: 0; z-index: 500;
   background: rgba(5, 12, 25, 0.9);
@@ -3382,7 +3502,7 @@ input.feed-search {
 }
 .lightbox-close:hover { background: rgba(255,255,255,.24); }
 
-/* â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .site-footer {
   text-align: center; font-size: 13px; color: var(--muted);
   padding: 40px 20px; font-weight: 500;
@@ -3391,7 +3511,7 @@ input.feed-search {
 .admin-link { color: inherit; text-decoration: none; transition: color var(--t-fast); }
 .admin-link:hover { color: var(--navy); }
 
-/* â”€â”€ Global Responsive Fixes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Global Responsive Fixes Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 @media (max-width: 768px) {
   .hero {
     flex-direction: column;
@@ -3489,12 +3609,12 @@ input.feed-search {
   display: none !important;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
    ROADMAP PAGE  (rm-* namespace)
    Responsive 3-Column Kanban Board (Now / Next / Later)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 
-/* â”€â”€ Page Shell â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Page Shell Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-page {
   background: var(--bg);
   min-height: calc(100vh - 60px);
@@ -3509,7 +3629,7 @@ input.feed-search {
   }
 }
 
-/* â”€â”€ Header / Toolbar Strip â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Header / Toolbar Strip Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-toolbar {
   padding: 18px 28px 14px;
   background: var(--surface-card);
@@ -3628,7 +3748,7 @@ input.feed-search {
   transform: translateY(-1px);
 }
 
-/* â”€â”€ Filter Strip (Owner, Tag, Quarter, Search) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Filter Strip (Owner, Tag, Quarter, Search) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-filter-bar {
   display: flex;
   align-items: center;
@@ -3713,7 +3833,7 @@ input.feed-search {
   color: var(--error);
 }
 
-/* â”€â”€ Mobile Tab Navigation (Sticky < 768px) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile Tab Navigation (Sticky < 768px) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-mobile-nav {
   display: none;
 }
@@ -3774,7 +3894,7 @@ input.feed-search {
   }
 }
 
-/* â”€â”€ Board Shell (Desktop locked height, Tablet snap, Mobile stacked) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Board Shell (Desktop locked height, Tablet snap, Mobile stacked) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-board-shell {
   flex: 1;
   min-height: 0;
@@ -3794,7 +3914,7 @@ input.feed-search {
   margin: 0 auto;
 }
 
-/* â”€â”€ Columns â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Columns Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-column {
   display: flex;
   flex-direction: column;
@@ -3871,7 +3991,7 @@ input.feed-search {
   outline-offset: -4px;
 }
 
-/* â”€â”€ Item Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Item Card Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-card {
   position: relative;
   background: var(--surface);
@@ -3972,7 +4092,7 @@ input.feed-search {
   overflow: hidden;
 }
 
-/* Card Bottom Row: [Owner Avatar] Quarter ðŸ· tags */
+/* Card Bottom Row: [Owner Avatar] Quarter Ã°Å¸ÂÂ· tags */
 .rm-card-bottom-row {
   display: flex;
   align-items: center;
@@ -4057,7 +4177,7 @@ input.feed-search {
   opacity: 1;
 }
 
-/* â”€â”€ Empty State inside column â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Empty State inside column Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-col-empty {
   display: flex;
   flex-direction: column;
@@ -4074,7 +4194,7 @@ input.feed-search {
   margin: 0;
 }
 
-/* â”€â”€ Roadmap Column Lazy Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Roadmap Column Lazy Loading Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-col-lazy-footer {
   display: flex;
   flex-direction: column;
@@ -4152,7 +4272,7 @@ input.feed-search {
   opacity: 0;
 }
 
-/* â”€â”€ Roadmap Timeline Lazy Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Roadmap Timeline Lazy Loading Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-timeline-lazy-footer {
   grid-column: 1 / -1;
   display: flex;
@@ -4195,7 +4315,7 @@ input.feed-search {
   transform: translateY(-1px);
 }
 
-/* â”€â”€ Tablet 768px â€“ 1279px: 2 visible columns, 3rd snap-scrolls â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Tablet 768px Ã¢â‚¬â€œ 1279px: 2 visible columns, 3rd snap-scrolls Ã¢â€â‚¬Ã¢â€â‚¬ */
 @media (min-width: 768px) and (max-width: 1279px) {
   .rm-board {
     display: flex;
@@ -4216,7 +4336,7 @@ input.feed-search {
   }
 }
 
-/* â”€â”€ Mobile < 768px: 1 column driven by sticky tabs â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile < 768px: 1 column driven by sticky tabs Ã¢â€â‚¬Ã¢â€â‚¬ */
 @media (max-width: 767px) {
   .rm-toolbar {
     padding: 14px 16px 12px;
@@ -4287,7 +4407,7 @@ input.feed-search {
   }
 }
 
-/* â”€â”€ Detail Panel Drawer (Desktop/Tablet: Right drawer; Mobile: Bottom sheet) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Detail Panel Drawer (Desktop/Tablet: Right drawer; Mobile: Bottom sheet) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-drawer-overlay {
   position: fixed;
   inset: 0;
@@ -4565,7 +4685,7 @@ input.feed-search {
   }
 }
 
-/* â”€â”€ Mobile Action Sheet (Long-Press / Quick Move) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile Action Sheet (Long-Press / Quick Move) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-action-sheet-overlay {
   position: fixed;
   inset: 0;
@@ -4641,7 +4761,7 @@ input.feed-search {
   border-color: transparent;
 }
 
-/* â”€â”€ Timeline / Quarter View (Phase 3) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Timeline / Quarter View (Phase 3) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .rm-timeline-view {
   flex: 1;
   min-height: 0;
@@ -4709,11 +4829,11 @@ input.feed-search {
 .roadmap-page, .roadmap-board, .roadmap-board-mobile,
 .roadmap-tabs, .roadmap-col, .roadmap-card { display: none !important; }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
    COMMUNITY FEED & THREADED COMMENTS (RESPONSIVE 3-COL SYSTEM)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 
-/* â”€â”€ 1. Page Wrapper & Responsive Column Architecture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ 1. Page Wrapper & Responsive Column Architecture Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .community-page-wrapper {
   display: flex;
   justify-content: center;
@@ -5128,7 +5248,7 @@ input.feed-search {
   }
 }
 
-/* â”€â”€ 2. Post Cards Stream & Post Card Architecture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ 2. Post Cards Stream & Post Card Architecture Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .post-cards-stream {
   display: flex;
   flex-direction: column;
@@ -5614,7 +5734,7 @@ input.feed-search {
   cursor: pointer;
 }
 
-/* â”€â”€ 3. Desktop Right Panel (320px persistent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ 3. Desktop Right Panel (320px persistent) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .community-right-panel {
   width: 320px;
   flex-shrink: 0;
@@ -5799,7 +5919,7 @@ input.feed-search {
   50% { opacity: 0.5; transform: scale(0.7); }
 }
 
-/* 2Ã—2 grid for 4 metrics */
+/* 2Ãƒâ€”2 grid for 4 metrics */
 .pulse-metrics-grid {
   grid-template-columns: 1fr 1fr;
 }
@@ -5912,7 +6032,7 @@ input.feed-search {
   text-decoration: underline;
 }
 
-/* â”€â”€ 4. Threaded Comments System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ 4. Threaded Comments System Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .comment-tree-container {
   display: flex;
   flex-direction: column;
@@ -6040,7 +6160,7 @@ input.feed-search {
   position: relative;
 }
 
-/* â”€â”€ Interactive Threadline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Interactive Threadline Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
    Now purely a wide invisible click-target overlapping the border-left line.
    The visual line comes from .comment-children-list { border-left }.
    We keep this button so clicking the left gutter still collapses the thread.
@@ -6357,7 +6477,7 @@ input.feed-search {
   cursor: not-allowed;
 }
 
-/* â”€â”€ 5. Mobile FAB & Filter Sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ 5. Mobile FAB & Filter Sheet Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .mobile-fab-btn {
   display: none;
   position: fixed;
@@ -6483,7 +6603,7 @@ input.feed-search {
   margin-top: 8px;
 }
 
-/* â”€â”€ 6. Keyboard Shortcuts Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ 6. Keyboard Shortcuts Modal Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .shortcuts-modal-overlay {
   position: fixed;
   inset: 0;
@@ -6553,7 +6673,7 @@ input.feed-search {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* â”€â”€ 7. Responsive Breakpoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ 7. Responsive Breakpoints Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 @media (max-width: 1279px) {
   .community-left-nav {
     display: none;
@@ -6564,11 +6684,11 @@ input.feed-search {
 }
 
 @media (max-width: 767px) {
-  /* â”€â”€ Hide sidebars â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Hide sidebars Ã¢â€â‚¬Ã¢â€â‚¬ */
   .community-right-panel { display: none; }
   .community-left-nav    { display: none; }
 
-  /* â”€â”€ Page wrapper â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Page wrapper Ã¢â€â‚¬Ã¢â€â‚¬ */
   .community-page-wrapper {
     padding: 8px 10px 100px;
     gap: 0;
@@ -6578,7 +6698,7 @@ input.feed-search {
     gap: 10px;
   }
 
-  /* â”€â”€ Sticky header â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Sticky header Ã¢â€â‚¬Ã¢â€â‚¬ */
   .community-feed-header {
     padding: 8px 0 6px;
     gap: 7px;
@@ -6593,7 +6713,7 @@ input.feed-search {
     align-items: center;
   }
 
-  /* â”€â”€ Sort tabs: smaller on mobile â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Sort tabs: smaller on mobile Ã¢â€â‚¬Ã¢â€â‚¬ */
   .sort-tab {
     padding: 5px 8px;
     font-size: 12px;
@@ -6606,7 +6726,7 @@ input.feed-search {
     white-space: nowrap;
   }
 
-  /* â”€â”€ Show filter toggle button â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Show filter toggle button Ã¢â€â‚¬Ã¢â€â‚¬ */
   .btn-mobile-filter-toggle {
     display: flex;
     flex-shrink: 0;
@@ -6615,26 +6735,26 @@ input.feed-search {
     display: flex;
   }
 
-  /* â”€â”€ Post card: remove avatar indent so text spans full width â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Post card: remove avatar indent so text spans full width Ã¢â€â‚¬Ã¢â€â‚¬ */
   .post-content,
   .post-footer,
   .post-media-container {
     padding-left: 0;
   }
 
-  /* â”€â”€ Post card padding â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Post card padding Ã¢â€â‚¬Ã¢â€â‚¬ */
   .post-card {
     padding: 12px 12px;
   }
 
-  /* â”€â”€ Post avatar: slightly smaller â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Post avatar: slightly smaller Ã¢â€â‚¬Ã¢â€â‚¬ */
   .post-avatar {
     width: 34px;
     height: 34px;
     font-size: 13px;
   }
 
-  /* â”€â”€ Post author row: hide handle on very small, allow wrap â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Post author row: hide handle on very small, allow wrap Ã¢â€â‚¬Ã¢â€â‚¬ */
   .post-author-row {
     flex-wrap: wrap;
     gap: 4px;
@@ -6643,7 +6763,7 @@ input.feed-search {
     display: none;
   }
 
-  /* â”€â”€ Action footer: full width, balanced spacing â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Action footer: full width, balanced spacing Ã¢â€â‚¬Ã¢â€â‚¬ */
   .post-footer {
     padding-left: 0;
     padding-top: 8px;
@@ -6660,14 +6780,14 @@ input.feed-search {
     gap: 4px;
   }
 
-  /* â”€â”€ Feed heading: mobile filter button inline â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Feed heading: mobile filter button inline Ã¢â€â‚¬Ã¢â€â‚¬ */
   .feed-search-input {
     font-size: 14px;
     height: 40px;
     padding-left: 42px !important;
   }
 
-  /* â”€â”€ Category / status badges: smaller on mobile â”€â”€ */
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Category / status badges: smaller on mobile Ã¢â€â‚¬Ã¢â€â‚¬ */
   .post-badge-category,
   .post-badge-status {
     font-size: 10px;
@@ -6675,7 +6795,7 @@ input.feed-search {
   }
 }
 
-/* â”€â”€ Extra small phones (â‰¤430px) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Extra small phones (Ã¢â€°Â¤430px) Ã¢â€â‚¬Ã¢â€â‚¬ */
 @media (max-width: 430px) {
   .community-page-wrapper {
     padding: 6px 8px 96px;
@@ -6695,7 +6815,7 @@ input.feed-search {
 }
 
 
-/* â”€â”€ Reply-to banner (shown above textarea when replying to a comment) â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Reply-to banner (shown above textarea when replying to a comment) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .replying-banner {
   display: flex;
   align-items: center;
@@ -6748,10 +6868,10 @@ input.feed-search {
   border-radius: var(--r-lg, 10px);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
    MINIMALIST LIGHT HOME SCREEN (sf-* namespace)
    Clean, light, distraction-free aesthetic matching user design
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 
 .sf-main {
   min-height: calc(100vh - 64px);
@@ -6759,7 +6879,7 @@ input.feed-search {
   color: var(--ink);
 }
 
-/* â”€â”€ Workspace â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Workspace Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-workspace {
   max-width: 680px;
   margin: 36px auto 44px;
@@ -6833,7 +6953,7 @@ input.feed-search {
   line-height: 1.5;
 }
 
-/* â”€â”€ Primary Share Button (Purple gradient pill) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Primary Share Button (Purple gradient pill) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-btn-share-main {
   display: inline-flex;
   align-items: center;
@@ -6861,7 +6981,7 @@ input.feed-search {
   transform: translateY(0);
 }
 
-/* â”€â”€ Track panel â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Track panel Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-track-panel {
   text-align: left;
 }
@@ -6945,14 +7065,14 @@ input.feed-search {
   text-align: left;
 }
 
-/* â”€â”€ Divider â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Divider Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-divider {
   max-width: 1200px;
   margin: 0 auto 44px;
   border-bottom: 1px solid var(--line, #e2e8f0);
 }
 
-/* â”€â”€ Feed Section â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Feed Section Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-feed {
   max-width: 1200px;
   margin: 0 auto;
@@ -7017,7 +7137,7 @@ input.feed-search {
   color: #e9d5ff;
 }
 
-/* â”€â”€ Feed Controls â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Feed Controls Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-feed-controls {
   display: flex;
   gap: 12px;
@@ -7061,7 +7181,7 @@ input.feed-search {
   box-shadow: 0 0 0 3px rgba(11, 56, 87, 0.08);
 }
 
-/* â”€â”€ Sort Dropdown â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Sort Dropdown Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-sort-wrap {
   position: relative;
 }
@@ -7126,7 +7246,7 @@ input.feed-search {
   background: rgba(11, 56, 87, 0.06);
 }
 
-/* â”€â”€ Load More â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Load More Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-load-more {
   display: flex;
   justify-content: center;
@@ -7159,7 +7279,7 @@ input.feed-search {
   cursor: not-allowed;
 }
 
-/* â”€â”€ Empty State â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Empty State Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-empty-state {
   max-width: 380px;
   margin: 0 auto;
@@ -7179,7 +7299,7 @@ input.feed-search {
   margin-bottom: 16px;
 }
 
-/* â”€â”€ Minimalist Footer â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Minimalist Footer Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sf-footer {
   border-top: 1px solid var(--line, #e2e8f0);
   padding: 36px 24px;
@@ -7342,9 +7462,9 @@ input.feed-search {
   color: var(--ink, #111);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   PROFILE DASHBOARD â€” mobile-first full-page layout
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   PROFILE DASHBOARD Ã¢â‚¬â€ mobile-first full-page layout
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 
 .prof-page {
   min-height: 100dvh;
@@ -7352,7 +7472,7 @@ input.feed-search {
   padding-bottom: 80px; /* mobile tab-bar clearance */
 }
 
-/* â”€â”€ Hero â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Hero Ã¢â€â‚¬Ã¢â€â‚¬ */
 .prof-hero {
   background: linear-gradient(135deg, var(--navy) 0%, #1a5276 100%);
   padding: 32px 16px 28px;
@@ -7442,7 +7562,7 @@ input.feed-search {
   background: rgba(255,255,255,0.25);
 }
 
-/* â”€â”€ Content area (two-column on desktop, stacked on mobile) â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Content area (two-column on desktop, stacked on mobile) Ã¢â€â‚¬Ã¢â€â‚¬ */
 .prof-content {
   max-width: 1140px;
   margin: 0 auto;
@@ -7453,7 +7573,7 @@ input.feed-search {
   align-items: start;
 }
 
-/* â”€â”€ Settings aside â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Settings aside Ã¢â€â‚¬Ã¢â€â‚¬ */
 .prof-settings {
   background: var(--surface-card);
   border-radius: var(--radius-card);
@@ -7559,7 +7679,7 @@ input.feed-search {
   color: var(--ink);
 }
 
-/* â”€â”€ Activity section â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Activity section Ã¢â€â‚¬Ã¢â€â‚¬ */
 .prof-activity {
   background: var(--surface-card);
   border-radius: var(--radius-card);
@@ -7630,7 +7750,7 @@ input.feed-search {
   gap: 0;
 }
 
-/* â”€â”€ Activity card wrap & actions â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Activity card wrap & actions Ã¢â€â‚¬Ã¢â€â‚¬ */
 .prof-activity-card-wrap {
   display: flex;
   align-items: stretch;
@@ -7675,7 +7795,7 @@ input.feed-search {
   background: rgba(239, 68, 68, 0.06);
 }
 
-/* â”€â”€ Activity card â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Activity card Ã¢â€â‚¬Ã¢â€â‚¬ */
 .prof-activity-card {
   display: block;
   padding: 14px 18px;
@@ -7809,7 +7929,7 @@ input.feed-search {
   to   { background-position: -200% 0; }
 }
 
-/* â”€â”€ Responsive: mobile stacked layout â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Responsive: mobile stacked layout Ã¢â€â‚¬Ã¢â€â‚¬ */
 @media (max-width: 720px) {
   .prof-hero {
     padding: 24px 16px 20px;
@@ -7831,7 +7951,7 @@ input.feed-search {
     padding: 16px 12px;
   }
 
-  /* Settings go BELOW activity on mobile â€” reorder via grid */
+  /* Settings go BELOW activity on mobile Ã¢â‚¬â€ reorder via grid */
   .prof-settings {
     order: 2;
   }
@@ -7861,7 +7981,7 @@ input.feed-search {
 .am-form-wrapper { padding-top: 8px; }
 
 /* -----------------------------------------------------------------------
-   SIP � Submit Idea Panel  (sip- namespace)
+   SIP ï¿½ Submit Idea Panel  (sip- namespace)
    ----------------------------------------------------------------------- */
 
 /* -- Panel size override -- */
@@ -8580,7 +8700,7 @@ input.feed-search {
 }
 .sf-track-result-timeline summary::-webkit-details-marker { display: none; }
 .sf-track-result-timeline summary::before {
-  content: "▶ ";
+  content: "â–¶ ";
   font-size: 10px;
   display: inline-block;
   margin-right: 2px;
@@ -8588,7 +8708,7 @@ input.feed-search {
 }
 .sf-track-result-timeline[open] summary::before { transform: rotate(90deg); }
 
-/* ── Pending Status Banner & Author Pending Feed Banner ── */
+/* â”€â”€ Pending Status Banner & Author Pending Feed Banner â”€â”€ */
 .detail-status-banner.pending {
   background: rgba(245, 158, 11, 0.08);
   border-color: rgba(245, 158, 11, 0.22);
@@ -8616,133 +8736,84 @@ input.feed-search {
   border-color: rgba(245, 158, 11, 0.3);
 }
 
-/* ── Admin Portal: Refactored Profile & Staff Layouts (No Emojis) ── */
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Admin Portal – Profile & Staff Layout
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* ── Profile tab: 2-col grid ───────────────────────────────────────────── */
 .sp-profile-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
   align-items: start;
 }
-@media (max-width: 900px) {
-  .sp-profile-layout {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 860px) {
+  .sp-profile-layout { grid-template-columns: 1fr; }
 }
 
-.sp-profile-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.sp-profile-sidebar { display: flex; flex-direction: column; gap: 14px; }
+.sp-profile-main    { display: flex; flex-direction: column; gap: 16px; }
 
-.sp-profile-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-xl);
-  padding: 24px;
-  box-shadow: var(--shadow-sm);
-}
-
-.sp-profile-main {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
+/* ── Shared section card ───────────────────────────────────────────────── */
 .sp-section-card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--r-xl);
-  padding: 24px;
-  box-shadow: var(--shadow-sm);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .sp-section-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--line-2);
 }
 
 .sp-section-title-wrap h3 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--ink);
-  margin: 0 0 4px 0;
+  margin: 0 0 3px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .sp-section-subtitle {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--muted);
   margin: 0;
   line-height: 1.5;
 }
 
-.sp-form-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 18px;
-}
-
-.sp-form-row:last-child {
-  margin-bottom: 0;
-}
-
-.sp-form-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--ink-2);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sp-form-input-group {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.sp-input-with-icon {
-  position: relative;
-  flex: 1;
-}
-
-.sp-input-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+/* ── Form helpers ─────────────────────────────────────────────────────── */
+.sp-form-row          { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+.sp-form-row:last-child { margin-bottom: 0; }
+.sp-form-label        { font-size: 12.5px; font-weight: 700; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.sp-form-input-group  { display: flex; gap: 10px; align-items: center; }
+.sp-input-with-icon   { position: relative; flex: 1; }
+.sp-input-icon        { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; display: flex; align-items: center; }
 
 .sp-input-with-icon input {
   padding-left: 36px !important;
-  height: 42px !important;
+  height: 40px !important;
   width: 100% !important;
-  border-radius: var(--r-md) !important;
+  border-radius: 8px !important;
   border: 1px solid var(--line) !important;
   background: var(--bg) !important;
   color: var(--ink) !important;
-  font-size: 13.5px !important;
+  font-size: 13px !important;
   box-sizing: border-box !important;
   transition: border-color var(--t-fast), box-shadow var(--t-fast);
 }
-
 .sp-input-with-icon input:focus {
   border-color: var(--navy) !important;
   outline: none !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--navy) 15%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--navy) 12%, transparent) !important;
 }
 
 .sp-btn-inline {
@@ -8750,103 +8821,189 @@ input.feed-search {
   align-items: center !important;
   justify-content: center !important;
   gap: 6px !important;
-  height: 42px !important;
-  padding: 0 18px !important;
+  height: 40px !important;
+  padding: 0 16px !important;
   margin: 0 !important;
-  margin-top: 0 !important;
   width: auto !important;
   box-sizing: border-box !important;
   background: var(--accent) !important;
   color: #fff !important;
   border: none !important;
-  border-radius: var(--r-md) !important;
+  border-radius: 8px !important;
   font-size: 13px !important;
   font-weight: 700 !important;
   cursor: pointer !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
   line-height: 1 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
-  transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
+  transition: background var(--t-fast), transform var(--t-fast) !important;
+}
+.sp-btn-inline:hover:not(:disabled) { background: var(--accent-2) !important; transform: translateY(-1px) !important; }
+.sp-btn-inline:disabled              { opacity: 0.5 !important; cursor: not-allowed !important; }
+
+/* ── Role badges ──────────────────────────────────────────────────────── */
+.sp-role-badge-admin,
+.sp-role-badge-mod {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.sp-role-badge-admin { background: rgba(245,158,11,0.12); color: #d97706; }
+.sp-role-badge-mod   { background: rgba(16,185,129,0.12);  color: #059669; }
+[data-theme="dark"] .sp-role-badge-admin { background: rgba(245,158,11,0.18); color: #fbbf24; }
+[data-theme="dark"] .sp-role-badge-mod   { background: rgba(16,185,129,0.18);  color: #34d399; }
+
+/* ── Identity sidebar card (Profile tab) ─────────────────────────────── */
+.sp-identity-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px 20px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.sp-btn-inline:hover:not(:disabled) {
-  background: var(--accent-2) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16) !important;
+.sp-identity-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line-2);
+  gap: 6px;
 }
 
-.sp-btn-inline:disabled {
-  opacity: 0.55 !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: none !important;
+.sp-identity-avatar {
+  position: relative;
+  width: 76px; height: 76px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 800; color: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  margin-bottom: 4px;
+}
+.sp-identity-avatar--admin { background: linear-gradient(135deg, #f97316, #ea580c); }
+.sp-identity-avatar--mod   { background: linear-gradient(135deg, #0b3857, #2563eb); }
+
+.sp-identity-badge {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+}
+.sp-identity-badge--admin { background: #ea580c; }
+.sp-identity-badge--mod   { background: var(--navy); }
+
+.sp-identity-name  { font-size: 16px; font-weight: 800; color: var(--ink); margin: 0; }
+.sp-identity-email { font-size: 12px; color: var(--muted); word-break: break-all; margin-top: 2px; }
+
+.sp-identity-stats {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line-2);
+}
+.sp-identity-stat { display: flex; justify-content: space-between; align-items: center; }
+.sp-identity-stat__label { font-size: 12px; color: var(--muted); }
+.sp-identity-stat__value { font-size: 12px; font-weight: 600; color: var(--ink); }
+.sp-identity-stat__value--active {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: #10b981; font-weight: 700;
+}
+.sp-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; }
+.sp-identity-code {
+  font-size: 11px; background: var(--bg);
+  padding: 2px 6px; border-radius: 4px;
+  color: var(--ink-2); font-family: monospace; border: 1px solid var(--line);
 }
 
+.sp-identity-links { display: flex; flex-direction: column; gap: 7px; }
+.sp-identity-link {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 12.5px; font-weight: 600;
+  transition: all var(--t-fast);
+}
+.sp-identity-link:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+  background: color-mix(in srgb, var(--navy) 6%, transparent);
+}
 
-/* ── Staff Tab Layout ── */
+/* ── Staff Tab Layout ─────────────────────────────────────────────────── */
 .sp-staff-layout {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 24px;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 20px;
   align-items: start;
 }
-@media (max-width: 1024px) {
-  .sp-staff-layout {
-    grid-template-columns: 1fr;
-  }
-}
+@media (max-width: 1024px) { .sp-staff-layout { grid-template-columns: 1fr; } }
 
+/* ── Staff directory cards ────────────────────────────────────────────── */
 .sp-staff-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--bg);
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  transition: border-color var(--t-fast), transform var(--t-fast);
+  border-radius: 10px;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
 }
-
 .sp-staff-card:hover {
-  border-color: var(--line-2);
+  border-color: color-mix(in srgb, var(--navy) 25%, transparent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-.sp-role-badge-admin {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: var(--r-full);
-  background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+.sp-staff-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
 }
+.sp-staff-avatar--admin { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.sp-staff-avatar--mod   { background: linear-gradient(135deg, #0b3857, #2563eb); }
 
-[data-theme="dark"] .sp-role-badge-admin {
-  color: #fbbf24;
-  background: rgba(245, 158, 11, 0.18);
+.sp-staff-info  { flex: 1; min-width: 0; }
+.sp-staff-name  { font-size: 13.5px; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-staff-email { font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 3px; }
+.sp-staff-meta  { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+
+.sp-staff-actions { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+
+.sp-staff-action-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 11.5px; font-weight: 700;
+  cursor: pointer; border: 1px solid;
+  transition: all var(--t-fast); white-space: nowrap;
 }
-
-.sp-role-badge-mod {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: var(--r-full);
-  background: rgba(16, 185, 129, 0.12);
-  color: #059669;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+.sp-staff-action-btn--promote { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.3); }
+.sp-staff-action-btn--promote:hover:not(:disabled) { background: rgba(245,158,11,0.2); }
+.sp-staff-action-btn--demote  { background: rgba(11,56,87,0.08);  color: var(--navy); border-color: rgba(11,56,87,0.15); }
+.sp-staff-action-btn--demote:hover:not(:disabled)  { background: rgba(11,56,87,0.14); }
+.sp-staff-action-btn--revoke {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0;
+  background: rgba(239,68,68,0.08); color: #dc2626;
+  border-color: rgba(239,68,68,0.2); border-radius: 7px;
 }
+.sp-staff-action-btn--revoke:hover:not(:disabled) { background: rgba(239,68,68,0.16); }
+.sp-staff-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-[data-theme="dark"] .sp-role-badge-mod {
-  color: #34d399;
-  background: rgba(16, 185, 129, 0.18);
-}
-
+.sp-staff-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }

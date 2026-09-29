@@ -114,7 +114,7 @@ export function AdminDashboard({
 }: {
   defaultViewMode?: "queue" | "analytics";
 }) {
-  const { toast } = useToast();
+  const { toast, confirm } = useToast();
   const { session: authSession, role: contextRole, loading: authLoading } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
@@ -1680,153 +1680,68 @@ export function AdminDashboard({
             onRefresh={loadAnalytics}
           />
         ) : activeTab === "profile" ? (
-          /* ── Tab: Profile & Account Settings (Refactored) ── */
+          /* ── Tab: Profile & Account Settings ── */
           <div className="sp-profile-layout">
-            {/* Left: Staff Overview Card */}
+            {/* Left: Identity Sidebar */}
             <div className="sp-profile-sidebar">
-              <div className="sp-profile-card">
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginBottom: 20 }}>
-                  <div
-                    style={{
-                      position: "relative",
-                      width: 72,
-                      height: 72,
-                      borderRadius: "50%",
-                      background:
-                        userRole === "admin"
-                          ? "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
-                          : "linear-gradient(135deg, #0b3857 0%, #2563eb 100%)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#fff",
-                      fontSize: 26,
-                      fontWeight: 800,
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                      marginBottom: 14,
-                    }}
-                  >
+              <div className="sp-identity-card">
+                {/* Avatar + name */}
+                <div className="sp-identity-avatar-wrap">
+                  <div className={`sp-identity-avatar ${userRole === "admin" ? "sp-identity-avatar--admin" : "sp-identity-avatar--mod"}`}>
                     {adminAvatarUrl ? (
-                      <img
-                        src={adminAvatarUrl}
-                        alt={adminInitial}
-                        style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      adminInitial
-                    )}
-                    <span
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        right: 0,
-                        width: 24,
-                        height: 24,
-                        borderRadius: "50%",
-                        background: userRole === "admin" ? "#ea580c" : "var(--navy)",
-                        border: "2px solid var(--surface)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#fff",
-                      }}
-                    >
-                      {userRole === "admin" ? <Crown size={12} /> : <ShieldCheck size={12} />}
+                      <img src={adminAvatarUrl} alt={adminInitial} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} referrerPolicy="no-referrer" />
+                    ) : adminInitial}
+                    <span className={`sp-identity-badge ${userRole === "admin" ? "sp-identity-badge--admin" : "sp-identity-badge--mod"}`}>
+                      {userRole === "admin" ? <Crown size={11} /> : <ShieldCheck size={11} />}
                     </span>
                   </div>
-
-                  <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink)", margin: "0 0 4px 0" }}>
-                    {adminDisplayName}
-                  </h2>
-                  <div style={{ fontSize: 13, color: "var(--muted)", wordBreak: "break-all" }}>
-                    {adminEmail}
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12 }}>
-                    <span className={userRole === "admin" ? "sp-role-badge-admin" : "sp-role-badge-mod"}>
-                      {userRole === "admin" ? <Crown size={12} /> : <ShieldCheck size={12} />}
-                      <span>{userRole === "admin" ? "Administrator" : "Moderator"}</span>
-                    </span>
-                  </div>
+                  <h2 className="sp-identity-name">{adminDisplayName}</h2>
+                  <div className="sp-identity-email">{adminEmail}</div>
+                  <span className={userRole === "admin" ? "sp-role-badge-admin" : "sp-role-badge-mod"}>
+                    {userRole === "admin" ? <Crown size={11} /> : <ShieldCheck size={11} />}
+                    <span>{userRole === "admin" ? "Administrator" : "Moderator"}</span>
+                  </span>
                 </div>
 
-                <div className="divider" style={{ margin: "16px 0" }} />
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 12.5 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ color: "var(--muted)" }}>Status</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "#10b981", fontWeight: 700 }}>
-                      <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981" }} />
-                      Active Staff
+                {/* Stats */}
+                <div className="sp-identity-stats">
+                  <div className="sp-identity-stat">
+                    <span className="sp-identity-stat__label">Status</span>
+                    <span className="sp-identity-stat__value sp-identity-stat__value--active">
+                      <span className="sp-status-dot" /> Active Staff
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ color: "var(--muted)" }}>Permissions</span>
-                    <span style={{ fontWeight: 600, color: "var(--ink)" }}>
+                  <div className="sp-identity-stat">
+                    <span className="sp-identity-stat__label">Permissions</span>
+                    <span className="sp-identity-stat__value">
                       {userRole === "admin" ? "Full Governance" : "Moderation & Triage"}
                     </span>
                   </div>
                   {profileJoinedAt && (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: "var(--muted)" }}>Joined Campus</span>
-                      <span style={{ fontWeight: 600, color: "var(--ink)" }}>
+                    <div className="sp-identity-stat">
+                      <span className="sp-identity-stat__label">Joined</span>
+                      <span className="sp-identity-stat__value">
                         {new Date(profileJoinedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                       </span>
                     </div>
                   )}
                   {authSession?.user?.id && (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: "var(--muted)" }}>Staff ID</span>
-                      <code style={{ fontSize: 11, background: "var(--bg)", padding: "2px 6px", borderRadius: 4, color: "var(--ink-2)" }}>
-                        {authSession.user.id.slice(0, 8)}…
-                      </code>
+                    <div className="sp-identity-stat">
+                      <span className="sp-identity-stat__label">Staff ID</span>
+                      <code className="sp-identity-code">{authSession.user.id.slice(0, 8)}…</code>
                     </div>
                   )}
                 </div>
 
-                <div className="divider" style={{ margin: "16px 0" }} />
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <a
-                    href="/"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 8,
-                      padding: "8px 12px",
-                      borderRadius: "var(--r-md)",
-                      border: "1px solid var(--line)",
-                      background: "var(--bg)",
-                      color: "var(--ink)",
-                      textDecoration: "none",
-                      fontSize: 12.5,
-                      fontWeight: 600,
-                    }}
-                  >
+                {/* Quick Links */}
+                <div className="sp-identity-links">
+                  <a href="/" className="sp-identity-link">
                     <ExternalLink size={13} />
-                    <span>View Public Campus Site</span>
+                    <span>Public Campus Site</span>
                   </a>
-                  <a
-                    href="/profile"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 8,
-                      padding: "8px 12px",
-                      borderRadius: "var(--r-md)",
-                      border: "1px solid var(--line)",
-                      background: "var(--bg)",
-                      color: "var(--ink)",
-                      textDecoration: "none",
-                      fontSize: 12.5,
-                      fontWeight: 600,
-                    }}
-                  >
+                  <a href="/profile" className="sp-identity-link">
                     <User size={13} />
-                    <span>View Public Profile</span>
+                    <span>My Public Profile</span>
                   </a>
                 </div>
               </div>
@@ -2390,96 +2305,43 @@ export function AdminDashboard({
                       const initial = (member.display_name ?? "?")[0]?.toUpperCase() ?? "S";
                       return (
                         <div key={member.id} className="sp-staff-card">
-                          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
-                            <div
-                              style={{
-                                width: 38,
-                                height: 38,
-                                borderRadius: "50%",
-                                flexShrink: 0,
-                                background:
-                                  member.role === "admin"
-                                    ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-                                    : "linear-gradient(135deg, #0b3857 0%, #2563eb 100%)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                color: "#fff",
-                                fontSize: 14,
-                                fontWeight: 800,
-                              }}
-                            >
-                              {initial}
+                          {/* Avatar */}
+                          <div className={`sp-staff-avatar ${member.role === "admin" ? "sp-staff-avatar--admin" : "sp-staff-avatar--mod"}`}>
+                            {initial}
+                          </div>
+
+                          {/* Info */}
+                          <div className="sp-staff-info">
+                            <div className="sp-staff-name">
+                              {member.display_name || member.email?.split("@")[0] || "Staff Member"}
+                              {isSelf && <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: "var(--r-full)", background: "var(--line)", color: "var(--muted)", marginLeft: 5 }}>You</span>}
                             </div>
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                  {member.display_name || member.email?.split("@")[0] || "Staff Member"}
+                            <div className="sp-staff-meta">
+                              <span className={member.role === "admin" ? "sp-role-badge-admin" : "sp-role-badge-mod"}>
+                                {member.role === "admin" ? <Crown size={11} /> : <ShieldCheck size={11} />}
+                                <span>{member.role === "admin" ? "Administrator" : "Moderator"}</span>
+                              </span>
+                              {member.email && (
+                                <span className="sp-staff-email">
+                                  <Mail size={11} /> {member.email}
                                 </span>
-                                {isSelf && (
-                                  <span
-                                    style={{
-                                      fontSize: 10,
-                                      fontWeight: 700,
-                                      padding: "1px 6px",
-                                      borderRadius: "var(--r-full)",
-                                      background: "var(--line)",
-                                      color: "var(--muted)",
-                                    }}
-                                  >
-                                    You
-                                  </span>
-                                )}
-                              </div>
-                              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 3 }}>
-                                <span className={member.role === "admin" ? "sp-role-badge-admin" : "sp-role-badge-mod"}>
-                                  {member.role === "admin" ? <Crown size={11} /> : <ShieldCheck size={11} />}
-                                  <span>{member.role === "admin" ? "Administrator" : "Moderator"}</span>
-                                </span>
-                                {member.email && (
-                                  <span style={{ fontSize: 11.5, color: "var(--muted)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                                    <Mail size={11} />
-                                    <span>{member.email}</span>
-                                  </span>
-                                )}
-                                <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                                  Since {new Date(member.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                                </span>
-                              </div>
+                              )}
                             </div>
                           </div>
 
                           {/* Actions */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, marginLeft: 12 }}>
+                          <div className="sp-staff-actions">
                             {member.role === "moderator" ? (
                               <button
                                 type="button"
+                                className="sp-staff-action-btn sp-staff-action-btn--promote"
                                 disabled={staffRoleChanging === member.id || isSelf}
                                 title="Promote to Administrator"
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: 5,
-                                  padding: "6px 12px",
-                                  borderRadius: "var(--r-md)",
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  cursor: "pointer",
-                                  background: "rgba(245, 158, 11, 0.1)",
-                                  color: "#d97706",
-                                  border: "1px solid rgba(245, 158, 11, 0.25)",
-                                  transition: "all var(--t-fast)",
-                                }}
                                 onClick={async () => {
                                   setStaffRoleChanging(member.id);
                                   const { error } = await supabase.from("profiles").update({ role: "admin" }).eq("id", member.id);
-                                  if (error) {
-                                    toast(error.message, "error");
-                                  } else {
-                                    toast(`${member.display_name ?? "User"} promoted to Administrator.`, "success");
-                                    loadStaff();
-                                    loadStudents(promoteSearch);
-                                  }
+                                  if (error) { toast(error.message, "error"); }
+                                  else { toast(`${member.display_name ?? "User"} promoted to Administrator.`, "success"); loadStaff(); loadStudents(promoteSearch); }
                                   setStaffRoleChanging(null);
                                 }}
                               >
@@ -2489,34 +2351,16 @@ export function AdminDashboard({
                             ) : (
                               <button
                                 type="button"
+                                className="sp-staff-action-btn sp-staff-action-btn--demote"
                                 disabled={staffRoleChanging === member.id || isSelf}
                                 title={isSelf ? "You cannot demote yourself" : "Demote to Moderator"}
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: 5,
-                                  padding: "6px 12px",
-                                  borderRadius: "var(--r-md)",
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  cursor: isSelf ? "not-allowed" : "pointer",
-                                  background: "rgba(11, 56, 87, 0.08)",
-                                  color: "var(--navy)",
-                                  border: "1px solid var(--line)",
-                                  opacity: isSelf ? 0.45 : 1,
-                                  transition: "all var(--t-fast)",
-                                }}
+                                style={{ opacity: isSelf ? 0.4 : 1 }}
                                 onClick={async () => {
                                   if (isSelf) return;
                                   setStaffRoleChanging(member.id);
                                   const { error } = await supabase.from("profiles").update({ role: "moderator" }).eq("id", member.id);
-                                  if (error) {
-                                    toast(error.message, "error");
-                                  } else {
-                                    toast(`${member.display_name ?? "User"} demoted to Moderator.`, "info");
-                                    loadStaff();
-                                    loadStudents(promoteSearch);
-                                  }
+                                  if (error) { toast(error.message, "error"); }
+                                  else { toast(`${member.display_name ?? "User"} demoted to Moderator.`, "info"); loadStaff(); loadStudents(promoteSearch); }
                                   setStaffRoleChanging(null);
                                 }}
                               >
@@ -2527,34 +2371,23 @@ export function AdminDashboard({
 
                             <button
                               type="button"
+                              className="sp-staff-action-btn sp-staff-action-btn--revoke"
                               disabled={staffRoleChanging === member.id || isSelf}
                               title={isSelf ? "You cannot revoke your own access" : "Revoke staff access"}
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: 32,
-                                height: 32,
-                                borderRadius: "var(--r-md)",
-                                cursor: isSelf ? "not-allowed" : "pointer",
-                                background: "rgba(239, 68, 68, 0.08)",
-                                color: "#dc2626",
-                                border: "1px solid rgba(239, 68, 68, 0.2)",
-                                opacity: isSelf ? 0.45 : 1,
-                                transition: "all var(--t-fast)",
-                              }}
+                              style={{ opacity: isSelf ? 0.4 : 1 }}
                               onClick={async () => {
                                 if (isSelf) return;
-                                if (!window.confirm(`Revoke staff access from ${member.display_name ?? "this user"}? They will be reverted to a student account.`)) return;
+                                const ok = await confirm({
+                                  title: "Revoke Staff Access",
+                                  message: `Remove staff access from ${member.display_name ?? "this user"}? They will be reverted to a student account.`,
+                                  confirmLabel: "Revoke Access",
+                                  danger: true,
+                                });
+                                if (!ok) return;
                                 setStaffRoleChanging(member.id);
                                 const { error } = await supabase.from("profiles").update({ role: "student" }).eq("id", member.id);
-                                if (error) {
-                                  toast(error.message, "error");
-                                } else {
-                                  toast(`${member.display_name ?? "User"} access revoked.`, "info");
-                                  loadStaff();
-                                  loadStudents(promoteSearch);
-                                }
+                                if (error) { toast(error.message, "error"); }
+                                else { toast(`${member.display_name ?? "User"} access revoked.`, "info"); loadStaff(); loadStudents(promoteSearch); }
                                 setStaffRoleChanging(null);
                               }}
                             >
