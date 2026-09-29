@@ -308,6 +308,74 @@ export function AdminDashboard({
     });
   }, [staffMembers, staffRoleFilter, staffSearch]);
 
+  // Load staff roster (moderators and admins)
+  const loadStaff = useCallback(async () => {
+    setStaffLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id,display_name,role,created_at")
+        .in("role", ["admin", "moderator"])
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Failed to load staff members:", error);
+        // Fallback: query without .in filter if enum issue
+        const fallback = await supabase
+          .from("profiles")
+          .select("id,display_name,role,created_at")
+          .neq("role", "student")
+          .order("created_at", { ascending: true });
+        if (fallback.data) {
+          setStaffMembers(fallback.data as StaffMember[]);
+        }
+      } else if (data) {
+        setStaffMembers(data as StaffMember[]);
+      }
+    } catch (err) {
+      console.error("Error in loadStaff:", err);
+    } finally {
+      setStaffLoading(false);
+    }
+  }, []);
+
+  // Load registered students for promotion panel
+  const loadStudents = useCallback(async (query = "") => {
+    setPromoteSearchBusy(true);
+    try {
+      let q = supabase
+        .from("profiles")
+        .select("id,display_name,role,created_at")
+        .eq("role", "student")
+        .order("created_at", { ascending: false })
+        .limit(25);
+
+      const trimmed = query.trim();
+      if (trimmed) {
+        q = q.ilike("display_name", `%${trimmed}%`);
+      }
+
+      const { data, error } = await q;
+      if (error) {
+        console.error("Failed to fetch students:", error);
+      } else {
+        setPromoteResults((data ?? []) as StaffMember[]);
+      }
+    } catch (err) {
+      console.error("Error in loadStudents:", err);
+    } finally {
+      setPromoteSearchBusy(false);
+    }
+  }, []);
+
+  // Automatically fetch staff and students when Staff tab is active
+  useEffect(() => {
+    if (activeTab === "staff") {
+      loadStaff();
+      loadStudents(promoteSearch);
+    }
+  }, [activeTab, loadStaff, loadStudents]);
+
   // Hydrate staff portal preferences & draft notes on mount
   useEffect(() => {
     const savedTab = getStoredPreference<"queue" | "flagged" | "audit" | "analytics">(
@@ -534,6 +602,9 @@ export function AdminDashboard({
         // If the user is staff or admin, automatically load portal data
         if (resolvedRole === "moderator" || resolvedRole === "admin") {
           loadSubmissions();
+          if (resolvedRole === "admin") {
+            loadStaff();
+          }
         }
       }
     }
@@ -558,6 +629,9 @@ export function AdminDashboard({
             setRoleLoading(false);
             if (r === "moderator" || r === "admin") {
               loadSubmissions();
+              if (r === "admin") {
+                loadStaff();
+              }
             }
           }
         } catch {
@@ -1384,6 +1458,8 @@ export function AdminDashboard({
                     onClick={() => {
                       setActiveTab("staff");
                       setProfileDropdownOpen(false);
+                      loadStaff();
+                      loadStudents(promoteSearch);
                     }}
                     style={{
                       display: "flex",
@@ -1536,18 +1612,8 @@ export function AdminDashboard({
                   className={`sp-nav-tab${activeTab === "staff" ? " sp-nav-tab--active" : ""}`}
                   onClick={() => {
                     setActiveTab("staff");
-                    if (staffMembers.length === 0) {
-                      setStaffLoading(true);
-                      supabase
-                        .from("profiles")
-                        .select("id,display_name,role,created_at")
-                        .neq("role", "student")
-                        .order("created_at", { ascending: true })
-                        .then(({ data }) => {
-                          setStaffMembers((data ?? []) as StaffMember[]);
-                          setStaffLoading(false);
-                        });
-                    }
+                    loadStaff();
+                    loadStudents(promoteSearch);
                   }}
                 >
                   <Users2 size={14} />
@@ -2237,19 +2303,11 @@ export function AdminDashboard({
                     className="sp-btn-action"
                     title="Refresh staff list"
                     onClick={() => {
-                      setStaffLoading(true);
-                      supabase
-                        .from("profiles")
-                        .select("id,display_name,role,created_at")
-                        .neq("role", "student")
-                        .order("created_at", { ascending: true })
-                        .then(({ data }) => {
-                          setStaffMembers((data ?? []) as StaffMember[]);
-                          setStaffLoading(false);
-                        });
+                      loadStaff();
+                      loadStudents(promoteSearch);
                     }}
                   >
-                    <RefreshCw size={13} className={staffLoading ? "spin" : ""} />
+                    <RefreshCw size={13} className={staffLoading || promoteSearchBusy ? "spin" : ""} />
                     <span>Refresh</span>
                   </button>
                 </div>
@@ -2387,8 +2445,9 @@ export function AdminDashboard({
                                   if (error) {
                                     toast(error.message, "error");
                                   } else {
-                                    setStaffMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, role: "admin" } : m)));
                                     toast(`${member.display_name ?? "User"} promoted to Administrator.`, "success");
+                                    loadStaff();
+                                    loadStudents(promoteSearch);
                                   }
                                   setStaffRoleChanging(null);
                                 }}
@@ -2423,8 +2482,9 @@ export function AdminDashboard({
                                   if (error) {
                                     toast(error.message, "error");
                                   } else {
-                                    setStaffMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, role: "moderator" } : m)));
                                     toast(`${member.display_name ?? "User"} demoted to Moderator.`, "info");
+                                    loadStaff();
+                                    loadStudents(promoteSearch);
                                   }
                                   setStaffRoleChanging(null);
                                 }}
@@ -2460,8 +2520,9 @@ export function AdminDashboard({
                                 if (error) {
                                   toast(error.message, "error");
                                 } else {
-                                  setStaffMembers((prev) => prev.filter((m) => m.id !== member.id));
                                   toast(`${member.display_name ?? "User"} access revoked.`, "info");
+                                  loadStaff();
+                                  loadStudents(promoteSearch);
                                 }
                                 setStaffRoleChanging(null);
                               }}
@@ -2500,52 +2561,44 @@ export function AdminDashboard({
                       <input
                         type="text"
                         value={promoteSearch}
-                        onChange={(e) => setPromoteSearch(e.target.value)}
-                        placeholder="Search student by name..."
-                        onKeyDown={async (e) => {
-                          if (e.key !== "Enter" || !promoteSearch.trim()) return;
-                          setPromoteSearchBusy(true);
-                          const { data } = await supabase
-                            .from("profiles")
-                            .select("id,display_name,role,created_at")
-                            .eq("role", "student")
-                            .ilike("display_name", `%${promoteSearch.trim()}%`)
-                            .limit(10);
-                          setPromoteResults((data ?? []) as StaffMember[]);
-                          setPromoteSearchBusy(false);
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPromoteSearch(val);
+                          if (!val.trim()) {
+                            loadStudents("");
+                          }
+                        }}
+                        placeholder="Search student by name (or leave blank to show all)..."
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            loadStudents(promoteSearch);
+                          }
                         }}
                       />
                     </div>
                     <button
                       type="button"
                       className="sp-btn-inline"
-                      disabled={promoteSearchBusy || !promoteSearch.trim()}
-                      onClick={async () => {
-                        if (!promoteSearch.trim()) return;
-                        setPromoteSearchBusy(true);
-                        const { data } = await supabase
-                          .from("profiles")
-                          .select("id,display_name,role,created_at")
-                          .eq("role", "student")
-                          .ilike("display_name", `%${promoteSearch.trim()}%`)
-                          .limit(10);
-                        setPromoteResults((data ?? []) as StaffMember[]);
-                        setPromoteSearchBusy(false);
-                      }}
+                      disabled={promoteSearchBusy}
+                      onClick={() => loadStudents(promoteSearch)}
                     >
                       <Search size={14} />
-                      <span>Search</span>
+                      <span>{promoteSearch.trim() ? "Search" : "Show All"}</span>
                     </button>
                   </div>
 
                   {promoteSearchBusy && (
-                    <div style={{ fontSize: 13, color: "var(--muted)", padding: "12px 0", textAlign: "center" }}>
-                      Searching student profiles...
+                    <div style={{ fontSize: 13, color: "var(--muted)", padding: "16px 0", textAlign: "center" }}>
+                      <RefreshCw size={16} className="spin" style={{ margin: "0 auto 6px", display: "block" }} />
+                      Loading student profiles...
                     </div>
                   )}
 
                   {!promoteSearchBusy && promoteResults.length > 0 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 2 }}>
+                        Registered Students ({promoteResults.length})
+                      </div>
                       {promoteResults.map((user) => (
                         <div
                           key={user.id}
@@ -2576,13 +2629,15 @@ export function AdminDashboard({
                                 fontWeight: 800,
                               }}
                             >
-                              {(user.display_name ?? "?")[0]?.toUpperCase()}
+                              {(user.display_name ?? "?")[0]?.toUpperCase() ?? "S"}
                             </div>
                             <div style={{ minWidth: 0, flex: 1 }}>
                               <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                {user.display_name ?? "Student"}
+                                {user.display_name || "Student #" + user.id.slice(0, 8)}
                               </div>
-                              <div style={{ fontSize: 11, color: "var(--muted)" }}>Student Account</div>
+                              <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                                Registered {new Date(user.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                              </div>
                             </div>
                           </div>
 
@@ -2608,9 +2663,9 @@ export function AdminDashboard({
                                   toast(error.message, "error");
                                   return;
                                 }
-                                setStaffMembers((prev) => [...prev, { ...user, role: "moderator" }]);
-                                setPromoteResults((prev) => prev.filter((u) => u.id !== user.id));
-                                toast(`${user.display_name ?? "User"} is now a Moderator.`, "success");
+                                toast(`${user.display_name || "Student"} is now a Moderator.`, "success");
+                                loadStaff();
+                                loadStudents(promoteSearch);
                               }}
                             >
                               <ShieldCheck size={11} />
@@ -2637,9 +2692,9 @@ export function AdminDashboard({
                                   toast(error.message, "error");
                                   return;
                                 }
-                                setStaffMembers((prev) => [...prev, { ...user, role: "admin" }]);
-                                setPromoteResults((prev) => prev.filter((u) => u.id !== user.id));
-                                toast(`${user.display_name ?? "User"} is now an Administrator.`, "success");
+                                toast(`${user.display_name || "Student"} is now an Administrator.`, "success");
+                                loadStaff();
+                                loadStudents(promoteSearch);
                               }}
                             >
                               <Crown size={11} />
@@ -2651,9 +2706,11 @@ export function AdminDashboard({
                     </div>
                   )}
 
-                  {!promoteSearchBusy && promoteSearch && promoteResults.length === 0 && (
-                    <div style={{ fontSize: 12.5, color: "var(--muted)", padding: "10px 0", textAlign: "center" }}>
-                      No matching student accounts found.
+                  {!promoteSearchBusy && promoteResults.length === 0 && (
+                    <div style={{ fontSize: 12.5, color: "var(--muted)", padding: "16px 0", textAlign: "center" }}>
+                      {promoteSearch.trim()
+                        ? `No student accounts found matching "${promoteSearch}".`
+                        : "No registered student accounts found in the system."}
                     </div>
                   )}
                 </div>
