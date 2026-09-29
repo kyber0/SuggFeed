@@ -296,6 +296,17 @@ export function AdminDashboard({
   const [promoteSearch, setPromoteSearch] = useState("");
   const [promoteResults, setPromoteResults] = useState<StaffMember[]>([]);
   const [promoteSearchBusy, setPromoteSearchBusy] = useState(false);
+  const [staffRoleFilter, setStaffRoleFilter] = useState<"all" | "admin" | "moderator">("all");
+
+  const filteredStaff = useMemo(() => {
+    return staffMembers.filter((s) => {
+      if (staffRoleFilter !== "all" && s.role !== staffRoleFilter) return false;
+      if (staffSearch && !(s.display_name ?? "").toLowerCase().includes(staffSearch.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+  }, [staffMembers, staffRoleFilter, staffSearch]);
 
   // Hydrate staff portal preferences & draft notes on mount
   useEffect(() => {
@@ -1586,288 +1597,571 @@ export function AdminDashboard({
             onRefresh={loadAnalytics}
           />
         ) : activeTab === "profile" ? (
-          /* ── Tab: Profile & Account Settings ── */
-          <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 680 }}>
-
-            {/* Account Info Card */}
-            <div className="sp-controls-card">
-              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-                <div style={{
-                  width: 56, height: 56, borderRadius: "50%",
-                  background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
-                }}>
-                  <User size={26} color="#fff" strokeWidth={2} />
-                </div>
-                <div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink)" }}>
-                    {profileDisplayName || "Staff Account"}
-                  </div>
-                  <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 2 }}>
-                    {profileEmail}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-                    <span style={{
-                      display: "inline-flex", alignItems: "center", gap: 4,
-                      fontSize: 11, fontWeight: 700, padding: "2px 8px",
-                      borderRadius: "var(--r-full)",
-                      background: userRole === "admin" ? "rgba(99,102,241,0.12)" : "rgba(16,185,129,0.12)",
-                      color: userRole === "admin" ? "#6366F1" : "#10B981",
-                    }}>
-                      <BadgeCheck size={11} />
-                      {userRole === "admin" ? "Administrator" : "Moderator"}
-                    </span>
-                    {profileJoinedAt && (
-                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                        Joined {new Date(profileJoinedAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-                      </span>
+          /* ── Tab: Profile & Account Settings (Refactored) ── */
+          <div className="sp-profile-layout">
+            {/* Left: Staff Overview Card */}
+            <div className="sp-profile-sidebar">
+              <div className="sp-profile-card">
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginBottom: 20 }}>
+                  <div
+                    style={{
+                      position: "relative",
+                      width: 72,
+                      height: 72,
+                      borderRadius: "50%",
+                      background:
+                        userRole === "admin"
+                          ? "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
+                          : "linear-gradient(135deg, #0b3857 0%, #2563eb 100%)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#fff",
+                      fontSize: 26,
+                      fontWeight: 800,
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                      marginBottom: 14,
+                    }}
+                  >
+                    {adminAvatarUrl ? (
+                      <img
+                        src={adminAvatarUrl}
+                        alt={adminInitial}
+                        style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      adminInitial
                     )}
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        right: 0,
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        background: userRole === "admin" ? "#ea580c" : "var(--navy)",
+                        border: "2px solid var(--surface)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#fff",
+                      }}
+                    >
+                      {userRole === "admin" ? <Crown size={12} /> : <ShieldCheck size={12} />}
+                    </span>
+                  </div>
+
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink)", margin: "0 0 4px 0" }}>
+                    {adminDisplayName}
+                  </h2>
+                  <div style={{ fontSize: 13, color: "var(--muted)", wordBreak: "break-all" }}>
+                    {adminEmail}
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12 }}>
+                    <span className={userRole === "admin" ? "sp-role-badge-admin" : "sp-role-badge-mod"}>
+                      {userRole === "admin" ? <Crown size={12} /> : <ShieldCheck size={12} />}
+                      <span>{userRole === "admin" ? "Administrator" : "Moderator"}</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="divider" style={{ margin: "16px 0" }} />
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 12.5 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ color: "var(--muted)" }}>Status</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "#10b981", fontWeight: 700 }}>
+                      <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981" }} />
+                      Active Staff
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ color: "var(--muted)" }}>Permissions</span>
+                    <span style={{ fontWeight: 600, color: "var(--ink)" }}>
+                      {userRole === "admin" ? "Full Governance" : "Moderation & Triage"}
+                    </span>
+                  </div>
+                  {profileJoinedAt && (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: "var(--muted)" }}>Joined Campus</span>
+                      <span style={{ fontWeight: 600, color: "var(--ink)" }}>
+                        {new Date(profileJoinedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                      </span>
+                    </div>
+                  )}
+                  {authSession?.user?.id && (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: "var(--muted)" }}>Staff ID</span>
+                      <code style={{ fontSize: 11, background: "var(--bg)", padding: "2px 6px", borderRadius: 4, color: "var(--ink-2)" }}>
+                        {authSession.user.id.slice(0, 8)}…
+                      </code>
+                    </div>
+                  )}
+                </div>
+
+                <div className="divider" style={{ margin: "16px 0" }} />
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <a
+                    href="/"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      padding: "8px 12px",
+                      borderRadius: "var(--r-md)",
+                      border: "1px solid var(--line)",
+                      background: "var(--bg)",
+                      color: "var(--ink)",
+                      textDecoration: "none",
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <ExternalLink size={13} />
+                    <span>View Public Campus Site</span>
+                  </a>
+                  <a
+                    href="/profile"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      padding: "8px 12px",
+                      borderRadius: "var(--r-md)",
+                      border: "1px solid var(--line)",
+                      background: "var(--bg)",
+                      color: "var(--ink)",
+                      textDecoration: "none",
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <User size={13} />
+                    <span>View Public Profile</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Settings Sections */}
+            <div className="sp-profile-main">
+              {/* Profile Details */}
+              <div className="sp-section-card">
+                <div className="sp-section-header">
+                  <div className="sp-section-title-wrap">
+                    <h3>
+                      <User size={17} style={{ color: "var(--navy)" }} />
+                      <span>Account Information</span>
+                    </h3>
+                    <p className="sp-section-subtitle">
+                      Your staff display name is visible on moderation actions, status changes, and staff audit logs.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="sp-form-row">
+                  <label className="sp-form-label">
+                    <span>Display Name</span>
+                  </label>
+                  <div className="sp-form-input-group">
+                    <div className="sp-input-with-icon">
+                      <div className="sp-input-icon">
+                        <User size={15} />
+                      </div>
+                      <input
+                        type="text"
+                        value={profileDisplayName}
+                        onChange={(e) => setProfileDisplayName(e.target.value)}
+                        placeholder="Enter your full name"
+                        maxLength={80}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      disabled={profileBusy || !profileDisplayName.trim()}
+                      style={{ height: 42, padding: "0 20px", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}
+                      onClick={async () => {
+                        if (!authSession?.user?.id) return;
+                        setProfileBusy(true);
+                        try {
+                          const { error } = await supabase
+                            .from("profiles")
+                            .update({ display_name: profileDisplayName.trim() })
+                            .eq("id", authSession.user.id);
+                          if (error) throw error;
+                          toast("Display name saved.", "success");
+                        } catch (e) {
+                          toast(e instanceof Error ? e.message : "Failed to update name.", "error");
+                        } finally {
+                          setProfileBusy(false);
+                        }
+                      }}
+                    >
+                      <Save size={14} />
+                      <span>Save Name</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="divider" style={{ margin: "20px 0" }} />
+
+                <div className="sp-form-row">
+                  <label className="sp-form-label">
+                    <span>Email Address</span>
+                  </label>
+                  <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 6 }}>
+                    Current email: <strong style={{ color: "var(--ink)" }}>{profileEmail || "No email on file"}</strong>
+                  </div>
+                  <div className="sp-form-input-group">
+                    <div className="sp-input-with-icon">
+                      <div className="sp-input-icon">
+                        <Mail size={15} />
+                      </div>
+                      <input
+                        type="email"
+                        value={profileNewEmail}
+                        onChange={(e) => setProfileNewEmail(e.target.value)}
+                        placeholder="Enter new email address"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      disabled={profileBusy || !profileNewEmail.trim() || profileNewEmail === profileEmail}
+                      style={{ height: 42, padding: "0 20px", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}
+                      onClick={async () => {
+                        setProfileBusy(true);
+                        try {
+                          const { error } = await supabase.auth.updateUser({ email: profileNewEmail.trim() });
+                          if (error) throw error;
+                          toast("Confirmation link sent to new email address.", "success");
+                          setProfileNewEmail("");
+                        } catch (e) {
+                          toast(e instanceof Error ? e.message : "Failed to update email.", "error");
+                        } finally {
+                          setProfileBusy(false);
+                        }
+                      }}
+                    >
+                      <Mail size={14} />
+                      <span>Update Email</span>
+                    </button>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Edit Display Name */}
-            <div className="sp-controls-card">
-              <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
-                <User size={16} style={{ color: "#6366F1" }} /> Display Name
-              </h3>
-              <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
-                This name appears in audit logs and admin actions.
-              </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                <input
-                  type="text"
-                  value={profileDisplayName}
-                  onChange={(e) => setProfileDisplayName(e.target.value)}
-                  placeholder="Enter display name"
-                  style={{ flex: 1, height: 40 }}
-                  maxLength={80}
-                />
-                <button
-                  className="btn-primary"
-                  disabled={profileBusy || !profileDisplayName.trim()}
-                  style={{ height: 40, padding: "0 20px", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
-                  onClick={async () => {
-                    if (!authSession?.user?.id) return;
-                    setProfileBusy(true);
-                    try {
-                      const { error } = await supabase
-                        .from("profiles")
-                        .update({ display_name: profileDisplayName.trim() })
-                        .eq("id", authSession.user.id);
-                      if (error) throw error;
-                      toast("Display name updated.", "success");
-                    } catch (e) {
-                      toast(e instanceof Error ? e.message : "Failed to update name.", "error");
-                    } finally {
-                      setProfileBusy(false);
-                    }
-                  }}
-                >
-                  <Save size={14} /> Save
-                </button>
+              {/* Password & Security */}
+              <div className="sp-section-card">
+                <div className="sp-section-header">
+                  <div className="sp-section-title-wrap">
+                    <h3>
+                      <KeyRound size={17} style={{ color: "var(--accent)" }} />
+                      <span>Password & Security</span>
+                    </h3>
+                    <p className="sp-section-subtitle">
+                      Change your staff account password. Passwords must be at least 8 characters long.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div className="sp-form-row">
+                    <label className="sp-form-label">
+                      <span>New Password</span>
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <div className="sp-input-with-icon">
+                        <div className="sp-input-icon">
+                          <Lock size={15} />
+                        </div>
+                        <input
+                          type={profileShowPassword ? "text" : "password"}
+                          value={profilePassword}
+                          onChange={(e) => setProfilePassword(e.target.value)}
+                          placeholder="Min 8 characters"
+                          style={{ paddingRight: 42 }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setProfileShowPassword((v) => !v)}
+                        aria-label={profileShowPassword ? "Hide password" : "Show password"}
+                        style={{
+                          position: "absolute",
+                          right: 12,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          background: "none",
+                          border: "none",
+                          color: "var(--muted)",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          padding: 4,
+                        }}
+                      >
+                        {profileShowPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="sp-form-row">
+                    <label className="sp-form-label">
+                      <span>Confirm New Password</span>
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <div className="sp-input-with-icon">
+                        <div className="sp-input-icon">
+                          <Lock size={15} />
+                        </div>
+                        <input
+                          type={profileShowConfirm ? "text" : "password"}
+                          value={profileConfirmPassword}
+                          onChange={(e) => setProfileConfirmPassword(e.target.value)}
+                          placeholder="Re-enter new password"
+                          style={{ paddingRight: 42 }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setProfileShowConfirm((v) => !v)}
+                        aria-label={profileShowConfirm ? "Hide password" : "Show password"}
+                        style={{
+                          position: "absolute",
+                          right: 12,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          background: "none",
+                          border: "none",
+                          color: "var(--muted)",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          padding: 4,
+                        }}
+                      >
+                        {profileShowConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {profilePassword && profileConfirmPassword && profilePassword !== profileConfirmPassword && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#dc2626" }}>
+                      <AlertTriangle size={14} />
+                      <span>Passwords do not match.</span>
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: 4 }}>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      disabled={
+                        profileBusy ||
+                        profilePassword.length < 8 ||
+                        profilePassword !== profileConfirmPassword
+                      }
+                      style={{ height: 42, padding: "0 22px", display: "inline-flex", alignItems: "center", gap: 7 }}
+                      onClick={async () => {
+                        setProfileBusy(true);
+                        try {
+                          const { error } = await supabase.auth.updateUser({ password: profilePassword });
+                          if (error) throw error;
+                          toast("Password updated successfully.", "success");
+                          setProfilePassword("");
+                          setProfileConfirmPassword("");
+                        } catch (e) {
+                          toast(e instanceof Error ? e.message : "Failed to change password.", "error");
+                        } finally {
+                          setProfileBusy(false);
+                        }
+                      }}
+                    >
+                      <Check size={15} />
+                      <span>Save Password</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Change Email */}
-            <div className="sp-controls-card">
-              <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
-                <Mail size={16} style={{ color: "#3B82F6" }} /> Change Email
-              </h3>
-              <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
-                Current: <strong style={{ color: "var(--ink)" }}>{profileEmail}</strong>. A confirmation link will be sent to the new address.
-              </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                <input
-                  type="email"
-                  value={profileNewEmail}
-                  onChange={(e) => setProfileNewEmail(e.target.value)}
-                  placeholder="New email address"
-                  style={{ flex: 1, height: 40 }}
-                />
-                <button
-                  className="btn-primary"
-                  disabled={profileBusy || !profileNewEmail.trim() || profileNewEmail === profileEmail}
-                  style={{ height: 40, padding: "0 20px", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
-                  onClick={async () => {
-                    setProfileBusy(true);
-                    try {
-                      const { error } = await supabase.auth.updateUser({ email: profileNewEmail.trim() });
-                      if (error) throw error;
-                      toast("Confirmation link sent to new email address.", "success");
-                      setProfileNewEmail("");
-                    } catch (e) {
-                      toast(e instanceof Error ? e.message : "Failed to update email.", "error");
-                    } finally {
-                      setProfileBusy(false);
-                    }
-                  }}
-                >
-                  <Mail size={14} /> Update
-                </button>
-              </div>
-            </div>
+              {/* Danger Zone */}
+              <div className="sp-section-card" style={{ borderColor: "rgba(239, 68, 68, 0.25)", background: "rgba(239, 68, 68, 0.02)" }}>
+                <div className="sp-section-header" style={{ borderColor: "rgba(239, 68, 68, 0.15)" }}>
+                  <div className="sp-section-title-wrap">
+                    <h3 style={{ color: "#dc2626" }}>
+                      <AlertTriangle size={17} style={{ color: "#dc2626" }} />
+                      <span>Danger Zone</span>
+                    </h3>
+                    <p className="sp-section-subtitle">
+                      Permanently delete your account and revoke all staff and administrative credentials.
+                    </p>
+                  </div>
+                </div>
 
-            {/* Change Password */}
-            <div className="sp-controls-card">
-              <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
-                <KeyRound size={16} style={{ color: "#F59E0B" }} /> Change Password
-              </h3>
-              <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
-                Choose a strong password of at least 8 characters.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ position: "relative" }}>
-                  <input
-                    type={profileShowPassword ? "text" : "password"}
-                    value={profilePassword}
-                    onChange={(e) => setProfilePassword(e.target.value)}
-                    placeholder="New password"
-                    style={{ width: "100%", paddingRight: 40, height: 40, boxSizing: "border-box" }}
-                  />
-                  <button type="button" onClick={() => setProfileShowPassword(v => !v)}
-                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--muted)", cursor: "pointer", display: "flex", alignItems: "center", padding: 0 }}>
-                    {profileShowPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)" }}>Delete Staff Account</div>
+                    <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>
+                      Once deleted, this account cannot be recovered.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 7,
+                      padding: "9px 18px",
+                      borderRadius: "var(--r-md)",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      background: "rgba(239, 68, 68, 0.08)",
+                      color: "#dc2626",
+                      border: "1px solid rgba(239, 68, 68, 0.25)",
+                      transition: "all var(--t-fast)",
+                    }}
+                    onClick={() => setShowDeleteModal(true)}
+                  >
+                    <Trash2 size={14} />
+                    <span>Delete My Account</span>
                   </button>
                 </div>
-                <div style={{ position: "relative" }}>
-                  <input
-                    type={profileShowConfirm ? "text" : "password"}
-                    value={profileConfirmPassword}
-                    onChange={(e) => setProfileConfirmPassword(e.target.value)}
-                    placeholder="Confirm new password"
-                    style={{ width: "100%", paddingRight: 40, height: 40, boxSizing: "border-box" }}
-                  />
-                  <button type="button" onClick={() => setProfileShowConfirm(v => !v)}
-                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--muted)", cursor: "pointer", display: "flex", alignItems: "center", padding: 0 }}>
-                    {profileShowConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
-                {profilePassword && profileConfirmPassword && profilePassword !== profileConfirmPassword && (
-                  <p style={{ margin: 0, fontSize: 12, color: "#EF4444", display: "flex", alignItems: "center", gap: 4 }}>
-                    <AlertTriangle size={12} /> Passwords do not match.
-                  </p>
-                )}
-                <button
-                  className="btn-primary"
-                  disabled={
-                    profileBusy ||
-                    profilePassword.length < 8 ||
-                    profilePassword !== profileConfirmPassword
-                  }
-                  style={{ alignSelf: "flex-start", height: 40, padding: "0 24px", display: "flex", alignItems: "center", gap: 6 }}
-                  onClick={async () => {
-                    setProfileBusy(true);
-                    try {
-                      const { error } = await supabase.auth.updateUser({ password: profilePassword });
-                      if (error) throw error;
-                      toast("Password changed successfully.", "success");
-                      setProfilePassword("");
-                      setProfileConfirmPassword("");
-                    } catch (e) {
-                      toast(e instanceof Error ? e.message : "Failed to change password.", "error");
-                    } finally {
-                      setProfileBusy(false);
-                    }
-                  }}
-                >
-                  <Lock size={14} /> Change Password
-                </button>
               </div>
             </div>
 
-            {/* Danger Zone — Delete Account */}
-            <div className="sp-controls-card" style={{ border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.03)" }}>
-              <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "#EF4444", display: "flex", alignItems: "center", gap: 8 }}>
-                <AlertTriangle size={16} /> Danger Zone
-              </h3>
-              <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
-                Deleting your account is <strong>permanent and irreversible</strong>. All your admin access will be revoked.
-              </p>
-              <button
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "9px 18px", borderRadius: "var(--r-md)",
-                  fontSize: 13, fontWeight: 700, cursor: "pointer",
-                  background: "rgba(239,68,68,0.08)", color: "#EF4444",
-                  border: "1px solid rgba(239,68,68,0.3)",
-                  transition: "all var(--t-fast)",
-                }}
-                onClick={() => setShowDeleteModal(true)}
-              >
-                <Trash2 size={14} /> Delete My Account
-              </button>
-            </div>
-
-            {/* Delete Confirmation Modal */}
+            {/* Refined Delete Account Modal */}
             {showDeleteModal && (
-              <div style={{
-                position: "fixed", inset: 0, zIndex: 9999,
-                background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)",
-                display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
-              }}
-                onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteModal(false); setDeleteConfirm(""); } }}
+              <div
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  zIndex: 9999,
+                  background: "rgba(0,0,0,0.6)",
+                  backdropFilter: "blur(6px)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 24,
+                }}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setShowDeleteModal(false);
+                    setDeleteConfirm("");
+                  }
+                }}
               >
-                <div style={{
-                  background: "var(--surface)", border: "1px solid var(--line)",
-                  borderRadius: "var(--r-xl)", padding: 32, maxWidth: 420, width: "100%",
-                  boxShadow: "var(--shadow-xl)",
-                }}>
+                <div
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--line)",
+                    borderRadius: "var(--r-xl)",
+                    padding: 30,
+                    maxWidth: 440,
+                    width: "100%",
+                    boxShadow: "0 20px 48px rgba(0,0,0,0.25)",
+                  }}
+                >
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                    <div style={{
-                      width: 40, height: 40, borderRadius: "50%",
-                      background: "rgba(239,68,68,0.12)", color: "#EF4444",
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <AlertTriangle size={20} />
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "50%",
+                        background: "rgba(239,68,68,0.12)",
+                        color: "#dc2626",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <AlertTriangle size={22} />
                     </div>
                     <div>
-                      <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink)" }}>Delete Account</div>
-                      <div style={{ fontSize: 13, color: "var(--muted)" }}>This action cannot be undone.</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink)" }}>Delete Staff Account</div>
+                      <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>This action is permanent and immediate.</div>
                     </div>
                   </div>
+
                   <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16, lineHeight: 1.6 }}>
-                    Type <strong style={{ color: "var(--ink)" }}>DELETE</strong> to confirm you want to permanently delete your account and revoke all staff access.
+                    To confirm deletion, please type <strong style={{ color: "#dc2626" }}>DELETE</strong> in the field below. Your staff session will terminate immediately.
                   </p>
+
                   <input
                     type="text"
                     value={deleteConfirm}
                     onChange={(e) => setDeleteConfirm(e.target.value)}
                     placeholder="Type DELETE to confirm"
-                    style={{ width: "100%", marginBottom: 16, height: 40, boxSizing: "border-box" }}
+                    style={{
+                      width: "100%",
+                      marginBottom: 20,
+                      height: 42,
+                      borderRadius: "var(--r-md)",
+                      border: "1px solid var(--line)",
+                      background: "var(--bg)",
+                      padding: "0 14px",
+                      boxSizing: "border-box",
+                      fontSize: 13.5,
+                      color: "var(--ink)",
+                    }}
                   />
+
                   <div style={{ display: "flex", gap: 10 }}>
                     <button
+                      type="button"
                       style={{
-                        flex: 1, height: 40, borderRadius: "var(--r-md)",
-                        background: "var(--bg)", border: "1px solid var(--line)",
-                        color: "var(--ink)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                        flex: 1,
+                        height: 42,
+                        borderRadius: "var(--r-md)",
+                        background: "var(--bg)",
+                        border: "1px solid var(--line)",
+                        color: "var(--ink)",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
                       }}
-                      onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }}
+                      onClick={() => {
+                        setShowDeleteModal(false);
+                        setDeleteConfirm("");
+                      }}
                     >
                       Cancel
                     </button>
                     <button
+                      type="button"
                       disabled={deleteConfirm !== "DELETE" || profileBusy}
                       style={{
-                        flex: 1, height: 40, borderRadius: "var(--r-md)",
-                        background: deleteConfirm === "DELETE" ? "#EF4444" : "rgba(239,68,68,0.3)",
-                        border: "none", color: "#fff", fontSize: 13, fontWeight: 700,
+                        flex: 1,
+                        height: 42,
+                        borderRadius: "var(--r-md)",
+                        background: deleteConfirm === "DELETE" ? "#dc2626" : "rgba(239,68,68,0.3)",
+                        border: "none",
+                        color: "#fff",
+                        fontSize: 13,
+                        fontWeight: 700,
                         cursor: deleteConfirm === "DELETE" ? "pointer" : "not-allowed",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
                         transition: "background var(--t-fast)",
                       }}
                       onClick={async () => {
                         if (deleteConfirm !== "DELETE") return;
                         setProfileBusy(true);
                         try {
-                          // Sign out and revoke session first, then delete via RPC if available
                           await supabase.auth.signOut();
                           setShowDeleteModal(false);
                           setDeleteConfirm("");
-                          toast("Account deletion requested. Contact your administrator to complete removal.", "info");
+                          toast("Account signed out. Contact your system administrator to finalize database removal.", "info");
                         } catch (e) {
                           toast(e instanceof Error ? e.message : "Failed to delete account.", "error");
                         } finally {
@@ -1875,7 +2169,8 @@ export function AdminDashboard({
                         }
                       }}
                     >
-                      <Trash2 size={14} /> {profileBusy ? "Processing…" : "Delete Forever"}
+                      <Trash2 size={14} />
+                      <span>{profileBusy ? "Processing…" : "Confirm Delete"}</span>
                     </button>
                   </div>
                 </div>
@@ -1883,221 +2178,333 @@ export function AdminDashboard({
             )}
           </div>
         ) : activeTab === "staff" ? (
-          /* ── Tab: Staff & Access Management ── */
+          /* ── Tab: Staff & Access Management (Refactored) ── */
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-
             {/* ── Top Stats Row ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-              {[
-                { label: "Total Staff", value: staffMembers.length, color: "#6366F1", icon: <Users2 size={18} /> },
-                { label: "Administrators", value: staffMembers.filter(s => s.role === "admin").length, color: "#F59E0B", icon: <Crown size={18} /> },
-                { label: "Moderators", value: staffMembers.filter(s => s.role === "moderator").length, color: "#10B981", icon: <ShieldCheck size={18} /> },
-              ].map(stat => (
-                <div key={stat.label} className="sp-controls-card" style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: "var(--r-md)", background: `${stat.color}1a`, color: stat.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    {stat.icon}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>{stat.value}</div>
-                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 3 }}>{stat.label}</div>
+            <div className="sp-kpi-grid">
+              <div className="sp-kpi-card" style={{ "--kpi-accent": "#6366F1" } as React.CSSProperties}>
+                <div className="sp-kpi-top">
+                  <span className="sp-kpi-label">Total Staff</span>
+                  <div className="sp-kpi-icon">
+                    <Users2 size={16} />
                   </div>
                 </div>
-              ))}
+                <div className="sp-kpi-num">{staffMembers.length}</div>
+                <div className="sp-kpi-sub">Active campus team members</div>
+              </div>
+
+              <div className="sp-kpi-card" style={{ "--kpi-accent": "#f59e0b" } as React.CSSProperties}>
+                <div className="sp-kpi-top">
+                  <span className="sp-kpi-label">Administrators</span>
+                  <div className="sp-kpi-icon" style={{ color: "#d97706" }}>
+                    <Crown size={16} />
+                  </div>
+                </div>
+                <div className="sp-kpi-num" style={{ color: "#d97706" }}>
+                  {staffMembers.filter((s) => s.role === "admin").length}
+                </div>
+                <div className="sp-kpi-sub">Full portal governance & access</div>
+              </div>
+
+              <div className="sp-kpi-card" style={{ "--kpi-accent": "#10b981" } as React.CSSProperties}>
+                <div className="sp-kpi-top">
+                  <span className="sp-kpi-label">Moderators</span>
+                  <div className="sp-kpi-icon" style={{ color: "#059669" }}>
+                    <ShieldCheck size={16} />
+                  </div>
+                </div>
+                <div className="sp-kpi-num" style={{ color: "#059669" }}>
+                  {staffMembers.filter((s) => s.role === "moderator").length}
+                </div>
+                <div className="sp-kpi-sub">Content triage & reviews</div>
+              </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
-
-              {/* ── Left: Staff Roster ── */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <div className="sp-controls-card">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
-                      <Users2 size={16} style={{ color: "#6366F1" }} /> Current Staff
+            <div className="sp-staff-layout">
+              {/* ── Left: Staff Directory ── */}
+              <div className="sp-section-card">
+                <div className="sp-section-header">
+                  <div className="sp-section-title-wrap">
+                    <h3>
+                      <Users2 size={17} style={{ color: "var(--navy)" }} />
+                      <span>Staff Directory</span>
+                      <span className="sp-tab-badge" style={{ marginLeft: 6 }}>{staffMembers.length}</span>
                     </h3>
-                    <button
-                      className="sp-btn-action"
-                      onClick={() => {
-                        setStaffLoading(true);
-                        supabase
-                          .from("profiles")
-                          .select("id,display_name,role,created_at")
-                          .neq("role", "student")
-                          .order("created_at", { ascending: true })
-                          .then(({ data }) => {
-                            setStaffMembers((data ?? []) as { id: string; display_name: string | null; role: string; created_at: string }[]);
-                            setStaffLoading(false);
-                          });
-                      }}
-                    >
-                      <RefreshCw size={12} className={staffLoading ? "spin" : ""} />
-                      <span>Refresh</span>
-                    </button>
+                    <p className="sp-section-subtitle">
+                      Manage roles, promote team members, or revoke staff credentials.
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    className="sp-btn-action"
+                    title="Refresh staff list"
+                    onClick={() => {
+                      setStaffLoading(true);
+                      supabase
+                        .from("profiles")
+                        .select("id,display_name,role,created_at")
+                        .neq("role", "student")
+                        .order("created_at", { ascending: true })
+                        .then(({ data }) => {
+                          setStaffMembers((data ?? []) as StaffMember[]);
+                          setStaffLoading(false);
+                        });
+                    }}
+                  >
+                    <RefreshCw size={13} className={staffLoading ? "spin" : ""} />
+                    <span>Refresh</span>
+                  </button>
+                </div>
 
-                  {/* Search staff */}
-                  <div style={{ position: "relative", marginBottom: 12 }}>
-                    <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
+                {/* Filter and Search Bar */}
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+                  <div className="sp-search-box" style={{ flex: 1, minWidth: 180 }}>
+                    <Search size={14} className="sp-search-icon" />
                     <input
                       type="text"
+                      className="sp-search-input"
                       value={staffSearch}
-                      onChange={e => setStaffSearch(e.target.value)}
-                      placeholder="Filter staff..."
-                      style={{ paddingLeft: 30, height: 36, width: "100%", boxSizing: "border-box", fontSize: 13 }}
+                      onChange={(e) => setStaffSearch(e.target.value)}
+                      placeholder="Search staff by name..."
                     />
+                    {staffSearch && (
+                      <button
+                        type="button"
+                        className="sp-search-clear"
+                        onClick={() => setStaffSearch("")}
+                        aria-label="Clear search"
+                      >
+                        <X size={13} />
+                      </button>
+                    )}
                   </div>
 
-                  {staffLoading ? (
-                    <div style={{ padding: "32px 0", textAlign: "center", color: "var(--muted)", fontSize: 13 }}>Loading staff...</div>
-                  ) : staffMembers.length === 0 ? (
-                    <div style={{ padding: "32px 0", textAlign: "center", color: "var(--muted)", fontSize: 13 }}>No staff members found.</div>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {staffMembers
-                        .filter(s => !staffSearch || (s.display_name ?? "").toLowerCase().includes(staffSearch.toLowerCase()))
-                        .map(member => (
-                          <div key={member.id} style={{
-                            display: "flex", alignItems: "center", gap: 12,
-                            padding: "10px 12px", borderRadius: "var(--r-md)",
-                            background: "var(--bg)", border: "1px solid var(--line)",
-                          }}>
-                            {/* Avatar */}
-                            <div style={{
-                              width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                              background: member.role === "admin"
-                                ? "linear-gradient(135deg,#F59E0B,#D97706)"
-                                : "linear-gradient(135deg,#10B981,#059669)",
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              color: "#fff", fontSize: 14, fontWeight: 700,
-                            }}>
-                              {(member.display_name ?? "?")[0].toUpperCase()}
-                            </div>
+                  <div className="sp-status-chips" style={{ margin: 0 }}>
+                    {(["all", "admin", "moderator"] as const).map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        className={`sp-chip${staffRoleFilter === r ? " sp-chip--active" : ""}`}
+                        onClick={() => setStaffRoleFilter(r)}
+                      >
+                        {r === "all" ? "All" : r === "admin" ? "Admins" : "Moderators"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                            {/* Info */}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                {member.display_name ?? "Unnamed"}
-                              </div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                                <span style={{
-                                  fontSize: 10, fontWeight: 700, padding: "1px 6px",
-                                  borderRadius: "var(--r-full)",
-                                  background: member.role === "admin" ? "rgba(245,158,11,0.15)" : "rgba(16,185,129,0.12)",
-                                  color: member.role === "admin" ? "#D97706" : "#10B981",
-                                }}>
-                                  {member.role === "admin" ? "Admin" : "Moderator"}
+                {staffLoading ? (
+                  <div style={{ padding: "48px 0", textAlign: "center", color: "var(--muted)", fontSize: 13.5 }}>
+                    <RefreshCw size={18} className="spin" style={{ margin: "0 auto 8px", display: "block" }} />
+                    Loading staff directory...
+                  </div>
+                ) : filteredStaff.length === 0 ? (
+                  <div style={{ padding: "48px 0", textAlign: "center", color: "var(--muted)", fontSize: 13.5 }}>
+                    No staff members match your filter criteria.
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {filteredStaff.map((member) => {
+                      const isSelf = member.id === authSession?.user?.id;
+                      const initial = (member.display_name ?? "?")[0]?.toUpperCase() ?? "S";
+                      return (
+                        <div key={member.id} className="sp-staff-card">
+                          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
+                            <div
+                              style={{
+                                width: 38,
+                                height: 38,
+                                borderRadius: "50%",
+                                flexShrink: 0,
+                                background:
+                                  member.role === "admin"
+                                    ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+                                    : "linear-gradient(135deg, #0b3857 0%, #2563eb 100%)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#fff",
+                                fontSize: 14,
+                                fontWeight: 800,
+                              }}
+                            >
+                              {initial}
+                            </div>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                  {member.display_name ?? "Unnamed Staff"}
                                 </span>
-                                <span style={{ fontSize: 10, color: "var(--muted)" }}>
+                                {isSelf && (
+                                  <span
+                                    style={{
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      padding: "1px 6px",
+                                      borderRadius: "var(--r-full)",
+                                      background: "var(--line)",
+                                      color: "var(--muted)",
+                                    }}
+                                  >
+                                    You
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
+                                <span className={member.role === "admin" ? "sp-role-badge-admin" : "sp-role-badge-mod"}>
+                                  {member.role === "admin" ? <Crown size={11} /> : <ShieldCheck size={11} />}
+                                  <span>{member.role === "admin" ? "Administrator" : "Moderator"}</span>
+                                </span>
+                                <span style={{ fontSize: 11, color: "var(--muted)" }}>
                                   Since {new Date(member.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                                 </span>
                               </div>
                             </div>
+                          </div>
 
-                            {/* Role Actions */}
-                            <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                              {member.role === "moderator" ? (
-                                <button
-                                  disabled={staffRoleChanging === member.id}
-                                  title="Promote to Admin"
-                                  style={{
-                                    display: "inline-flex", alignItems: "center", gap: 4,
-                                    padding: "4px 10px", borderRadius: "var(--r-md)",
-                                    fontSize: 11, fontWeight: 700, cursor: "pointer",
-                                    background: "rgba(245,158,11,0.1)", color: "#D97706",
-                                    border: "1px solid rgba(245,158,11,0.25)",
-                                  }}
-                                  onClick={async () => {
-                                    setStaffRoleChanging(member.id);
-                                    const { error } = await supabase.from("profiles").update({ role: "admin" }).eq("id", member.id);
-                                    if (error) { toast(error.message, "error"); }
-                                    else {
-                                      setStaffMembers(prev => prev.map(m => m.id === member.id ? { ...m, role: "admin" } : m));
-                                      toast(`${member.display_name ?? "User"} promoted to Admin.`, "success");
-                                    }
-                                    setStaffRoleChanging(null);
-                                  }}
-                                >
-                                  <Crown size={11} /> Promote
-                                </button>
-                              ) : (
-                                <button
-                                  disabled={staffRoleChanging === member.id || member.id === authSession?.user?.id}
-                                  title="Demote to Moderator"
-                                  style={{
-                                    display: "inline-flex", alignItems: "center", gap: 4,
-                                    padding: "4px 10px", borderRadius: "var(--r-md)",
-                                    fontSize: 11, fontWeight: 700, cursor: "pointer",
-                                    background: "rgba(99,102,241,0.08)", color: "#6366F1",
-                                    border: "1px solid rgba(99,102,241,0.2)",
-                                    opacity: member.id === authSession?.user?.id ? 0.4 : 1,
-                                  }}
-                                  onClick={async () => {
-                                    setStaffRoleChanging(member.id);
-                                    const { error } = await supabase.from("profiles").update({ role: "moderator" }).eq("id", member.id);
-                                    if (error) { toast(error.message, "error"); }
-                                    else {
-                                      setStaffMembers(prev => prev.map(m => m.id === member.id ? { ...m, role: "moderator" } : m));
-                                      toast(`${member.display_name ?? "User"} demoted to Moderator.`, "info");
-                                    }
-                                    setStaffRoleChanging(null);
-                                  }}
-                                >
-                                  <ChevronDown size={11} /> Demote
-                                </button>
-                              )}
+                          {/* Actions */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, marginLeft: 12 }}>
+                            {member.role === "moderator" ? (
                               <button
-                                disabled={staffRoleChanging === member.id || member.id === authSession?.user?.id}
-                                title="Remove staff access"
+                                type="button"
+                                disabled={staffRoleChanging === member.id || isSelf}
+                                title="Promote to Administrator"
                                 style={{
-                                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                                  width: 28, height: 28, borderRadius: "var(--r-md)",
-                                  fontSize: 11, cursor: "pointer",
-                                  background: "rgba(239,68,68,0.08)", color: "#EF4444",
-                                  border: "1px solid rgba(239,68,68,0.2)",
-                                  opacity: member.id === authSession?.user?.id ? 0.4 : 1,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 5,
+                                  padding: "6px 12px",
+                                  borderRadius: "var(--r-md)",
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  background: "rgba(245, 158, 11, 0.1)",
+                                  color: "#d97706",
+                                  border: "1px solid rgba(245, 158, 11, 0.25)",
+                                  transition: "all var(--t-fast)",
                                 }}
                                 onClick={async () => {
-                                  if (!window.confirm(`Remove staff access from ${member.display_name ?? "this user"}?`)) return;
                                   setStaffRoleChanging(member.id);
-                                  const { error } = await supabase.from("profiles").update({ role: "student" }).eq("id", member.id);
-                                  if (error) { toast(error.message, "error"); }
-                                  else {
-                                    setStaffMembers(prev => prev.filter(m => m.id !== member.id));
-                                    toast(`${member.display_name ?? "User"} removed from staff.`, "info");
+                                  const { error } = await supabase.from("profiles").update({ role: "admin" }).eq("id", member.id);
+                                  if (error) {
+                                    toast(error.message, "error");
+                                  } else {
+                                    setStaffMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, role: "admin" } : m)));
+                                    toast(`${member.display_name ?? "User"} promoted to Administrator.`, "success");
                                   }
                                   setStaffRoleChanging(null);
                                 }}
                               >
-                                <UserX size={13} />
+                                <Crown size={12} />
+                                <span>Make Admin</span>
                               </button>
-                            </div>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={staffRoleChanging === member.id || isSelf}
+                                title={isSelf ? "You cannot demote yourself" : "Demote to Moderator"}
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 5,
+                                  padding: "6px 12px",
+                                  borderRadius: "var(--r-md)",
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  cursor: isSelf ? "not-allowed" : "pointer",
+                                  background: "rgba(11, 56, 87, 0.08)",
+                                  color: "var(--navy)",
+                                  border: "1px solid var(--line)",
+                                  opacity: isSelf ? 0.45 : 1,
+                                  transition: "all var(--t-fast)",
+                                }}
+                                onClick={async () => {
+                                  if (isSelf) return;
+                                  setStaffRoleChanging(member.id);
+                                  const { error } = await supabase.from("profiles").update({ role: "moderator" }).eq("id", member.id);
+                                  if (error) {
+                                    toast(error.message, "error");
+                                  } else {
+                                    setStaffMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, role: "moderator" } : m)));
+                                    toast(`${member.display_name ?? "User"} demoted to Moderator.`, "info");
+                                  }
+                                  setStaffRoleChanging(null);
+                                }}
+                              >
+                                <ShieldCheck size={12} />
+                                <span>Demote</span>
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              disabled={staffRoleChanging === member.id || isSelf}
+                              title={isSelf ? "You cannot revoke your own access" : "Revoke staff access"}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 32,
+                                height: 32,
+                                borderRadius: "var(--r-md)",
+                                cursor: isSelf ? "not-allowed" : "pointer",
+                                background: "rgba(239, 68, 68, 0.08)",
+                                color: "#dc2626",
+                                border: "1px solid rgba(239, 68, 68, 0.2)",
+                                opacity: isSelf ? 0.45 : 1,
+                                transition: "all var(--t-fast)",
+                              }}
+                              onClick={async () => {
+                                if (isSelf) return;
+                                if (!window.confirm(`Revoke staff access from ${member.display_name ?? "this user"}? They will be reverted to a student account.`)) return;
+                                setStaffRoleChanging(member.id);
+                                const { error } = await supabase.from("profiles").update({ role: "student" }).eq("id", member.id);
+                                if (error) {
+                                  toast(error.message, "error");
+                                } else {
+                                  setStaffMembers((prev) => prev.filter((m) => m.id !== member.id));
+                                  toast(`${member.display_name ?? "User"} access revoked.`, "info");
+                                }
+                                setStaffRoleChanging(null);
+                              }}
+                            >
+                              <UserX size={14} />
+                            </button>
                           </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* ── Right: Promote + Invite ── */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* ── Right Column: Growth Actions ── */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {/* Promote Existing Student */}
+                <div className="sp-section-card">
+                  <div className="sp-section-header">
+                    <div className="sp-section-title-wrap">
+                      <h3>
+                        <UserCheck size={17} style={{ color: "#10b981" }} />
+                        <span>Promote Registered User</span>
+                      </h3>
+                      <p className="sp-section-subtitle">
+                        Search student accounts by display name to instantly grant staff roles.
+                      </p>
+                    </div>
+                  </div>
 
-                {/* Promote Existing User */}
-                <div className="sp-controls-card">
-                  <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
-                    <UserCheck size={16} style={{ color: "#10B981" }} /> Promote Existing User
-                  </h3>
-                  <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--muted)" }}>
-                    Search by display name and grant staff access to an existing account.
-                  </p>
-                  <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-                    <div style={{ position: "relative", flex: 1 }}>
-                      <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
+                  <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                    <div className="sp-input-with-icon" style={{ flex: 1 }}>
+                      <div className="sp-input-icon">
+                        <Search size={14} />
+                      </div>
                       <input
                         type="text"
                         value={promoteSearch}
-                        onChange={e => setPromoteSearch(e.target.value)}
-                        placeholder="Search by display name..."
-                        style={{ paddingLeft: 30, height: 38, width: "100%", boxSizing: "border-box", fontSize: 13 }}
-                        onKeyDown={async e => {
+                        onChange={(e) => setPromoteSearch(e.target.value)}
+                        placeholder="Search student by name..."
+                        onKeyDown={async (e) => {
                           if (e.key !== "Enter" || !promoteSearch.trim()) return;
                           setPromoteSearchBusy(true);
                           const { data } = await supabase
@@ -2106,15 +2513,16 @@ export function AdminDashboard({
                             .eq("role", "student")
                             .ilike("display_name", `%${promoteSearch.trim()}%`)
                             .limit(10);
-                          setPromoteResults((data ?? []) as { id: string; display_name: string | null; role: string; created_at: string }[]);
+                          setPromoteResults((data ?? []) as StaffMember[]);
                           setPromoteSearchBusy(false);
                         }}
                       />
                     </div>
                     <button
+                      type="button"
                       className="btn-primary"
                       disabled={promoteSearchBusy || !promoteSearch.trim()}
-                      style={{ height: 38, padding: "0 14px", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap", fontSize: 13 }}
+                      style={{ height: 42, padding: "0 16px", display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
                       onClick={async () => {
                         if (!promoteSearch.trim()) return;
                         setPromoteSearchBusy(true);
@@ -2124,68 +2532,121 @@ export function AdminDashboard({
                           .eq("role", "student")
                           .ilike("display_name", `%${promoteSearch.trim()}%`)
                           .limit(10);
-                        setPromoteResults((data ?? []) as { id: string; display_name: string | null; role: string; created_at: string }[]);
+                        setPromoteResults((data ?? []) as StaffMember[]);
                         setPromoteSearchBusy(false);
                       }}
                     >
-                      <Search size={13} /> Search
+                      <Search size={14} />
+                      <span>Search</span>
                     </button>
                   </div>
 
                   {promoteSearchBusy && (
-                    <div style={{ fontSize: 13, color: "var(--muted)", padding: "8px 0" }}>Searching...</div>
+                    <div style={{ fontSize: 13, color: "var(--muted)", padding: "12px 0", textAlign: "center" }}>
+                      Searching student profiles...
+                    </div>
                   )}
 
                   {!promoteSearchBusy && promoteResults.length > 0 && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      {promoteResults.map(user => (
-                        <div key={user.id} style={{
-                          display: "flex", alignItems: "center", gap: 10,
-                          padding: "8px 10px", borderRadius: "var(--r-md)",
-                          background: "var(--bg)", border: "1px solid var(--line)",
-                        }}>
-                          <div style={{
-                            width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-                            background: "linear-gradient(135deg,#6366F1,#8B5CF6)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            color: "#fff", fontSize: 13, fontWeight: 700,
-                          }}>
-                            {(user.display_name ?? "?")[0].toUpperCase()}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                      {promoteResults.map((user) => (
+                        <div
+                          key={user.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 10,
+                            padding: "10px 12px",
+                            borderRadius: "var(--r-md)",
+                            background: "var(--bg)",
+                            border: "1px solid var(--line)",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+                            <div
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: "50%",
+                                flexShrink: 0,
+                                background: "linear-gradient(135deg, var(--navy) 0%, var(--accent) 100%)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#fff",
+                                fontSize: 12,
+                                fontWeight: 800,
+                              }}
+                            >
+                              {(user.display_name ?? "?")[0]?.toUpperCase()}
+                            </div>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {user.display_name ?? "Student"}
+                              </div>
+                              <div style={{ fontSize: 11, color: "var(--muted)" }}>Student Account</div>
+                            </div>
                           </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{user.display_name ?? "Unnamed"}</div>
-                            <div style={{ fontSize: 11, color: "var(--muted)" }}>Student account</div>
-                          </div>
+
                           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                             <button
+                              type="button"
                               style={{
-                                padding: "4px 9px", borderRadius: "var(--r-md)", fontSize: 11, fontWeight: 700, cursor: "pointer",
-                                background: "rgba(16,185,129,0.1)", color: "#10B981", border: "1px solid rgba(16,185,129,0.25)",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                padding: "5px 10px",
+                                borderRadius: "var(--r-md)",
+                                fontSize: 11.5,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                background: "rgba(16, 185, 129, 0.1)",
+                                color: "#059669",
+                                border: "1px solid rgba(16, 185, 129, 0.25)",
                               }}
                               onClick={async () => {
                                 const { error } = await supabase.from("profiles").update({ role: "moderator" }).eq("id", user.id);
-                                if (error) { toast(error.message, "error"); return; }
-                                setStaffMembers(prev => [...prev, { ...user, role: "moderator" }]);
-                                setPromoteResults(prev => prev.filter(u => u.id !== user.id));
+                                if (error) {
+                                  toast(error.message, "error");
+                                  return;
+                                }
+                                setStaffMembers((prev) => [...prev, { ...user, role: "moderator" }]);
+                                setPromoteResults((prev) => prev.filter((u) => u.id !== user.id));
                                 toast(`${user.display_name ?? "User"} is now a Moderator.`, "success");
                               }}
                             >
-                              Moderator
+                              <ShieldCheck size={11} />
+                              <span>Moderator</span>
                             </button>
                             <button
+                              type="button"
                               style={{
-                                padding: "4px 9px", borderRadius: "var(--r-md)", fontSize: 11, fontWeight: 700, cursor: "pointer",
-                                background: "rgba(245,158,11,0.1)", color: "#D97706", border: "1px solid rgba(245,158,11,0.25)",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                padding: "5px 10px",
+                                borderRadius: "var(--r-md)",
+                                fontSize: 11.5,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                background: "rgba(245, 158, 11, 0.1)",
+                                color: "#d97706",
+                                border: "1px solid rgba(245, 158, 11, 0.25)",
                               }}
                               onClick={async () => {
                                 const { error } = await supabase.from("profiles").update({ role: "admin" }).eq("id", user.id);
-                                if (error) { toast(error.message, "error"); return; }
-                                setStaffMembers(prev => [...prev, { ...user, role: "admin" }]);
-                                setPromoteResults(prev => prev.filter(u => u.id !== user.id));
-                                toast(`${user.display_name ?? "User"} is now an Admin.`, "success");
+                                if (error) {
+                                  toast(error.message, "error");
+                                  return;
+                                }
+                                setStaffMembers((prev) => [...prev, { ...user, role: "admin" }]);
+                                setPromoteResults((prev) => prev.filter((u) => u.id !== user.id));
+                                toast(`${user.display_name ?? "User"} is now an Administrator.`, "success");
                               }}
                             >
-                              Admin
+                              <Crown size={11} />
+                              <span>Admin</span>
                             </button>
                           </div>
                         </div>
@@ -2194,58 +2655,135 @@ export function AdminDashboard({
                   )}
 
                   {!promoteSearchBusy && promoteSearch && promoteResults.length === 0 && (
-                    <div style={{ fontSize: 13, color: "var(--muted)", padding: "8px 0" }}>No matching student accounts found.</div>
+                    <div style={{ fontSize: 12.5, color: "var(--muted)", padding: "10px 0", textAlign: "center" }}>
+                      No matching student accounts found.
+                    </div>
                   )}
                 </div>
 
                 {/* Invite New Staff */}
-                <div className="sp-controls-card">
-                  <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
-                    <UserPlus size={16} style={{ color: "#6366F1" }} /> Invite New Staff
-                  </h3>
-                  <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--muted)" }}>
-                    Send a magic-link invitation email to a new staff member. They'll set their own password on first login.
-                  </p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    <input
-                      type="email"
-                      value={inviteEmail}
-                      onChange={e => setInviteEmail(e.target.value)}
-                      placeholder="Staff email address"
-                      style={{ height: 40, fontSize: 13 }}
-                    />
-                    <div style={{ display: "flex", gap: 8 }}>
-                      {(["moderator", "admin"] as const).map(r => (
+                <div className="sp-section-card">
+                  <div className="sp-section-header">
+                    <div className="sp-section-title-wrap">
+                      <h3>
+                        <UserPlus size={17} style={{ color: "var(--accent)" }} />
+                        <span>Invite Team Member</span>
+                      </h3>
+                      <p className="sp-section-subtitle">
+                        Send a secure magic-link invitation. The invitee can set their credentials upon arrival.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <div className="sp-form-row">
+                      <label className="sp-form-label">
+                        <span>Staff Email Address</span>
+                      </label>
+                      <div className="sp-input-with-icon">
+                        <div className="sp-input-icon">
+                          <Mail size={15} />
+                        </div>
+                        <input
+                          type="email"
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                          placeholder="staff.name@university.edu"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="sp-form-row">
+                      <label className="sp-form-label">
+                        <span>Assign Staff Role</span>
+                      </label>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                         <button
-                          key={r}
+                          type="button"
                           style={{
-                            flex: 1, height: 36, borderRadius: "var(--r-md)", fontSize: 12, fontWeight: 700, cursor: "pointer",
-                            background: inviteRole === r
-                              ? (r === "admin" ? "rgba(245,158,11,0.15)" : "rgba(16,185,129,0.12)")
-                              : "var(--bg)",
-                            color: inviteRole === r
-                              ? (r === "admin" ? "#D97706" : "#10B981")
-                              : "var(--muted)",
-                            border: inviteRole === r
-                              ? `1px solid ${r === "admin" ? "rgba(245,158,11,0.4)" : "rgba(16,185,129,0.4)"}`
-                              : "1px solid var(--line)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 8,
+                            height: 42,
+                            borderRadius: "var(--r-md)",
+                            fontSize: 13,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            background: inviteRole === "moderator" ? "rgba(16, 185, 129, 0.12)" : "var(--bg)",
+                            color: inviteRole === "moderator" ? "#059669" : "var(--muted)",
+                            border: inviteRole === "moderator" ? "2px solid #10b981" : "1px solid var(--line)",
                             transition: "all var(--t-fast)",
                           }}
-                          onClick={() => setInviteRole(r)}
+                          onClick={() => setInviteRole("moderator")}
                         >
-                          {r === "admin" ? "👑 Admin" : "🛡 Moderator"}
+                          <ShieldCheck size={15} />
+                          <span>Moderator</span>
                         </button>
-                      ))}
+                        <button
+                          type="button"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 8,
+                            height: 42,
+                            borderRadius: "var(--r-md)",
+                            fontSize: 13,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            background: inviteRole === "admin" ? "rgba(245, 158, 11, 0.14)" : "var(--bg)",
+                            color: inviteRole === "admin" ? "#d97706" : "var(--muted)",
+                            border: inviteRole === "admin" ? "2px solid #f59e0b" : "1px solid var(--line)",
+                            transition: "all var(--t-fast)",
+                          }}
+                          onClick={() => setInviteRole("admin")}
+                        >
+                          <Crown size={15} />
+                          <span>Administrator</span>
+                        </button>
+                      </div>
                     </div>
+
+                    <div
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: "var(--r-md)",
+                        background: "var(--bg)",
+                        border: "1px solid var(--line)",
+                        fontSize: 12,
+                        color: "var(--muted)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {inviteRole === "admin" ? (
+                        <>
+                          <strong style={{ color: "var(--ink)" }}>Administrator role:</strong> Grants access to all staff tabs, user role management, system audit logs, and analytics.
+                        </>
+                      ) : (
+                        <>
+                          <strong style={{ color: "var(--ink)" }}>Moderator role:</strong> Grants access to triage submission ideas, manage flagged content, and leave official staff notes.
+                        </>
+                      )}
+                    </div>
+
                     <button
+                      type="button"
                       className="btn-primary"
                       disabled={inviteBusy || !inviteEmail.trim() || !inviteEmail.includes("@")}
-                      style={{ height: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 700 }}
+                      style={{
+                        height: 42,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                        fontSize: 13.5,
+                        fontWeight: 700,
+                        marginTop: 4,
+                      }}
                       onClick={async () => {
                         setInviteBusy(true);
                         try {
-                          // Use Supabase admin invite (requires service role key on server)
-                          // As a fallback, use signUp with magic link
                           const { error } = await supabase.auth.signInWithOtp({
                             email: inviteEmail.trim(),
                             options: {
@@ -2254,21 +2792,20 @@ export function AdminDashboard({
                             },
                           });
                           if (error) throw error;
-                          toast(`Invite sent to ${inviteEmail}. They'll receive a magic-link to set up their account.`, "success");
+                          toast(`Invitation sent to ${inviteEmail}.`, "success");
                           setInviteEmail("");
                         } catch (e) {
-                          toast(e instanceof Error ? e.message : "Failed to send invite.", "error");
+                          toast(e instanceof Error ? e.message : "Failed to send invitation.", "error");
                         } finally {
                           setInviteBusy(false);
                         }
                       }}
                     >
                       <SendHorizonal size={15} />
-                      {inviteBusy ? "Sending..." : "Send Invitation"}
+                      <span>{inviteBusy ? "Sending Invitation..." : "Send Invitation"}</span>
                     </button>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
@@ -2539,7 +3076,7 @@ export function AdminDashboard({
                   {counts.pending}
                 </div>
                 <div className="sp-kpi-sub">
-                  {counts.pending > 0 ? "⚡ Action required" : "Queue caught up"}
+                  {counts.pending > 0 ? "Action required" : "Queue caught up"}
                 </div>
               </button>
 

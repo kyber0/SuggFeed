@@ -8613,3 +8613,199 @@ input.feed-search {
   background: rgba(245, 158, 11, 0.12);
   border-color: rgba(245, 158, 11, 0.3);
 }
+
+/* ── Admin Portal: Refactored Profile & Staff Layouts (No Emojis) ── */
+.sp-profile-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .sp-profile-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sp-profile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sp-profile-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.sp-profile-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sp-section-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.sp-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.sp-section-title-wrap h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-section-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sp-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.sp-form-row:last-child {
+  margin-bottom: 0;
+}
+
+.sp-form-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sp-form-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.sp-input-with-icon {
+  position: relative;
+  flex: 1;
+}
+
+.sp-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sp-input-with-icon input {
+  padding-left: 36px !important;
+  height: 42px !important;
+  width: 100% !important;
+  border-radius: var(--r-md) !important;
+  border: 1px solid var(--line) !important;
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+  font-size: 13.5px !important;
+  box-sizing: border-box !important;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.sp-input-with-icon input:focus {
+  border-color: var(--navy) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--navy) 15%, transparent) !important;
+}
+
+/* ── Staff Tab Layout ── */
+.sp-staff-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 1024px) {
+  .sp-staff-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sp-staff-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  transition: border-color var(--t-fast), transform var(--t-fast);
+}
+
+.sp-staff-card:hover {
+  border-color: var(--line-2);
+}
+
+.sp-role-badge-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--r-full);
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+[data-theme="dark"] .sp-role-badge-admin {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.18);
+}
+
+.sp-role-badge-mod {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--r-full);
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+[data-theme="dark"] .sp-role-badge-mod {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.18);
+}
+
