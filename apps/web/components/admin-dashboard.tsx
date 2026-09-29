@@ -285,7 +285,7 @@ export function AdminDashboard({
   }, [authSession?.user?.id]);
 
   // Staff Management state
-  type StaffMember = { id: string; display_name: string | null; role: string; created_at: string; email?: string };
+  type StaffMember = { id: string; display_name: string | null; role: string; created_at: string; email?: string | null };
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [staffLoading, setStaffLoading] = useState(false);
   const [staffRoleChanging, setStaffRoleChanging] = useState<string | null>(null);
@@ -301,20 +301,23 @@ export function AdminDashboard({
   const filteredStaff = useMemo(() => {
     return staffMembers.filter((s) => {
       if (staffRoleFilter !== "all" && s.role !== staffRoleFilter) return false;
-      if (staffSearch && !(s.display_name ?? "").toLowerCase().includes(staffSearch.toLowerCase())) {
-        return false;
+      if (staffSearch) {
+        const q = staffSearch.toLowerCase();
+        const matchName = (s.display_name ?? "").toLowerCase().includes(q);
+        const matchEmail = (s.email ?? "").toLowerCase().includes(q);
+        if (!matchName && !matchEmail) return false;
       }
       return true;
     });
   }, [staffMembers, staffRoleFilter, staffSearch]);
 
-  // Load staff roster (moderators and admins)
+  // Load staff roster (moderators and admins) with email
   const loadStaff = useCallback(async () => {
     setStaffLoading(true);
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id,display_name,role,created_at")
+        .select("id,display_name,email,role,created_at")
         .in("role", ["admin", "moderator"])
         .order("created_at", { ascending: true });
 
@@ -323,7 +326,7 @@ export function AdminDashboard({
         // Fallback: query without .in filter if enum issue
         const fallback = await supabase
           .from("profiles")
-          .select("id,display_name,role,created_at")
+          .select("id,display_name,email,role,created_at")
           .neq("role", "student")
           .order("created_at", { ascending: true });
         if (fallback.data) {
@@ -339,27 +342,38 @@ export function AdminDashboard({
     }
   }, []);
 
-  // Load registered students for promotion panel
+  // Load registered students for promotion panel based on email / gmail
   const loadStudents = useCallback(async (query = "") => {
     setPromoteSearchBusy(true);
     try {
-      let q = supabase
-        .from("profiles")
-        .select("id,display_name,role,created_at")
-        .eq("role", "student")
-        .order("created_at", { ascending: false })
-        .limit(25);
-
       const trimmed = query.trim();
-      if (trimmed) {
-        q = q.ilike("display_name", `%${trimmed}%`);
-      }
+      // Try security-definer RPC first
+      const { data: rpcData, error: rpcError } = await supabase.rpc("admin_search_students", {
+        search_email: trimmed,
+        result_limit: 30,
+      });
 
-      const { data, error } = await q;
-      if (error) {
-        console.error("Failed to fetch students:", error);
+      if (!rpcError && Array.isArray(rpcData)) {
+        setPromoteResults(rpcData as StaffMember[]);
       } else {
-        setPromoteResults((data ?? []) as StaffMember[]);
+        // Fallback to direct profiles query
+        let q = supabase
+          .from("profiles")
+          .select("id,display_name,email,role,created_at")
+          .eq("role", "student")
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (trimmed) {
+          q = q.or(`email.ilike.%${trimmed}%,display_name.ilike.%${trimmed}%`);
+        }
+
+        const { data, error } = await q;
+        if (error) {
+          console.error("Failed to fetch students:", error);
+        } else {
+          setPromoteResults((data ?? []) as StaffMember[]);
+        }
       }
     } catch (err) {
       console.error("Error in loadStudents:", err);
@@ -2321,7 +2335,7 @@ export function AdminDashboard({
                       className="sp-search-input"
                       value={staffSearch}
                       onChange={(e) => setStaffSearch(e.target.value)}
-                      placeholder="Search staff by name..."
+                      placeholder="Search staff by name or email..."
                     />
                     {staffSearch && (
                       <button
@@ -2389,7 +2403,7 @@ export function AdminDashboard({
                             <div style={{ minWidth: 0, flex: 1 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                 <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                  {member.display_name ?? "Unnamed Staff"}
+                                  {member.display_name || member.email?.split("@")[0] || "Staff Member"}
                                 </span>
                                 {isSelf && (
                                   <span
@@ -2406,11 +2420,17 @@ export function AdminDashboard({
                                   </span>
                                 )}
                               </div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
+                              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 3 }}>
                                 <span className={member.role === "admin" ? "sp-role-badge-admin" : "sp-role-badge-mod"}>
                                   {member.role === "admin" ? <Crown size={11} /> : <ShieldCheck size={11} />}
                                   <span>{member.role === "admin" ? "Administrator" : "Moderator"}</span>
                                 </span>
+                                {member.email && (
+                                  <span style={{ fontSize: 11.5, color: "var(--muted)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                    <Mail size={11} />
+                                    <span>{member.email}</span>
+                                  </span>
+                                )}
                                 <span style={{ fontSize: 11, color: "var(--muted)" }}>
                                   Since {new Date(member.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                                 </span>
@@ -2548,7 +2568,7 @@ export function AdminDashboard({
                         <span>Promote Registered User</span>
                       </h3>
                       <p className="sp-section-subtitle">
-                        Search student accounts by display name to instantly grant staff roles.
+                        Search student accounts by Gmail or email address to verify identity and promote to staff.
                       </p>
                     </div>
                   </div>
@@ -2556,7 +2576,7 @@ export function AdminDashboard({
                   <div className="sp-form-input-group" style={{ marginBottom: 12 }}>
                     <div className="sp-input-with-icon">
                       <div className="sp-input-icon">
-                        <Search size={14} />
+                        <Mail size={14} />
                       </div>
                       <input
                         type="text"
@@ -2568,7 +2588,7 @@ export function AdminDashboard({
                             loadStudents("");
                           }
                         }}
-                        placeholder="Search student by name (or leave blank to show all)..."
+                        placeholder="Search student by Gmail / email (e.g. @gmail.com)..."
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             loadStudents(promoteSearch);
@@ -2616,8 +2636,8 @@ export function AdminDashboard({
                           <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
                             <div
                               style={{
-                                width: 32,
-                                height: 32,
+                                width: 34,
+                                height: 34,
                                 borderRadius: "50%",
                                 flexShrink: 0,
                                 background: "linear-gradient(135deg, var(--navy) 0%, var(--accent) 100%)",
@@ -2629,14 +2649,24 @@ export function AdminDashboard({
                                 fontWeight: 800,
                               }}
                             >
-                              {(user.display_name ?? "?")[0]?.toUpperCase() ?? "S"}
+                              {(user.display_name ?? user.email ?? "?")[0]?.toUpperCase() ?? "S"}
                             </div>
                             <div style={{ minWidth: 0, flex: 1 }}>
                               <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                {user.display_name || "Student #" + user.id.slice(0, 8)}
+                                {user.display_name || user.email?.split("@")[0] || "Student #" + user.id.slice(0, 8)}
                               </div>
-                              <div style={{ fontSize: 11, color: "var(--muted)" }}>
-                                Registered {new Date(user.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
+                                {user.email ? (
+                                  <span style={{ fontSize: 11.5, color: "var(--ink)", display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(11, 56, 87, 0.06)", padding: "1px 6px", borderRadius: 4 }}>
+                                    <Mail size={11} style={{ color: "var(--navy)" }} />
+                                    <span style={{ fontWeight: 600 }}>{user.email}</span>
+                                  </span>
+                                ) : (
+                                  <span style={{ fontSize: 11, color: "var(--muted)" }}>No email linked</span>
+                                )}
+                                <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                                  Joined {new Date(user.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                </span>
                               </div>
                             </div>
                           </div>
