@@ -2868,16 +2868,41 @@ export function AdminDashboard({
                       onClick={async () => {
                         setInviteBusy(true);
                         try {
-                          const { error } = await supabase.auth.signInWithOtp({
+                          const origin = window.location.origin;
+                          // Call custom SuggFeed invite Edge Function (sends custom HTML via Resend)
+                          const { data, error } = await supabase.functions.invoke("invite-staff", {
+                            body: {
+                              email: inviteEmail.trim(),
+                              role: inviteRole,
+                              redirectTo: origin,
+                            },
+                          });
+
+                          if (!error && data?.ok) {
+                            if (data.emailSent) {
+                              toast(`Custom SuggFeed invitation sent to ${inviteEmail.trim()}.`, "success");
+                            } else {
+                              toast(`Staff invitation generated for ${inviteEmail.trim()}.`, "success");
+                            }
+                            setInviteEmail("");
+                            loadStaff();
+                            loadStudents(promoteSearch);
+                            return;
+                          }
+
+                          // Fallback to signInWithOtp if function is unreachable
+                          const { error: otpError } = await supabase.auth.signInWithOtp({
                             email: inviteEmail.trim(),
                             options: {
-                              emailRedirectTo: `${window.location.origin}/admin`,
+                              emailRedirectTo: `${origin}/admin`,
                               data: { role: inviteRole, invited_as_staff: true },
                             },
                           });
-                          if (error) throw error;
-                          toast(`Invitation sent to ${inviteEmail}.`, "success");
+                          if (otpError) throw otpError;
+                          toast(`Invitation sent to ${inviteEmail.trim()}.`, "success");
                           setInviteEmail("");
+                          loadStaff();
+                          loadStudents(promoteSearch);
                         } catch (e) {
                           toast(e instanceof Error ? e.message : "Failed to send invitation.", "error");
                         } finally {
