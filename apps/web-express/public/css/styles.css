@@ -1,3 +1,4 @@
+[hidden] { display: none !important; }
 ﻿/* Ã¢â€â‚¬Ã¢â€â‚¬ Google Fonts Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -718,6 +719,7 @@ textarea { height: 130px; resize: vertical; }
 }
 
 /* ── SuggFeed Confirm Dialog ───────────────────────────────────────────── */
+.sf-dialog-backdrop[hidden] { display: none !important; }
 .sf-dialog-backdrop {
   position: fixed; inset: 0; z-index: 10000;
   background: rgba(5, 15, 30, 0.65);

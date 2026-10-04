@@ -29,7 +29,7 @@ async function loadFeed({ sortBy = "popular", filterCat = "All", search = "", pa
     .from("submissions")
     .select(
       `id, title, description, status, vote_count, created_at, user_id, comment_count,
-       author:profiles(display_name),
+       author:profiles!submissions_user_id_fkey(display_name),
        categories(name),
        attachments(id)`,
       { count: "exact" }
@@ -70,7 +70,7 @@ async function loadSubmission(id) {
     .from("submissions")
     .select(
       `id, title, description, status, vote_count, created_at, user_id, comment_count,
-       author:profiles(display_name),
+       author:profiles!submissions_user_id_fkey(display_name),
        categories(name),
        attachments(id, mime_type, size_bytes, name)`
     )

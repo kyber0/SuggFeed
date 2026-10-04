@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/styles.css" />
+  <style>[hidden] { display: none !important; }</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <!-- Theme init: apply before paint -->
   <script>
@@ -161,7 +162,7 @@
 <%- include('partials/footer') %>
 
 <!-- Submit Idea Modal -->
-<div id="submit-modal" class="auth-modal-backdrop" hidden>
+<div id="submit-modal" class="auth-modal-backdrop" hidden style="display: none;">
   <div class="auth-modal-card" role="dialog" aria-modal="true" style="max-width:520px">
     <button class="auth-modal-close" id="submit-modal-close" aria-label="Close">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -268,11 +269,20 @@
   const open2 = document.getElementById('open-submit-btn-2');
   const close = document.getElementById('submit-modal-close');
 
-  function openModal() { modal?.removeAttribute('hidden'); }
+  function openModal() {
+    if (!modal) return;
+    modal.style.display = 'flex';
+    modal.removeAttribute('hidden');
+  }
+  function closeModal() {
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('hidden', '');
+  }
   open1?.addEventListener('click', openModal);
   open2?.addEventListener('click', openModal);
-  close?.addEventListener('click', () => modal?.setAttribute('hidden',''));
-  modal?.addEventListener('click', e => { if (e.target === modal) modal.setAttribute('hidden',''); });
+  close?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
   document.getElementById('submit-idea-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();

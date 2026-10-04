@@ -2,9 +2,11 @@
 <div class="toast-region" role="region" aria-label="Notifications" id="toast-region"></div>
 
 <!-- Custom confirm dialog (hidden by default) -->
-<div class="sf-dialog-backdrop" id="confirm-backdrop" hidden>
+<div class="sf-dialog-backdrop" id="confirm-backdrop" hidden style="display: none;">
   <div class="sf-dialog" id="confirm-dialog">
-    <div class="sf-dialog__icon-wrap sf-dialog__icon-wrap--danger" id="confirm-icon"></div>
+    <div class="sf-dialog__icon-wrap sf-dialog__icon-wrap--danger" id="confirm-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    </div>
     <div class="sf-dialog__body">
       <h2 class="sf-dialog__title" id="confirm-title"></h2>
       <p class="sf-dialog__message" id="confirm-message"></p>
@@ -68,10 +70,12 @@ window.showConfirm = function({ title = '', message, confirmLabel = 'Confirm', c
     const okBtn = document.getElementById('confirm-ok-btn');
     okBtn.className = `sf-dialog__btn ${danger ? 'sf-dialog__btn--danger' : 'sf-dialog__btn--confirm'}`;
 
+    backdrop.style.display = 'flex';
     backdrop.removeAttribute('hidden');
     okBtn.focus();
 
     function cleanup(val) {
+      backdrop.style.display = 'none';
       backdrop.setAttribute('hidden', '');
       okBtn.replaceWith(okBtn.cloneNode(true)); // remove old listeners
       document.getElementById('confirm-cancel-btn').replaceWith(
