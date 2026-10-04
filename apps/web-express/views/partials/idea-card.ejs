@@ -1,1 +1,28 @@
-<%- include('layout', { body: content }) %>
+<article class="idea-card clickable" onclick="window.location.href='/idea/<%= item.id %>'" role="button" tabindex="0" aria-label="Open details for: <%= item.title %>">
+  <div class="card-badges">
+    <span class="tag"><%= item.categories?.name || 'Other' %></span>
+    <span class="status-badge <%= (item.status || 'approved').replace('_', '-') %>">
+      <%= (item.status || 'approved').replace('_', ' ') %>
+    </span>
+    <span class="card-date" style="margin-left: auto;">
+      <%= new Date(item.created_at).toLocaleDateString('en', {month:'short',day:'numeric'}) %>
+    </span>
+  </div>
+  <h3><%= item.title %></h3>
+  <p class="idea-card-desc"><%= item.description || '' %></p>
+  <div class="card-footer">
+    <button class="vote-btn" data-id="<%= item.id %>" onclick="event.stopPropagation(); handleVote(this)" aria-label="Support this idea">
+      <svg class="vote-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+      </svg>
+      <span class="vote-count"><%= item.vote_count || 0 %></span>
+    </button>
+    <% if (item.attachments && item.attachments.length > 0) { %>
+      <span class="card-attachment-badge" title="<%= item.attachments.length %> file(s) attached" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);background:var(--bg-2);padding:3px 8px;border-radius:var(--r-full)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        <%= item.attachments.length %>
+      </span>
+    <% } %>
+    <span class="card-read-more" style="margin-left: auto;">View details →</span>
+  </div>
+</article>

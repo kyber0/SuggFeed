@@ -9009,3 +9009,21 @@ input.feed-search {
 .sp-staff-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .sp-staff-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Header nav spacing and button fix */
+.site-header nav button.btn-primary-sm,
+.site-header .btn-primary-sm {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-radius: var(--r-md);
+  padding: 7px 16px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.site-header nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}

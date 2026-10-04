@@ -113,34 +113,7 @@
         </div>
       <% } else { %>
         <% feed.forEach(function(item) { %>
-          <article class="idea-card" data-id="<%= item.id %>" onclick="window.location.href='/idea/<%= item.id %>'">
-            <div class="idea-card-header">
-              <% if (item.categories?.name) { %>
-                <span class="idea-tag"><%= item.categories.name %></span>
-              <% } %>
-              <span class="idea-status idea-status--<%= item.status %>"><%= item.status.replace('_',' ') %></span>
-            </div>
-            <h3 class="idea-title"><%= item.title %></h3>
-            <% if (item.description) { %>
-              <p class="idea-desc"><%= item.description.substring(0, 140) %><%= item.description.length > 140 ? '…' : '' %></p>
-            <% } %>
-            <div class="idea-card-footer">
-              <button class="vote-btn" data-id="<%= item.id %>" data-count="<%= item.vote_count %>"
-                onclick="event.stopPropagation(); handleVote(this)" aria-label="Support this idea">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
-                <span class="vote-count"><%= item.vote_count %></span>
-              </button>
-              <span class="idea-comments">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                <%= item.comment_count || 0 %>
-              </span>
-              <time class="idea-date" datetime="<%= item.created_at %>">
-                <%= new Date(item.created_at).toLocaleDateString('en', {month:'short',day:'numeric',year:'numeric'}) %>
-              </time>
-            </div>
-          </article>
+          <%- include('partials/idea-card', { item: item }) %>
         <% }) %>
       <% } %>
     </div>

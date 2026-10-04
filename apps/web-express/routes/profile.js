@@ -3,22 +3,26 @@ const router = express.Router();
 const { loadProfile } = require("../lib/data");
 
 router.get("/", async (req, res) => {
-  const user = req.session.user;
+  const user = req.session.user || null;
   if (!user) {
-    return res.render("profile-anon", { title: "Profile — SuggFeed" });
+    return res.render("profile", {
+      title: "My Activity | SuggFeed",
+      profile: null,
+      submissions: [],
+    });
   }
 
   try {
     const { profile, submissions } = await loadProfile(user.id, req.session.access_token);
     res.render("profile", {
-      title: "My Profile — SuggFeed",
+      title: "My Activity | SuggFeed",
       profile,
-      submissions,
+      submissions: submissions || [],
     });
   } catch (err) {
     console.error(err);
     res.render("profile", {
-      title: "My Profile — SuggFeed",
+      title: "My Activity | SuggFeed",
       profile: user,
       submissions: [],
     });

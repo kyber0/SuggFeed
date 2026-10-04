@@ -17,129 +17,307 @@
 <%- include('partials/toast') %>
 <%- include('partials/auth-modal') %>
 
-<main class="sf-main">
-  <div style="max-width:900px;margin:0 auto;padding:32px 16px 64px">
+<%
+  const initial = user?.full_name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? '?';
+  const shownName = profile?.display_name || user?.full_name || (user ? user.email.split('@')[0] : 'Anonymous user');
+%>
 
-    <div style="margin-bottom:32px">
-      <h1 class="sf-section-title">My Profile</h1>
-      <p style="font-size:14px;color:var(--muted)">Manage your account and view your submitted ideas.</p>
-    </div>
+<main class="prof-page">
+  <!-- Profile Hero -->
+  <div class="prof-hero">
+    <div class="prof-hero-inner">
+      <div class="prof-avatar" id="hero-avatar">
+        <%= initial %>
+      </div>
 
-    <div class="sp-profile-layout" style="display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start">
-
-      <!-- Identity card -->
-      <div class="sp-identity-card">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px">
-          <div class="avatar-circle" style="width:76px;height:76px;font-size:28px">
-            <% if (user.avatar_url) { %>
-              <img src="<%= user.avatar_url %>" alt="Avatar"
-                style="width:100%;height:100%;border-radius:50%;object-fit:cover" referrerpolicy="no-referrer" />
-            <% } else { %>
-              <%= (user.full_name || user.email || 'U')[0].toUpperCase() %>
+      <div class="prof-hero-info">
+        <h1 class="prof-hero-name" id="hero-name">
+          <%= shownName %>
+        </h1>
+        <% if (user) { %>
+          <p class="prof-hero-email">
+            <%= user.email %>
+            <% if (locals.role === 'admin' || locals.role === 'moderator') { %>
+              <span style="margin-left:8px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:rgba(11,56,87,0.12);color:var(--navy)">
+                <%= locals.role === 'admin' ? 'Administrator' : 'Staff / Moderator' %>
+              </span>
             <% } %>
+          </p>
+        <% } %>
+        <div class="prof-hero-badges">
+          <span class="prof-hero-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+            <span id="badge-submissions-count"><%= submissions.length %></span> ideas
+          </span>
+          <span class="prof-hero-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            <span id="badge-bookmarks-count">0</span> saved
+          </span>
+          <span class="prof-hero-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span id="badge-shared-count">0</span> shared
+          </span>
+          <span class="prof-hero-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            <span id="badge-voted-count">0</span> supported
+          </span>
+        </div>
+      </div>
+
+      <% if (!user) { %>
+        <button class="btn-primary-sm" style="margin-left:auto;flex-shrink:0" onclick="window.openAuthModal?.('signin')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Sign in
+        </button>
+      <% } else { %>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <% if (locals.role === 'admin' || locals.role === 'moderator') { %>
+            <a href="/admin" class="btn-primary-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:5px">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Staff Portal
+            </a>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Content Area -->
+  <div class="prof-content">
+    <!-- Left: Settings Panel -->
+    <aside class="prof-settings" id="settings">
+      <h2 class="prof-section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile Settings
+      </h2>
+
+      <% if (!user) { %>
+        <div class="prof-auth-callout">
+          <p>Sign in to sync your activity across devices.</p>
+          <div class="prof-auth-btns">
+            <button class="btn-primary" onclick="window.openAuthModal?.('signin')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              Sign in
+            </button>
+            <button class="btn-ghost" onclick="window.openAuthModal?.('signup')">
+              Create account
+            </button>
           </div>
-          <div style="text-align:center">
-            <div style="font-size:16px;font-weight:700;color:var(--ink)"><%= profile?.display_name || user.full_name || 'Account' %></div>
-            <div style="font-size:13px;color:var(--muted)"><%= user.email %></div>
-          </div>
-          <% if (locals.role) { %>
-            <span class="idea-status idea-status--<%= locals.role === 'admin' ? 'resolved' : locals.role === 'moderator' ? 'in_progress' : 'approved' %>">
-              <%= locals.role %>
-            </span>
+        </div>
+      <% } %>
+
+      <div class="prof-field">
+        <label for="prof-display-name" class="prof-field-label">
+          Display name
+          <span class="prof-field-hint">Shown on your posts &amp; comments</span>
+        </label>
+        <input
+          id="prof-display-name"
+          type="text"
+          class="prof-input"
+          value="<%= profile?.display_name || user?.full_name || '' %>"
+          placeholder="e.g. Alex, Campus Resident, or leave blank"
+          maxlength="60"
+        />
+      </div>
+
+      <label class="prof-toggle-row">
+        <input type="checkbox" id="prof-anon-toggle" />
+        <span class="prof-toggle-label">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+          Post anonymously by default
+        </span>
+      </label>
+      <p class="prof-field-hint" style="margin-top:4px">
+        When enabled, your name is hidden on new comments. You can override per post.
+      </p>
+
+      <button class="btn-primary" style="margin-top:20px;width:100%" id="save-prefs-btn">
+        Save preferences
+      </button>
+    </aside>
+
+    <!-- Right: Activity Tabs -->
+    <section class="prof-activity">
+      <div class="prof-activity-tabs" role="tablist">
+        <button type="button" role="tab" class="prof-tab-btn active" id="tab-btn-submissions">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>My Ideas</span>
+          <span class="prof-tab-count" id="count-submissions"><%= submissions.length %></span>
+        </button>
+        <button type="button" role="tab" class="prof-tab-btn" id="tab-btn-bookmarks">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span>Bookmarks</span>
+          <span class="prof-tab-count" id="count-bookmarks">0</span>
+        </button>
+        <button type="button" role="tab" class="prof-tab-btn" id="tab-btn-shared">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          <span>Shared</span>
+          <span class="prof-tab-count" id="count-shared">0</span>
+        </button>
+        <button type="button" role="tab" class="prof-tab-btn" id="tab-btn-voted">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          <span>Supported</span>
+          <span class="prof-tab-count" id="count-voted">0</span>
+        </button>
+      </div>
+
+      <div class="prof-activity-list" id="activity-list">
+        <!-- Submissions Tab Panel -->
+        <div id="panel-submissions">
+          <% if (submissions.length === 0) { %>
+            <div class="prof-empty">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="prof-empty-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <p class="prof-empty-title">No submissions yet</p>
+              <p class="prof-empty-text">You haven't submitted any ideas or suggestions yet.</p>
+              <a href="/" class="btn-primary-sm" style="margin-top:12px">Submit an Idea</a>
+            </div>
+          <% } else { %>
+            <% submissions.forEach(function(item) { %>
+              <div class="prof-activity-card-wrap">
+                <a href="/idea/<%= item.id %>" class="prof-activity-card">
+                  <div class="prof-activity-card-top">
+                    <span class="prof-activity-cat"><%= item.categories?.name || 'Other' %></span>
+                    <span class="prof-activity-status" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.25)">
+                      <%= (item.status || 'approved').replace('_', ' ') %>
+                    </span>
+                  </div>
+                  <h3 class="prof-activity-title"><%= item.title %></h3>
+                  <div class="prof-activity-footer">
+                    <span class="prof-activity-stat">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                      <%= item.vote_count || 0 %>
+                    </span>
+                    <span class="prof-activity-date">
+                      <%= new Date(item.created_at).toLocaleDateString('en', {month:'short',day:'numeric',year:'numeric'}) %>
+                    </span>
+                    <span class="prof-activity-arrow">→</span>
+                  </div>
+                </a>
+              </div>
+            <% }) %>
           <% } %>
         </div>
 
-        <div class="sp-identity-stats">
-          <div class="sp-identity-row">
-            <span class="sp-identity-label">Ideas submitted</span>
-            <span class="sp-identity-value"><%= submissions.length %></span>
-          </div>
-          <div class="sp-identity-row">
-            <span class="sp-identity-label">Total votes received</span>
-            <span class="sp-identity-value"><%= submissions.reduce((s,i)=>s+(i.vote_count||0),0) %></span>
+        <!-- Bookmarks Tab Panel -->
+        <div id="panel-bookmarks" hidden style="display:none">
+          <div class="prof-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="prof-empty-icon"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            <p class="prof-empty-title"><%= !user ? 'Sign in to view saved bookmarks' : 'No bookmarked ideas' %></p>
+            <p class="prof-empty-text"><%= !user ? 'Bookmarks are saved to your account so you can access them on any device.' : 'Save ideas you want to keep track of from the ideas feed.' %></p>
+            <% if (!user) { %>
+              <button class="btn-primary-sm" style="margin-top:12px" onclick="window.openAuthModal?.('signin')">Sign In to Bookmark</button>
+            <% } else { %>
+              <a href="/feed" class="btn-primary-sm" style="margin-top:12px">Browse Ideas Stream</a>
+            <% } %>
           </div>
         </div>
 
-        <!-- Edit display name -->
-        <form id="update-name-form" style="margin-top:16px">
-          <div class="auth-field" style="margin-bottom:10px">
-            <label for="display-name-input" style="font-size:12px">Display name</label>
-            <input type="text" id="display-name-input"
-              value="<%= profile?.display_name || user.full_name || '' %>"
-              placeholder="Your display name" maxlength="50" />
+        <!-- Shared Tab Panel -->
+        <div id="panel-shared" hidden style="display:none">
+          <div class="prof-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="prof-empty-icon"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <p class="prof-empty-title"><%= !user ? 'Sign in to view shared ideas' : 'No shared ideas yet' %></p>
+            <p class="prof-empty-text"><%= !user ? 'Sign in to your account to share ideas and track them across devices.' : 'Ideas you share with classmates or groups will appear here.' %></p>
+            <% if (!user) { %>
+              <button class="btn-primary-sm" style="margin-top:12px" onclick="window.openAuthModal?.('signin')">Sign In to Share</button>
+            <% } else { %>
+              <a href="/feed" class="btn-primary-sm" style="margin-top:12px">Explore &amp; Share Ideas</a>
+            <% } %>
           </div>
-          <button type="submit" class="auth-submit-btn" style="padding:9px 16px;font-size:13px">Save name</button>
-        </form>
+        </div>
 
-        <div class="sp-identity-links" style="margin-top:16px">
-          <a href="/feed" class="btn-ghost" style="font-size:13px">Browse ideas</a>
-          <a href="/roadmap" class="btn-ghost" style="font-size:13px">View roadmap</a>
+        <!-- Supported Tab Panel -->
+        <div id="panel-voted" hidden style="display:none">
+          <div class="prof-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="prof-empty-icon"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            <p class="prof-empty-title">No supported ideas</p>
+            <p class="prof-empty-text">Support proposals you want campus administration to prioritize.</p>
+            <a href="/feed" class="btn-primary-sm" style="margin-top:12px">Vote on Ideas</a>
+          </div>
         </div>
       </div>
-
-      <!-- Submissions -->
-      <div>
-        <h2 style="font-size:16px;font-weight:700;margin:0 0 16px;color:var(--ink)">My Ideas</h2>
-        <% if (submissions.length === 0) { %>
-          <div class="sp-section-card" style="text-align:center;padding:40px">
-            <p style="color:var(--muted);font-size:14px">You haven't submitted any ideas yet.</p>
-            <a href="/" class="sf-btn-share-main" style="display:inline-flex;margin-top:16px">Share your first idea</a>
-          </div>
-        <% } else { %>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <% submissions.forEach(function(item) { %>
-              <a href="/idea/<%= item.id %>" class="sp-section-card"
-                style="display:block;text-decoration:none;padding:14px 18px;border-radius:10px">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px">
-                  <span class="idea-status idea-status--<%= item.status %>"><%= item.status.replace('_',' ') %></span>
-                  <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)">
-                    <span>▲ <%= item.vote_count %></span>
-                    <span>💬 <%= item.comment_count || 0 %></span>
-                    <time><%= new Date(item.created_at).toLocaleDateString('en',{month:'short',day:'numeric'}) %></time>
-                  </div>
-                </div>
-                <p style="font-size:14px;font-weight:600;color:var(--ink);margin:0"><%= item.title %></p>
-                <% if (item.categories?.name) { %>
-                  <span class="idea-tag" style="font-size:11px;margin-top:6px;display:inline-block"><%= item.categories.name %></span>
-                <% } %>
-              </a>
-            <% }) %>
-          </div>
-        <% } %>
-      </div>
-    </div>
+    </section>
   </div>
 </main>
 
-<%- include('partials/footer') %>
-
 <script>
-window.SUPABASE_URL = '<%- supabaseUrl %>';
-window.SUPABASE_ANON_KEY = '<%- supabaseAnonKey %>';
-window._supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+(function() {
+  // Sync client-side voted count
+  const voted = JSON.parse(localStorage.getItem('sf-voted') || '[]');
+  document.getElementById('badge-voted-count').textContent = voted.length;
+  document.getElementById('count-voted').textContent = voted.length;
 
-window._supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    await fetch('/auth/session', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ access_token: session.access_token, refresh_token: session.refresh_token, user: session.user }) });
-    window.location.reload();
-  }
-  if (event === 'SIGNED_OUT') { await fetch('/auth/signout', { method: 'POST' }); window.location.href = '/'; }
-});
+  // Sync anonymous toggle
+  const anonPref = localStorage.getItem('sf-post-anon') === 'true';
+  const anonToggle = document.getElementById('prof-anon-toggle');
+  if (anonToggle) anonToggle.checked = anonPref;
 
-document.getElementById('update-name-form')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const name = document.getElementById('display-name-input').value.trim();
-  const res = await fetch('/profile/update', { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ display_name: name }) });
-  const data = await res.json();
-  if (data.ok) showToast('Display name updated!', 'success');
-  else showToast(data.error || 'Failed to update', 'error');
-});
+  // Client-side display name fallback if anon
+  const localName = localStorage.getItem('sf-display-name') || '';
+  const nameInput = document.getElementById('prof-display-name');
+  <% if (!user) { %>
+    if (localName && nameInput) {
+      nameInput.value = localName;
+      document.getElementById('hero-name').textContent = localName;
+      document.getElementById('hero-avatar').textContent = localName[0].toUpperCase();
+    }
+  <% } %>
 
-document.getElementById('theme-btn')?.addEventListener('click', () => {
-  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('sf-theme', next);
-  document.documentElement.setAttribute('data-theme', next);
-});
+  // Save Preferences
+  document.getElementById('save-prefs-btn')?.addEventListener('click', async function() {
+    const btn = this;
+    const nameVal = nameInput ? nameInput.value.trim() : '';
+    const anonVal = anonToggle ? anonToggle.checked : false;
+
+    localStorage.setItem('sf-post-anon', String(anonVal));
+    localStorage.setItem('sf-display-name', nameVal);
+
+    <% if (user) { %>
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      try {
+        const res = await fetch('/profile/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ display_name: nameVal })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('Preferences saved successfully!', 'success');
+          document.getElementById('hero-name').textContent = nameVal || 'Anonymous user';
+          if (nameVal) document.getElementById('hero-avatar').textContent = nameVal[0].toUpperCase();
+        } else {
+          showToast(data.error || 'Failed to save', 'error');
+        }
+      } catch {
+        showToast('Network error saving preferences', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save preferences';
+      }
+    <% } else { %>
+      showToast('Preferences saved locally!', 'success');
+      document.getElementById('hero-name').textContent = nameVal || 'Anonymous user';
+      if (nameVal) document.getElementById('hero-avatar').textContent = nameVal[0].toUpperCase();
+    <% } %>
+  });
+
+  // Tab switching
+  const tabs = ['submissions', 'bookmarks', 'shared', 'voted'];
+  tabs.forEach(t => {
+    document.getElementById('tab-btn-' + t)?.addEventListener('click', function() {
+      tabs.forEach(other => {
+        document.getElementById('tab-btn-' + other)?.classList.remove('active');
+        const p = document.getElementById('panel-' + other);
+        if (p) { p.setAttribute('hidden', ''); p.style.display = 'none'; }
+      });
+      this.classList.add('active');
+      const target = document.getElementById('panel-' + t);
+      if (target) { target.removeAttribute('hidden'); target.style.display = 'block'; }
+    });
+  });
+})();
 </script>
+</body>
+</html>

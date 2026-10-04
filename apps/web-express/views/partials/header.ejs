@@ -125,7 +125,15 @@
   const openSignin = document.getElementById('open-signin-btn');
   if (openSignin) {
     openSignin.addEventListener('click', function() {
-      document.getElementById('auth-modal')?.removeAttribute('hidden');
+      if (typeof window.openAuthModal === 'function') {
+        window.openAuthModal('signin');
+      } else {
+        const modal = document.getElementById('auth-modal');
+        if (modal) {
+          modal.style.display = 'flex';
+          modal.removeAttribute('hidden');
+        }
+      }
     });
   }
 })();
