@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %></title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>(function(){var t=localStorage.getItem('sf-theme')||'system';document.documentElement.setAttribute('data-theme',t==='dark'?'dark':t==='light'?'light':window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');})()</script>
+</head>
+<body>
+<%- include('partials/header') %>
+<%- include('partials/toast') %>
+<%- include('partials/auth-modal') %>
+
+<main class="sf-main">
+  <div style="max-width:900px;margin:0 auto;padding:32px 16px 64px">
+
+    <div style="margin-bottom:32px">
+      <h1 class="sf-section-title">My Profile</h1>
+      <p style="font-size:14px;color:var(--muted)">Manage your account and view your submitted ideas.</p>
+    </div>
+
+    <div class="sp-profile-layout" style="display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start">
+
+      <!-- Identity card -->
+      <div class="sp-identity-card">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px">
+          <div class="avatar-circle" style="width:76px;height:76px;font-size:28px">
+            <% if (user.avatar_url) { %>
+              <img src="<%= user.avatar_url %>" alt="Avatar"
+                style="width:100%;height:100%;border-radius:50%;object-fit:cover" referrerpolicy="no-referrer" />
+            <% } else { %>
+              <%= (user.full_name || user.email || 'U')[0].toUpperCase() %>
+            <% } %>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:16px;font-weight:700;color:var(--ink)"><%= profile?.display_name || user.full_name || 'Account' %></div>
+            <div style="font-size:13px;color:var(--muted)"><%= user.email %></div>
+          </div>
+          <% if (locals.role) { %>
+            <span class="idea-status idea-status--<%= locals.role === 'admin' ? 'resolved' : locals.role === 'moderator' ? 'in_progress' : 'approved' %>">
+              <%= locals.role %>
+            </span>
+          <% } %>
+        </div>
+
+        <div class="sp-identity-stats">
+          <div class="sp-identity-row">
+            <span class="sp-identity-label">Ideas submitted</span>
+            <span class="sp-identity-value"><%= submissions.length %></span>
+          </div>
+          <div class="sp-identity-row">
+            <span class="sp-identity-label">Total votes received</span>
+            <span class="sp-identity-value"><%= submissions.reduce((s,i)=>s+(i.vote_count||0),0) %></span>
+          </div>
+        </div>
+
+        <!-- Edit display name -->
+        <form id="update-name-form" style="margin-top:16px">
+          <div class="auth-field" style="margin-bottom:10px">
+            <label for="display-name-input" style="font-size:12px">Display name</label>
+            <input type="text" id="display-name-input"
+              value="<%= profile?.display_name || user.full_name || '' %>"
+              placeholder="Your display name" maxlength="50" />
+          </div>
+          <button type="submit" class="auth-submit-btn" style="padding:9px 16px;font-size:13px">Save name</button>
+        </form>
+
+        <div class="sp-identity-links" style="margin-top:16px">
+          <a href="/feed" class="btn-ghost" style="font-size:13px">Browse ideas</a>
+          <a href="/roadmap" class="btn-ghost" style="font-size:13px">View roadmap</a>
+        </div>
+      </div>
+
+      <!-- Submissions -->
+      <div>
+        <h2 style="font-size:16px;font-weight:700;margin:0 0 16px;color:var(--ink)">My Ideas</h2>
+        <% if (submissions.length === 0) { %>
+          <div class="sp-section-card" style="text-align:center;padding:40px">
+            <p style="color:var(--muted);font-size:14px">You haven't submitted any ideas yet.</p>
+            <a href="/" class="sf-btn-share-main" style="display:inline-flex;margin-top:16px">Share your first idea</a>
+          </div>
+        <% } else { %>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <% submissions.forEach(function(item) { %>
+              <a href="/idea/<%= item.id %>" class="sp-section-card"
+                style="display:block;text-decoration:none;padding:14px 18px;border-radius:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px">
+                  <span class="idea-status idea-status--<%= item.status %>"><%= item.status.replace('_',' ') %></span>
+                  <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)">
+                    <span>▲ <%= item.vote_count %></span>
+                    <span>💬 <%= item.comment_count || 0 %></span>
+                    <time><%= new Date(item.created_at).toLocaleDateString('en',{month:'short',day:'numeric'}) %></time>
+                  </div>
+                </div>
+                <p style="font-size:14px;font-weight:600;color:var(--ink);margin:0"><%= item.title %></p>
+                <% if (item.categories?.name) { %>
+                  <span class="idea-tag" style="font-size:11px;margin-top:6px;display:inline-block"><%= item.categories.name %></span>
+                <% } %>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>
+
+<script>
+window.SUPABASE_URL = '<%- supabaseUrl %>';
+window.SUPABASE_ANON_KEY = '<%- supabaseAnonKey %>';
+window._supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+window._supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    await fetch('/auth/session', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ access_token: session.access_token, refresh_token: session.refresh_token, user: session.user }) });
+    window.location.reload();
+  }
+  if (event === 'SIGNED_OUT') { await fetch('/auth/signout', { method: 'POST' }); window.location.href = '/'; }
+});
+
+document.getElementById('update-name-form')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = document.getElementById('display-name-input').value.trim();
+  const res = await fetch('/profile/update', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ display_name: name }) });
+  const data = await res.json();
+  if (data.ok) showToast('Display name updated!', 'success');
+  else showToast(data.error || 'Failed to update', 'error');
+});
+
+document.getElementById('theme-btn')?.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('sf-theme', next);
+  document.documentElement.setAttribute('data-theme', next);
+});
+</script>

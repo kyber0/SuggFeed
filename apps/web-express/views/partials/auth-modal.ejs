@@ -1,0 +1,185 @@
+<!-- Auth Modal -->
+<div id="auth-modal" class="auth-modal-backdrop" hidden>
+  <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+    <button class="auth-modal-close" id="auth-modal-close" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <!-- Tabs -->
+    <div class="auth-tabs" role="tablist">
+      <button class="auth-tab active" id="tab-signin" role="tab" aria-selected="true">Sign in</button>
+      <button class="auth-tab" id="tab-signup" role="tab" aria-selected="false">Sign up</button>
+    </div>
+
+    <!-- Sign In Panel -->
+    <div id="panel-signin" class="auth-panel">
+      <h2 id="auth-modal-title" class="auth-title">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to vote, comment and track your ideas.</p>
+      <form id="signin-form" novalidate>
+        <div class="auth-field">
+          <label for="signin-email">Email</label>
+          <input type="email" id="signin-email" autocomplete="email" placeholder="you@school.edu" required />
+        </div>
+        <div class="auth-field">
+          <label for="signin-password">Password</label>
+          <input type="password" id="signin-password" autocomplete="current-password" placeholder="••••••••" required />
+        </div>
+        <div class="auth-field-row">
+          <button type="button" class="auth-link-btn" id="forgot-link">Forgot password?</button>
+        </div>
+        <button type="submit" class="auth-submit-btn" id="signin-submit">Sign in</button>
+      </form>
+      <div class="auth-divider"><span>or</span></div>
+      <button class="auth-google-btn" id="google-signin-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Continue with Google
+      </button>
+    </div>
+
+    <!-- Sign Up Panel -->
+    <div id="panel-signup" class="auth-panel" hidden>
+      <h2 class="auth-title">Create an account</h2>
+      <p class="auth-subtitle">Join SuggFeed and start sharing ideas.</p>
+      <form id="signup-form" novalidate>
+        <div class="auth-field">
+          <label for="signup-name">Display name</label>
+          <input type="text" id="signup-name" autocomplete="name" placeholder="Your name" />
+        </div>
+        <div class="auth-field">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" autocomplete="email" placeholder="you@school.edu" required />
+        </div>
+        <div class="auth-field">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" autocomplete="new-password" placeholder="At least 8 characters" required />
+        </div>
+        <button type="submit" class="auth-submit-btn" id="signup-submit">Create account</button>
+      </form>
+    </div>
+
+    <!-- Forgot Password Panel -->
+    <div id="panel-forgot" class="auth-panel" hidden>
+      <h2 class="auth-title">Reset password</h2>
+      <p class="auth-subtitle">We'll email you a reset link.</p>
+      <form id="forgot-form" novalidate>
+        <div class="auth-field">
+          <label for="forgot-email">Email</label>
+          <input type="email" id="forgot-email" autocomplete="email" placeholder="you@school.edu" required />
+        </div>
+        <button type="submit" class="auth-submit-btn">Send reset link</button>
+      </form>
+      <button class="auth-link-btn" id="back-to-signin">← Back to sign in</button>
+    </div>
+
+    <!-- Error/info banner -->
+    <div id="auth-error" class="auth-error-banner" hidden></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const modal = document.getElementById('auth-modal');
+  if (!modal) return;
+
+  function showPanel(id) {
+    ['panel-signin','panel-signup','panel-forgot'].forEach(p => {
+      document.getElementById(p)?.setAttribute('hidden', '');
+    });
+    document.getElementById(id)?.removeAttribute('hidden');
+  }
+  function showError(msg) {
+    const el = document.getElementById('auth-error');
+    if (!el) return;
+    el.textContent = msg;
+    el.removeAttribute('hidden');
+    setTimeout(() => el.setAttribute('hidden', ''), 6000);
+  }
+  function setLoading(btn, loading) {
+    btn.disabled = loading;
+    btn.dataset.orig = btn.dataset.orig || btn.textContent;
+    btn.textContent = loading ? 'Loading…' : btn.dataset.orig;
+  }
+
+  // Tab switching
+  document.getElementById('tab-signin')?.addEventListener('click', () => {
+    document.getElementById('tab-signin').classList.add('active');
+    document.getElementById('tab-signup').classList.remove('active');
+    showPanel('panel-signin');
+  });
+  document.getElementById('tab-signup')?.addEventListener('click', () => {
+    document.getElementById('tab-signup').classList.add('active');
+    document.getElementById('tab-signin').classList.remove('active');
+    showPanel('panel-signup');
+  });
+  document.getElementById('forgot-link')?.addEventListener('click', () => showPanel('panel-forgot'));
+  document.getElementById('back-to-signin')?.addEventListener('click', () => showPanel('panel-signin'));
+
+  // Close
+  document.getElementById('auth-modal-close')?.addEventListener('click', () => modal.setAttribute('hidden', ''));
+  modal.addEventListener('click', e => { if (e.target === modal) modal.setAttribute('hidden', ''); });
+
+  // Sign in
+  document.getElementById('signin-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('signin-email').value;
+    const password = document.getElementById('signin-password').value;
+    const btn = document.getElementById('signin-submit');
+    setLoading(btn, true);
+    const { error } = await window._supabase.auth.signInWithPassword({ email, password });
+    if (error) { showError(error.message); setLoading(btn, false); }
+    // on success, onAuthStateChange fires → session saved → reload
+  });
+
+  // Sign up
+  document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const btn = document.getElementById('signup-submit');
+    setLoading(btn, true);
+    const { error } = await window._supabase.auth.signUp({
+      email, password,
+      options: { data: { full_name: name } }
+    });
+    if (error) { showError(error.message); setLoading(btn, false); }
+    else { showError('Check your email to confirm your account!'); }
+  });
+
+  // Forgot password
+  document.getElementById('forgot-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value;
+    const { error } = await window._supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/auth/callback'
+    });
+    if (error) showError(error.message);
+    else showError('Password reset email sent!');
+  });
+
+  // Google
+  document.getElementById('google-signin-btn')?.addEventListener('click', async () => {
+    await window._supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/auth/callback' }
+    });
+  });
+
+  // Expose opener globally
+  window.openAuthModal = function(tab = 'signin') {
+    modal.removeAttribute('hidden');
+    if (tab === 'signup') {
+      document.getElementById('tab-signup').click();
+    } else {
+      document.getElementById('tab-signin').click();
+    }
+  };
+})();
+</script>

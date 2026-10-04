@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %></title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>(function(){var t=localStorage.getItem('sf-theme')||'system';document.documentElement.setAttribute('data-theme',t==='dark'?'dark':t==='light'?'light':window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');})()</script>
+</head>
+<body>
+<%- include('partials/header') %>
+<%- include('partials/toast') %>
+<%- include('partials/auth-modal') %>
+
+<main class="sf-main">
+  <div style="max-width:1100px;margin:0 auto;padding:24px 16px 64px">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:32px">
+      <div>
+        <h1 class="sf-section-title">Staff Portal</h1>
+        <p style="font-size:14px;color:var(--muted)">
+          Signed in as <strong><%= user?.email %></strong>
+          <span class="idea-status idea-status--<%= role === 'admin' ? 'resolved' : 'in_progress' %>" style="margin-left:8px"><%= role %></span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Tab navigation -->
+    <div class="sp-tabs" style="display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:28px">
+      <% ['overview','moderation','submissions','staff'].forEach(function(t){ %>
+        <a href="/admin?tab=<%= t %>"
+          class="sp-tab<%= tab === t ? ' active' : '' %>"
+          style="padding:10px 18px;font-size:14px;font-weight:600;text-decoration:none;
+                 color:<%= tab===t ? 'var(--accent)' : 'var(--muted)' %>;
+                 border-bottom:<%= tab===t ? '2px solid var(--accent)' : '2px solid transparent' %>;
+                 margin-bottom:-1px">
+          <%= t.charAt(0).toUpperCase() + t.slice(1) %>
+        </a>
+      <% }) %>
+    </div>
+
+    <!-- ── Overview Tab ─────────────────────────────────────────────────── -->
+    <% if (tab === 'overview') { %>
+      <div class="sp-kpi-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px">
+        <div class="sp-section-card sp-kpi-card">
+          <div class="sp-kpi-value"><%= stats.submissions %></div>
+          <div class="sp-kpi-label">Total ideas</div>
+        </div>
+        <div class="sp-section-card sp-kpi-card">
+          <div class="sp-kpi-value"><%= stats.users %></div>
+          <div class="sp-kpi-label">Registered users</div>
+        </div>
+        <div class="sp-section-card sp-kpi-card" style="border-color:<%= stats.pending > 0 ? 'rgba(245,158,11,0.4)' : 'var(--line)' %>">
+          <div class="sp-kpi-value" style="color:<%= stats.pending > 0 ? '#d97706' : 'var(--ink)' %>"><%= stats.pending %></div>
+          <div class="sp-kpi-label">Pending review</div>
+        </div>
+      </div>
+      <% if (pending.length > 0) { %>
+        <h2 style="font-size:15px;font-weight:700;margin:0 0 16px">Latest pending ideas</h2>
+        <%- include('partials/pending-list', { pending: pending.slice(0,5) }) %>
+        <% if (pending.length > 5) { %>
+          <a href="/admin?tab=moderation" style="font-size:13px;color:var(--accent)">See all <%= pending.length %> pending →</a>
+        <% } %>
+      <% } else { %>
+        <div class="sp-section-card" style="text-align:center;padding:32px;color:var(--muted)">✅ No pending ideas — all caught up!</div>
+      <% } %>
+
+    <!-- ── Moderation Tab ─────────────────────────────────────────────── -->
+    <% } else if (tab === 'moderation') { %>
+      <h2 style="font-size:15px;font-weight:700;margin:0 0 16px">Pending ideas (<%= pending.length %>)</h2>
+      <% if (pending.length === 0) { %>
+        <div class="sp-section-card" style="text-align:center;padding:40px;color:var(--muted)">✅ Nothing pending!</div>
+      <% } else { %>
+        <%- include('partials/pending-list', { pending: pending }) %>
+      <% } %>
+
+    <!-- ── Submissions Tab ────────────────────────────────────────────── -->
+    <% } else if (tab === 'submissions') { %>
+      <h2 style="font-size:15px;font-weight:700;margin:0 0 16px">All submissions (<%= allSubmissions.length %>)</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <% allSubmissions.forEach(function(item) { %>
+          <div class="sp-section-card" style="padding:12px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <span class="idea-status idea-status--<%= item.status %>"><%= item.status.replace('_',' ') %></span>
+            <a href="/idea/<%= item.id %>" style="font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;flex:1;min-width:200px">
+              <%= item.title %>
+            </a>
+            <% if (item.categories?.name) { %>
+              <span class="idea-tag" style="font-size:11px"><%= item.categories.name %></span>
+            <% } %>
+            <span style="font-size:13px;color:var(--muted)">▲ <%= item.vote_count %></span>
+            <time style="font-size:12px;color:var(--muted)">
+              <%= new Date(item.created_at).toLocaleDateString('en',{month:'short',day:'numeric'}) %>
+            </time>
+            <% if (role === 'admin' || role === 'moderator') { %>
+              <select class="status-select" data-id="<%= item.id %>"
+                onchange="updateStatus(this)"
+                style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--surface)">
+                <% ['pending','approved','in_progress','resolved'].forEach(function(s){ %>
+                  <option value="<%= s %>" <%= item.status === s ? 'selected' : '' %>><%= s.replace('_',' ') %></option>
+                <% }) %>
+              </select>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+
+    <!-- ── Staff Tab ──────────────────────────────────────────────────── -->
+    <% } else if (tab === 'staff') { %>
+      <h2 style="font-size:15px;font-weight:700;margin:0 0 16px">Staff members (<%= staff.length %>)</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+        <% staff.forEach(function(member) { %>
+          <div class="sp-staff-card">
+            <div class="sp-staff-avatar<%= member.role === 'admin' ? ' sp-staff-avatar--admin' : '' %>">
+              <%= (member.display_name || member.email || 'S')[0].toUpperCase() %>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;font-weight:700;color:var(--ink)"><%= member.display_name || 'Staff Member' %></div>
+              <div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= member.email %></div>
+              <span class="idea-status idea-status--<%= member.role === 'admin' ? 'resolved' : 'in_progress' %>" style="margin-top:6px;display:inline-block">
+                <%= member.role %>
+              </span>
+            </div>
+            <% if (role === 'admin' && member.id !== user.id) { %>
+              <div class="sp-staff-actions" style="display:flex;flex-direction:column;gap:6px">
+                <% if (member.role === 'moderator') { %>
+                  <button class="sp-staff-action-btn sp-staff-action-btn--promote" onclick="changeRole('<%= member.id %>', 'admin')">Promote</button>
+                <% } else { %>
+                  <button class="sp-staff-action-btn sp-staff-action-btn--demote" onclick="changeRole('<%= member.id %>', 'moderator')">Demote</button>
+                <% } %>
+                <button class="sp-staff-action-btn sp-staff-action-btn--revoke" onclick="revokeStaff('<%= member.id %>', '<%= member.display_name || member.email %>')">Revoke</button>
+              </div>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+  </div>
+</main>
+
+<%- include('partials/footer') %>
+
+<script>
+window.SUPABASE_URL = '<%- supabaseUrl %>';
+window.SUPABASE_ANON_KEY = '<%- supabaseAnonKey %>';
+window._supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+window._supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    await fetch('/auth/session', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ access_token: session.access_token, refresh_token: session.refresh_token, user: session.user }) });
+    window.location.reload();
+  }
+  if (event === 'SIGNED_OUT') { await fetch('/auth/signout', { method: 'POST' }); window.location.href = '/'; }
+});
+
+async function updateStatus(select) {
+  const id = select.dataset.id;
+  const status = select.value;
+  const res = await fetch(`/api/admin/submission/${id}/status`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status }) });
+  const data = await res.json();
+  if (data.ok) showToast('Status updated to ' + status.replace('_',' '), 'success');
+  else showToast(data.error || 'Failed', 'error');
+}
+
+async function approve(id) {
+  const res = await fetch(`/api/admin/submission/${id}/status`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status:'approved' }) });
+  const data = await res.json();
+  if (data.ok) { showToast('Approved!', 'success'); setTimeout(() => window.location.reload(), 1200); }
+  else showToast(data.error || 'Failed', 'error');
+}
+
+async function reject(id) {
+  const ok = await showConfirm({ title:'Reject idea', message:'Remove this idea from public view?', confirmLabel:'Reject', danger:true });
+  if (!ok) return;
+  const res = await fetch(`/api/admin/submission/${id}/status`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status:'pending' }) });
+  const data = await res.json();
+  if (data.ok) { showToast('Rejected.', 'info'); setTimeout(() => window.location.reload(), 1200); }
+  else showToast(data.error || 'Failed', 'error');
+}
+
+async function changeRole(id, newRole) {
+  const res = await fetch(`/api/admin/staff/${id}/role`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ newRole }) });
+  const data = await res.json();
+  if (data.ok) { showToast(`Role changed to ${newRole}`, 'success'); setTimeout(() => window.location.reload(), 1200); }
+  else showToast(data.error || 'Failed', 'error');
+}
+
+async function revokeStaff(id, name) {
+  const ok = await showConfirm({ title:'Revoke Staff Access', message:`Remove staff access from ${name}?`, confirmLabel:'Revoke Access', danger:true });
+  if (!ok) return;
+  const res = await fetch(`/api/admin/staff/${id}/role`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ newRole:'student' }) });
+  const data = await res.json();
+  if (data.ok) { showToast(`${name} access revoked.`, 'info'); setTimeout(() => window.location.reload(), 1200); }
+  else showToast(data.error || 'Failed', 'error');
+}
+
+document.getElementById('theme-btn')?.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('sf-theme', next);
+  document.documentElement.setAttribute('data-theme', next);
+});
+</script>

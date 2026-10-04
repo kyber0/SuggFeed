@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signing in… — SuggFeed</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>(function(){var t=localStorage.getItem('sf-theme')||'system';document.documentElement.setAttribute('data-theme',t==='dark'?'dark':t==='light'?'light':window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');})()</script>
+</head>
+<body>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px">
+  <div class="avatar-circle" style="width:56px;height:56px;font-size:22px;animation:spin 1s linear infinite">⟳</div>
+  <p style="font-size:15px;color:var(--muted)">Completing sign in…</p>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<script>
+window.SUPABASE_URL = '<%- supabaseUrl %>';
+window.SUPABASE_ANON_KEY = '<%- supabaseAnonKey %>';
+const _sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+(async function() {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (session) {
+    await fetch('/auth/session', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_token: session.access_token, refresh_token: session.refresh_token, user: session.user }) });
+    window.location.href = '/';
+  } else {
+    window.location.href = '/';
+  }
+})();
+</script>

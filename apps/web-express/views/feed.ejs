@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %></title>
+  <meta name="description" content="Browse all community ideas on SuggFeed. Filter, sort and vote on suggestions." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>(function(){var t=localStorage.getItem('sf-theme')||'system';document.documentElement.setAttribute('data-theme',t==='dark'?'dark':t==='light'?'light':window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');})()</script>
+</head>
+<body>
+
+<%- include('partials/header') %>
+<%- include('partials/toast') %>
+<%- include('partials/auth-modal') %>
+
+<main class="sf-main">
+  <section class="sf-feed" id="feed" style="padding-top:32px">
+    <div class="sf-feed-header">
+      <div>
+        <p class="sf-section-eyebrow">COMMUNITY IDEAS</p>
+        <h1 class="sf-section-title">Browse all ideas</h1>
+        <p style="font-size:14px;color:var(--muted);margin-top:4px"><%= total %> idea<%= total !== 1 ? 's' : '' %> total</p>
+      </div>
+      <button class="sf-btn-share-secondary" id="open-submit-btn">
+        Share your idea
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <form id="filter-form" method="GET" action="/feed" class="sf-feed-controls">
+      <div class="sf-search-wrap">
+        <svg class="sf-search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="sf-search-input" type="text" name="search" placeholder="Search ideas…"
+          value="<%= search %>" aria-label="Search ideas"
+          oninput="clearTimeout(window._st);window._st=setTimeout(()=>this.form.submit(),500)" />
+      </div>
+
+      <div class="sf-sort-wrap" style="position:relative">
+        <button type="button" class="sf-sort-btn" id="sort-btn" aria-expanded="false">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="11" y2="6"/>
+            <line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="18" x2="13" y2="18"/>
+            <line x1="20" y1="18" x2="20" y2="6"/><line x1="20" y1="6" x2="16" y2="10"/>
+            <line x1="20" y1="6" x2="24" y2="10"/></svg>
+          <%= sort === 'newest' ? 'Newest First' : sort === 'oldest' ? 'Oldest First' : 'Most Supported' %>
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" id="sort-chevron">
+            <polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="sf-sort-menu" id="sort-menu" style="display:none">
+          <% [['popular','Most Supported'],['newest','Newest First'],['oldest','Oldest First']].forEach(function(o){ %>
+            <button type="button" class="sf-sort-opt<%= sort === o[0] ? ' active' : '' %>"
+              onclick="document.getElementById('sort-input').value='<%= o[0] %>'; document.getElementById('filter-form').submit()">
+              <%= o[1] %>
+              <% if (sort === o[0]) { %>
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <% } %>
+            </button>
+          <% }) %>
+        </div>
+        <input type="hidden" name="sort" id="sort-input" value="<%= sort %>" />
+      </div>
+
+      <div class="filter-chips" role="group" aria-label="Filter by category">
+        <% categories.forEach(function(c){ %>
+          <button type="button" class="filter-chip<%= cat === c ? ' active' : '' %>"
+            onclick="document.getElementById('cat-input').value='<%= c %>'; document.getElementById('filter-form').submit()">
+            <%= c %>
+          </button>
+        <% }) %>
+      </div>
+      <input type="hidden" name="cat" id="cat-input" value="<%= cat %>" />
+    </form>
+
+    <!-- Grid -->
+    <div class="idea-grid" id="idea-grid">
+      <% if (feed.length === 0) { %>
+        <div style="grid-column:1/-1;text-align:center;padding:64px 0">
+          <div class="sf-empty-state">
+            <div class="sf-empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.25">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <h3 style="font-size:18px;margin-bottom:8px">No ideas found</h3>
+            <p style="font-size:14px;margin-bottom:20px">Try adjusting your search or filters.</p>
+            <a href="/feed" class="filter-chip active">Clear filters</a>
+          </div>
+        </div>
+      <% } else { %>
+        <% feed.forEach(function(item) { %>
+          <article class="idea-card" onclick="window.location.href='/idea/<%= item.id %>'">
+            <div class="idea-card-header">
+              <% if (item.categories?.name) { %>
+                <span class="idea-tag"><%= item.categories.name %></span>
+              <% } %>
+              <span class="idea-status idea-status--<%= item.status %>"><%= item.status.replace('_',' ') %></span>
+            </div>
+            <h3 class="idea-title"><%= item.title %></h3>
+            <% if (item.description) { %>
+              <p class="idea-desc"><%= item.description.substring(0,140) %><%= item.description.length > 140 ? '…' : '' %></p>
+            <% } %>
+            <div class="idea-card-footer">
+              <button class="vote-btn" data-id="<%= item.id %>"
+                onclick="event.stopPropagation(); handleVote(this)" aria-label="Support">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+                <span class="vote-count"><%= item.vote_count %></span>
+              </button>
+              <span class="idea-comments">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <%= item.comment_count || 0 %>
+              </span>
+              <time class="idea-date" datetime="<%= item.created_at %>">
+                <%= new Date(item.created_at).toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'}) %>
+              </time>
+            </div>
+          </article>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <!-- Pagination -->
+    <% if (hasMore || page > 0) { %>
+      <div class="sf-load-more" style="display:flex;gap:12px;justify-content:center;margin-top:32px">
+        <% if (page > 0) { %>
+          <a href="/feed?sort=<%= sort %>&cat=<%= encodeURIComponent(cat) %>&search=<%= encodeURIComponent(search) %>&page=<%= page - 1 %>"
+            class="sf-load-more-btn" style="background:var(--surface);color:var(--ink)">← Previous</a>
+        <% } %>
+        <% if (hasMore) { %>
+          <a href="/feed?sort=<%= sort %>&cat=<%= encodeURIComponent(cat) %>&search=<%= encodeURIComponent(search) %>&page=<%= page + 1 %>"
+            class="sf-load-more-btn">Next page →</a>
+        <% } %>
+      </div>
+    <% } %>
+  </section>
+</main>
+
+<%- include('partials/footer') %>
+
+<!-- Submit Idea Modal -->
+<div id="submit-modal" class="auth-modal-backdrop" hidden>
+  <div class="auth-modal-card" role="dialog" aria-modal="true" style="max-width:520px">
+    <button class="auth-modal-close" id="submit-modal-close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <h2 class="auth-title">Share an idea</h2>
+    <form id="submit-idea-form" novalidate>
+      <div class="auth-field">
+        <label for="idea-title">Title *</label>
+        <input type="text" id="idea-title" placeholder="Summarise your idea in one line" maxlength="160" required />
+      </div>
+      <div class="auth-field">
+        <label for="idea-desc">Details</label>
+        <textarea id="idea-desc" rows="3" placeholder="More context…" style="resize:vertical"></textarea>
+      </div>
+      <div class="auth-field">
+        <label for="idea-cat">Category</label>
+        <select id="idea-cat">
+          <% categories.slice(1).forEach(function(c){ %>
+            <option value="<%= c %>"><%= c %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="auth-field" style="flex-direction:row;align-items:center;gap:10px">
+        <input type="checkbox" id="idea-anon" checked style="width:auto" />
+        <label for="idea-anon" style="margin:0">Submit anonymously</label>
+      </div>
+      <button type="submit" class="auth-submit-btn" id="submit-idea-btn">Submit idea</button>
+    </form>
+  </div>
+</div>
+
+<script>
+window.SUPABASE_URL = '<%- supabaseUrl %>';
+window.SUPABASE_ANON_KEY = '<%- supabaseAnonKey %>';
+window._supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+// Auth state bridge
+window._supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    await fetch('/auth/session', { method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ access_token: session.access_token, refresh_token: session.refresh_token, user: session.user }) });
+    window.location.reload();
+  }
+  if (event === 'SIGNED_OUT') { await fetch('/auth/signout', { method: 'POST' }); window.location.reload(); }
+});
+
+// Sort dropdown
+(function(){
+  const btn = document.getElementById('sort-btn');
+  const menu = document.getElementById('sort-menu');
+  btn?.addEventListener('click', e => { e.stopPropagation(); menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; });
+  document.addEventListener('click', () => { if(menu) menu.style.display = 'none'; });
+})();
+
+// Submit modal
+document.getElementById('open-submit-btn')?.addEventListener('click', () => document.getElementById('submit-modal')?.removeAttribute('hidden'));
+document.getElementById('submit-modal-close')?.addEventListener('click', () => document.getElementById('submit-modal')?.setAttribute('hidden',''));
+document.getElementById('submit-modal')?.addEventListener('click', e => { if(e.target === document.getElementById('submit-modal')) document.getElementById('submit-modal').setAttribute('hidden',''); });
+
+document.getElementById('submit-idea-form')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submit-idea-btn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  try {
+    const res = await fetch('/api/submit', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ title: document.getElementById('idea-title').value, description: document.getElementById('idea-desc').value,
+        category: document.getElementById('idea-cat').value, isAnonymous: document.getElementById('idea-anon').checked }) });
+    const data = await res.json();
+    if (data.ok) { document.getElementById('submit-modal').setAttribute('hidden',''); showToast('Idea submitted! Code: '+(data.tracking_code||''), 'success', 'Submitted'); setTimeout(() => window.location.reload(), 1800); }
+    else showToast(data.error||'Failed', 'error');
+  } catch { showToast('Network error','error'); }
+  finally { btn.disabled = false; btn.textContent = 'Submit idea'; }
+});
+
+// Voting
+const _voted = new Set(JSON.parse(localStorage.getItem('sf-voted')||'[]'));
+function handleVote(btn){
+  const id = btn.dataset.id;
+  const voted = _voted.has(id);
+  const devId = localStorage.getItem('sf-device-id') || crypto.randomUUID();
+  localStorage.setItem('sf-device-id', devId);
+  fetch(`/api/vote/${id}`, { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action: voted?'remove':'up', deviceId: devId }) })
+    .then(r=>r.json()).then(d => {
+      if(d.ok){ if(voted){_voted.delete(id);btn.classList.remove('voted');}else{_voted.add(id);btn.classList.add('voted');}
+        localStorage.setItem('sf-voted',JSON.stringify([..._voted]));
+        btn.querySelector('.vote-count').textContent = d.vote_count; }
+    });
+}
+document.querySelectorAll('.vote-btn').forEach(b => { if(_voted.has(b.dataset.id)) b.classList.add('voted'); });
+
+// Real-time vote updates
+window._supabase?.channel('feed-votes')
+  .on('postgres_changes',{event:'UPDATE',schema:'public',table:'submissions'}, p => {
+    const b = document.querySelector(`.vote-btn[data-id="${p.new.id}"]`);
+    if(b) b.querySelector('.vote-count').textContent = p.new.vote_count;
+  }).subscribe();
+
+// Theme
+document.getElementById('theme-btn')?.addEventListener('click',()=>{
+  const next = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  localStorage.setItem('sf-theme',next); document.documentElement.setAttribute('data-theme',next);
+});
+</script>

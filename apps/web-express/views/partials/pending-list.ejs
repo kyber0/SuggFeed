@@ -1,0 +1,33 @@
+<div style="display:flex;flex-direction:column;gap:12px">
+  <% pending.forEach(function(item) { %>
+    <div class="sp-section-card" style="padding:14px 18px" id="pending-<%= item.id %>">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+            <% if (item.categories?.name) { %>
+              <span class="idea-tag" style="font-size:11px"><%= item.categories.name %></span>
+            <% } %>
+            <% if (item.attachments?.length > 0) { %>
+              <span style="font-size:12px;color:var(--muted)">📎 <%= item.attachments.length %></span>
+            <% } %>
+            <time style="font-size:12px;color:var(--muted)">
+              <%= new Date(item.created_at).toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'}) %>
+            </time>
+          </div>
+          <h3 style="font-size:14px;font-weight:700;color:var(--ink);margin:0 0 6px"><%= item.title %></h3>
+          <% if (item.description) { %>
+            <p style="font-size:13px;color:var(--muted);margin:0;line-height:1.5">
+              <%= item.description.substring(0, 160) %><%= item.description.length > 160 ? '…' : '' %>
+            </p>
+          <% } %>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="sp-staff-action-btn sp-staff-action-btn--promote"
+            onclick="approve('<%= item.id %>')">Approve</button>
+          <button class="sp-staff-action-btn sp-staff-action-btn--revoke"
+            onclick="reject('<%= item.id %>')">Reject</button>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>

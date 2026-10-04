@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %></title>
+  <meta name="description" content="A safer way to make your school better. Share feedback anonymously and follow its progress." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <!-- Supabase JS (browser) for auth + real-time -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<%- include('partials/header') %>
+<%- include('partials/toast') %>
+<%- include('partials/auth-modal') %>
+
+<main class="sf-main">
+  <%- body %>
+</main>
+
+<%- include('partials/footer') %>
+<%- include('partials/theme-init') %>
+
+<script>
+  // Make Supabase available globally for all page scripts
+  window.SUPABASE_URL = '<%- supabaseUrl %>';
+  window.SUPABASE_ANON_KEY = '<%- supabaseAnonKey %>';
+  window._supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+  // Session hydration: on page load, sync Supabase auth state → Express session
+  window._supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      await fetch('/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          user: session.user,
+        }),
+      });
+      // Reload so Express can render the correct server state
+      if (event === 'SIGNED_IN') window.location.reload();
+    }
+    if (event === 'SIGNED_OUT') {
+      await fetch('/auth/signout', { method: 'POST' });
+      window.location.reload();
+    }
+  });
+</script>
+
+</body>
+</html>

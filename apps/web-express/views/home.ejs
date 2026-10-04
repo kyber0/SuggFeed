@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %></title>
+  <meta name="description" content="A safer way to make your school better. Share feedback anonymously and follow its progress." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Theme init: apply before paint -->
+  <script>
+    (function(){
+      var t=localStorage.getItem('sf-theme')||'system';
+      if(t==='dark') document.documentElement.setAttribute('data-theme','dark');
+      else if(t==='light') document.documentElement.setAttribute('data-theme','light');
+      else document.documentElement.setAttribute('data-theme', window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    })();
+  </script>
+</head>
+<body>
+
+<%- include('partials/header') %>
+<%- include('partials/toast') %>
+<%- include('partials/auth-modal') %>
+
+<!-- Page content injected here -->
+<main class="sf-main">
+
+  <%# ─── Hero / Share-or-Track workspace ─────────────────────────────────── %>
+  <section class="sf-workspace" id="top">
+    <div class="sf-workspace-tabs" role="tablist">
+      <button id="tab-share" role="tab" aria-selected="true" class="sf-workspace-tab active">Share feedback</button>
+      <button id="tab-track" role="tab" aria-selected="false" class="sf-workspace-tab">Track submission</button>
+    </div>
+
+    <div class="sf-workspace-card">
+      <!-- Share panel -->
+      <div id="share-panel" class="sf-share-panel">
+        <h2 class="sf-panel-title">What would you like to improve?</h2>
+        <p class="sf-panel-desc">Be constructive and avoid including personal or sensitive information.</p>
+        <button class="sf-btn-share-main" id="open-submit-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Share your idea
+        </button>
+      </div>
+
+      <!-- Track panel (hidden by default) -->
+      <div id="track-panel" class="sf-track-panel" hidden>
+        <h2 class="sf-panel-title">Check on your feedback</h2>
+        <p class="sf-panel-desc">Enter the private tracking code shown after an anonymous submission.</p>
+        <div class="sf-track-field">
+          <div class="sf-track-input-wrap">
+            <svg class="sf-track-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input id="track-input" class="sf-track-input" placeholder="e.g. CV-ABCDEF1234…"
+              autocapitalize="characters" aria-label="Tracking code" />
+            <button type="button" id="track-clear" class="sf-track-clear" aria-label="Clear" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="sf-btn-track" id="track-submit-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/></svg>
+          Check status
+        </button>
+        <div id="track-error" class="sf-track-error" hidden></div>
+        <div id="track-result" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sf-divider"></div>
+
+  <%# ─── Feed preview ─────────────────────────────────────────────────────── %>
+  <section class="sf-feed" id="feed">
+    <div class="sf-feed-header">
+      <div>
+        <p class="sf-section-eyebrow">OPEN IDEAS</p>
+        <h2 class="sf-section-title">What the community is talking about</h2>
+      </div>
+      <button class="sf-btn-share-secondary" id="open-submit-btn-2">
+        Share your own idea
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+
+    <div class="idea-grid">
+      <% if (feed.length === 0) { %>
+        <div style="grid-column:1/-1;text-align:center;padding:48px 0">
+          <div class="sf-empty-state">
+            <div class="sf-empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.25"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h3 style="font-size:18px;margin-bottom:8px">No ideas yet</h3>
+            <p style="font-size:14px">Be the first to share one!</p>
+          </div>
+        </div>
+      <% } else { %>
+        <% feed.forEach(function(item) { %>
+          <article class="idea-card" data-id="<%= item.id %>" onclick="window.location.href='/idea/<%= item.id %>'">
+            <div class="idea-card-header">
+              <% if (item.categories?.name) { %>
+                <span class="idea-tag"><%= item.categories.name %></span>
+              <% } %>
+              <span class="idea-status idea-status--<%= item.status %>"><%= item.status.replace('_',' ') %></span>
+            </div>
+            <h3 class="idea-title"><%= item.title %></h3>
+            <% if (item.description) { %>
+              <p class="idea-desc"><%= item.description.substring(0, 140) %><%= item.description.length > 140 ? '…' : '' %></p>
+            <% } %>
+            <div class="idea-card-footer">
+              <button class="vote-btn" data-id="<%= item.id %>" data-count="<%= item.vote_count %>"
+                onclick="event.stopPropagation(); handleVote(this)" aria-label="Support this idea">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+                <span class="vote-count"><%= item.vote_count %></span>
+              </button>
+              <span class="idea-comments">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <%= item.comment_count || 0 %>
+              </span>
+              <time class="idea-date" datetime="<%= item.created_at %>">
+                <%= new Date(item.created_at).toLocaleDateString('en', {month:'short',day:'numeric',year:'numeric'}) %>
+              </time>
+            </div>
+          </article>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <% if (total > feed.length) { %>
+      <div class="sf-load-more">
+        <a href="/feed" class="sf-load-more-btn">
+          See all <%= total %> ideas
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    <% } %>
+  </section>
+
+</main>
+
+<%- include('partials/footer') %>
+
+<!-- Submit Idea Modal -->
+<div id="submit-modal" class="auth-modal-backdrop" hidden>
+  <div class="auth-modal-card" role="dialog" aria-modal="true" style="max-width:520px">
+    <button class="auth-modal-close" id="submit-modal-close" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <h2 class="auth-title">Share an idea</h2>
+    <p class="auth-subtitle">Your feedback helps improve the school experience.</p>
+    <form id="submit-idea-form" novalidate>
+      <div class="auth-field">
+        <label for="idea-title">Title <span style="color:var(--accent)">*</span></label>
+        <input type="text" id="idea-title" placeholder="Summarise your idea in one line" maxlength="160" required />
+      </div>
+      <div class="auth-field">
+        <label for="idea-desc">Details (optional)</label>
+        <textarea id="idea-desc" rows="3" placeholder="More context, examples, or suggestions…" style="resize:vertical"></textarea>
+      </div>
+      <div class="auth-field">
+        <label for="idea-cat">Category</label>
+        <select id="idea-cat">
+          <% categories.forEach(function(cat) { %>
+            <option value="<%= cat %>"><%= cat %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="auth-field" style="flex-direction:row;align-items:center;gap:10px">
+        <input type="checkbox" id="idea-anon" checked style="width:auto" />
+        <label for="idea-anon" style="margin:0">Submit anonymously</label>
+      </div>
+      <button type="submit" class="auth-submit-btn" id="submit-idea-btn">Submit idea</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// ─── Workspace tabs ───────────────────────────────────────────────────────
+(function() {
+  const shareBtn = document.getElementById('tab-share');
+  const trackBtn = document.getElementById('tab-track');
+  const sharePanel = document.getElementById('share-panel');
+  const trackPanel = document.getElementById('track-panel');
+
+  shareBtn?.addEventListener('click', () => {
+    shareBtn.classList.add('active'); shareBtn.setAttribute('aria-selected','true');
+    trackBtn.classList.remove('active'); trackBtn.setAttribute('aria-selected','false');
+    sharePanel.removeAttribute('hidden'); trackPanel.setAttribute('hidden','');
+  });
+  trackBtn?.addEventListener('click', () => {
+    trackBtn.classList.add('active'); trackBtn.setAttribute('aria-selected','true');
+    shareBtn.classList.remove('active'); shareBtn.setAttribute('aria-selected','false');
+    trackPanel.removeAttribute('hidden'); sharePanel.setAttribute('hidden','');
+  });
+})();
+
+// ─── Track input ──────────────────────────────────────────────────────────
+(function() {
+  const input = document.getElementById('track-input');
+  const clearBtn = document.getElementById('track-clear');
+  const submitBtn = document.getElementById('track-submit-btn');
+  const errorEl = document.getElementById('track-error');
+  const resultEl = document.getElementById('track-result');
+
+  input?.addEventListener('input', () => {
+    input.value = input.value.toUpperCase();
+    clearBtn && (clearBtn.hidden = !input.value);
+    errorEl?.setAttribute('hidden',''); resultEl?.setAttribute('hidden','');
+  });
+  clearBtn?.addEventListener('click', () => {
+    input.value = ''; clearBtn.hidden = true;
+    errorEl?.setAttribute('hidden',''); resultEl?.setAttribute('hidden','');
+  });
+
+  submitBtn?.addEventListener('click', async () => {
+    const code = input?.value.trim();
+    if (!code) return;
+    submitBtn.disabled = true; submitBtn.textContent = 'Looking up…';
+    try {
+      const res = await fetch('/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code }) });
+      const data = await res.json();
+      if (data.error) {
+        errorEl.textContent = data.error; errorEl.removeAttribute('hidden');
+        resultEl.setAttribute('hidden','');
+      } else {
+        const s = data.submission;
+        resultEl.innerHTML = `
+          <div class="sf-track-result-card">
+            ${s.categories?.name ? `<span class="sf-track-result-tag">${s.categories.name}</span>` : ''}
+            <h3 class="sf-track-result-title">${s.title}</h3>
+            ${s.description ? `<p class="sf-track-result-desc">${s.description}</p>` : ''}
+            <div style="margin-top:12px"><strong>Status:</strong> ${s.status.replace('_',' ')}</div>
+          </div>`;
+        resultEl.removeAttribute('hidden');
+        errorEl.setAttribute('hidden','');
+      }
+    } catch { errorEl.textContent = 'Network error.'; errorEl.removeAttribute('hidden'); }
+    finally { submitBtn.disabled = false; submitBtn.textContent = 'Check status'; }
+  });
+})();
+
+// ─── Submit modal ─────────────────────────────────────────────────────────
+(function() {
+  const modal = document.getElementById('submit-modal');
+  const open1 = document.getElementById('open-submit-btn');
+  const open2 = document.getElementById('open-submit-btn-2');
+  const close = document.getElementById('submit-modal-close');
+
+  function openModal() { modal?.removeAttribute('hidden'); }
+  open1?.addEventListener('click', openModal);
+  open2?.addEventListener('click', openModal);
+  close?.addEventListener('click', () => modal?.setAttribute('hidden',''));
+  modal?.addEventListener('click', e => { if (e.target === modal) modal.setAttribute('hidden',''); });
+
+  document.getElementById('submit-idea-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-idea-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: document.getElementById('idea-title').value,
+          description: document.getElementById('idea-desc').value,
+          category: document.getElementById('idea-cat').value,
+          isAnonymous: document.getElementById('idea-anon').checked,
+        })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        modal.setAttribute('hidden','');
+        showToast('Idea submitted! Tracking code: ' + (data.tracking_code || 'N/A'), 'success', 'Idea submitted');
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        showToast(data.error || 'Submission failed.', 'error');
+      }
+    } catch { showToast('Network error.', 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Submit idea'; }
+  });
+})();
+
+// ─── Voting ───────────────────────────────────────────────────────────────
+const _votedIds = new Set(JSON.parse(localStorage.getItem('sf-voted') || '[]'));
+function handleVote(btn) {
+  const id = btn.dataset.id;
+  const voted = _votedIds.has(id);
+  const deviceId = localStorage.getItem('sf-device-id') || crypto.randomUUID();
+  localStorage.setItem('sf-device-id', deviceId);
+
+  fetch(`/api/vote/${id}`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ action: voted ? 'remove' : 'up', deviceId })
+  }).then(r => r.json()).then(data => {
+    if (data.ok) {
+      if (voted) { _votedIds.delete(id); btn.classList.remove('voted'); }
+      else { _votedIds.add(id); btn.classList.add('voted'); }
+      localStorage.setItem('sf-voted', JSON.stringify([..._votedIds]));
+      btn.querySelector('.vote-count').textContent = data.vote_count;
+    }
+  });
+}
+
+// Mark already-voted ideas
+document.querySelectorAll('.vote-btn').forEach(btn => {
+  if (_votedIds.has(btn.dataset.id)) btn.classList.add('voted');
+});
+
+// ─── Theme toggle ─────────────────────────────────────────────────────────
+document.getElementById('theme-btn')?.addEventListener('click', function() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('sf-theme', next);
+  document.documentElement.setAttribute('data-theme', next);
+});
+
+// ─── Supabase realtime: live vote count updates ───────────────────────────
+window._supabase?.channel('home-votes')
+  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'submissions' }, (payload) => {
+    const btn = document.querySelector(`.vote-btn[data-id="${payload.new.id}"]`);
+    if (btn) btn.querySelector('.vote-count').textContent = payload.new.vote_count;
+  })
+  .subscribe();
+</script>

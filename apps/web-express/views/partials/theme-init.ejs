@@ -1,0 +1,28 @@
+<script>
+// Theme initialisation — runs before paint to avoid flash
+(function() {
+  function applyTheme(theme) {
+    if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    else if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+  }
+
+  const saved = localStorage.getItem('sf-theme') || 'system';
+  applyTheme(saved);
+
+  // Theme toggle button
+  document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('theme-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('sf-theme', next);
+      applyTheme(next);
+    });
+  });
+})();
+</script>
