@@ -198,7 +198,10 @@ router.post(
       .select("id")
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("[api/submit] Insert failed:", error);
+      return res.status(500).json({ success: false, error: error.message || "Failed to create submission." });
+    }
 
     invalidateCache("feed_");
     res.json({ success: true, id: data.id, tracking_code: trackingCode });

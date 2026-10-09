@@ -212,9 +212,10 @@ app.use((_req: Request, res: Response) => {
 // Returns a generic message — never leaks stack traces or file paths.
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   console.error(`[error] ${req.method} ${req.path}`, err);
-  const isJson = req.headers.accept?.includes("application/json") || req.xhr;
+  const isJson = req.path.startsWith("/api/") || req.headers.accept?.includes("application/json") || req.xhr;
   if (isJson) {
-    return res.status(500).json({ success: false, error: "Internal Server Error" });
+    const errorMsg = (err as any).message || "Internal Server Error";
+    return res.status(500).json({ success: false, error: errorMsg });
   }
   res.status(500).render("500", { title: "Server Error — SuggFeed" });
 });
