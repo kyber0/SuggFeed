@@ -1,0 +1,386 @@
+<!-- Submit Idea Panel / Drawer -->
+<div id="submit-panel-overlay" class="panel-overlay" hidden onclick="closeSubmitPanel()"></div>
+
+<aside id="submit-panel" class="detail-panel sip-panel" role="dialog" aria-modal="true" aria-label="Share feedback" hidden>
+  <!-- Mobile drag handle -->
+  <div class="mobile-drag-handle" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <div class="sip-header">
+    <div class="sip-header-left">
+      <div class="sip-brand-dot" aria-hidden="true"></div>
+      <div>
+        <div class="sip-header-title">Share your idea</div>
+        <div class="sip-header-sub sip-online">&#9679; Online</div>
+      </div>
+    </div>
+    <button class="panel-close-btn" onclick="closeSubmitPanel()" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <!-- Stepper -->
+  <div class="sip-stepper" role="list" id="sip-stepper">
+    <div class="sip-step-item" role="listitem">
+      <div class="sip-step-dot sip-step-active" id="step-dot-1">1</div>
+      <span class="sip-step-label">Category</span>
+    </div>
+    <div class="sip-step-divider"></div>
+    <div class="sip-step-item" role="listitem">
+      <div class="sip-step-dot sip-step-upcoming" id="step-dot-2">2</div>
+      <span class="sip-step-label">Details</span>
+    </div>
+    <div class="sip-step-divider"></div>
+    <div class="sip-step-item" role="listitem">
+      <div class="sip-step-dot sip-step-upcoming" id="step-dot-3">3</div>
+      <span class="sip-step-label">Review</span>
+    </div>
+  </div>
+
+  <form id="submit-idea-form" onsubmit="handleIdeaSubmit(event)" class="sip-form">
+    <!-- Step 1: Category Selection -->
+    <div id="sip-step-1" class="sip-step-content sip-step-body">
+      <h3 class="sip-section-title">Choose a category</h3>
+      <p class="sip-section-sub">Select the area that best describes your idea or concern.</p>
+      
+      <div class="cat-grid">
+        <label class="cat-card">
+          <input type="radio" name="sip-category" value="Facilities" class="cat-radio" required />
+          <div>
+            <div class="cat-card-title">Facilities</div>
+            <div class="cat-card-sub">Buildings, rooms, restrooms, campus amenities</div>
+          </div>
+        </label>
+        <label class="cat-card">
+          <input type="radio" name="sip-category" value="Learning" class="cat-radio" />
+          <div>
+            <div class="cat-card-title">Learning</div>
+            <div class="cat-card-sub">Courses, academic resources, faculty, libraries</div>
+          </div>
+        </label>
+        <label class="cat-card">
+          <input type="radio" name="sip-category" value="Safety" class="cat-radio" />
+          <div>
+            <div class="cat-card-title">Safety</div>
+            <div class="cat-card-sub">Campus security, lighting, health, emergency procedures</div>
+          </div>
+        </label>
+        <label class="cat-card">
+          <input type="radio" name="sip-category" value="Student life" class="cat-radio" />
+          <div>
+            <div class="cat-card-title">Student life</div>
+            <div class="cat-card-sub">Clubs, student activities, campus events, social spaces</div>
+          </div>
+        </label>
+        <label class="cat-card">
+          <input type="radio" name="sip-category" value="Other" class="cat-radio" />
+          <div>
+            <div class="cat-card-title">Other</div>
+            <div class="cat-card-sub">Any other constructive suggestions or general ideas</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Step 2: Details -->
+    <div id="sip-step-2" class="sip-step-content sip-step-body" hidden>
+      <div class="sip-field">
+        <label class="sip-label">
+          Title <span class="sip-required">*</span>
+        </label>
+        <input
+          type="text"
+          id="sip-title"
+          class="form-input sip-input-full"
+          placeholder="Brief, specific summary (e.g. Add water refill stations in Library)"
+          maxlength="100"
+          oninput="updateCharCount('sip-title', 'sip-title-count', 100)"
+        />
+        <div id="sip-title-count" class="char-counter sip-char-counter">0 / 100</div>
+      </div>
+
+      <div class="sip-field">
+        <label class="sip-label">
+          Description <span class="sip-required">*</span>
+        </label>
+        <textarea
+          id="sip-description"
+          class="form-input sip-input-full sip-textarea"
+          rows="5"
+          placeholder="Describe what needs improvement, why it matters, and any suggested solutions."
+          maxlength="1500"
+          oninput="updateCharCount('sip-description', 'sip-desc-count', 1500)"
+        ></textarea>
+        <div id="sip-desc-count" class="char-counter sip-char-counter">0 / 1500</div>
+      </div>
+
+      <div class="sip-anon-box">
+        <label class="sip-anon-label">
+          <input type="checkbox" id="sip-anon" checked class="sip-anon-check" />
+          <div class="sip-anon-text">
+            <span class="sip-anon-title">Submit anonymously</span>
+            <div class="sip-anon-sub">Your name and email will never be linked to this submission.</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Step 3: Review -->
+    <div id="sip-step-3" class="sip-step-content sip-step-body" hidden>
+      <h3 class="sip-section-title">Review your submission</h3>
+      
+      <div class="sip-review-card">
+        <div class="sip-review-tags">
+          <span id="rev-category" class="tag sip-tag-cat">Category</span>
+          <span id="rev-anon-badge" class="tag sip-tag-anon">Anonymous</span>
+        </div>
+        <h4 id="rev-title" class="sip-review-title">Title</h4>
+        <p id="rev-desc" class="sip-review-desc">Description</p>
+      </div>
+
+      <div class="sip-info-box">
+        <div class="sip-info-row">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sip-info-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div class="sip-info-text">
+            You will receive a private <strong>tracking code</strong> once submitted so you can monitor progress.
+          </div>
+        </div>
+      </div>
+
+      <label class="sip-consent-label">
+        <input type="checkbox" id="sip-consent" required class="sip-consent-check" />
+        <span>I agree that this feedback does not contain hate speech, harassment, or confidential personal details.</span>
+      </label>
+    </div>
+
+    <!-- Success View -->
+    <div id="sip-success" class="sip-step-content sip-success-view" hidden>
+      <div class="sip-success-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h3 class="sip-success-title">Idea submitted!</h3>
+      <p class="sip-success-sub">
+        Thank you for contributing! Your proposal has been submitted to campus administrators for review.
+      </p>
+
+      <!-- Inline tracking code — no toast, user copies from here -->
+      <div class="sip-tracking-box">
+        <div class="sip-tracking-label">Your private tracking code</div>
+        <p class="sip-tracking-hint">Save this code to track your submission status at any time.</p>
+        <div class="sip-tracking-code-row">
+          <code id="sip-success-code" class="sip-tracking-code">—</code>
+          <button type="button" class="sip-copy-btn" id="sip-copy-btn" onclick="copyTrackingCode()" aria-label="Copy tracking code">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span id="sip-copy-label">Copy</span>
+          </button>
+        </div>
+        <div id="sip-copy-confirm" class="sip-copy-confirm" hidden>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Copied to clipboard
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary btn-full sip-done-btn" onclick="closeSubmitPanel()">
+        Done
+      </button>
+    </div>
+
+    <!-- Footer Action Buttons -->
+    <div id="sip-footer" class="sip-footer">
+      <button type="button" id="sip-prev-btn" class="btn-ghost sip-prev-hidden" onclick="sipPrevStep()">
+        Back
+      </button>
+      <button type="button" id="sip-next-btn" class="btn-primary" onclick="sipNextStep()">
+        Continue
+      </button>
+    </div>
+  </form>
+</aside>
+
+<script>
+  let sipCurrentStep = 1;
+  let sipTrackingCode = '';
+
+  function openSubmitPanel() {
+    sipCurrentStep = 1;
+    document.getElementById('submit-panel-overlay').removeAttribute('hidden');
+    document.getElementById('submit-panel').removeAttribute('hidden');
+    document.getElementById('submit-idea-form').reset();
+    document.getElementById('sip-success').hidden = true;
+    document.getElementById('sip-footer').classList.remove('sip-footer-hidden');
+    document.body.style.overflow = 'hidden';
+    updateSipUI();
+  }
+
+  function closeSubmitPanel() {
+    document.getElementById('submit-panel-overlay').hidden = true;
+    document.getElementById('submit-panel').hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  function updateCharCount(inputId, counterId, max) {
+    const val = document.getElementById(inputId).value || '';
+    const counter = document.getElementById(counterId);
+    counter.textContent = `${val.length} / ${max}`;
+    counter.classList.remove('char-warn', 'char-error');
+    if (val.length >= max) counter.classList.add('char-error');
+    else if (val.length >= max * 0.8) counter.classList.add('char-warn');
+  }
+
+  function updateSipUI() {
+    document.getElementById('sip-step-1').hidden = sipCurrentStep !== 1;
+    document.getElementById('sip-step-2').hidden = sipCurrentStep !== 2;
+    document.getElementById('sip-step-3').hidden = sipCurrentStep !== 3;
+
+    // Stepper dots
+    for (let i = 1; i <= 3; i++) {
+      const dot = document.getElementById(`step-dot-${i}`);
+      if (dot) {
+        dot.className = i === sipCurrentStep ? 'sip-step-dot sip-step-active' : (i < sipCurrentStep ? 'sip-step-dot sip-step-done' : 'sip-step-dot sip-step-upcoming');
+      }
+    }
+
+    const prevBtn = document.getElementById('sip-prev-btn');
+    const nextBtn = document.getElementById('sip-next-btn');
+
+    if (sipCurrentStep > 1) {
+      prevBtn.classList.remove('sip-prev-hidden');
+    } else {
+      prevBtn.classList.add('sip-prev-hidden');
+    }
+
+    if (sipCurrentStep === 3) {
+      nextBtn.textContent = 'Submit idea';
+    } else {
+      nextBtn.textContent = 'Continue';
+    }
+  }
+
+  function sipNextStep() {
+    if (sipCurrentStep === 1) {
+      const checked = document.querySelector('input[name="sip-category"]:checked');
+      if (!checked) {
+        if (window.sfToast) sfToast('Please select a category.', 'warning');
+        else alert('Please select a category.');
+        return;
+      }
+      sipCurrentStep = 2;
+      updateSipUI();
+    } else if (sipCurrentStep === 2) {
+      const title = document.getElementById('sip-title').value.trim();
+      const desc = document.getElementById('sip-description').value.trim();
+      if (title.length < 8) {
+        if (window.sfToast) sfToast('Title must be at least 8 characters.', 'warning');
+        else alert('Title must be at least 8 characters.');
+        return;
+      }
+      if (desc.length < 20) {
+        if (window.sfToast) sfToast('Please provide at least 20 characters of details in description.', 'warning');
+        else alert('Please provide at least 20 characters of details.');
+        return;
+      }
+
+      // Populate review step
+      const cat = document.querySelector('input[name="sip-category"]:checked').value;
+      const isAnon = document.getElementById('sip-anon').checked;
+
+      document.getElementById('rev-category').textContent = cat;
+      document.getElementById('rev-title').textContent = title;
+      document.getElementById('rev-desc').textContent = desc;
+      document.getElementById('rev-anon-badge').textContent = isAnon ? 'Anonymous' : 'Public Profile';
+
+      sipCurrentStep = 3;
+      updateSipUI();
+    } else if (sipCurrentStep === 3) {
+      const consent = document.getElementById('sip-consent').checked;
+      if (!consent) {
+        if (window.sfToast) sfToast('Please accept the community guidelines notice.', 'warning');
+        else alert('Please accept the community guidelines notice.');
+        return;
+      }
+      document.getElementById('submit-idea-form').dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+  }
+
+  function sipPrevStep() {
+    if (sipCurrentStep > 1) {
+      sipCurrentStep--;
+      updateSipUI();
+    }
+  }
+
+  async function handleIdeaSubmit(e) {
+    e.preventDefault();
+    const nextBtn = document.getElementById('sip-next-btn');
+    nextBtn.disabled = true;
+    nextBtn.textContent = 'Submitting...';
+
+    const category = document.querySelector('input[name="sip-category"]:checked').value;
+    const title = document.getElementById('sip-title').value.trim();
+    const description = document.getElementById('sip-description').value.trim();
+    const isAnonymous = document.getElementById('sip-anon').checked;
+
+    try {
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, category, isAnonymous })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Submission failed');
+
+      sipTrackingCode = data.tracking_code;
+      document.getElementById('sip-success-code').textContent = sipTrackingCode;
+
+      // Reset copy button state
+      document.getElementById('sip-copy-label').textContent = 'Copy';
+      document.getElementById('sip-copy-confirm').hidden = true;
+
+      // Save tracking code in localStorage
+      try {
+        const stored = JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');
+        stored.push(sipTrackingCode);
+        localStorage.setItem('sf_my_tracking_codes', JSON.stringify(stored));
+      } catch (err) {}
+
+      document.getElementById('sip-step-1').hidden = true;
+      document.getElementById('sip-step-2').hidden = true;
+      document.getElementById('sip-step-3').hidden = true;
+      document.getElementById('sip-footer').classList.add('sip-footer-hidden');
+      document.getElementById('sip-success').hidden = false;
+
+    } catch (err) {
+      if (window.sfToast) sfToast(err.message || 'Submission failed', 'error');
+      else alert(err.message || 'Submission failed');
+    } finally {
+      nextBtn.disabled = false;
+      nextBtn.textContent = 'Submit idea';
+    }
+  }
+
+  function copyTrackingCode() {
+    if (!sipTrackingCode) return;
+    navigator.clipboard.writeText(sipTrackingCode).then(() => {
+      const label = document.getElementById('sip-copy-label');
+      const confirm = document.getElementById('sip-copy-confirm');
+      const btn = document.getElementById('sip-copy-btn');
+      label.textContent = 'Copied';
+      btn.classList.add('sip-copy-btn--copied');
+      confirm.hidden = false;
+      setTimeout(() => {
+        label.textContent = 'Copy';
+        btn.classList.remove('sip-copy-btn--copied');
+        confirm.hidden = true;
+      }, 2500);
+    }).catch(() => {
+      // Fallback for older browsers
+      const el = document.getElementById('sip-success-code');
+      const range = document.createRange();
+      range.selectNode(el);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand('copy');
+      window.getSelection().removeAllRanges();
+    });
+  }
+</script>

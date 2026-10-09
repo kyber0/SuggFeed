@@ -1,0 +1,823 @@
+<!-- ── Global Idea Detail Slide-Over Drawer (Identical to apps/web) ── -->
+<div id="idea-drawer-overlay" class="panel-overlay" onclick="sfCloseIdeaDrawer()" aria-hidden="true" hidden></div>
+
+<aside
+  id="idea-detail-drawer"
+  class="detail-panel detail-panel-split"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Idea Details"
+  hidden
+>
+  <!-- Mobile drag handle -->
+  <div class="mobile-drag-handle" id="drawer-drag-handle" aria-hidden="true"></div>
+
+  <!-- ── Header ── -->
+  <div class="detail-panel-header">
+    <div class="detail-panel-badges">
+      <span class="detail-category-badge" id="drawer-cat-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
+        <span id="drawer-cat-name">Category</span>
+      </span>
+
+      <span class="detail-status-pill" id="drawer-status-pill">
+        <span class="status-dot" id="drawer-status-dot"></span>
+        <span id="drawer-status-label">Status</span>
+      </span>
+    </div>
+
+    <div class="detail-header-actions">
+      <!-- Direct Link / Open Standalone -->
+      <a
+        id="drawer-permalink"
+        href="#"
+        class="panel-action-btn"
+        title="Open full page"
+        aria-label="Open full page"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+
+      <!-- Share button -->
+      <button
+        type="button"
+        class="panel-action-btn"
+        id="drawer-share-btn"
+        onclick="sfDrawerShare()"
+        aria-label="Share idea"
+        title="Copy link"
+      >
+        <svg id="drawer-share-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </button>
+
+      <!-- Close button -->
+      <button
+        type="button"
+        class="panel-action-btn panel-close-btn"
+        onclick="sfCloseIdeaDrawer()"
+        aria-label="Close"
+        title="Close (Esc)"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Mobile Tab Navigation (FB-style comments sheet toggle) ── -->
+  <div class="detail-mobile-tabs" role="tablist" aria-label="Proposal sections">
+    <button
+      type="button"
+      role="tab"
+      id="drawer-mob-tab-details"
+      aria-selected="true"
+      class="detail-mobile-tab active"
+      onclick="sfSetDrawerMobileTab('details')"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Proposal Details</span>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      id="drawer-mob-tab-comments"
+      aria-selected="false"
+      class="detail-mobile-tab"
+      onclick="sfSetDrawerMobileTab('comments')"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Comments (<span id="drawer-mob-comment-count">0</span>)</span>
+    </button>
+  </div>
+
+  <!-- Loading State Skeleton -->
+  <div id="drawer-skeleton" style="padding: 24px; display: none;">
+    <div style="height: 20px; width: 40%; background: var(--surface-hover); border-radius: 4px; margin-bottom: 16px; animation: pulse 1.2s infinite ease-in-out;"></div>
+    <div style="height: 32px; width: 85%; background: var(--surface-hover); border-radius: 6px; margin-bottom: 20px; animation: pulse 1.2s infinite ease-in-out;"></div>
+    <div style="height: 60px; width: 100%; background: var(--surface-hover); border-radius: 8px; margin-bottom: 20px; animation: pulse 1.2s infinite ease-in-out;"></div>
+    <div style="height: 120px; width: 100%; background: var(--surface-hover); border-radius: 8px; animation: pulse 1.2s infinite ease-in-out;"></div>
+  </div>
+
+  <!-- ── Two-column body ── -->
+  <div class="detail-panel-columns" id="drawer-columns" data-mobile-tab="details">
+    <!-- ── LEFT COLUMN: Proposal Details & Stepper (50%) ── -->
+    <div class="detail-col detail-col-left" id="drawer-left-col">
+      <!-- Author & Date strip -->
+      <div class="detail-author-row">
+        <div class="detail-author-profile">
+          <div class="detail-author-avatar" id="drawer-author-avatar">A</div>
+          <span class="detail-author-name" id="drawer-author-name">Anonymous Student</span>
+        </div>
+        <span class="detail-date-badge" id="drawer-date-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="drawer-date-text">Date</span>
+        </span>
+      </div>
+
+      <!-- Title -->
+      <h2 class="detail-panel-title" id="drawer-title">Proposal Title</h2>
+
+      <!-- Status callout banner -->
+      <div class="detail-status-banner" id="drawer-status-banner">
+        <div id="drawer-banner-icon-wrap" style="flex-shrink:0; margin-top:2px;"></div>
+        <div class="detail-status-banner-content">
+          <span class="detail-status-banner-title" id="drawer-banner-title">Proposal Status</span>
+          <span class="detail-status-banner-desc" id="drawer-banner-desc">Status explanation.</span>
+        </div>
+      </div>
+
+      <!-- Status Stepper (Lifecycle Timeline) -->
+      <div class="status-stepper" id="drawer-stepper">
+        <div class="step" id="drawer-step-pending">
+          <div class="step-dot" id="drawer-dot-pending">1</div>
+          <div class="step-label">Submitted</div>
+        </div>
+        <div class="step" id="drawer-step-approved">
+          <div class="step-dot" id="drawer-dot-approved">2</div>
+          <div class="step-label">Approved</div>
+        </div>
+        <div class="step" id="drawer-step-in_progress">
+          <div class="step-dot" id="drawer-dot-in_progress">3</div>
+          <div class="step-label">In Progress</div>
+        </div>
+        <div class="step" id="drawer-step-resolved">
+          <div class="step-dot" id="drawer-dot-resolved">4</div>
+          <div class="step-label">Resolved</div>
+        </div>
+      </div>
+
+      <!-- Interactive Community Support Card -->
+      <div class="detail-support-card">
+        <button
+          type="button"
+          class="detail-support-btn"
+          id="drawer-vote-btn"
+          onclick="sfDrawerVote()"
+          aria-label="Support this idea"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="drawer-vote-icon"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          <span class="detail-support-count" id="drawer-vote-count">0</span>
+          <span id="drawer-vote-label">Support this idea</span>
+        </button>
+
+        <div class="detail-support-info">
+          <span class="detail-support-info-strong">
+            <span id="drawer-vote-summary">0</span> students support
+          </span>
+          <span>Prioritizing campus budget &amp; resources</span>
+        </div>
+      </div>
+
+      <!-- Proposal Description Section -->
+      <div class="detail-description-section">
+        <div class="detail-section-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Proposal Description</span>
+        </div>
+        <div class="detail-description-box">
+          <p class="detail-description-text" id="drawer-description"></p>
+        </div>
+      </div>
+
+      <!-- Mobile jump to comments CTA -->
+      <div class="mobile-jump-comments-bar">
+        <button
+          type="button"
+          class="mobile-jump-comments-btn"
+          onclick="sfSetDrawerMobileTab('comments')"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Join Discussion (<span id="drawer-jump-comment-count">0</span> comments) →</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Column divider -->
+    <div class="detail-col-divider"></div>
+
+    <!-- ── RIGHT COLUMN: Threaded Discussion & Composer (50%) ── -->
+    <div class="detail-col detail-col-right" id="drawer-right-col">
+      <!-- Mobile context preview (FB-style: idea preview above scrollable comments) -->
+      <div class="mobile-comments-context-header">
+        <div class="mobile-context-info">
+          <span class="mobile-context-tag" id="drawer-context-tag">Category</span>
+          <p class="mobile-context-title" id="drawer-context-title">Title</p>
+        </div>
+        <button
+          type="button"
+          class="mobile-context-view-btn"
+          onclick="sfSetDrawerMobileTab('details')"
+        >
+          View Proposal
+        </button>
+      </div>
+
+      <!-- Scrollable comments tree -->
+      <div class="detail-comments-scrollable" id="drawer-comments-scrollable">
+        <div class="comments-section-header">
+          <h3 class="comments-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Discussion (<span id="drawer-comments-header-count">0</span>)
+          </h3>
+        </div>
+
+        <div class="comment-thread-scroll" id="drawer-comments-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Pending review notice if discussion locked -->
+      <div id="drawer-pending-notice" class="comment-pending-notice" style="margin: 16px 20px; padding: 14px 16px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.22); border-radius: var(--radius-card); display: none; align-items: center; gap: 10px; font-size: 13px; color: #d97706; font-weight: 500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Discussion and comments will open once this proposal is approved by campus staff.</span>
+      </div>
+
+      <!-- Comment composer form -->
+      <form
+        id="drawer-comment-composer"
+        class="comment-composer-form"
+        onsubmit="sfSubmitDrawerComment(event)"
+      >
+        <div class="comment-input-card">
+          <!-- Replying Banner -->
+          <div id="drawer-replying-banner" class="replying-banner" hidden>
+            <div class="replying-banner-text">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+              <span>Replying to <strong id="drawer-replying-author">@Student</strong></span>
+            </div>
+            <button type="button" class="replying-cancel-btn" onclick="sfCancelDrawerReply()" aria-label="Cancel reply">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="comment-input-main">
+            <textarea
+              id="drawer-comment-input"
+              class="comment-textarea-compact"
+              rows="1"
+              placeholder="Add a constructive thought…"
+              maxlength="500"
+              oninput="sfDrawerCommentInputChanged(this)"
+              onfocus="document.getElementById('drawer-comment-composer').classList.add('expanded')"
+              required
+            ></textarea>
+          </div>
+
+          <!-- Bottom Bar (hidden until focused) -->
+          <div class="comment-composer-bottom-bar" id="drawer-composer-bottom-bar">
+            <div class="comment-composer-status">
+              <span class="comment-char-tag" id="drawer-char-count">0/500</span>
+            </div>
+            <div class="comment-composer-buttons">
+              <button
+                type="button"
+                class="btn-comment-cancel"
+                onclick="sfCollapseDrawerComposer()"
+              >Cancel</button>
+              <button
+                type="submit"
+                class="btn-comment-post"
+                id="drawer-comment-submit-btn"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <span>Post</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</aside>
+
+<script>
+  let sfCurrentIdea = null;
+  let sfDrawerActiveReplyId = null;
+  let sfDrawerOriginalPath = null;
+  let sfTouchStartY = 0;
+
+  const SF_CATEGORY_THEMES = {
+    Facilities:    { bg: "rgba(11, 56, 87, 0.08)", text: "var(--navy)", border: "rgba(11, 56, 87, 0.2)" },
+    Learning:      { bg: "rgba(16, 185, 129, 0.08)", text: "#10b981", border: "rgba(16, 185, 129, 0.2)" },
+    Safety:        { bg: "rgba(239, 68, 68, 0.08)", text: "#ef4444", border: "rgba(239, 68, 68, 0.2)" },
+    "Student life":{ bg: "rgba(245, 158, 11, 0.08)", text: "#f59e0b", border: "rgba(245, 158, 11, 0.2)" },
+    Other:         { bg: "rgba(100, 116, 139, 0.08)", text: "#64748b", border: "rgba(100, 116, 139, 0.2)" }
+  };
+
+  const SF_STATUS_CONFIG = {
+    resolved: {
+      label: "Resolved",
+      dotColor: "#0d9488",
+      badgeBg: "rgba(13, 148, 136, 0.12)",
+      badgeText: "#0d9488",
+      bannerTitle: "Resolution Completed",
+      bannerDesc: "This suggestion has been addressed and marked as completed by campus administration.",
+      iconSvg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>'
+    },
+    in_progress: {
+      label: "In Progress",
+      dotColor: "var(--navy)",
+      badgeBg: "rgba(11, 56, 87, 0.1)",
+      badgeText: "var(--navy)",
+      bannerTitle: "Under Active Development",
+      bannerDesc: "Campus teams are currently working on planning and implementing this proposal.",
+      iconSvg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+    },
+    approved: {
+      label: "Approved",
+      dotColor: "#10b981",
+      badgeBg: "rgba(16, 185, 129, 0.12)",
+      badgeText: "#10b981",
+      bannerTitle: "Proposal Approved",
+      bannerDesc: "This proposal has been accepted and scheduled for upcoming campus improvements.",
+      iconSvg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>'
+    },
+    pending: {
+      label: "Pending Review",
+      dotColor: "#f59e0b",
+      badgeBg: "rgba(245, 158, 11, 0.12)",
+      badgeText: "#f59e0b",
+      bannerTitle: "Pending Staff Review",
+      bannerDesc: "This proposal has been submitted and is currently being reviewed by campus staff before being published to the community feed.",
+      iconSvg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+    }
+  };
+
+  const SF_LIFECYCLE_ORDER = ["pending", "approved", "in_progress", "resolved"];
+
+  async function sfOpenIdeaDetail(ideaId, initialTab = 'details') {
+    if (!sfDrawerOriginalPath) {
+      sfDrawerOriginalPath = window.location.pathname + window.location.search;
+    }
+
+    const overlay = document.getElementById('idea-drawer-overlay');
+    const drawer = document.getElementById('idea-detail-drawer');
+    const skeleton = document.getElementById('drawer-skeleton');
+    const columns = document.getElementById('drawer-columns');
+
+    overlay.removeAttribute('hidden');
+    drawer.removeAttribute('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Update URL history without full reload
+    history.pushState({ ideaDrawerId: ideaId }, '', `/idea/${ideaId}`);
+
+    // Show skeleton
+    skeleton.style.display = 'block';
+    columns.style.display = 'none';
+
+    sfSetDrawerMobileTab(initialTab);
+
+    try {
+      const res = await fetch(`/api/idea/${ideaId}`);
+      if (!res.ok) throw new Error('Idea not found');
+      const data = await res.json();
+      if (!data.success || !data.submission) throw new Error(data.error || 'Failed to load idea');
+
+      sfCurrentIdea = data.submission;
+      sfPopulateDrawerUI(data.submission, data.comments || []);
+
+      skeleton.style.display = 'none';
+      columns.style.display = 'flex';
+    } catch (err) {
+      if (window.sfToast) sfToast(err.message || 'Failed to load idea details', 'error');
+      sfCloseIdeaDrawer();
+    }
+  }
+
+  function sfPopulateDrawerUI(idea, comments) {
+    const catName = idea.category || (idea.categories && idea.categories.name) || 'Other';
+    const catTheme = SF_CATEGORY_THEMES[catName] || SF_CATEGORY_THEMES.Other;
+    const stConfig = SF_STATUS_CONFIG[idea.status] || SF_STATUS_CONFIG.pending;
+
+    // Badges
+    const catBadge = document.getElementById('drawer-cat-badge');
+    catBadge.style.background = catTheme.bg;
+    catBadge.style.color = catTheme.text;
+    catBadge.style.borderColor = catTheme.border;
+    document.getElementById('drawer-cat-name').textContent = catName;
+
+    const statusPill = document.getElementById('drawer-status-pill');
+    statusPill.style.background = stConfig.badgeBg;
+    statusPill.style.color = stConfig.badgeText;
+    document.getElementById('drawer-status-dot').style.background = stConfig.dotColor;
+    document.getElementById('drawer-status-label').textContent = stConfig.label;
+
+    // Permalink
+    document.getElementById('drawer-permalink').href = `/idea/${idea.id}`;
+
+    // Author & Date
+    const isAnon = !idea.author || (!idea.author.display_name && !idea.author.full_name);
+    const authorName = isAnon ? "Anonymous Student" : (idea.author.display_name || idea.author.full_name);
+    const authorAvatar = document.getElementById('drawer-author-avatar');
+    if (isAnon) {
+      authorAvatar.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>';
+    } else {
+      authorAvatar.textContent = authorName[0].toUpperCase();
+    }
+    document.getElementById('drawer-author-name').textContent = authorName;
+
+    const d = new Date(idea.created_at);
+    document.getElementById('drawer-date-text').textContent = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+
+    // Title & Description
+    document.getElementById('drawer-title').textContent = idea.title;
+    document.getElementById('drawer-description').textContent = idea.description;
+
+    // Status Banner
+    const banner = document.getElementById('drawer-status-banner');
+    banner.className = `detail-status-banner ${idea.status || 'pending'}`;
+    document.getElementById('drawer-banner-icon-wrap').innerHTML = stConfig.iconSvg;
+    document.getElementById('drawer-banner-title').textContent = stConfig.bannerTitle;
+    document.getElementById('drawer-banner-desc').textContent = idea.staff_note || stConfig.bannerDesc;
+
+    // Stepper
+    const currentIdx = SF_LIFECYCLE_ORDER.indexOf(idea.status || 'pending');
+    SF_LIFECYCLE_ORDER.forEach((key, idx) => {
+      const stepEl = document.getElementById(`drawer-step-${key}`);
+      const dotEl = document.getElementById(`drawer-dot-${key}`);
+      if (!stepEl || !dotEl) return;
+
+      const isDone = idx < currentIdx;
+      const isActive = idx === currentIdx;
+
+      stepEl.classList.toggle('done', isDone);
+      stepEl.classList.toggle('active', isActive);
+
+      if (isDone) {
+        dotEl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      } else if (isActive) {
+        dotEl.innerHTML = '<span style="width:8px; height:8px; border-radius:50%; background:currentColor;"></span>';
+      } else {
+        dotEl.textContent = idx + 1;
+      }
+    });
+
+    // Support Hero Card
+    const voteBtn = document.getElementById('drawer-vote-btn');
+    const voteCount = idea.vote_count ?? 0;
+    document.getElementById('drawer-vote-count').textContent = voteCount;
+    document.getElementById('drawer-vote-summary').textContent = voteCount;
+
+    const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+    const hasVoted = votedIds.includes(idea.id);
+
+    if (idea.status === 'pending') {
+      voteBtn.classList.remove('voted');
+      voteBtn.disabled = true;
+      voteBtn.title = "Voting opens once approved by staff";
+      document.getElementById('drawer-vote-label').textContent = "Pending Review";
+      document.getElementById('drawer-vote-icon').innerHTML = '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>';
+    } else if (hasVoted) {
+      voteBtn.classList.add('voted');
+      voteBtn.disabled = false;
+      document.getElementById('drawer-vote-label').textContent = "Supported";
+      document.getElementById('drawer-vote-icon').innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+    } else {
+      voteBtn.classList.remove('voted');
+      voteBtn.disabled = false;
+      document.getElementById('drawer-vote-label').textContent = "Support this idea";
+      document.getElementById('drawer-vote-icon').innerHTML = '<path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>';
+    }
+
+    // Context Header
+    document.getElementById('drawer-context-tag').textContent = catName;
+    document.getElementById('drawer-context-title').textContent = idea.title;
+
+    // Comments & Discussion
+    const commentCount = comments.length;
+    document.getElementById('drawer-mob-comment-count').textContent = commentCount;
+    document.getElementById('drawer-jump-comment-count').textContent = commentCount;
+    document.getElementById('drawer-comments-header-count').textContent = commentCount;
+
+    // Pending discussion lock
+    const pendingNotice = document.getElementById('drawer-pending-notice');
+    const composer = document.getElementById('drawer-comment-composer');
+    if (idea.status === 'pending') {
+      pendingNotice.style.display = 'flex';
+      composer.style.display = 'none';
+    } else {
+      pendingNotice.style.display = 'none';
+      composer.style.display = 'flex';
+    }
+
+    sfRenderDrawerComments(comments);
+  }
+
+  function sfRenderDrawerComments(comments) {
+    const list = document.getElementById('drawer-comments-list');
+    list.innerHTML = '';
+
+    if (!comments || comments.length === 0) {
+      list.innerHTML = `
+        <div class="comment-empty-state" id="drawer-comment-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="comment-empty-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <p class="comment-empty-text">No comments yet. Be the first to share your constructive perspective!</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Build thread tree: roots and replies
+    const roots = comments.filter(c => !c.parent_id);
+    const repliesMap = {};
+    comments.filter(c => c.parent_id).forEach(c => {
+      repliesMap[c.parent_id] = repliesMap[c.parent_id] || [];
+      repliesMap[c.parent_id].push(c);
+    });
+
+    roots.forEach(c => {
+      const card = sfCreateCommentCardEl(c);
+      list.appendChild(card);
+
+      const replies = repliesMap[c.id] || [];
+      if (replies.length > 0) {
+        const repliesContainer = document.createElement('div');
+        repliesContainer.className = 'comment-replies-thread';
+        repliesContainer.style.cssText = 'margin-left: 24px; padding-left: 12px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 8px; margin-top: 6px;';
+        replies.forEach(rc => {
+          repliesContainer.appendChild(sfCreateCommentCardEl(rc, true));
+        });
+        list.appendChild(repliesContainer);
+      }
+    });
+  }
+
+  // Avatar colours — cycle through a palette so different users get different colours
+  const SF_AVATAR_COLORS = [
+    ['#0b3857','#1e5a8a'],['#0d9488','#0a7a6e'],['#7c3aed','#6026c0'],
+    ['#d97706','#b45309'],['#be185d','#9d174d'],['#0369a1','#0284c7']
+  ];
+  function sfAvatarGrad(name) {
+    const idx = (name.charCodeAt(0) || 0) % SF_AVATAR_COLORS.length;
+    const [a, b] = SF_AVATAR_COLORS[idx];
+    return `linear-gradient(135deg, ${a} 0%, ${b} 100%)`;
+  }
+  function sfRelTime(dateStr) {
+    const d = new Date(dateStr);
+    const diff = Math.floor((Date.now() - d) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    if (diff < 604800) return `${Math.floor(diff/86400)}d ago`;
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function sfCreateCommentCardEl(c, isReply = false) {
+    const card = document.createElement('div');
+    card.className = `comment-card${isReply ? ' comment-reply-card' : ''}`;
+    card.id = `drawer-comment-${c.id}`;
+    card.style.cssText = 'animation: commentSlideIn 200ms cubic-bezier(.22,.85,.4,1) both;';
+
+    const author = c.display_name || (c.author && (c.author.display_name || c.author.full_name)) || 'Student';
+    const isStaff = c.author && (c.author.role === 'staff' || c.author.role === 'admin');
+    const grad = isStaff
+      ? 'linear-gradient(135deg, #7c3aed 0%, #6026c0 100%)'
+      : sfAvatarGrad(author);
+
+    card.innerHTML = `
+      <div class="comment-card-header">
+        <div class="comment-avatar" style="background:${grad}">${author[0].toUpperCase()}</div>
+        <strong class="comment-author-name">${author}</strong>
+        ${isStaff ? '<span class="comment-staff-tag">STAFF</span>' : ''}
+        <span class="comment-date">${sfRelTime(c.created_at)}</span>
+      </div>
+      <div class="comment-body">${(c.body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+      <div class="comment-actions">
+        <button type="button" class="comment-reply-btn" onclick="sfDrawerReplyTo('${c.id}', '${author.replace(/'/g, "\\'")}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+          Reply
+        </button>
+      </div>
+    `;
+    return card;
+  }
+
+  function sfCloseIdeaDrawer() {
+    const overlay = document.getElementById('idea-drawer-overlay');
+    const drawer = document.getElementById('idea-detail-drawer');
+    if (overlay) overlay.setAttribute('hidden', '');
+    if (drawer) drawer.setAttribute('hidden', '');
+    document.body.style.overflow = '';
+
+    // Reset composer state
+    const composer = document.getElementById('drawer-comment-composer');
+    if (composer) composer.classList.remove('expanded');
+
+    sfDrawerActiveReplyId = null;
+    const banner = document.getElementById('drawer-replying-banner');
+    if (banner) banner.setAttribute('hidden', '');
+
+    // Restore URL
+    if (window.location.pathname.startsWith('/idea/')) {
+      const target = sfDrawerOriginalPath || '/feed';
+      sfDrawerOriginalPath = null;
+      history.pushState(null, '', target);
+    }
+  }
+
+  function sfSetDrawerMobileTab(tab) {
+    const isComments = tab === 'comments';
+    const tabDetails = document.getElementById('drawer-mob-tab-details');
+    const tabComments = document.getElementById('drawer-mob-tab-comments');
+    const cols = document.getElementById('drawer-columns');
+
+    if (tabDetails) {
+      tabDetails.classList.toggle('active', !isComments);
+      tabDetails.setAttribute('aria-selected', String(!isComments));
+    }
+    if (tabComments) {
+      tabComments.classList.toggle('active', isComments);
+      tabComments.setAttribute('aria-selected', String(isComments));
+    }
+    if (cols) {
+      cols.setAttribute('data-mobile-tab', tab);
+    }
+  }
+
+  function sfDrawerShare() {
+    if (!sfCurrentIdea) return;
+    const url = `${window.location.origin}/idea/${sfCurrentIdea.id}`;
+    navigator.clipboard.writeText(url);
+
+    const btn = document.getElementById('drawer-share-btn');
+    const origHtml = btn.innerHTML;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(() => { btn.innerHTML = origHtml; }, 2000);
+
+    if (window.sfToast) sfToast('Link copied to clipboard!', 'success');
+  }
+
+  async function sfDrawerVote() {
+    if (!sfCurrentIdea) return;
+    if (sfCurrentIdea.status === 'pending') {
+      if (window.sfToast) sfToast('This idea is pending staff review. Voting opens once approved.', 'info');
+      return;
+    }
+
+    const btn = document.getElementById('drawer-vote-btn');
+    if (btn.classList.contains('voted')) return;
+
+    try {
+      const res = await fetch(`/api/vote/${sfCurrentIdea.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'up' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        btn.classList.add('voted');
+        document.getElementById('drawer-vote-count').textContent = data.vote_count;
+        document.getElementById('drawer-vote-summary').textContent = data.vote_count;
+        document.getElementById('drawer-vote-label').textContent = 'Supported';
+        document.getElementById('drawer-vote-icon').innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+
+        // Remember vote locally
+        const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+        if (!votedIds.includes(sfCurrentIdea.id)) {
+          votedIds.push(sfCurrentIdea.id);
+          localStorage.setItem('sf_voted_ideas', JSON.stringify(votedIds));
+        }
+
+        // Also reflect on feed cards if present
+        const feedCardVote = document.querySelector(`[data-idea-id="${sfCurrentIdea.id}"] .action-like .action-count`);
+        if (feedCardVote) feedCardVote.textContent = data.vote_count;
+
+        if (window.sfToast) sfToast('Vote recorded! Thank you.', 'success');
+      }
+    } catch {
+      if (window.sfToast) sfToast('Could not record vote.', 'error');
+    }
+  }
+
+  function sfDrawerReplyTo(commentId, author) {
+    sfDrawerActiveReplyId = commentId;
+    document.getElementById('drawer-replying-author').textContent = `@${author}`;
+    document.getElementById('drawer-replying-banner').removeAttribute('hidden');
+    const input = document.getElementById('drawer-comment-input');
+    input.placeholder = `Reply to @${author}…`;
+    input.focus();
+  }
+
+  function sfCancelDrawerReply() {
+    sfDrawerActiveReplyId = null;
+    document.getElementById('drawer-replying-banner').setAttribute('hidden', '');
+    const input = document.getElementById('drawer-comment-input');
+    input.placeholder = 'Add a constructive thought…';
+  }
+
+  function sfCollapseDrawerComposer() {
+    const composer = document.getElementById('drawer-comment-composer');
+    const input = document.getElementById('drawer-comment-input');
+    if (composer) composer.classList.remove('expanded');
+    if (input) { input.value = ''; input.blur(); }
+    sfCancelDrawerReply();
+    sfDrawerCommentInputChanged(input);
+  }
+
+  function sfDrawerCommentInputChanged(textarea) {
+    const len = textarea.value.length;
+    const countSpan = document.getElementById('drawer-char-count');
+    if (countSpan) {
+      countSpan.textContent = `${len}/500${len < 10 ? ' · Min 10 chars' : ''}`;
+    }
+  }
+
+  async function sfSubmitDrawerComment(e) {
+    e.preventDefault();
+    if (!sfCurrentIdea) return;
+
+    const input = document.getElementById('drawer-comment-input');
+    const body = input.value.trim();
+    if (body.length < 10) {
+      if (window.sfToast) sfToast('Comment must be at least 10 characters.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('drawer-comment-submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span>Posting…</span>';
+
+    try {
+      const res = await fetch(`/api/comments/${sfCurrentIdea.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body, parentId: sfDrawerActiveReplyId })
+      });
+      const data = await res.json();
+      if (!data.success && !data.data) {
+        throw new Error(data.error || 'Failed to post comment');
+      }
+
+      const empty = document.getElementById('drawer-comment-empty');
+      if (empty) empty.remove();
+
+      const newComment = data.data || {
+        id: 'new-' + Date.now(),
+        body,
+        display_name: 'You',
+        created_at: new Date().toISOString(),
+        parent_id: sfDrawerActiveReplyId
+      };
+
+      const card = sfCreateCommentCardEl(newComment, !!sfDrawerActiveReplyId);
+      const list = document.getElementById('drawer-comments-list');
+      list.appendChild(card);
+
+      input.value = '';
+      sfCancelDrawerReply();
+      sfDrawerCommentInputChanged(input);
+
+      // Increment counts
+      const mobCount = document.getElementById('drawer-mob-comment-count');
+      const headCount = document.getElementById('drawer-comments-header-count');
+      const jumpCount = document.getElementById('drawer-jump-comment-count');
+      const nextCount = Number(headCount.textContent || 0) + 1;
+      if (mobCount) mobCount.textContent = nextCount;
+      if (headCount) headCount.textContent = nextCount;
+      if (jumpCount) jumpCount.textContent = nextCount;
+
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (window.sfToast) sfToast('Comment posted successfully!', 'success');
+    } catch (err) {
+      if (window.sfToast) sfToast(err.message || 'Could not post comment.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span>Post</span>';
+    }
+  }
+
+  // Keyboard and History Listeners
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const drawer = document.getElementById('idea-detail-drawer');
+      if (drawer && !drawer.hasAttribute('hidden')) {
+        sfCloseIdeaDrawer();
+      }
+    }
+  });
+
+  window.addEventListener('popstate', (e) => {
+    const drawer = document.getElementById('idea-detail-drawer');
+    if (drawer && !drawer.hasAttribute('hidden')) {
+      sfCloseIdeaDrawer();
+    }
+  });
+
+  // Mobile Touch Swipe Down to Dismiss
+  document.addEventListener('DOMContentLoaded', () => {
+    const handle = document.getElementById('drawer-drag-handle');
+    const drawer = document.getElementById('idea-detail-drawer');
+    if (!handle || !drawer) return;
+
+    handle.addEventListener('touchstart', (e) => {
+      sfTouchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    handle.addEventListener('touchend', (e) => {
+      const touchEndY = e.changedTouches[0].clientY;
+      if (touchEndY - sfTouchStartY > 70) {
+        sfCloseIdeaDrawer();
+      }
+    }, { passive: true });
+  });
+</script>

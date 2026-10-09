@@ -1,0 +1,421 @@
+<% layout('layout') %>
+
+<%
+  const user = it.user;
+  const submissions = it.submissions || [];
+  const bookmarks = it.bookmarks || [];
+  const displayName = it.profile?.display_name || user?.full_name || (user?.email ? user.email.split('@')[0] : 'Community Member');
+  const email = user?.email || 'Anonymous Student';
+  const initial = (displayName || 'U')[0].toUpperCase();
+  const isStaff = user?.role === 'staff' || user?.role === 'admin';
+
+  function statusClass(status) {
+    const s = (status || 'pending').toLowerCase().replace(' ', '_');
+    return `status-${s}`;
+  }
+  function statusLabel(status) {
+    return (status || 'pending').replace(/_/g, ' ');
+  }
+%>
+
+<main class="prof-page">
+  <!-- ── Hero Banner ── -->
+  <div class="prof-hero">
+    <div class="prof-hero-inner">
+      <!-- Avatar -->
+      <div class="prof-avatar">
+        <% if (user?.avatar_url) { %>
+          <img src="<%= user.avatar_url %>" alt="<%= initial %>" class="prof-avatar-img" referrerpolicy="no-referrer" />
+        <% } else { %>
+          <%= initial %>
+        <% } %>
+        <% if (isStaff) { %>
+          <span class="prof-avatar-badge" title="Campus Staff Member">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+        <% } %>
+      </div>
+
+      <!-- Name + stats -->
+      <div class="prof-hero-info">
+        <h1 class="prof-hero-name"><%= displayName %></h1>
+        <p class="prof-hero-email"><%= email %></p>
+        <div class="prof-hero-stats">
+          <span class="prof-hero-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span id="stat-ideas-count"><%= submissions.length %></span> ideas
+          </span>
+          <span class="prof-hero-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            <span id="stat-bookmarks-count"><%= bookmarks.length %></span> saved
+          </span>
+          <span class="prof-hero-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span id="stat-shared-count">0</span> shared
+          </span>
+          <span class="prof-hero-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            <span id="stat-supported-count">0</span> supported
+          </span>
+        </div>
+      </div>
+
+      <!-- Auth action -->
+      <% if (!user) { %>
+        <button
+          type="button"
+          class="btn-primary-sm prof-hero-signin-btn"
+          onclick="document.getElementById('auth-modal').removeAttribute('hidden')"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Sign in
+        </button>
+      <% } else { %>
+        <div class="prof-hero-actions">
+          <% if (isStaff) { %>
+            <a href="/admin" class="prof-staff-link">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Staff Portal
+            </a>
+          <% } %>
+          <a href="#settings" class="prof-settings-link" title="Profile Settings">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </a>
+        </div>
+      <% } %>
+    </div>
+    <!-- Curved wave -->
+    <div class="prof-hero-wave"></div>
+  </div>
+
+  <!-- ── Content Area ── -->
+  <div class="prof-content">
+    <!-- Left: Settings Panel -->
+    <aside class="prof-settings" id="prof-settings-panel">
+      <div class="prof-settings-header" onclick="sfToggleSettings()" id="prof-settings-header">
+        <h2 class="prof-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Profile Settings
+        </h2>
+        <span class="prof-settings-toggle" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </div>
+
+      <div class="prof-settings-body">
+        <% if (!user) { %>
+          <div class="prof-auth-callout">
+            <p>Sign in to sync your activity across devices.</p>
+            <div class="prof-auth-btns">
+              <button class="btn-primary" onclick="document.getElementById('auth-modal').removeAttribute('hidden')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                Sign in
+              </button>
+              <button class="btn-ghost" onclick="document.getElementById('auth-modal').removeAttribute('hidden')">
+                Create account
+              </button>
+            </div>
+          </div>
+        <% } %>
+
+        <div class="prof-field">
+          <label for="prof-display-name" class="prof-field-label">
+            Display name
+            <span class="prof-field-hint">Shown on your posts &amp; comments</span>
+          </label>
+          <input
+            id="prof-display-name"
+            type="text"
+            class="prof-input"
+            value="<%= displayName %>"
+            placeholder="e.g. Alex, Campus Resident…"
+            maxlength="60"
+          />
+        </div>
+
+        <div class="prof-divider"></div>
+
+        <label class="prof-toggle-row">
+          <input type="checkbox" id="prof-anon-toggle" />
+          <span class="prof-toggle-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+            Post anonymously by default
+          </span>
+        </label>
+        <p class="prof-field-hint prof-field-hint--top">
+          Your name is hidden on new posts. Override per post.
+        </p>
+
+        <% if (user) { %>
+          <label class="prof-toggle-row prof-toggle-row--spaced">
+            <input type="checkbox" id="prof-notifs-toggle" />
+            <span class="prof-toggle-label">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              Email notifications
+            </span>
+          </label>
+          <p class="prof-field-hint prof-field-hint--top">
+            Updates when your ideas change status or get comments.
+          </p>
+        <% } %>
+
+        <button
+          type="button"
+          id="btn-save-prefs"
+          class="btn-primary prof-save-btn"
+          onclick="sfSaveProfilePrefs()"
+        >
+          Save preferences
+        </button>
+      </div>
+    </aside>
+
+    <!-- Right: Activity Tabs -->
+    <section class="prof-activity">
+      <div class="prof-activity-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          id="tab-btn-submissions"
+          aria-selected="true"
+          class="prof-tab-btn active"
+          onclick="sfSetProfileTab('submissions')"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>My Ideas</span>
+          <span class="prof-tab-count" id="count-tab-submissions"><%= submissions.length %></span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          id="tab-btn-bookmarks"
+          aria-selected="false"
+          class="prof-tab-btn"
+          onclick="sfSetProfileTab('bookmarks')"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span>Bookmarks</span>
+          <span class="prof-tab-count" id="count-tab-bookmarks"><%= bookmarks.length %></span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          id="tab-btn-shared"
+          aria-selected="false"
+          class="prof-tab-btn"
+          onclick="sfSetProfileTab('shared')"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          <span>Shared</span>
+          <span class="prof-tab-count" id="count-tab-shared">0</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          id="tab-btn-voted"
+          aria-selected="false"
+          class="prof-tab-btn"
+          onclick="sfSetProfileTab('voted')"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          <span>Supported</span>
+          <span class="prof-tab-count" id="count-tab-voted">0</span>
+        </button>
+      </div>
+
+      <!-- Tab 1: My Submissions -->
+      <div id="prof-pane-submissions" class="prof-activity-pane">
+        <% if (submissions.length === 0) { %>
+          <div class="prof-empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <h3>No ideas shared yet</h3>
+            <p>Propose your first constructive improvement to make our campus better.</p>
+            <button class="btn-primary" onclick="openSubmitPanel()">Share an idea</button>
+          </div>
+        <% } else { %>
+          <div class="prof-activity-grid">
+            <% for (const item of submissions) { %>
+              <%
+                const sc = statusClass(item.status);
+                const sl = statusLabel(item.status);
+                const catLabel = item.category ?? (item.categories?.name ?? 'Other');
+              %>
+              <div class="prof-activity-card-wrap">
+                <a href="/idea/<%= item.id %>" class="prof-activity-card" aria-label="<%= item.title %>">
+                  <div class="prof-activity-card-top">
+                    <span class="prof-activity-cat"><%= catLabel %></span>
+                    <span class="prof-activity-status <%= sc %>"><%= sl %></span>
+                  </div>
+                  <h3 class="prof-activity-title"><%= item.title %></h3>
+                  <div class="prof-activity-footer">
+                    <span class="prof-activity-stat">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                      <%= item.vote_count ?? 0 %>
+                    </span>
+                    <span class="prof-activity-date">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <%= new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                    </span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="prof-activity-arrow"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                  </div>
+                </a>
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Tab 2: Bookmarks -->
+      <div id="prof-pane-bookmarks" class="prof-activity-pane" hidden>
+        <% if (bookmarks.length === 0) { %>
+          <div class="prof-empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            <h3>No bookmarked ideas</h3>
+            <p>Save interesting proposals from the community feed to follow their progress.</p>
+            <a href="/feed" class="btn-ghost">Browse ideas</a>
+          </div>
+        <% } else { %>
+          <div class="prof-activity-grid">
+            <% for (const item of bookmarks) { %>
+              <%
+                const sc = statusClass(item.status);
+                const sl = statusLabel(item.status);
+                const catLabel = item.category ?? (item.categories?.name ?? 'Other');
+              %>
+              <div class="prof-activity-card-wrap" id="bm-wrap-<%= item.id %>">
+                <a href="/idea/<%= item.id %>" class="prof-activity-card" aria-label="<%= item.title %>">
+                  <div class="prof-activity-card-top">
+                    <span class="prof-activity-cat"><%= catLabel %></span>
+                    <span class="prof-activity-status <%= sc %>"><%= sl %></span>
+                  </div>
+                  <h3 class="prof-activity-title"><%= item.title %></h3>
+                  <div class="prof-activity-footer">
+                    <span class="prof-activity-stat">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                      <%= item.vote_count ?? 0 %>
+                    </span>
+                    <span class="prof-activity-date">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <%= new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                    </span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="prof-activity-arrow"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                  </div>
+                </a>
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Tab 3: Shared (client-side) -->
+      <div id="prof-pane-shared" class="prof-activity-pane" hidden>
+        <div class="prof-empty-state" id="shared-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          <h3>No shared ideas recorded yet</h3>
+          <p>Share ideas with classmates and campus friends to build momentum.</p>
+          <a href="/feed" class="btn-ghost">Browse ideas</a>
+        </div>
+        <div class="prof-activity-grid" id="shared-grid" hidden></div>
+      </div>
+
+      <!-- Tab 4: Supported / Voted -->
+      <div id="prof-pane-voted" class="prof-activity-pane" hidden>
+        <div class="prof-empty-state" id="voted-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          <h3>No supported proposals yet</h3>
+          <p>Upvote proposals in the community feed to help prioritize campus resources.</p>
+          <a href="/feed" class="btn-ghost">Explore community ideas</a>
+        </div>
+        <div class="prof-activity-grid" id="voted-grid" hidden></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  function sfToggleSettings() {
+    // Only acts as accordion on mobile; on desktop the body is always visible
+    if (window.innerWidth > 768) return;
+    const panel = document.getElementById('prof-settings-panel');
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+  }
+
+  function sfSetProfileTab(tab) {
+    ['submissions', 'bookmarks', 'shared', 'voted'].forEach(t => {
+      const active = t === tab;
+      const btn = document.getElementById(`tab-btn-${t}`);
+      const pane = document.getElementById(`prof-pane-${t}`);
+      if (btn) {
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', String(active));
+      }
+      if (pane) {
+        if (active) pane.removeAttribute('hidden');
+        else pane.setAttribute('hidden', '');
+      }
+    });
+
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+    } catch (e) {}
+  }
+
+  function sfSaveProfilePrefs() {
+    const btn = document.getElementById('btn-save-prefs');
+    const name = document.getElementById('prof-display-name').value.trim();
+    const anon = document.getElementById('prof-anon-toggle').checked;
+    const notifs = document.getElementById('prof-notifs-toggle')?.checked ?? false;
+
+    localStorage.setItem('sf_display_name', name);
+    localStorage.setItem('sf_anon_default', String(anon));
+    localStorage.setItem('sf_email_notifs', String(notifs));
+
+    const orig = btn.textContent;
+    btn.textContent = '✓ Saved!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+    if (window.sfToast) sfToast('Preferences saved!', 'success');
+  }
+
+  // Hydrate local storage + URL tab on load
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      // Auto-open settings on desktop; collapsed by default on mobile
+      const panel = document.getElementById('prof-settings-panel');
+      if (panel) {
+        if (window.innerWidth > 768) {
+          panel.classList.add('open');
+        }
+      }
+
+      const savedName = localStorage.getItem('sf_display_name');
+      const nameEl = document.getElementById('prof-display-name');
+      if (savedName && nameEl) nameEl.value = savedName;
+
+      const anonEl = document.getElementById('prof-anon-toggle');
+      if (anonEl) anonEl.checked = localStorage.getItem('sf_anon_default') === 'true';
+
+      const notifsEl = document.getElementById('prof-notifs-toggle');
+      if (notifsEl) notifsEl.checked = localStorage.getItem('sf_email_notifs') === 'true';
+
+      // Voted count from local storage
+      const voted = JSON.parse(localStorage.getItem('sf_voted') || '[]');
+      const statVoted = document.getElementById('stat-supported-count');
+      const countVoted = document.getElementById('count-tab-voted');
+      if (statVoted) statVoted.textContent = voted.length;
+      if (countVoted) countVoted.textContent = voted.length;
+
+      // Check tab param in URL
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam && ['submissions', 'bookmarks', 'shared', 'voted'].includes(tabParam)) {
+        sfSetProfileTab(tabParam);
+      }
+    } catch (e) {}
+  });
+</script>

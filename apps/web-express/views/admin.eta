@@ -1,0 +1,449 @@
+<% layout('layout') %>
+
+<%
+  const pendingCount = (it.pending || []).length;
+  const submissions = it.submissions || [];
+  const totalCount = it.totalCount || submissions.length;
+  const approvedCount = submissions.filter(s => s.status === 'approved').length;
+  const inProgressCount = submissions.filter(s => s.status === 'in_progress').length;
+  const resolvedCount = submissions.filter(s => s.status === 'resolved').length;
+  const currentStatus = it.status || 'all';
+  const currentSearch = it.search || '';
+%>
+
+<main class="admin-shell">
+  <!-- ── Header Command Bar ── -->
+  <div class="sp-header">
+    <div class="sp-title-area">
+      <span class="sp-eyebrow">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        STAFF COMMAND CENTER
+      </span>
+      <h1 class="sp-title">Community Moderation Queue</h1>
+      <p class="sp-subtitle">Review, triage, and route community ideas into campus delivery.</p>
+    </div>
+
+    <div class="sp-header-actions">
+      <!-- Main Navigation Tabs -->
+      <div class="sp-nav-tabs" role="tablist" aria-label="Staff Portal Views">
+        <a href="/admin" class="sp-nav-tab sp-nav-tab--active">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <span>Queue</span>
+          <% if (pendingCount > 0) { %>
+            <span class="sp-tab-badge sp-tab-badge--urgent"><%= pendingCount %></span>
+          <% } %>
+        </a>
+        <a href="/roadmap" class="sp-nav-tab">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+          <span>Roadmap</span>
+        </a>
+      </div>
+
+      <button
+        type="button"
+        class="sp-btn-action"
+        onclick="location.reload()"
+        title="Refresh submissions from database"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span>Refresh</span>
+      </button>
+
+      <button
+        type="button"
+        class="sp-btn-action"
+        onclick="sfExportAdminCsv()"
+        title="Export current view to CSV"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Export CSV</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── KPI Metric Cards ── -->
+  <div class="sp-kpi-grid">
+    <!-- All -->
+    <div
+      class="sp-kpi-card sp-kpi-card--total<%= currentStatus === 'all' ? ' sp-kpi-card--active' : '' %>"
+      onclick="sfFilterStatus('all')"
+    >
+      <div class="sp-kpi-top">
+        <span class="sp-kpi-label">Total Ideas</span>
+        <div class="sp-kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+      </div>
+      <span class="sp-kpi-num"><%= totalCount %></span>
+      <span class="sp-kpi-sub">All submissions</span>
+    </div>
+
+    <!-- Pending -->
+    <div
+      class="sp-kpi-card sp-kpi-card--pending<%= currentStatus === 'pending' ? ' sp-kpi-card--active' : '' %>"
+      onclick="sfFilterStatus('pending')"
+    >
+      <div class="sp-kpi-top">
+        <span class="sp-kpi-label">Pending Review</span>
+        <div class="sp-kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+      </div>
+      <span class="sp-kpi-num"><%= pendingCount %></span>
+      <span class="sp-kpi-sub">Needs attention</span>
+    </div>
+
+    <!-- Approved -->
+    <div
+      class="sp-kpi-card sp-kpi-card--approved<%= currentStatus === 'approved' ? ' sp-kpi-card--active' : '' %>"
+      onclick="sfFilterStatus('approved')"
+    >
+      <div class="sp-kpi-top">
+        <span class="sp-kpi-label">Approved</span>
+        <div class="sp-kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        </div>
+      </div>
+      <span class="sp-kpi-num"><%= approvedCount %></span>
+      <span class="sp-kpi-sub">Public on feed</span>
+    </div>
+
+    <!-- In Progress -->
+    <div
+      class="sp-kpi-card sp-kpi-card--in_progress<%= currentStatus === 'in_progress' ? ' sp-kpi-card--active' : '' %>"
+      onclick="sfFilterStatus('in_progress')"
+    >
+      <div class="sp-kpi-top">
+        <span class="sp-kpi-label">In Progress</span>
+        <div class="sp-kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+      </div>
+      <span class="sp-kpi-num"><%= inProgressCount %></span>
+      <span class="sp-kpi-sub">Active delivery</span>
+    </div>
+
+    <!-- Resolved -->
+    <div
+      class="sp-kpi-card sp-kpi-card--resolved<%= currentStatus === 'resolved' ? ' sp-kpi-card--active' : '' %>"
+      onclick="sfFilterStatus('resolved')"
+    >
+      <div class="sp-kpi-top">
+        <span class="sp-kpi-label">Resolved</span>
+        <div class="sp-kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+      </div>
+      <span class="sp-kpi-num"><%= resolvedCount %></span>
+      <span class="sp-kpi-sub">Completed</span>
+    </div>
+  </div>
+
+  <!-- ── Filter & Search Toolbar ── -->
+  <div class="sp-controls-card">
+    <div class="sp-controls-row">
+      <!-- Search Input -->
+      <div class="sp-search-box">
+        <svg class="sp-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          type="text"
+          id="sp-search"
+          class="sp-search-input"
+          placeholder="Search by title, description, or tracking code..."
+          value="<%= currentSearch %>"
+          oninput="sfFilterQueueCards()"
+        />
+      </div>
+
+      <!-- Status Filter Chips -->
+      <div class="sp-status-chips" role="group" aria-label="Filter by status">
+        <button
+          type="button"
+          class="sp-chip<%= currentStatus === 'all' ? ' sp-chip--active' : '' %>"
+          onclick="sfFilterStatus('all')"
+        >
+          <span>All</span>
+          <span class="sp-chip-count"><%= totalCount %></span>
+        </button>
+        <button
+          type="button"
+          class="sp-chip<%= currentStatus === 'pending' ? ' sp-chip--active' : '' %>"
+          onclick="sfFilterStatus('pending')"
+        >
+          <span>Pending</span>
+          <span class="sp-chip-count"><%= pendingCount %></span>
+        </button>
+        <button
+          type="button"
+          class="sp-chip<%= currentStatus === 'approved' ? ' sp-chip--active' : '' %>"
+          onclick="sfFilterStatus('approved')"
+        >
+          <span>Approved</span>
+          <span class="sp-chip-count"><%= approvedCount %></span>
+        </button>
+        <button
+          type="button"
+          class="sp-chip<%= currentStatus === 'in_progress' ? ' sp-chip--active' : '' %>"
+          onclick="sfFilterStatus('in_progress')"
+        >
+          <span>In Progress</span>
+          <span class="sp-chip-count"><%= inProgressCount %></span>
+        </button>
+        <button
+          type="button"
+          class="sp-chip<%= currentStatus === 'resolved' ? ' sp-chip--active' : '' %>"
+          onclick="sfFilterStatus('resolved')"
+        >
+          <span>Resolved</span>
+          <span class="sp-chip-count"><%= resolvedCount %></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Queue Table / Card List ── -->
+  <div class="sp-table-head">
+    <div class="sp-table-head-left">
+      <span>Submissions (<span id="sp-visible-count"><%= submissions.length %></span>)</span>
+    </div>
+    <span>Status &amp; Actions</span>
+  </div>
+
+  <div class="sp-list" id="sp-cards-list">
+    <% if (submissions.length === 0) { %>
+      <div class="sp-empty-state">
+        <svg class="sp-empty-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <p class="sp-empty-text">No submissions found in this view</p>
+      </div>
+    <% } else { %>
+      <% for (const item of submissions) { %>
+        <%
+          const cat = item.category ?? (item.categories?.name ?? 'Other');
+          const isPending = item.status === 'pending';
+          const statusColor = item.status === 'approved' ? '#10B981' : (item.status === 'in_progress' ? '#3B82F6' : (item.status === 'resolved' ? '#0D9488' : (item.status === 'rejected' ? '#EF4444' : '#F59E0B')));
+        %>
+        <div
+          class="sp-card"
+          id="sp-item-<%= item.id %>"
+          data-id="<%= item.id %>"
+          data-title="<%= (item.title || '').toLowerCase() %>"
+          data-desc="<%= (item.description || '').toLowerCase() %>"
+          data-code="<%= (item.tracking_code || '').toLowerCase() %>"
+          data-status="<%= item.status || 'pending' %>"
+          onclick="sfOpenDecisionModal('<%= item.id %>', '<%= (item.title || '').replace(/'/g, \"\\'\") %>', '<%= item.status || 'pending' %>')"
+        >
+          <!-- Upvote count -->
+          <div class="sp-card-votes" title="Community votes">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            <span><%= item.vote_count ?? 0 %></span>
+          </div>
+
+          <!-- Body -->
+          <div class="sp-card-body">
+            <div class="sp-card-title-row">
+              <h3 class="sp-card-title"><%= item.title %></h3>
+            </div>
+            <p class="sp-card-desc"><%= item.description %></p>
+            <div class="sp-card-meta">
+              <span class="sp-meta-pill sp-meta-pill--category"><%= cat %></span>
+              <span class="sp-meta-pill sp-meta-pill--<%= item.status || 'pending' %>">
+                <%= (item.status || 'pending').replace('_', ' ') %>
+              </span>
+              <span class="sp-meta-pill sp-meta-pill--code">#<%= item.tracking_code %></span>
+              <span class="sp-card-date">
+                <%= new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) %>
+              </span>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="sp-quick-actions" onclick="event.stopPropagation()">
+            <button
+              type="button"
+              class="sp-action-icon-btn sp-action-icon-btn--approve"
+              title="Approve &amp; Publish"
+              onclick="sfQuickUpdateStatus('<%= item.id %>', 'approved')"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button
+              type="button"
+              class="sp-action-icon-btn sp-action-icon-btn--reject"
+              title="Reject"
+              onclick="sfQuickUpdateStatus('<%= item.id %>', 'rejected')"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <a
+              href="/idea/<%= item.id %>"
+              class="sp-action-icon-btn sp-action-icon-btn--inspect"
+              title="View full idea page"
+              target="_blank"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+          </div>
+        </div>
+      <% } %>
+    <% } %>
+  </div>
+
+  <!-- ── Decision Modal / Drawer ── -->
+  <div
+    id="sp-decision-modal"
+    class="rm-drawer-overlay"
+    hidden
+    onclick="if(event.target===this) sfCloseDecisionModal()"
+  >
+    <div class="rm-drawer" role="dialog" aria-modal="true" aria-label="Moderate Submission">
+      <div class="rm-drawer-head">
+        <div class="sp-modal-head-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Staff Moderation Action
+        </div>
+        <button type="button" class="rm-drawer-close" onclick="sfCloseDecisionModal()" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="rm-drawer-body">
+        <h3 id="modal-item-title" class="sp-modal-item-title"></h3>
+
+        <div>
+          <label class="rm-drawer-field-label sp-modal-label">Change Status To</label>
+          <div class="sp-modal-btn-grid">
+            <button type="button" class="btn-primary btn-mod-approve" onclick="sfApplyModalStatus('approved')">
+              ✓ Approve (Publish)
+            </button>
+            <button type="button" class="btn-primary btn-mod-in-progress" onclick="sfApplyModalStatus('in_progress')">
+              ⚡ In Progress
+            </button>
+            <button type="button" class="btn-primary btn-mod-resolved" onclick="sfApplyModalStatus('resolved')">
+              🎯 Resolved
+            </button>
+            <button type="button" class="btn-ghost btn-mod-reject" onclick="sfApplyModalStatus('rejected')">
+              ✕ Reject
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="rm-drawer-field-label sp-modal-label sp-modal-label--note">Staff Response Note (Public)</label>
+          <textarea
+            id="modal-staff-note"
+            class="form-input sp-modal-textarea"
+            rows="3"
+            placeholder="Explain the update to the student community…"
+          ></textarea>
+        </div>
+
+        <div class="sp-quick-responses">
+          <span class="sp-quick-responses-label">Quick responses:</span>
+          <button type="button" class="tag tag-clickable" onclick="sfSetModalNote(this.textContent)">Approved — queued for campus operations review.</button>
+          <button type="button" class="tag tag-clickable" onclick="sfSetModalNote(this.textContent)">Under active evaluation by student affairs.</button>
+          <button type="button" class="tag tag-clickable" onclick="sfSetModalNote(this.textContent)">Resolved in recent campus facility upgrades.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  let modalActiveId = null;
+
+  function sfFilterStatus(status) {
+    const url = new URL(window.location.href);
+    if (status === 'all') url.searchParams.delete('status');
+    else url.searchParams.set('status', status);
+    window.location.href = url.toString();
+  }
+
+  function sfFilterQueueCards() {
+    const q = (document.getElementById('sp-search').value || '').toLowerCase().trim();
+    const cards = document.querySelectorAll('.sp-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const title = card.getAttribute('data-title') || '';
+      const desc = card.getAttribute('data-desc') || '';
+      const code = card.getAttribute('data-code') || '';
+
+      const match = !q || title.includes(q) || desc.includes(q) || code.includes(q);
+      if (match) {
+        card.removeAttribute('hidden');
+      } else {
+        card.setAttribute('hidden', '');
+      }
+      if (match) visibleCount++;
+    });
+
+    const countSpan = document.getElementById('sp-visible-count');
+    if (countSpan) countSpan.textContent = visibleCount;
+  }
+
+  function sfOpenDecisionModal(id, title, status) {
+    modalActiveId = id;
+    document.getElementById('modal-item-title').textContent = title;
+    document.getElementById('modal-staff-note').value = '';
+    document.getElementById('sp-decision-modal').removeAttribute('hidden');
+  }
+
+  function sfCloseDecisionModal() {
+    modalActiveId = null;
+    document.getElementById('sp-decision-modal').setAttribute('hidden', '');
+  }
+
+  function sfSetModalNote(text) {
+    document.getElementById('modal-staff-note').value = text;
+  }
+
+  async function sfApplyModalStatus(newStatus) {
+    if (!modalActiveId) return;
+    const note = document.getElementById('modal-staff-note').value.trim();
+    await sfUpdateSubmission(modalActiveId, newStatus, note);
+    sfCloseDecisionModal();
+  }
+
+  async function sfQuickUpdateStatus(id, newStatus) {
+    await sfUpdateSubmission(id, newStatus, '');
+  }
+
+  async function sfUpdateSubmission(id, newStatus, note) {
+    try {
+      const res = await fetch(`/api/admin/submissions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, note })
+      });
+      const data = await res.json();
+      if (!data.success && !data.data) {
+        throw new Error(data.error || 'Failed to update status');
+      }
+      if (window.sfToast) sfToast(`Status updated to ${newStatus}!`, 'success');
+      setTimeout(() => location.reload(), 600);
+    } catch (err) {
+      if (window.sfToast) sfToast(err.message || 'Could not update status.', 'error');
+    }
+  }
+
+  function sfExportAdminCsv() {
+    const cards = document.querySelectorAll('.sp-card');
+    const rows = [['ID', 'Title', 'Status', 'Tracking Code']];
+    cards.forEach(card => {
+      const id = card.getAttribute('data-id');
+      const title = card.querySelector('.sp-card-title')?.textContent?.replace(/"/g, '""') || '';
+      const status = card.getAttribute('data-status');
+      const code = card.getAttribute('data-code');
+      rows.push([id, `"${title}"`, status, code]);
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'suggfeed_moderation_queue.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>

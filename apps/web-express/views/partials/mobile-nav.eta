@@ -1,0 +1,27 @@
+<!-- Mobile Tab Bar (Bottom Navigation) -->
+<nav class="mobile-tab-bar" aria-label="Mobile navigation">
+  <a href="/" class="mobile-tab<%= it.currentPath === '/' ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/' ? 'page' : 'false' %>">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/' ? '2.5' : '1.8' %>"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a>
+
+  <a href="/feed" class="mobile-tab<%= it.currentPath === '/feed' ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/feed' ? 'page' : 'false' %>">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/feed' ? '2.5' : '1.8' %>"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Ideas</span>
+  </a>
+
+  <button type="button" class="mobile-tab" onclick="openSubmitPanel()" aria-label="Submit an idea">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <span>Submit</span>
+  </button>
+
+  <a href="/roadmap" class="mobile-tab<%= it.currentPath === '/roadmap' ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/roadmap' ? 'page' : 'false' %>">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/roadmap' ? '2.5' : '1.8' %>"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+    <span>Roadmap</span>
+  </a>
+
+  <a href="/profile" class="mobile-tab<%= it.currentPath === '/profile' ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/profile' ? 'page' : 'false' %>">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/profile' ? '2.5' : '1.8' %>"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profile</span>
+  </a>
+</nav>

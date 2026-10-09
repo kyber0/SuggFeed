@@ -1,0 +1,130 @@
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Google Fonts Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Design tokens Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+:root {
+  --ink:       #102a43;
+  --ink-2:     #243b53;
+  --muted:     #627d98;
+  --muted-2:   #829ab1;
+  --line:      #d9e2ec;
+  --line-2:    #bcccdc;
+  --surface:   #ffffff;
+  --bg:        #f8fafc;
+  --bg-2:      #f0f4f8;
+  --navy:      #0b3857;
+  --navy-2:    #104e77;
+  --sky:       #e8f4fb;
+  --sky-2:     #d0eaf7;
+  --mint:      #e4f7ee;
+  --accent:    #e86e4a;
+  --accent-2:  #d4562f;
+  --success:   #11845b;
+  --success-bg:#e4f7ee;
+  --error:     #9b341f;
+  --error-bg:  #fff3f1;
+  --warn:      #9c6500;
+  --warn-bg:   #fff4dc;
+
+  /* spacing */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+  --sp-12: 48px; --sp-16: 64px;
+
+  /* radii */
+  --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px; --r-full: 9999px;
+
+  /* shadows */
+  --shadow-sm: 0 1px 3px rgba(16,42,67,.07), 0 1px 2px rgba(16,42,67,.05);
+  --shadow-md: 0 4px 16px rgba(16,42,67,.09), 0 2px 6px rgba(16,42,67,.06);
+  --shadow-lg: 0 10px 36px rgba(16,42,67,.11), 0 4px 12px rgba(16,42,67,.07);
+
+  /* transitions */
+  --t-fast: 120ms ease;
+  --t-base: 200ms ease;
+  --t-slow: 350ms ease;
+
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Core Feed & Comments Tokens Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+  --feed-width-max: 740px;
+  --avatar-md: 40px;
+  --avatar-sm: 28px;
+  --radius-card: 14px;
+  --radius-media: 8px;
+  --radius-pill: 9999px;
+  --card-padding: 18px 20px;
+  --threadline-width: 2px;
+
+  --bg-canvas: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-hover: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-link: var(--navy);
+
+  --like: #F43F5E;
+  --repost: #10B981;
+  --bookmark: #F59E0B;
+  --comment: var(--navy);
+  --badge-admin: #A855F7;
+  --badge-mod: #10B981;
+  --badge-op: #F59E0B;
+
+  /* Ã¢â€â‚¬Ã¢â€â‚¬ Roadmap Tokens Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+  --roadmap-col-width: 320px;
+  --roadmap-card-radius: var(--radius-card);
+  --roadmap-card-padding: 12px;
+  --status-now: #F59E0B;
+  --status-next: #3B82F6;
+  --status-later: #64748B;
+
+  --font-body: 15px/1.46;
+  --font-title: 18px/1.33 bold;
+  --font-meta: 13px/1.38;
+  --duration-fast: 100ms;
+  --duration-expand: 300ms;
+}
+
+[data-theme="dark"] {
+  --bg-canvas: #0F172A;
+  --surface-card: #1E293B;
+  --surface-hover: #334155;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-link: var(--navy);
+
+  --ink:       #e2e8f0;
+  --ink-2:     #cbd5e1;
+  --muted:     #829ab1;
+  --muted-2:   #627d98;
+  --line:      #334e68;
+  --line-2:    #486581;
+  --surface:   #102a43;
+  --bg:        #061a2b;
+  --bg-2:      #0c2134;
+  --navy:      #3b82f6;
+  --navy-2:    #2563eb;
+  --sky:       #193a54;
+  --sky-2:     #244b6b;
+  --mint:      #123829;
+  --accent:    #f97316;
+  --accent-2:  #ea580c;
+  --success:   #4ade80;
+  --success-bg:#064e3b;
+  --error:     #f87171;
+  --error-bg:  #7f1d1d;
+  --warn:      #fbbf24;
+  --warn-bg:   #78350f;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.4);
+  --shadow-lg: 0 10px 36px rgba(0,0,0,.6), 0 4px 12px rgba(0,0,0,.5);
+}
+
+[data-theme="dark"] .site-header {
+  background: rgba(6,26,43,.85);
+}
+[data-theme="dark"] .eyebrow {
+  color: var(--success);
+}
+
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Reset Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */

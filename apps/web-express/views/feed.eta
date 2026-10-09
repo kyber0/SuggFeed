@@ -1,0 +1,703 @@
+<% layout('layout') %>
+
+<div class="community-page-wrapper">
+
+  <!-- ── Desktop Left Sidebar Navigation ── -->
+  <aside class="community-left-nav" aria-label="Community navigation">
+    <div class="left-nav-inner">
+      <div class="nav-brand-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-brand-icon"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span>Community Hub</span>
+      </div>
+
+      <nav class="left-nav-menu">
+        <a href="/" class="nav-item">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Home</span>
+        </a>
+        <a href="/feed" class="nav-item active">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Ideas Stream</span>
+        </a>
+        <a href="/roadmap" class="nav-item">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+          <span>Roadmap</span>
+        </a>
+        <a href="/profile" class="nav-item">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>My Profile</span>
+        </a>
+      </nav>
+
+      <div class="left-nav-divider"></div>
+
+      <div class="nav-section-header">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="6" height="18"/><rect x="9" y="8" width="6" height="13"/><rect x="16" y="5" width="6" height="16"/></svg>
+        <span>TOPICS</span>
+      </div>
+      <div class="left-topic-list" id="left-topics">
+        <button type="button" class="topic-item-btn<%= (!it.category || it.category === 'All') ? ' selected' : '' %>" onclick="sfSetLeftTopic('All')">
+          <span>All</span>
+        </button>
+        <% for (const cat of it.categories) { %>
+          <button type="button" class="topic-item-btn<%= it.category === cat ? ' selected' : '' %>" onclick="sfSetLeftTopic('<%= cat %>')">
+            <span><%= cat %></span>
+          </button>
+        <% } %>
+      </div>
+
+      <div class="left-nav-spacer"></div>
+
+      <!-- Submit CTA -->
+      <button type="button" class="btn-submit-sidebar" onclick="openSubmitPanel()" aria-label="Share your idea">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Share an Idea</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main Feed Center Column ── -->
+  <main class="community-feed-main" role="feed" aria-label="Community ideas feed">
+
+    <!-- Sticky Header -->
+    <div class="community-feed-header">
+      <div class="feed-title-bar">
+        <div>
+          <h1 class="feed-heading">Community Ideas</h1>
+          <p class="feed-subheading">Student proposals, active discussions &amp; feedback shaping our campus.</p>
+        </div>
+        <!-- Mobile Filter Toggle -->
+        <button type="button" class="btn-mobile-filter-toggle" id="mobile-filter-btn" aria-label="Filter topics and sort">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <span>Filter</span>
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="feed-search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          type="text"
+          class="feed-search-input"
+          id="feed-search"
+          placeholder="Search ideas by title, keyword, or #topic…"
+          value="<%= it.search ?? '' %>"
+          aria-label="Search ideas"
+          oninput="sfFeedSearch(this.value)"
+        />
+      </div>
+
+      <!-- Sort Modes Bar -->
+      <div class="sort-modes-bar">
+        <div class="sort-tabs-group" role="tablist" aria-label="Sort modes">
+          <button type="button" role="tab" aria-selected="<%= it.sortBy === 'latest' || it.sortBy === 'all' || !it.sortBy ? 'true' : 'false' %>" class="sort-tab<%= it.sortBy === 'latest' || it.sortBy === 'all' || !it.sortBy ? ' active' : '' %>" onclick="sfSetSort('all')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>All Ideas</span>
+          </button>
+          <button type="button" role="tab" aria-selected="<%= it.sortBy === 'popular' ? 'true' : 'false' %>" class="sort-tab<%= it.sortBy === 'popular' ? ' active' : '' %>" onclick="sfSetSort('popular')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+            <span>Top Support</span>
+          </button>
+          <button type="button" role="tab" aria-selected="false" id="topics-sort-tab" class="sort-tab" onclick="sfToggleTopicsChips()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            <span id="topics-tab-label"><%= (it.category && it.category !== 'All') ? it.category : 'Topics' %></span>
+          </button>
+        </div>
+        <button type="button" class="btn-refresh-stream" onclick="location.reload()" title="Refresh feed" aria-label="Refresh feed">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+      </div>
+
+      <!-- Topic Filter Chips (shown when 'Topics' tab active) -->
+      <div class="topic-chips-carousel" id="topic-chips-panel" role="group" aria-label="Filter by category" <%= (!it.category || it.category === 'All') ? 'hidden' : '' %>>
+        <button type="button" class="topic-chip<%= (!it.category || it.category === 'All') ? ' active' : '' %>" onclick="sfSetTopic('All')">All</button>
+        <% for (const cat of it.categories) { %>
+          <button type="button" class="topic-chip<%= it.category === cat ? ' active' : '' %>" onclick="sfSetTopic('<%= cat %>')"><%= cat %></button>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Post Cards Stream -->
+    <div class="post-cards-stream" id="post-stream">
+      <% if (!it.feed || it.feed.length === 0) { %>
+        <div class="feed-empty-state">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="feed-empty-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <h3>No ideas found</h3>
+          <p>No ideas match your current topic or search query.</p>
+          <a href="/feed" class="btn-clear-filters">Clear all filters</a>
+        </div>
+      <% } else { %>
+        <div id="feed-posts-container" class="feed-posts-list">
+        <% for (const item of it.feed) { %>
+          <%
+            const catName = item.category ?? (item.categories?.name ?? 'Other');
+            const catColors = {
+              Facilities:   { bg: 'rgba(59,130,246,0.12)', text: '#3B82F6', border: 'rgba(59,130,246,0.25)' },
+              Learning:     { bg: 'rgba(16,185,129,0.12)', text: '#10B981', border: 'rgba(16,185,129,0.25)' },
+              Safety:       { bg: 'rgba(239,68,68,0.12)',  text: '#EF4444', border: 'rgba(239,68,68,0.25)' },
+              'Student life':{ bg: 'rgba(245,158,11,0.12)', text: '#F59E0B', border: 'rgba(245,158,11,0.25)' },
+              Other:        { bg: 'rgba(100,116,139,0.12)', text: '#94A3B8', border: 'rgba(100,116,139,0.25)' }
+            };
+            const cat = catColors[catName] || catColors.Other;
+            const statusConfig = {
+              pending:     { color: '#F59E0B', label: 'Pending Review' },
+              approved:    { color: '#10B981', label: 'Approved' },
+              in_progress: { color: '#3B82F6', label: 'In Progress' },
+              resolved:    { color: '#0D9488', label: 'Resolved' }
+            };
+            const statusInfo = statusConfig[item.status] || statusConfig.pending;
+            const isAnon = !item.author?.display_name;
+            const authorName = isAnon ? 'Anonymous' : item.author.display_name;
+            const authorHandle = isAnon ? '@anon' : '@' + item.author.display_name.toLowerCase().replace(/\s+/g,'');
+            const voteCount = item.vote_count ?? 0;
+            const commentCount = item.comment_count ?? 0;
+            const timeStr = (() => {
+              const d = new Date(item.created_at);
+              const now = new Date();
+              const diff = Math.floor((now - d) / 1000);
+              if (diff < 60) return 'just now';
+              if (diff < 3600) return Math.floor(diff/60) + 'm';
+              if (diff < 86400) return Math.floor(diff/3600) + 'h';
+              if (diff < 604800) return Math.floor(diff/86400) + 'd';
+              return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            })();
+          %>
+          <article
+            class="post-card"
+            data-idea-id="<%= item.id %>"
+            onclick="if(!event.ctrlKey && !event.metaKey){ event.preventDefault(); sfOpenIdeaDetail('<%= item.id %>'); }"
+            role="article"
+            aria-label="Post: <%= item.title %>"
+            tabindex="0"
+            onkeydown="if(event.key==='Enter') sfOpenIdeaDetail('<%= item.id %>')"
+          >
+            <!-- Post Header -->
+            <div class="post-header">
+              <div class="post-avatar" style="background:<%= isAnon ? 'linear-gradient(135deg,#64748B 0%,#475569 100%)' : 'linear-gradient(135deg,#3B82F6 0%,#1D4ED8 100%)' %>">
+                <%= isAnon ? '?' : authorName[0].toUpperCase() %>
+              </div>
+              <div class="post-author-meta">
+                <div class="post-author-row">
+                  <span class="post-author-name"><%= authorName %></span>
+                  <span class="post-author-handle"><%= authorHandle %></span>
+                  <span class="post-dot">·</span>
+                  <time class="post-timestamp" title="<%= new Date(item.created_at).toLocaleString() %>"><%= timeStr %></time>
+                  <% if (voteCount >= 50) { %>
+                    <span class="post-trending-badge">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                      Trending
+                    </span>
+                  <% } %>
+                </div>
+                <div class="post-badges-row">
+                  <span class="post-badge-category" style="background-color:<%= cat.bg %>;color:<%= cat.text %>;border-color:<%= cat.border %>"><%= catName %></span>
+                  <span class="post-badge-status" style="background-color:<%= statusInfo.color %>15;color:<%= statusInfo.color %>;border-color:<%= statusInfo.color %>35"><%= statusInfo.label %></span>
+                </div>
+              </div>
+              <!-- More Actions -->
+              <div class="post-overflow-menu" onclick="event.stopPropagation()">
+                <button type="button" class="btn-icon-subtle" aria-label="Post actions">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Post Content -->
+            <div class="post-content">
+              <h3 class="post-title"><%= item.title %></h3>
+              <p class="post-body"><%= item.description %></p>
+            </div>
+
+            <!-- Attachments -->
+            <% if (item.attachments && item.attachments.length > 0) { %>
+              <div class="post-media-container" onclick="event.stopPropagation()">
+                <div class="post-attachment-pill" onclick="sfOpenIdeaDetail('<%= item.id %>', 'details')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                  <span><%= item.attachments.length %> attachment<%= item.attachments.length > 1 ? 's' : '' %></span>
+                  <span class="attachment-cta">View files →</span>
+                </div>
+              </div>
+            <% } %>
+
+            <!-- Action Footer -->
+            <div class="post-footer" onclick="event.stopPropagation()">
+              <!-- Heart/Like -->
+              <button type="button" class="action-btn action-like" onclick="sfVoteFeed('<%= item.id %>', this)" aria-label="Like this idea" title="Like this idea">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="action-count"><%= voteCount %></span>
+              </button>
+              <!-- Comment -->
+              <button type="button" class="action-btn action-comment" onclick="sfOpenIdeaDetail('<%= item.id %>', 'comments')" aria-label="View <%= commentCount %> comments" title="Open comments">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span class="action-count"><%= commentCount %></span>
+              </button>
+              <!-- Share -->
+              <button type="button" class="action-btn action-share" onclick="sfSharePost('<%= item.id %>', event)" aria-label="Share idea" title="Share this idea">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span class="action-count action-label">Share</span>
+              </button>
+              <!-- Save -->
+              <button type="button" class="action-btn action-bookmark" aria-label="Bookmark post" title="Bookmark this idea">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                <span class="action-count action-label">Save</span>
+              </button>
+              <!-- Expand -->
+              <button type="button" class="action-btn action-expand" onclick="sfOpenIdeaDetail('<%= item.id %>', 'details')" aria-label="Expand details" title="Expand idea details">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              </button>
+            </div>
+          </article>
+        <% } %>
+        </div>
+
+        <!-- Lazy loading sentinel & indicator -->
+        <div id="feed-loader" class="feed-loader-container" onclick="sfLoadMoreFeed()" style="<%= it.hasMore ? '' : 'display: none;' %>; cursor: pointer;" title="Click to load more ideas">
+          <div class="feed-loading-spinner" aria-label="Loading more ideas...">
+            <span class="spinner-dot"></span>
+            <span class="spinner-dot"></span>
+            <span class="spinner-dot"></span>
+          </div>
+          <span class="feed-loading-text">Loading more community ideas...</span>
+        </div>
+
+        <!-- End of feed -->
+        <div id="feed-end-message" class="feed-end-notice" style="<%= !it.hasMore && it.feed.length > 0 ? '' : 'display: none;' %>">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>You've reached the end — you've seen all community ideas!</span>
+        </div>
+      <% } %>
+    </div>
+  </main>
+
+  <!-- ── Desktop Right Panel ── -->
+  <aside class="community-right-panel" aria-label="Community highlights">
+    <div class="right-panel-inner">
+      <!-- Campus Pulse Card -->
+      <div class="pulse-card">
+        <div class="pulse-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pulse-icon"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          <h3>Campus Pulse</h3>
+          <span class="live-dot-badge"><span class="live-dot"></span>Live</span>
+        </div>
+        <div class="pulse-metrics-grid">
+          <div class="pulse-metric">
+            <span class="metric-number"><%= it.totalCount > 0 ? it.totalCount.toLocaleString() : '—' %></span>
+            <span class="metric-label">Ideas Shared</span>
+          </div>
+          <div class="pulse-metric">
+            <span class="metric-number">118</span>
+            <span class="metric-label">Implemented</span>
+          </div>
+          <div class="pulse-metric">
+            <span class="metric-number"><%= it.feed ? it.feed.filter(f => f.comment_count > 0).length : 0 %></span>
+            <span class="metric-label">Active Threads</span>
+          </div>
+          <div class="pulse-metric">
+            <span class="metric-number">12%</span>
+            <span class="metric-label">Resolution Rate</span>
+          </div>
+        </div>
+        <p class="pulse-summary">Student ideas directly guide infrastructure, safety, and campus life improvements.</p>
+      </div>
+
+      <!-- Top Ideas Widget -->
+      <% if (it.feed && it.feed.length > 0) { %>
+        <div class="top-ideas-card">
+          <div class="top-ideas-header">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="top-ideas-icon"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+            <h4>Top Ideas Right Now</h4>
+          </div>
+          <div class="top-ideas-list">
+            <% const topIdeas = [...it.feed].sort((a,b) => (b.vote_count||0) - (a.vote_count||0)).slice(0,3); %>
+            <% for (let i = 0; i < topIdeas.length; i++) { const idea = topIdeas[i]; %>
+              <a href="/idea/<%= idea.id %>" class="top-idea-row">
+                <span class="top-idea-rank">#<%= i+1 %></span>
+                <span class="top-idea-title"><%= idea.title %></span>
+                <span class="top-idea-votes">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                  <%= idea.vote_count ?? 0 %>
+                </span>
+              </a>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Community Rules -->
+      <div class="guidelines-card">
+        <div class="guidelines-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shield-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <h3>Community Rules</h3>
+        </div>
+        <ul class="guidelines-list">
+          <li><strong>Be constructive:</strong> Focus on realistic improvements.</li>
+          <li><strong>Safe &amp; Anonymous:</strong> Share without fear of retaliation.</li>
+          <li><strong>Direct Review:</strong> Campus moderators review every proposal.</li>
+        </ul>
+        <a href="/admin" class="guidelines-admin-link">
+          <span>Staff Moderation Portal</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
+      <!-- Trending Tags -->
+      <div class="trending-tags-card">
+        <h4>Browse Topics</h4>
+        <div class="trending-tags-wrap">
+          <% for (const cat of it.categories) { %>
+            <a href="/feed?category=<%= cat %>" class="tag-pill">#<%= cat.toLowerCase().replace(/\s+/g,'') %></a>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="right-panel-footer">
+        <span>SuggFeed Campus Platform</span>
+        <span>•</span>
+        <a href="/roadmap">Roadmap</a>
+        <span>•</span>
+        <a href="/admin">Staff</a>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- Mobile FAB -->
+<button type="button" class="mobile-fab-btn" onclick="openSubmitPanel()" aria-label="Share new idea" title="Share your idea">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- Mobile Filter Sheet -->
+<div id="mobile-filter-backdrop" class="mobile-filter-backdrop" hidden onclick="sfCloseMobileFilter()" role="dialog" aria-modal="true" aria-label="Filter ideas">
+  <div class="mobile-filter-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-header">
+      <h3>Filter &amp; Sort Ideas</h3>
+      <button type="button" class="btn-icon-subtle" onclick="sfCloseMobileFilter()" aria-label="Close filters">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-section">
+      <label>SORT MODE</label>
+      <div class="sheet-pills">
+        <button type="button" class="sheet-pill<%= it.sortBy === 'latest' || it.sortBy === 'all' || !it.sortBy ? ' active' : '' %>" onclick="sfSetSort('all');sfCloseMobileFilter()">All Ideas</button>
+        <button type="button" class="sheet-pill<%= it.sortBy === 'popular' ? ' active' : '' %>" onclick="sfSetSort('popular');sfCloseMobileFilter()">Top Support</button>
+      </div>
+    </div>
+    <div class="sheet-section">
+      <label>TOPICS</label>
+      <div class="sheet-pills">
+        <button type="button" class="sheet-pill<%= (!it.category || it.category === 'All') ? ' active' : '' %>" onclick="sfSetTopic('All');sfCloseMobileFilter()">All</button>
+        <% for (const cat of it.categories) { %>
+          <button type="button" class="sheet-pill<%= it.category === cat ? ' active' : '' %>" onclick="sfSetTopic('<%= cat %>');sfCloseMobileFilter()"><%= cat %></button>
+        <% } %>
+      </div>
+    </div>
+    <button type="button" class="btn-apply-sheet" onclick="sfCloseMobileFilter()">Apply Filters</button>
+  </div>
+</div>
+
+<script>
+  let _currentSort = '<%= it.sortBy || 'all' %>';
+  let _currentCat = '<%= it.category || 'All' %>';
+
+  function sfSetSort(sort) {
+    _currentSort = sort;
+    document.querySelectorAll('.sort-tab').forEach(b => b.classList.remove('active'));
+    const idx = (sort === 'latest' || sort === 'all') ? 0 : (sort === 'popular' || sort === 'top') ? 1 : 2;
+    document.querySelectorAll('.sort-tab')[idx]?.classList.add('active');
+    sfNavigate();
+  }
+
+  function sfSetTopic(cat) {
+    _currentCat = cat;
+    document.querySelectorAll('.topic-chip').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.topic-item-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.sheet-pills .sheet-pill').forEach(b => {
+      if(b.textContent.trim() === cat || (cat==='All' && b.textContent.trim()==='All')) b.classList.add('active');
+    });
+    const label = document.getElementById('topics-tab-label');
+    if (label) label.textContent = cat === 'All' ? 'Topics' : cat;
+    sfNavigate();
+  }
+
+  function sfSetLeftTopic(cat) {
+    sfSetTopic(cat);
+  }
+
+  function sfToggleTopicsChips() {
+    const panel = document.getElementById('topic-chips-panel');
+    if(panel) panel.hidden = !panel.hidden;
+    document.querySelectorAll('.sort-tab')[2]?.classList.toggle('active');
+  }
+
+  let _searchDebounce;
+  function sfFeedSearch(val) {
+    clearTimeout(_searchDebounce);
+    _searchDebounce = setTimeout(() => sfNavigate(), 400);
+  }
+
+  function sfNavigate() {
+    const q = document.getElementById('feed-search')?.value ?? '';
+    const url = new URL('/feed', window.location.origin);
+    url.searchParams.set('sort', _currentSort);
+    if(_currentCat && _currentCat !== 'All') url.searchParams.set('category', _currentCat);
+    if(q.trim()) url.searchParams.set('search', q.trim());
+    window.location.href = url.toString();
+  }
+
+  async function sfVoteFeed(id, btn) {
+    btn.classList.add('active');
+    try {
+      const res = await fetch(`/api/vote/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'up' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        const countEl = btn.querySelector('.action-count');
+        if (countEl) countEl.textContent = data.vote_count;
+        if (window.sfToast) sfToast('Vote recorded! Thank you.', 'success');
+      }
+    } catch {
+      btn.classList.remove('active');
+      if (window.sfToast) sfToast('Could not record vote.', 'error');
+    }
+  }
+
+  function sfSharePost(id, e) {
+    e.stopPropagation();
+    const url = window.location.origin + '/idea/' + id;
+    if (navigator.share) {
+      navigator.share({ url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        if (window.sfToast) sfToast('Link copied!', 'success');
+      });
+    }
+  }
+
+  // Mobile filter
+  document.getElementById('mobile-filter-btn')?.addEventListener('click', function() {
+    document.getElementById('mobile-filter-backdrop').hidden = false;
+  });
+  function sfCloseMobileFilter() {
+    document.getElementById('mobile-filter-backdrop').hidden = true;
+  }
+
+  // Delegated click fallback for post cards
+  document.addEventListener('click', function(e) {
+    const card = e.target.closest('.post-card');
+    if (!card) return;
+    if (e.target.closest('.post-footer') || e.target.closest('.post-media-container') || e.target.closest('button') || e.target.closest('a')) {
+      return;
+    }
+    const ideaId = card.getAttribute('data-idea-id');
+    if (ideaId && typeof sfOpenIdeaDetail === 'function') {
+      e.preventDefault();
+      sfOpenIdeaDetail(ideaId);
+    }
+  });
+
+  // ── Lazy Loading / Infinite Scroll ──
+  let _currentPage = <%= it.page || 1 %>;
+  let _hasMore = <%= it.hasMore ? 'true' : 'false' %>;
+  let _isLoading = false;
+
+  const _feedContainer = document.getElementById('feed-posts-container');
+  const _feedLoader = document.getElementById('feed-loader');
+  const _feedEndMessage = document.getElementById('feed-end-message');
+
+  function sfEscapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>"']/g, function(m) {
+      switch(m) {
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '"': return '&quot;';
+        case "'": return '&#039;';
+        default: return m;
+      }
+    });
+  }
+
+  function sfCreatePostCardHtml(item) {
+    const catName = item.category || (item.categories && item.categories.name) || 'Other';
+    const catColors = {
+      Facilities:    { bg: 'rgba(59,130,246,0.12)', text: '#3B82F6', border: 'rgba(59,130,246,0.25)' },
+      Learning:      { bg: 'rgba(16,185,129,0.12)', text: '#10B981', border: 'rgba(16,185,129,0.25)' },
+      Safety:        { bg: 'rgba(239,68,68,0.12)',  text: '#EF4444', border: 'rgba(239,68,68,0.25)' },
+      'Student life':{ bg: 'rgba(245,158,11,0.12)', text: '#F59E0B', border: 'rgba(245,158,11,0.25)' },
+      Other:         { bg: 'rgba(100,116,139,0.12)', text: '#94A3B8', border: 'rgba(100,116,139,0.25)' }
+    };
+    const cat = catColors[catName] || catColors.Other;
+    const statusConfig = {
+      pending:     { color: '#F59E0B', label: 'Pending Review' },
+      approved:    { color: '#10B981', label: 'Approved' },
+      in_progress: { color: '#3B82F6', label: 'In Progress' },
+      resolved:    { color: '#0D9488', label: 'Resolved' }
+    };
+    const statusInfo = statusConfig[item.status] || statusConfig.pending;
+    const isAnon = !item.author || !item.author.display_name;
+    const authorName = isAnon ? 'Anonymous' : item.author.display_name;
+    const authorHandle = isAnon ? '@anon' : '@' + item.author.display_name.toLowerCase().replace(/\s+/g,'');
+    const voteCount = item.vote_count || 0;
+    const commentCount = item.comment_count || 0;
+
+    let timeStr = 'just now';
+    if (item.created_at) {
+      const d = new Date(item.created_at);
+      const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (diff < 60) timeStr = 'just now';
+      else if (diff < 3600) timeStr = Math.floor(diff/60) + 'm';
+      else if (diff < 86400) timeStr = Math.floor(diff/3600) + 'h';
+      else if (diff < 604800) timeStr = Math.floor(diff/86400) + 'd';
+      else timeStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+
+    const safeTitle = sfEscapeHtml(item.title);
+    const safeDesc = sfEscapeHtml(item.description || '');
+
+    const trendingBadge = voteCount >= 50 ? `
+      <span class="post-trending-badge">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        Trending
+      </span>` : '';
+
+    const attachmentsHtml = (item.attachments && item.attachments.length > 0) ? `
+      <div class="post-media-container" onclick="event.stopPropagation()">
+        <div class="post-attachment-pill" onclick="sfOpenIdeaDetail('${item.id}', 'details')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          <span>${item.attachments.length} attachment${item.attachments.length > 1 ? 's' : ''}</span>
+          <span class="attachment-cta">View files →</span>
+        </div>
+      </div>` : '';
+
+    return `
+      <article
+        class="post-card"
+        data-idea-id="${item.id}"
+        onclick="if(!event.ctrlKey && !event.metaKey){ event.preventDefault(); sfOpenIdeaDetail('${item.id}'); }"
+        role="article"
+        aria-label="Post: ${safeTitle}"
+        tabindex="0"
+        onkeydown="if(event.key==='Enter') sfOpenIdeaDetail('${item.id}')"
+      >
+        <div class="post-header">
+          <div class="post-avatar" style="background:${isAnon ? 'linear-gradient(135deg,#64748B 0%,#475569 100%)' : 'linear-gradient(135deg,#3B82F6 0%,#1D4ED8 100%)'}">
+            ${isAnon ? '?' : authorName[0].toUpperCase()}
+          </div>
+          <div class="post-author-meta">
+            <div class="post-author-row">
+              <span class="post-author-name">${sfEscapeHtml(authorName)}</span>
+              <span class="post-author-handle">${sfEscapeHtml(authorHandle)}</span>
+              <span class="post-dot">·</span>
+              <time class="post-timestamp">${timeStr}</time>
+              ${trendingBadge}
+            </div>
+            <div class="post-badges-row">
+              <span class="post-badge-category" style="background-color:${cat.bg};color:${cat.text};border-color:${cat.border}">${catName}</span>
+              <span class="post-badge-status" style="background-color:${statusInfo.color}15;color:${statusInfo.color};border-color:${statusInfo.color}35">${statusInfo.label}</span>
+            </div>
+          </div>
+          <div class="post-overflow-menu" onclick="event.stopPropagation()">
+            <button type="button" class="btn-icon-subtle" aria-label="Post actions">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="post-content">
+          <h3 class="post-title">${safeTitle}</h3>
+          <p class="post-body">${safeDesc}</p>
+        </div>
+        ${attachmentsHtml}
+        <div class="post-footer" onclick="event.stopPropagation()">
+          <button type="button" class="action-btn action-like" onclick="sfVoteFeed('${item.id}', this)" aria-label="Like this idea" title="Like this idea">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="action-count">${voteCount}</span>
+          </button>
+          <button type="button" class="action-btn action-comment" onclick="sfOpenIdeaDetail('${item.id}', 'comments')" aria-label="View ${commentCount} comments" title="Open comments">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="action-count">${commentCount}</span>
+          </button>
+          <button type="button" class="action-btn action-share" onclick="sfSharePost('${item.id}', event)" aria-label="Share idea" title="Share this idea">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span class="action-count action-label">Share</span>
+          </button>
+          <button type="button" class="action-btn action-bookmark" aria-label="Bookmark post" title="Bookmark this idea">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            <span class="action-count action-label">Save</span>
+          </button>
+          <button type="button" class="action-btn action-expand" onclick="sfOpenIdeaDetail('${item.id}', 'details')" aria-label="Expand details" title="Expand idea details">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          </button>
+        </div>
+      </article>`;
+  }
+
+  async function sfLoadMoreFeed() {
+    if (_isLoading || !_hasMore) return;
+    _isLoading = true;
+    if (_feedLoader) _feedLoader.style.display = 'flex';
+
+    try {
+      const nextPage = _currentPage + 1;
+      const q = (document.getElementById('feed-search')?.value || '').trim();
+      const params = new URLSearchParams({
+        page: nextPage,
+        sort: _currentSort,
+        category: _currentCat,
+        search: q,
+      });
+
+      const res = await fetch('/api/feed?' + params.toString());
+      if (!res.ok) throw new Error('Failed to load feed');
+      const data = await res.json();
+      const items = (data && (data.feed || data.data)) || [];
+
+      if (items.length > 0) {
+        _currentPage = nextPage;
+        _hasMore = typeof data.hasMore === 'boolean' ? data.hasMore : (items.length >= 15);
+
+        if (_feedContainer) {
+          const fragment = document.createDocumentFragment();
+          items.forEach(item => {
+            const temp = document.createElement('div');
+            temp.innerHTML = sfCreatePostCardHtml(item);
+            if (temp.firstElementChild) {
+              fragment.appendChild(temp.firstElementChild);
+            }
+          });
+          _feedContainer.appendChild(fragment);
+        }
+      } else {
+        _hasMore = false;
+      }
+
+      if (!_hasMore) {
+        if (_feedLoader) _feedLoader.style.display = 'none';
+        if (_feedEndMessage) _feedEndMessage.style.display = 'flex';
+      }
+    } catch (err) {
+      console.error('Error loading more ideas:', err);
+    } finally {
+      _isLoading = false;
+      if (!_hasMore && _feedLoader) {
+        _feedLoader.style.display = 'none';
+      }
+    }
+  }
+
+  if ('IntersectionObserver' in window && _feedLoader) {
+    const _feedObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !_isLoading && _hasMore) {
+          sfLoadMoreFeed();
+        }
+      });
+    }, { rootMargin: '200px 0px' });
+    _feedObserver.observe(_feedLoader);
+  }
+</script>

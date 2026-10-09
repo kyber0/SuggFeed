@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "none",
+    "lib": ["ES2019", "webworker"],
+    "outFile": "./public/sw.js",
+    "rootDir": "./src",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmitOnError": true,
+    "resolveJsonModule": false
+  },
+  "include": ["src/sw.ts"],
+  "exclude": ["node_modules"]
+}

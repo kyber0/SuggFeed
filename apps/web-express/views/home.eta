@@ -1,0 +1,395 @@
+<% layout('layout') %>
+
+<main class="sf-main">
+  <!-- Minimalist Workspace -->
+  <section class="sf-workspace" id="top">
+    <div class="sf-workspace-tabs" role="tablist">
+      <button
+        id="tab-share"
+        role="tab"
+        aria-selected="true"
+        class="sf-workspace-tab active"
+        onclick="sfSwitchTab('share')"
+      >
+        Share feedback
+      </button>
+      <button
+        id="tab-track"
+        role="tab"
+        aria-selected="false"
+        class="sf-workspace-tab"
+        onclick="sfSwitchTab('track')"
+      >
+        Track submission
+      </button>
+    </div>
+
+    <div class="sf-workspace-card">
+      <!-- Share Panel -->
+      <div id="panel-share" class="sf-share-panel">
+        <h2 class="sf-panel-title">What would you like to improve?</h2>
+        <p class="sf-panel-desc">
+          Be constructive and avoid including personal or sensitive information.
+        </p>
+        <button class="sf-btn-share-main" onclick="openSubmitPanel()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Share your idea
+        </button>
+      </div>
+
+      <!-- Track Panel -->
+      <form id="panel-track" class="sf-track-panel" onsubmit="sfTrackSubmission(event)" hidden>
+        <h2 class="sf-panel-title">Check on your feedback</h2>
+        <p class="sf-panel-desc">
+          Enter the private tracking code shown after an anonymous submission.
+        </p>
+        <div class="sf-track-field">
+          <div class="sf-track-input-wrap">
+            <svg class="sf-track-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              id="tracking-input"
+              name="code"
+              placeholder="e.g. CV-ABCDEF1234…"
+              autocomplete="off"
+              autoCapitalize="characters"
+              class="sf-track-input"
+              aria-label="Tracking code"
+              oninput="this.value = this.value.toUpperCase(); sfTrackInputChanged()"
+            />
+            <button type="button" id="tracking-clear" class="sf-track-clear" onclick="sfClearTrack()" aria-label="Clear" hidden>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="sf-btn-track" type="submit" id="track-submit-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          Check status
+        </button>
+
+        <!-- Error box -->
+        <div id="track-error" class="sf-track-error" role="alert" hidden>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="track-error-msg"></span>
+        </div>
+
+        <!-- Result Card -->
+        <div id="track-result" class="sf-track-result-card" hidden>
+          <div class="sf-track-result-header">
+            <div class="sf-track-result-tags">
+              <span id="tr-category" class="tag sf-tag-navy"></span>
+              <span id="tr-status" class="status-badge sf-track-status"></span>
+            </div>
+            <span id="tr-date" class="sf-track-date"></span>
+          </div>
+          <h3 id="tr-title" class="sf-track-title"></h3>
+          <p id="tr-desc" class="sf-track-desc"></p>
+          <div id="tr-note-wrap" class="sf-track-note-wrap" hidden>
+            <strong>Staff response:</strong> <span id="tr-note"></span>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Divider -->
+  <div class="sf-divider"></div>
+
+  <!-- Feed Section -->
+  <section class="sf-feed" id="feed">
+    <div class="sf-feed-header">
+      <div>
+        <p class="sf-section-eyebrow">OPEN IDEAS</p>
+        <h2 class="sf-section-title">What the community is talking about</h2>
+      </div>
+      <button class="sf-btn-share-secondary" onclick="openSubmitPanel()">
+        Share your own idea
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+
+    <!-- Feed Controls -->
+    <div class="sf-feed-controls">
+      <div class="sf-search-wrap">
+        <svg class="sf-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          class="sf-search-input"
+          type="text"
+          id="home-search"
+          placeholder="Search ideas…"
+          aria-label="Search ideas"
+          oninput="sfFilterFeed()"
+        />
+      </div>
+
+      <div class="sf-sort-wrap" onclick="event.stopPropagation()">
+        <button type="button" class="sf-sort-btn" id="home-sort-btn" onclick="sfToggleSortMenu()" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          <span id="home-sort-label">Most Supported</span>
+          <svg id="home-sort-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sf-sort-chevron"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="sf-sort-menu" id="home-sort-menu" hidden>
+          <button type="button" class="sf-sort-opt active" data-sort="popular" onclick="sfSetSortOption('popular', 'Most Supported')">
+            Most Supported
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button type="button" class="sf-sort-opt" data-sort="newest" onclick="sfSetSortOption('newest', 'Newest First')">
+            Newest First
+          </button>
+          <button type="button" class="sf-sort-opt" data-sort="oldest" onclick="sfSetSortOption('oldest', 'Oldest First')">
+            Oldest First
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-chips" role="group" aria-label="Filter by category" id="cat-chips">
+        <button class="filter-chip active" data-cat="All" onclick="sfSetCategory(this, 'All')">All</button>
+        <% for (const cat of it.categories) { %>
+          <button class="filter-chip" data-cat="<%= cat %>" onclick="sfSetCategory(this, '<%= cat %>')"><%= cat %></button>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Ideas Grid -->
+    <div class="idea-grid" id="ideas-grid">
+      <% if (!it.feed || it.feed.length === 0) { %>
+        <div class="sf-empty-grid-wrap">
+          <div class="sf-empty-state">
+            <div class="sf-empty-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h3 class="sf-empty-title">No ideas yet</h3>
+            <p class="sf-empty-sub">Be the first person to share a suggestion for campus improvement.</p>
+            <button class="filter-chip active" onclick="openSubmitPanel()">Share an idea</button>
+          </div>
+        </div>
+      <% } else { %>
+        <% for (const item of it.feed) { %>
+          <article
+            class="idea-card clickable"
+            data-id="<%= item.id %>"
+            data-category="<%= item.category ?? (item.categories?.name ?? 'Other') %>"
+            data-title="<%= (item.title || '').toLowerCase() %>"
+            data-desc="<%= (item.description || '').toLowerCase() %>"
+            data-votes="<%= item.vote_count ?? 0 %>"
+            data-date="<%= new Date(item.created_at).getTime() %>"
+            onclick="location.href='/idea/<%= item.id %>'"
+            tabindex="0"
+          >
+            <div class="card-badges">
+              <span class="tag"><%= item.category ?? (item.categories?.name ?? 'Other') %></span>
+              <span class="status-badge <%= (item.status || 'pending').replace('_', '-') %>">
+                <%= (item.status || 'pending').replace('_', ' ') %>
+              </span>
+              <span class="card-date">
+                <%= new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) %>
+              </span>
+            </div>
+            <h3><%= item.title %></h3>
+            <p class="idea-card-desc"><%= item.description %></p>
+            <div class="card-footer">
+              <button
+                type="button"
+                class="vote-btn"
+                onclick="event.stopPropagation(); sfVote('<%= item.id %>', this)"
+                aria-label="Support this idea"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="vote-arrow"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                <span class="vote-count"><%= item.vote_count ?? 0 %></span>
+              </button>
+              <span class="card-read-more">View details →</span>
+            </div>
+          </article>
+        <% } %>
+      <% } %>
+    </div>
+
+    <!-- More ideas link -->
+    <div class="sf-load-more">
+      <a href="/feed" class="sf-load-more-btn">
+        Browse all community ideas
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="sf-footer">
+    <div class="sf-footer-inner">
+      <span class="sf-footer-brand">SuggFeed</span>
+      <span class="sf-footer-dot">•</span>
+      <span>A respectful space for constructive feedback</span>
+      <span class="sf-footer-dot">•</span>
+      <a href="/privacy" class="sf-footer-link">Privacy</a>
+      <span class="sf-footer-dot">•</span>
+      <a href="/terms" class="sf-footer-link">Terms</a>
+      <span class="sf-footer-dot">•</span>
+      <a href="/admin" class="sf-footer-link">Staff Portal</a>
+    </div>
+  </footer>
+</main>
+
+<script>
+  let activeCategory = 'All';
+  let activeSort = 'popular';
+
+  function sfToggleSortMenu() {
+    const menu = document.getElementById('home-sort-menu');
+    const chevron = document.getElementById('home-sort-chevron');
+    const btn = document.getElementById('home-sort-btn');
+    const isOpen = menu.style.display !== 'none';
+    menu.style.display = isOpen ? 'none' : 'flex';
+    btn.setAttribute('aria-expanded', String(!isOpen));
+    if (chevron) chevron.style.transform = isOpen ? 'none' : 'rotate(180deg)';
+  }
+
+  document.addEventListener('click', function(e) {
+    const wrap = document.querySelector('.sf-sort-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      const menu = document.getElementById('home-sort-menu');
+      const chevron = document.getElementById('home-sort-chevron');
+      if (menu) menu.style.display = 'none';
+      if (chevron) chevron.style.transform = 'none';
+    }
+  });
+
+  function sfSetSortOption(val, label) {
+    activeSort = val;
+    document.getElementById('home-sort-label').textContent = label;
+    document.querySelectorAll('.sf-sort-opt').forEach(opt => {
+      const isThis = opt.getAttribute('data-sort') === val;
+      opt.classList.toggle('active', isThis);
+      let check = opt.querySelector('svg');
+      if (isThis && !check) {
+        opt.insertAdjacentHTML('beforeend', '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>');
+      } else if (!isThis && check) {
+        check.remove();
+      }
+    });
+    sfToggleSortMenu();
+    sfSortGrid();
+  }
+
+  function sfSortGrid() {
+    const grid = document.getElementById('ideas-grid');
+    const cards = Array.from(grid.querySelectorAll('.idea-card'));
+    cards.sort((a, b) => {
+      const vA = Number(a.getAttribute('data-votes') || 0);
+      const vB = Number(b.getAttribute('data-votes') || 0);
+      const dA = Number(a.getAttribute('data-date') || 0);
+      const dB = Number(b.getAttribute('data-date') || 0);
+
+      if (activeSort === 'popular') return vB - vA;
+      if (activeSort === 'newest') return dB - dA;
+      if (activeSort === 'oldest') return dA - dB;
+      return 0;
+    });
+    cards.forEach(c => grid.appendChild(c));
+  }
+
+  function sfSwitchTab(mode) {
+    const isShare = mode === 'share';
+    document.getElementById('tab-share').setAttribute('aria-selected', String(isShare));
+    document.getElementById('tab-share').classList.toggle('active', isShare);
+    document.getElementById('tab-track').setAttribute('aria-selected', String(!isShare));
+    document.getElementById('tab-track').classList.toggle('active', !isShare);
+    document.getElementById('panel-share').hidden = !isShare;
+    document.getElementById('panel-track').hidden = isShare;
+  }
+
+  function sfTrackInputChanged() {
+    const val = document.getElementById('tracking-input').value.trim();
+    document.getElementById('tracking-clear').hidden = !val;
+  }
+
+  function sfClearTrack() {
+    document.getElementById('tracking-input').value = '';
+    document.getElementById('tracking-clear').hidden = true;
+    document.getElementById('track-error').hidden = true;
+    document.getElementById('track-result').hidden = true;
+  }
+
+  async function sfTrackSubmission(e) {
+    e.preventDefault();
+    const code = document.getElementById('tracking-input').value.trim();
+    if (!code) return;
+
+    const btn = document.getElementById('track-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Looking up…';
+    document.getElementById('track-error').hidden = true;
+    document.getElementById('track-result').hidden = true;
+
+    try {
+      const res = await fetch(`/api/track/${encodeURIComponent(code)}`);
+      const data = await res.json();
+      if (!data.success || !data.data) {
+        throw new Error(data.error || 'Tracking code not found');
+      }
+
+      const item = data.data;
+      document.getElementById('tr-category').textContent = item.category || 'Feedback';
+      document.getElementById('tr-status').textContent = (item.status || 'pending').replace('_', ' ');
+      document.getElementById('tr-status').className = `status-badge ${(item.status || 'pending').replace('_', '-')}`;
+      document.getElementById('tr-date').textContent = new Date(item.created_at).toLocaleDateString();
+      document.getElementById('tr-title').textContent = item.title;
+      document.getElementById('tr-desc').textContent = item.description || '';
+
+      if (item.staff_note) {
+        document.getElementById('tr-note').textContent = item.staff_note;
+        document.getElementById('tr-note-wrap').hidden = false;
+      } else {
+        document.getElementById('tr-note-wrap').hidden = true;
+      }
+
+      document.getElementById('track-result').hidden = false;
+    } catch (err) {
+      document.getElementById('track-error-msg').textContent = err.message || 'Tracking code not found.';
+      document.getElementById('track-error').hidden = false;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg> Check status';
+    }
+  }
+
+  function sfSetCategory(btn, cat) {
+    activeCategory = cat;
+    document.querySelectorAll('#cat-chips .filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    sfFilterFeed();
+  }
+
+  function sfFilterFeed() {
+    const q = (document.getElementById('home-search').value || '').toLowerCase().trim();
+    const cards = document.querySelectorAll('#ideas-grid .idea-card');
+    cards.forEach(card => {
+      const cat = card.getAttribute('data-category');
+      const title = card.getAttribute('data-title') || '';
+      const desc = card.getAttribute('data-desc') || '';
+
+      const matchCat = activeCategory === 'All' || cat === activeCategory;
+      const matchSearch = !q || title.includes(q) || desc.includes(q);
+
+      card.style.display = (matchCat && matchSearch) ? '' : 'none';
+    });
+  }
+
+  async function sfVote(id, btn) {
+    if (btn.classList.contains('voted')) return;
+    try {
+      const res = await fetch(`/api/vote/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'up' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        btn.classList.add('voted');
+        const countSpan = btn.querySelector('.vote-count');
+        if (countSpan) countSpan.textContent = data.vote_count;
+        if (window.sfToast) sfToast('Vote recorded! Thank you.', 'success');
+      }
+    } catch (err) {
+      if (window.sfToast) sfToast('Could not record vote.', 'error');
+    }
+  }
+</script>

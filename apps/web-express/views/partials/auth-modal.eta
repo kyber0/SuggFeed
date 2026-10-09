@@ -1,0 +1,202 @@
+<!-- Auth Modal — client-side only, powered by Supabase JS SDK -->
+<div id="auth-modal" class="sf-modal-backdrop" hidden>
+  <div class="sf-modal" id="auth-modal-card" role="dialog" aria-modal="true" aria-label="Sign in to SuggFeed">
+    <button class="sf-modal-close" id="auth-modal-close" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <!-- Tabs -->
+    <div class="sf-modal-tabs">
+      <button class="sf-modal-tab active" id="tab-signin" data-tab="signin">Sign in</button>
+      <button class="sf-modal-tab" id="tab-signup" data-tab="signup">Create account</button>
+    </div>
+
+    <!-- Sign In Panel -->
+    <div id="panel-signin" class="sf-modal-panel">
+      <h2 class="sf-modal-title">Welcome back</h2>
+      <p class="sf-modal-sub">Sign in to manage your ideas and track your submissions.</p>
+
+      <!-- Google -->
+      <button class="btn-oauth" id="btn-google-signin" type="button">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-19.3 0-1.3-.1-2.5-.3-3.7z"/>
+          <path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3c-7.7 0-14.4 4.4-17.7 10.7z"/>
+          <path fill="#FBBC05" d="M24 45c5.6 0 10.6-1.9 14.5-5.1L32 33.8c-2 1.3-4.5 2.2-8 2.2-6.3 0-11.6-4.2-13.5-10l-7.1 5.5C8.9 40.4 15.9 45 24 45z"/>
+          <path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.9 2.9-2.8 5.3-5.4 6.9l6.5 5.1c3.8-3.5 6.1-8.7 6.1-15.2 0-1.3-.1-2.5-.5-5.3z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="sf-modal-divider"><span>or</span></div>
+
+      <form id="form-signin" novalidate>
+        <div class="sf-field">
+          <label for="signin-email">Email</label>
+          <input id="signin-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+        <div class="sf-field">
+          <label for="signin-password">Password</label>
+          <div class="sf-input-group">
+            <input id="signin-password" type="password" autocomplete="current-password" placeholder="••••••••" required />
+            <button type="button" class="sf-input-toggle" data-target="signin-password" aria-label="Show password">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary btn-full" id="btn-signin">Sign in</button>
+        <button type="button" id="btn-forgot" class="btn-link btn-forgot">Forgot password?</button>
+      </form>
+    </div>
+
+    <!-- Sign Up Panel -->
+    <div id="panel-signup" class="sf-modal-panel" hidden>
+      <h2 class="sf-modal-title">Create your account</h2>
+      <p class="sf-modal-sub">Join SuggFeed to track and manage your ideas.</p>
+
+      <button class="btn-oauth" id="btn-google-signup" type="button">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-19.3 0-1.3-.1-2.5-.3-3.7z"/>
+          <path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3c-7.7 0-14.4 4.4-17.7 10.7z"/>
+          <path fill="#FBBC05" d="M24 45c5.6 0 10.6-1.9 14.5-5.1L32 33.8c-2 1.3-4.5 2.2-8 2.2-6.3 0-11.6-4.2-13.5-10l-7.1 5.5C8.9 40.4 15.9 45 24 45z"/>
+          <path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.9 2.9-2.8 5.3-5.4 6.9l6.5 5.1c3.8-3.5 6.1-8.7 6.1-15.2 0-1.3-.1-2.5-.5-5.3z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="sf-modal-divider"><span>or</span></div>
+
+      <form id="form-signup" novalidate>
+        <div class="sf-field">
+          <label for="signup-name">Full name</label>
+          <input id="signup-name" type="text" autocomplete="name" placeholder="Your name" />
+        </div>
+        <div class="sf-field">
+          <label for="signup-email">Email</label>
+          <input id="signup-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+        <div class="sf-field">
+          <label for="signup-password">Password</label>
+          <div class="sf-input-group">
+            <input id="signup-password" type="password" autocomplete="new-password" placeholder="At least 8 characters" required minlength="8" />
+            <button type="button" class="sf-input-toggle" data-target="signup-password" aria-label="Show password">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary btn-full">Create account</button>
+      </form>
+    </div>
+
+    <!-- Forgot Password Panel -->
+    <div id="panel-forgot" class="sf-modal-panel" hidden>
+      <button type="button" id="btn-back-signin" class="btn-link btn-back-signin">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to sign in
+      </button>
+      <h2 class="sf-modal-title">Reset password</h2>
+      <p class="sf-modal-sub">Enter your email and we'll send you a reset link.</p>
+      <form id="form-forgot" novalidate>
+        <div class="sf-field">
+          <label for="forgot-email">Email</label>
+          <input id="forgot-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+        <button type="submit" class="btn-primary btn-full">Send reset link</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var SURL = '<%= it.supabaseUrl %>';
+  var SKEY = '<%= it.supabaseAnonKey %>';
+  if (!SURL || !SKEY) return;
+
+  function getSb() { return window._sb || window.supabase.createClient(SURL, SKEY); }
+
+  var modal   = document.getElementById('auth-modal');
+  var closeBtn = document.getElementById('auth-modal-close');
+  var tabs    = document.querySelectorAll('.sf-modal-tab');
+  var panels  = { signin: document.getElementById('panel-signin'), signup: document.getElementById('panel-signup'), forgot: document.getElementById('panel-forgot') };
+
+  function showPanel(name) {
+    Object.keys(panels).forEach(function(k) { if (panels[k]) panels[k].hidden = (k !== name); });
+    tabs.forEach(function(t) { t.classList.toggle('active', t.dataset.tab === name); });
+  }
+
+  if (closeBtn) closeBtn.addEventListener('click', function() { if (modal) modal.hidden = true; });
+  if (modal) modal.addEventListener('click', function(e) { if (e.target === modal) modal.hidden = true; });
+  tabs.forEach(function(t) { t.addEventListener('click', function() { showPanel(t.dataset.tab); }); });
+
+  var backSignin = document.getElementById('btn-back-signin');
+  if (backSignin) backSignin.addEventListener('click', function() { showPanel('signin'); });
+
+  var forgotBtn = document.getElementById('btn-forgot');
+  if (forgotBtn) forgotBtn.addEventListener('click', function() { showPanel('forgot'); });
+
+  // Password toggles
+  document.querySelectorAll('.sf-input-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var inp = document.getElementById(btn.dataset.target);
+      if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+    });
+  });
+
+  function sfToast(msg, type) {
+    var r = document.getElementById('sf-toast-region');
+    if (!r) return;
+    var t = document.createElement('div');
+    t.className = 'sf-toast sf-toast--' + (type || 'info');
+    t.innerHTML = '<div class="sf-toast__body"><div class="sf-toast__message">' + msg + '</div></div>';
+    r.appendChild(t);
+    setTimeout(function() { t.remove(); }, 5000);
+  }
+
+  function googleSignIn() {
+    getSb().auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } });
+  }
+
+  var gg1 = document.getElementById('btn-google-signin');
+  var gg2 = document.getElementById('btn-google-signup');
+  if (gg1) gg1.addEventListener('click', googleSignIn);
+  if (gg2) gg2.addEventListener('click', googleSignIn);
+
+  var formSignin = document.getElementById('form-signin');
+  if (formSignin) formSignin.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var email = document.getElementById('signin-email').value;
+    var password = document.getElementById('signin-password').value;
+    var btn = document.getElementById('btn-signin');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    var sb = getSb();
+    var { error } = await sb.auth.signInWithPassword({ email, password });
+    btn.disabled = false; btn.textContent = 'Sign in';
+    if (error) { sfToast(error.message, 'error'); return; }
+    // onAuthStateChange will handle the rest
+  });
+
+  var formSignup = document.getElementById('form-signup');
+  if (formSignup) formSignup.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var name = document.getElementById('signup-name').value;
+    var email = document.getElementById('signup-email').value;
+    var password = document.getElementById('signup-password').value;
+    var sb = getSb();
+    var { error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
+    if (error) { sfToast(error.message, 'error'); return; }
+    sfToast('Account created! Check your email to confirm.', 'success');
+    if (modal) modal.hidden = true;
+  });
+
+  var formForgot = document.getElementById('form-forgot');
+  if (formForgot) formForgot.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var email = document.getElementById('forgot-email').value;
+    var sb = getSb();
+    var { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth/callback' });
+    if (error) { sfToast(error.message, 'error'); return; }
+    sfToast('Password reset link sent — check your inbox.', 'success');
+    showPanel('signin');
+  });
+})();
+</script>

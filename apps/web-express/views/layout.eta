@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="<%= it.description ?? 'A safer way to make your school better.' %>" />
+  <title><%= it.title ?? 'SuggFeed' %></title>
+
+  <!-- PWA / Icons -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b3857" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/styles.css" />
+
+  <!-- Theme init (before render to prevent flash) -->
+  <script>
+    (function () {
+      var t = localStorage.getItem('sf-theme') || 'system';
+      var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme:dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    })();
+  </script>
+
+  <!-- Supabase (client-side auth) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<%~ include('partials/header', it) %>
+
+<%~ it.body ?? '' %>
+
+<%~ include('partials/auth-modal', it) %>
+<%~ include('partials/submit-panel', it) %>
+<%~ include('partials/idea-detail-drawer', it) %>
+<%~ include('partials/toast', it) %>
+<%~ include('partials/mobile-nav', it) %>
+
+<!-- Client-side auth state sync -->
+<script>
+  (function () {
+    const SUPABASE_URL = '<%= it.supabaseUrl %>';
+    const SUPABASE_ANON_KEY = '<%= it.supabaseAnonKey %>';
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Listen for auth state changes and sync with server session
+    sb.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // POST session tokens to server to set session cookie
+        await fetch('/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          }),
+        });
+        window.location.reload();
+      } else if (event === 'SIGNED_OUT') {
+        await fetch('/auth/signout', { method: 'POST' });
+        window.location.reload();
+      }
+    });
+
+    // Expose sb globally for other scripts
+    window._sb = sb;
+  })();
+</script>
+
+<!-- Theme toggle logic -->
+<script>
+  function sfToggleTheme() {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    localStorage.setItem('sf-theme', next);
+    document.documentElement.setAttribute('data-theme', next);
+  }
+</script>
+
+</body>
+</html>

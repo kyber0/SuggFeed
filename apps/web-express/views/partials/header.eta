@@ -1,0 +1,85 @@
+<header class="site-header">
+  <a class="brand" href="/">Sugg<span>Feed</span></a>
+  <nav>
+    <a href="/" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>">Home</a>
+    <a href="/feed" class="nav-link-hide-mobile<%= it.currentPath === '/feed' ? ' active' : '' %>">Community ideas</a>
+    <a href="/roadmap" class="nav-link-hide-mobile<%= it.currentPath === '/roadmap' ? ' active' : '' %>">Roadmap</a>
+    <% if (it.user?.role === 'admin' || it.user?.role === 'staff') { %>
+      <a href="/admin" class="nav-link-hide-mobile<%= it.currentPath === '/admin' ? ' active' : '' %>">Staff portal</a>
+    <% } %>
+
+    <% if (it.user) { %>
+      <!-- Authenticated: avatar chip with dropdown -->
+      <div class="header-user-menu">
+        <button class="avatar-chip" id="header-avatar-btn" aria-haspopup="true" aria-expanded="false">
+          <% if (it.user.avatar_url) { %>
+            <img src="<%= it.user.avatar_url %>" alt="<%= it.user.full_name?.[0]?.toUpperCase() ?? 'U' %>"
+              class="avatar-circle" referrerpolicy="no-referrer" />
+          <% } else { %>
+            <div class="avatar-circle"><%= it.user.full_name?.[0]?.toUpperCase() ?? it.user.email?.[0]?.toUpperCase() ?? 'U' %></div>
+          <% } %>
+          <span><%= (it.user.full_name ?? it.user.email ?? 'Account').split(' ')[0] %></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="dropdown-menu" id="header-dropdown" hidden>
+          <div class="dropdown-user-header">
+            <div class="dropdown-user-name"><%= it.user.full_name ?? 'Account' %></div>
+            <div class="dropdown-user-email"><%= it.user.email %></div>
+          </div>
+          <div class="divider"></div>
+          <a href="/profile" class="dropdown-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            My Profile &amp; Ideas
+          </a>
+          <% if (it.user.role === 'admin' || it.user.role === 'staff') { %>
+            <a href="/admin" class="dropdown-link dropdown-link--staff">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Staff Portal
+            </a>
+          <% } %>
+          <div class="divider"></div>
+          <form action="/auth/signout" method="POST" class="dropdown-form">
+            <button type="submit" class="danger dropdown-signout-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sign out
+            </button>
+          </form>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Anonymous: Profile link + Sign in -->
+      <a href="/profile" class="btn-ghost header-profile-link<%= it.currentPath === '/profile' ? ' active' : '' %>">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="profile-label">Profile</span>
+      </a>
+      <button class="btn-primary-sm" id="header-signin-btn" onclick="document.getElementById('auth-modal').removeAttribute('hidden')">
+        Sign in
+      </button>
+    <% } %>
+
+    <div class="header-divider"></div>
+
+    <!-- Theme toggle -->
+    <button class="btn-ghost theme-toggle-btn" onclick="sfToggleTheme()" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    </button>
+  </nav>
+</header>
+
+<script>
+  (function() {
+    var btn = document.getElementById('header-avatar-btn');
+    var menu = document.getElementById('header-dropdown');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var open = !menu.hidden;
+      menu.hidden = open;
+      btn.setAttribute('aria-expanded', String(!open));
+    });
+    document.addEventListener('click', function() {
+      if (menu) { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+    });
+  })();
+</script>

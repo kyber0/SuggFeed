@@ -1,0 +1,12 @@
+<% layout('layout') %>
+
+<main class="sf-main error-page-container">
+  <div class="error-page-code">404</div>
+  <h1 class="error-page-title">Page Not Found</h1>
+  <p class="error-page-desc">
+    The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+  </p>
+  <a href="/" class="btn-primary error-page-btn">
+    Return Home
+  </a>
+</main>

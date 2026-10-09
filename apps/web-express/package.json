@@ -1,21 +1,39 @@
 {
   "name": "suggfeed-express",
-  "version": "1.0.0",
-  "description": "SuggFeed – Express + EJS version",
-  "main": "server.js",
+  "version": "2.0.0",
+  "description": "SuggFeed – Express + Eta + TypeScript",
+  "main": "dist/server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js"
+    "dev": "nodemon --exec ts-node src/server.ts",
+    "build:server": "tsc -p tsconfig.json",
+    "build:sw": "tsc -p tsconfig.sw.json",
+    "build": "npm run build:server && npm run build:sw",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10",
+    "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",
-    "ejs": "^3.1.10",
+    "eta": "^3.5.0",
     "express": "^4.21.2",
-    "express-session": "^1.18.1"
+    "express-rate-limit": "^8.7.1",
+    "express-session": "^1.18.1",
+    "helmet": "^8.3.0",
+    "morgan": "^1.12.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "@types/compression": "^1.8.1",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/express": "^5.0.0",
+    "@types/express-session": "^1.18.1",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^22.0.0",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
   }
 }
