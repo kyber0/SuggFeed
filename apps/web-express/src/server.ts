@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import path from "path";
+import fs from "fs";
 import { Eta } from "eta";
 import morgan from "morgan";
 import helmet from "helmet";
@@ -42,16 +43,24 @@ const isProd = process.env.NODE_ENV === "production";
 /* ── Trust reverse proxy (Render, Railway, Fly, Cloudflare, Nginx) ───────── */
 app.set("trust proxy", 1);
 
-/* ── Eta Template Engine ─────────────────────────────────────────────────── */
+/* ── Eta Template Engine & Static Paths ─────────────────────────────────── */
+const viewsDir = fs.existsSync(path.join(process.cwd(), "views"))
+  ? path.join(process.cwd(), "views")
+  : path.join(__dirname, "..", "views");
+
+const publicDir = fs.existsSync(path.join(process.cwd(), "public"))
+  ? path.join(process.cwd(), "public")
+  : path.join(__dirname, "..", "public");
+
 const eta = new Eta({
-  views: path.join(__dirname, "..", "views"),
+  views: viewsDir,
   cache: isProd,
 });
 
 app.engine("eta", (filePath: string, data: object, cb: (err: any, str?: string) => void) => {
   try {
     const viewName = path
-      .relative(path.join(__dirname, "..", "views"), filePath)
+      .relative(viewsDir, filePath)
       .replace(/\\/g, "/");
     const html = eta.render(viewName, data as Record<string, unknown>);
     cb(null, html);
@@ -60,7 +69,7 @@ app.engine("eta", (filePath: string, data: object, cb: (err: any, str?: string) 
   }
 });
 app.set("view engine", "eta");
-app.set("views", path.join(__dirname, "..", "views"));
+app.set("views", viewsDir);
 
 /* ── Security headers (helmet) ───────────────────────────────────────────── */
 app.use(
@@ -156,7 +165,7 @@ app.use(
 );
 
 /* ── Static files ────────────────────────────────────────────────────────── */
-app.use(express.static(path.join(__dirname, "..", "public"), {
+app.use(express.static(publicDir, {
   maxAge: isProd ? "7d" : 0,
 }));
 
@@ -220,25 +229,30 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   res.status(500).render("500", { title: "Server Error — SuggFeed" });
 });
 
-/* ── Start server ────────────────────────────────────────────────────────── */
-const PORT = Number(process.env.PORT) || 3001;
-const server = app.listen(PORT, () => {
-  console.log(`\n  🚀 SuggFeed (Express + Eta + TS) → http://localhost:${PORT}\n`);
-});
-
-/* ── Graceful shutdown (SIGTERM from container orchestrators, SIGINT from Ctrl-C) ── */
-function shutdown(signal: string) {
-  console.log(`[shutdown] Received ${signal} — draining connections…`);
-  server.close(() => {
-    console.log("[shutdown] HTTP server closed. Exiting.");
-    process.exit(0);
+/* ── Start server (only in standalone Node environments, not on Vercel) ───── */
+if (!process.env.VERCEL) {
+  const PORT = Number(process.env.PORT) || 3001;
+  const server = app.listen(PORT, () => {
+    console.log(`\n  🚀 SuggFeed (Express + Eta + TS) → http://localhost:${PORT}\n`);
   });
-  // Force-exit after 10 s if connections don't drain
-  setTimeout(() => {
-    console.error("[shutdown] Forced exit after timeout.");
-    process.exit(1);
-  }, 10_000).unref();
+
+  /* ── Graceful shutdown (SIGTERM from container orchestrators, SIGINT from Ctrl-C) ── */
+  function shutdown(signal: string) {
+    console.log(`[shutdown] Received ${signal} — draining connections…`);
+    server.close(() => {
+      console.log("[shutdown] HTTP server closed. Exiting.");
+      process.exit(0);
+    });
+    // Force-exit after 10 s if connections don't drain
+    setTimeout(() => {
+      console.error("[shutdown] Forced exit after timeout.");
+      process.exit(1);
+    }, 10_000).unref();
+  }
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
+export default app;
+export { app };

@@ -1,171 +1,350 @@
 <% layout('layout') %>
 
 <main class="sf-main">
-  <!-- Minimalist Workspace -->
-  <section class="sf-workspace" id="top">
-    <div class="sf-workspace-tabs" role="tablist">
-      <button
-        id="tab-share"
-        role="tab"
-        aria-selected="true"
-        class="sf-workspace-tab active"
-        onclick="sfSwitchTab('share')"
-      >
-        Share feedback
-      </button>
-      <button
-        id="tab-track"
-        role="tab"
-        aria-selected="false"
-        class="sf-workspace-tab"
-        onclick="sfSwitchTab('track')"
-      >
-        Track submission
-      </button>
-    </div>
+  <!-- Hero Section -->
+  <section class="sf-hero" id="top">
+    <!-- Ambient Floating Orbs -->
+    <div class="sf-hero-orb sf-hero-orb-1" aria-hidden="true"></div>
+    <div class="sf-hero-orb sf-hero-orb-2" aria-hidden="true"></div>
+    <div class="sf-hero-orb sf-hero-orb-3" aria-hidden="true"></div>
+    <div class="sf-hero-orb sf-hero-orb-4" aria-hidden="true"></div>
+    <div class="sf-hero-orb sf-hero-orb-5" aria-hidden="true"></div>
 
-    <div class="sf-workspace-card">
-      <!-- Share Panel -->
-      <div id="panel-share" class="sf-share-panel">
-        <h2 class="sf-panel-title">What would you like to improve?</h2>
-        <p class="sf-panel-desc">
-          Be constructive and avoid including personal or sensitive information.
-        </p>
-        <button class="sf-btn-share-main" onclick="openSubmitPanel()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Share your idea
-        </button>
+    <div class="sf-hero-container">
+      <div class="sf-hero-badge">
+        <span class="sf-pulse-dot"></span>
+        <span class="sf-hero-badge-text">Student Feedback & Campus Innovation</span>
       </div>
 
-      <!-- Track Panel -->
-      <form id="panel-track" class="sf-track-panel" onsubmit="sfTrackSubmission(event)" hidden>
-        <h2 class="sf-panel-title">Check on your feedback</h2>
-        <p class="sf-panel-desc">
-          Enter the private tracking code shown after an anonymous submission.
-        </p>
-        <div class="sf-track-field">
-          <div class="sf-track-input-wrap">
-            <svg class="sf-track-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-              id="tracking-input"
-              name="code"
-              placeholder="e.g. CV-ABCDEF1234…"
-              autocomplete="off"
-              autoCapitalize="characters"
-              class="sf-track-input"
-              aria-label="Tracking code"
-              oninput="this.value = this.value.toUpperCase(); sfTrackInputChanged()"
-            />
-            <button type="button" id="tracking-clear" class="sf-track-clear" onclick="sfClearTrack()" aria-label="Clear" hidden>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-        </div>
-        <button class="sf-btn-track" type="submit" id="track-submit-btn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          Check status
-        </button>
+      <h1 class="sf-hero-title">
+        Make your campus better, <span class="sf-hero-title-accent">one idea at a time</span>
+      </h1>
+      
+      <p class="sf-hero-subtitle">
+        Share suggestions anonymously, monitor progress with private tracking codes, and vote on proposals that impact your campus life.
+      </p>
 
-        <!-- Error box -->
-        <div id="track-error" class="sf-track-error" role="alert" hidden>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span id="track-error-msg"></span>
+      <!-- Quick Metrics Strip -->
+      <div class="sf-hero-stats">
+        <div class="sf-hero-stat">
+          <span class="sf-stat-num" data-count="<%= it.totalCount ?? (it.feed ? it.feed.length : 0) %>"><%= it.totalCount ?? (it.feed ? it.feed.length : 0) %></span>
+          <span class="sf-stat-label">Community Ideas</span>
         </div>
-
-        <!-- Result Card -->
-        <div id="track-result" class="sf-track-result-card" hidden>
-          <div class="sf-track-result-header">
-            <div class="sf-track-result-tags">
-              <span id="tr-category" class="tag sf-tag-navy"></span>
-              <span id="tr-status" class="status-badge sf-track-status"></span>
-            </div>
-            <span id="tr-date" class="sf-track-date"></span>
-          </div>
-          <h3 id="tr-title" class="sf-track-title"></h3>
-          <p id="tr-desc" class="sf-track-desc"></p>
-          <div id="tr-note-wrap" class="sf-track-note-wrap" hidden>
-            <strong>Staff response:</strong> <span id="tr-note"></span>
-          </div>
+        <div class="sf-stat-divider"></div>
+        <div class="sf-hero-stat">
+          <span class="sf-stat-num">100%</span>
+          <span class="sf-stat-label">Identity Protected</span>
         </div>
-      </form>
+        <div class="sf-stat-divider"></div>
+        <div class="sf-hero-stat">
+          <span class="sf-stat-num">Direct</span>
+          <span class="sf-stat-label">Admin Review</span>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Divider -->
-  <div class="sf-divider"></div>
+  <!-- Interactive Action Hub / Workspace -->
+  <section class="sf-workspace-section">
+    <div class="sf-workspace-wrapper">
+      <!-- Modern Segmented Tabs -->
+      <div class="sf-segmented-tabs" role="tablist" aria-label="Action hub tabs" id="sf-segmented-tabs">
+        <div class="sf-segmented-glider" id="sf-tab-glider"></div>
+        <button
+          type="button"
+          id="tab-share"
+          role="tab"
+          aria-selected="true"
+          class="sf-segmented-tab sf-segmented-tab--active"
+          onclick="sfSwitchTab('share')"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          Share an Idea
+        </button>
+        <button
+          type="button"
+          id="tab-track"
+          role="tab"
+          aria-selected="false"
+          class="sf-segmented-tab"
+          onclick="sfSwitchTab('track')"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Track Submission
+        </button>
+      </div>
+
+      <!-- Main Action Card -->
+      <div class="sf-action-card">
+        <!-- Share Panel (Creation Prompt Trigger) -->
+        <div id="panel-share" class="sf-share-panel">
+          <div class="sf-prompt-trigger" onclick="openSubmitPanel()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openSubmitPanel()">
+            <div class="sf-prompt-avatar" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+            <div class="sf-prompt-placeholder">
+              <span id="sf-prompt-dynamic-text" class="sf-prompt-dynamic-text">Extend library quiet study hours during finals week…</span>
+              <span class="sf-prompt-cursor" aria-hidden="true"></span>
+            </div>
+            <div class="sf-prompt-actions-wrap">
+              <span class="sf-prompt-kbd" aria-hidden="true">Press C</span>
+              <button type="button" class="sf-prompt-btn" aria-label="Open submit form" onclick="event.stopPropagation(); openSubmitPanel()">
+                <span>Share idea</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Shortcut Chips -->
+          <div class="sf-shortcuts-row">
+            <span class="sf-shortcuts-label">Quick topics:</span>
+            <div class="sf-shortcuts-list">
+              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Facilities')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="4" y="2" width="16" height="20" rx="2"/>
+                  <path d="M9 22v-4h6v4"/>
+                </svg>
+                Facilities
+              </button>
+              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Learning')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                </svg>
+                Learning
+              </button>
+              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Safety')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Safety
+              </button>
+              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Student life')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                </svg>
+                Student life
+              </button>
+              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Other')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                </svg>
+                Other
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Track Panel -->
+        <form id="panel-track" class="sf-track-panel" onsubmit="sfTrackSubmission(event)" hidden>
+          <div class="sf-track-header">
+            <h2 class="sf-track-title-head">Check proposal status</h2>
+            <p class="sf-track-desc-head">
+              Enter your private tracking code (starts with <code>CV-</code>) to view status updates and staff replies.
+            </p>
+          </div>
+
+          <div class="sf-track-input-group">
+            <div class="sf-track-input-wrap">
+              <svg class="sf-track-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input
+                id="tracking-input"
+                name="code"
+                placeholder="Enter code (e.g. CV-A1B2C3D4…)"
+                autocomplete="off"
+                autoCapitalize="characters"
+                class="sf-track-input"
+                aria-label="Tracking code"
+                oninput="this.value = this.value.toUpperCase(); sfTrackInputChanged()"
+              />
+              <button type="button" id="tracking-clear" class="sf-track-clear-btn" onclick="sfClearTrack()" aria-label="Clear code" hidden>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <button class="sf-btn-track-submit" type="submit" id="track-submit-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Check status
+            </button>
+          </div>
+
+          <!-- Recent Codes on This Device -->
+          <div id="sf-recent-codes-wrap" class="sf-recent-codes" hidden>
+            <span class="sf-recent-codes-label">Saved on this device:</span>
+            <div id="sf-recent-codes-list" class="sf-recent-codes-list"></div>
+          </div>
+
+          <!-- Error box -->
+          <div id="track-error" class="sf-track-error-box" role="alert" hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span id="track-error-msg">Tracking code not found.</span>
+          </div>
+
+          <!-- Result Card -->
+          <div id="track-result" class="sf-track-result-box" hidden>
+            <div class="sf-track-result-top">
+              <div class="sf-track-result-pills">
+                <span id="tr-category" class="sf-pill-cat">Category</span>
+                <span id="tr-status" class="status-badge sf-pill-status">Status</span>
+              </div>
+              <span id="tr-date" class="sf-track-result-date"></span>
+            </div>
+            <h3 id="tr-title" class="sf-track-result-heading"></h3>
+            <p id="tr-desc" class="sf-track-result-body"></p>
+            <div id="tr-note-wrap" class="sf-track-note-box" hidden>
+              <div class="sf-track-note-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                Staff Review Note:
+              </div>
+              <div id="tr-note" class="sf-track-note-text"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
 
   <!-- Feed Section -->
-  <section class="sf-feed" id="feed">
-    <div class="sf-feed-header">
+  <section class="sf-feed-section" id="feed">
+    <!-- Header -->
+    <div class="sf-feed-header-bar">
       <div>
-        <p class="sf-section-eyebrow">OPEN IDEAS</p>
-        <h2 class="sf-section-title">What the community is talking about</h2>
+        <div class="sf-feed-kicker">COMMUNITY IDEAS</div>
+        <h2 class="sf-feed-headline">What the campus is talking about</h2>
       </div>
-      <button class="sf-btn-share-secondary" onclick="openSubmitPanel()">
-        Share your own idea
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <button type="button" class="sf-btn-share-alt" onclick="openSubmitPanel()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Submit suggestion
       </button>
     </div>
 
-    <!-- Feed Controls -->
-    <div class="sf-feed-controls">
-      <div class="sf-search-wrap">
-        <svg class="sf-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <!-- Filter & Search Toolbar -->
+    <div class="sf-toolbar">
+      <!-- Search -->
+      <div class="sf-search-box">
+        <svg class="sf-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
         <input
           class="sf-search-input"
           type="text"
           id="home-search"
-          placeholder="Search ideas…"
+          placeholder="Search ideas by title or keyword…"
           aria-label="Search ideas"
           oninput="sfFilterFeed()"
         />
+        <div class="sf-search-kbd-hint" id="search-kbd-hint" title="Press / to search">/</div>
+        <button type="button" id="search-clear-btn" class="sf-search-clear" onclick="sfClearSearch()" aria-label="Clear search" hidden>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
 
-      <div class="sf-sort-wrap" onclick="event.stopPropagation()">
-        <button type="button" class="sf-sort-btn" id="home-sort-btn" onclick="sfToggleSortMenu()" aria-expanded="false">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+      <!-- Sort Dropdown -->
+      <div class="sf-sort-dropdown-wrap" onclick="event.stopPropagation()">
+        <button type="button" class="sf-sort-toggle" id="home-sort-btn" onclick="sfToggleSortMenu()" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="21" x2="4" y2="14"/>
+            <line x1="4" y1="10" x2="4" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12" y2="3"/>
+            <line x1="20" y1="21" x2="20" y2="16"/>
+            <line x1="20" y1="12" x2="20" y2="3"/>
+          </svg>
           <span id="home-sort-label">Most Supported</span>
-          <svg id="home-sort-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sf-sort-chevron"><polyline points="6 9 12 15 18 9"/></svg>
+          <svg id="home-sort-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sf-sort-chevron">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
         </button>
-        <div class="sf-sort-menu" id="home-sort-menu" hidden>
-          <button type="button" class="sf-sort-opt active" data-sort="popular" onclick="sfSetSortOption('popular', 'Most Supported')">
+        <div class="sf-sort-popup" id="home-sort-menu" hidden>
+          <button type="button" class="sf-sort-item sf-sort-item--active" data-sort="popular" onclick="sfSetSortOption('popular', 'Most Supported')">
             Most Supported
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg class="sf-sort-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
           </button>
-          <button type="button" class="sf-sort-opt" data-sort="newest" onclick="sfSetSortOption('newest', 'Newest First')">
+          <button type="button" class="sf-sort-item" data-sort="newest" onclick="sfSetSortOption('newest', 'Newest First')">
             Newest First
           </button>
-          <button type="button" class="sf-sort-opt" data-sort="oldest" onclick="sfSetSortOption('oldest', 'Oldest First')">
+          <button type="button" class="sf-sort-item" data-sort="oldest" onclick="sfSetSortOption('oldest', 'Oldest First')">
             Oldest First
           </button>
         </div>
       </div>
 
-      <div class="filter-chips" role="group" aria-label="Filter by category" id="cat-chips">
-        <button class="filter-chip active" data-cat="All" onclick="sfSetCategory(this, 'All')">All</button>
-        <% for (const cat of it.categories) { %>
-          <button class="filter-chip" data-cat="<%= cat %>" onclick="sfSetCategory(this, '<%= cat %>')"><%= cat %></button>
+      <!-- Category Filter Pills -->
+      <div class="sf-category-pills" role="group" aria-label="Filter by category" id="cat-chips">
+        <button type="button" class="sf-cat-pill sf-cat-pill--active" data-cat="All" onclick="sfSetCategory(this, 'All')">
+          All <span class="sf-cat-count"><%= (it.feed ? it.feed.length : 0) %></span>
+        </button>
+        <% for (const cat of it.categories) { 
+             const catCount = (it.feed || []).filter(item => (item.category ?? (item.categories?.name ?? 'Other')) === cat).length;
+        %>
+          <button type="button" class="sf-cat-pill" data-cat="<%= cat %>" onclick="sfSetCategory(this, '<%= cat %>')">
+            <%= cat %> <span class="sf-cat-count"><%= catCount %></span>
+          </button>
         <% } %>
       </div>
     </div>
 
+    <!-- Live Results Count -->
+    <div class="sf-results-meta">
+      <span id="sf-visible-count"><%= (it.feed ? it.feed.length : 0) %></span> ideas shown
+    </div>
+
     <!-- Ideas Grid -->
-    <div class="idea-grid" id="ideas-grid">
+    <div class="sf-ideas-grid" id="ideas-grid">
       <% if (!it.feed || it.feed.length === 0) { %>
-        <div class="sf-empty-grid-wrap">
-          <div class="sf-empty-state">
-            <div class="sf-empty-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="sf-empty-state-wrap">
+          <div class="sf-empty-box">
+            <div class="sf-empty-icon-wrap" aria-hidden="true">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
             </div>
-            <h3 class="sf-empty-title">No ideas yet</h3>
-            <p class="sf-empty-sub">Be the first person to share a suggestion for campus improvement.</p>
-            <button class="filter-chip active" onclick="openSubmitPanel()">Share an idea</button>
+            <h3 class="sf-empty-head">No suggestions found</h3>
+            <p class="sf-empty-msg">Be the first student or faculty member to submit an idea for this category.</p>
+            <button type="button" class="sf-btn-empty-action" onclick="openSubmitPanel()">
+              Submit the first idea
+            </button>
           </div>
         </div>
       <% } else { %>
         <% for (const item of it.feed) { %>
           <article
-            class="idea-card clickable"
+            class="sf-idea-card clickable"
             data-id="<%= item.id %>"
             data-category="<%= item.category ?? (item.categories?.name ?? 'Other') %>"
             data-title="<%= (item.title || '').toLowerCase() %>"
@@ -173,57 +352,106 @@
             data-votes="<%= item.vote_count ?? 0 %>"
             data-date="<%= new Date(item.created_at).getTime() %>"
             onclick="location.href='/idea/<%= item.id %>'"
+            onmousemove="sfHandleCardMove(event, this)"
+            onmouseleave="sfHandleCardLeave(this)"
             tabindex="0"
           >
-            <div class="card-badges">
-              <span class="tag"><%= item.category ?? (item.categories?.name ?? 'Other') %></span>
+            <!-- Card Meta Header -->
+            <div class="sf-card-meta">
+              <span class="sf-card-cat-badge">
+                <%= item.category ?? (item.categories?.name ?? 'Other') %>
+              </span>
               <span class="status-badge <%= (item.status || 'pending').replace('_', '-') %>">
+                <span class="sf-status-dot"></span>
                 <%= (item.status || 'pending').replace('_', ' ') %>
               </span>
-              <span class="card-date">
+              <span class="sf-card-date">
                 <%= new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) %>
               </span>
             </div>
-            <h3><%= item.title %></h3>
-            <p class="idea-card-desc"><%= item.description %></p>
-            <div class="card-footer">
+
+            <!-- Card Title & Description -->
+            <h3 class="sf-card-title"><%= item.title %></h3>
+            <p class="sf-card-desc"><%= item.description %></p>
+
+            <!-- Card Footer -->
+            <div class="sf-card-footer">
               <button
                 type="button"
-                class="vote-btn"
+                class="sf-vote-btn"
                 onclick="event.stopPropagation(); sfVote('<%= item.id %>', this)"
-                aria-label="Support this idea"
+                aria-label="Upvote this idea"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="vote-arrow"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                <span class="vote-count"><%= item.vote_count ?? 0 %></span>
+                <svg class="sf-vote-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="18 15 12 9 6 15"/>
+                </svg>
+                <span class="sf-vote-num"><%= item.vote_count ?? 0 %></span>
               </button>
-              <span class="card-read-more">View details →</span>
+
+              <div class="sf-card-footer-right">
+                <% if (item.comment_count !== undefined && item.comment_count > 0) { %>
+                  <span class="sf-comment-pill" title="<%= item.comment_count %> comments">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <%= item.comment_count %>
+                  </span>
+                <% } %>
+                <span class="sf-card-link-arrow" aria-hidden="true">
+                  View →
+                </span>
+              </div>
             </div>
           </article>
         <% } %>
       <% } %>
     </div>
 
-    <!-- More ideas link -->
-    <div class="sf-load-more">
-      <a href="/feed" class="sf-load-more-btn">
-        Browse all community ideas
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    <!-- Feed Footer Banner -->
+    <div class="sf-feed-more-wrap">
+      <a href="/feed" class="sf-feed-more-btn">
+        Browse all community proposals
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
       </a>
     </div>
   </section>
 
-  <!-- Footer -->
+  <!-- Floating Quick-Action Bar on scroll -->
+  <div class="sf-fab-bar" id="sf-fab-bar" hidden>
+    <button type="button" class="sf-fab-btn sf-fab-btn--submit" onclick="openSubmitPanel()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      <span>Share idea</span>
+    </button>
+    <button type="button" class="sf-fab-btn sf-fab-btn--top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" aria-label="Back to top" title="Back to top">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Modern Footer -->
   <footer class="sf-footer">
-    <div class="sf-footer-inner">
-      <span class="sf-footer-brand">SuggFeed</span>
-      <span class="sf-footer-dot">•</span>
-      <span>A respectful space for constructive feedback</span>
-      <span class="sf-footer-dot">•</span>
-      <a href="/privacy" class="sf-footer-link">Privacy</a>
-      <span class="sf-footer-dot">•</span>
-      <a href="/terms" class="sf-footer-link">Terms</a>
-      <span class="sf-footer-dot">•</span>
-      <a href="/admin" class="sf-footer-link">Staff Portal</a>
+    <div class="sf-footer-content">
+      <div class="sf-footer-brand">
+        <span class="sf-footer-logo-dot"></span>
+        <span class="sf-footer-brand-name">SuggFeed</span>
+        <span class="sf-footer-tagline">Safe, anonymous campus suggestion platform</span>
+      </div>
+      <div class="sf-footer-links">
+        <a href="/privacy" class="sf-footer-link">Privacy</a>
+        <span class="sf-footer-sep">•</span>
+        <a href="/terms" class="sf-footer-link">Terms</a>
+        <span class="sf-footer-sep">•</span>
+        <a href="/roadmap" class="sf-footer-link">Roadmap</a>
+        <span class="sf-footer-sep">•</span>
+        <a href="/admin" class="sf-footer-link">Staff Portal</a>
+      </div>
     </div>
   </footer>
 </main>
@@ -232,22 +460,198 @@
   let activeCategory = 'All';
   let activeSort = 'popular';
 
+  // Rotating suggestion prompts in creation bar
+  const campusPrompts = [
+    "Extend library quiet study hours during finals week…",
+    "Install filtered water refill stations in Building C…",
+    "Add healthier grab-and-go food options at student center…",
+    "Improve bike rack coverage and campus path lighting…",
+    "Create dedicated quiet study pods or charging desks…",
+    "Host weekly student-faculty collaborative forums…"
+  ];
+  let promptIdx = 0;
+  let charIdx = 0;
+  let isDeleting = false;
+  let typingTimeout = null;
+
+  function typePrompt() {
+    const el = document.getElementById('sf-prompt-dynamic-text');
+    if (!el) return;
+    const current = campusPrompts[promptIdx];
+
+    if (isDeleting) {
+      charIdx--;
+      el.textContent = current.substring(0, charIdx);
+    } else {
+      charIdx++;
+      el.textContent = current.substring(0, charIdx);
+    }
+
+    let delay = isDeleting ? 28 : 60;
+
+    if (!isDeleting && charIdx === current.length) {
+      delay = 2600; // Pause at end of sentence
+      isDeleting = true;
+    } else if (isDeleting && charIdx === 0) {
+      isDeleting = false;
+      promptIdx = (promptIdx + 1) % campusPrompts.length;
+      delay = 400; // Pause before typing next
+    }
+
+    typingTimeout = setTimeout(typePrompt, delay);
+  }
+
+  // Smooth Tab Glider
+  function updateGlider() {
+    const glider = document.getElementById('sf-tab-glider');
+    const activeTab = document.querySelector('.sf-segmented-tab--active');
+    if (glider && activeTab) {
+      glider.style.width = `${activeTab.offsetWidth}px`;
+      glider.style.transform = `translateX(${activeTab.offsetLeft - 4}px)`;
+    }
+  }
+
+  // Count-up animation for hero stats
+  function animateNumbers() {
+    document.querySelectorAll('.sf-stat-num[data-count]').forEach(el => {
+      const target = Number(el.getAttribute('data-count'));
+      if (isNaN(target) || target <= 0) return;
+      const duration = 1100;
+      const startTime = performance.now();
+      function update(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const current = Math.floor(ease * target);
+        el.textContent = current.toLocaleString();
+        if (progress < 1) requestAnimationFrame(update);
+        else el.textContent = target.toLocaleString();
+      }
+      requestAnimationFrame(update);
+    });
+  }
+
+  // Init on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    loadRecentTrackingCodes();
+    typePrompt();
+    updateGlider();
+    animateNumbers();
+
+    // Hero mouse-follow spotlight
+    const hero = document.getElementById('top');
+    if (hero) {
+      hero.addEventListener('mousemove', (e) => {
+        const rect = hero.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        hero.style.setProperty('--hero-mouse-x', `${x}px`);
+        hero.style.setProperty('--hero-mouse-y', `${y}px`);
+      });
+    }
+
+    // Scroll listener for Floating Action Bar (desktop only)
+    window.addEventListener('scroll', () => {
+      const fab = document.getElementById('sf-fab-bar');
+      if (!fab) return;
+      if (window.innerWidth <= 768) {
+        fab.hidden = true;
+        return;
+      }
+      if (window.scrollY > 380) {
+        fab.hidden = false;
+      } else {
+        fab.hidden = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      updateGlider();
+      const fab = document.getElementById('sf-fab-bar');
+      if (fab && window.innerWidth <= 768) {
+        fab.hidden = true;
+      }
+    });
+  });
+
+  // Card mouse spotlight
+  function sfHandleCardMove(e, card) {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty('--card-mouse-x', `${x}px`);
+    card.style.setProperty('--card-mouse-y', `${y}px`);
+  }
+
+  function sfHandleCardLeave(card) {
+    card.style.setProperty('--card-mouse-x', '-300px');
+    card.style.setProperty('--card-mouse-y', '-300px');
+  }
+
+  // Keyboard Shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      if (e.key === 'Escape') {
+        document.activeElement.blur();
+      }
+      return;
+    }
+    if (e.key === '/') {
+      e.preventDefault();
+      const search = document.getElementById('home-search');
+      if (search) {
+        search.focus();
+        search.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } else if (e.key === 'c' || e.key === 'C') {
+      openSubmitPanel();
+    }
+  });
+
+  function loadRecentTrackingCodes() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');
+      const container = document.getElementById('sf-recent-codes-wrap');
+      const list = document.getElementById('sf-recent-codes-list');
+      if (stored && stored.length > 0 && container && list) {
+        list.innerHTML = '';
+        stored.slice(-3).reverse().forEach(code => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'sf-recent-code-pill';
+          btn.textContent = code;
+          btn.onclick = () => {
+            const input = document.getElementById('tracking-input');
+            if (input) {
+              input.value = code;
+              sfTrackInputChanged();
+              document.getElementById('track-submit-btn')?.click();
+            }
+          };
+          list.appendChild(btn);
+        });
+        container.hidden = false;
+      }
+    } catch (e) {}
+  }
+
   function sfToggleSortMenu() {
     const menu = document.getElementById('home-sort-menu');
     const chevron = document.getElementById('home-sort-chevron');
     const btn = document.getElementById('home-sort-btn');
-    const isOpen = menu.style.display !== 'none';
-    menu.style.display = isOpen ? 'none' : 'flex';
-    btn.setAttribute('aria-expanded', String(!isOpen));
-    if (chevron) chevron.style.transform = isOpen ? 'none' : 'rotate(180deg)';
+    if (!menu) return;
+    const isHidden = menu.hidden;
+    menu.hidden = !isHidden;
+    btn.setAttribute('aria-expanded', String(isHidden));
+    if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'none';
   }
 
   document.addEventListener('click', function(e) {
-    const wrap = document.querySelector('.sf-sort-wrap');
+    const wrap = document.querySelector('.sf-sort-dropdown-wrap');
     if (wrap && !wrap.contains(e.target)) {
       const menu = document.getElementById('home-sort-menu');
       const chevron = document.getElementById('home-sort-chevron');
-      if (menu) menu.style.display = 'none';
+      if (menu) menu.hidden = true;
       if (chevron) chevron.style.transform = 'none';
     }
   });
@@ -255,12 +659,12 @@
   function sfSetSortOption(val, label) {
     activeSort = val;
     document.getElementById('home-sort-label').textContent = label;
-    document.querySelectorAll('.sf-sort-opt').forEach(opt => {
+    document.querySelectorAll('.sf-sort-item').forEach(opt => {
       const isThis = opt.getAttribute('data-sort') === val;
-      opt.classList.toggle('active', isThis);
-      let check = opt.querySelector('svg');
+      opt.classList.toggle('sf-sort-item--active', isThis);
+      let check = opt.querySelector('.sf-sort-check');
       if (isThis && !check) {
-        opt.insertAdjacentHTML('beforeend', '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>');
+        opt.insertAdjacentHTML('beforeend', '<svg class="sf-sort-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>');
       } else if (!isThis && check) {
         check.remove();
       }
@@ -271,7 +675,8 @@
 
   function sfSortGrid() {
     const grid = document.getElementById('ideas-grid');
-    const cards = Array.from(grid.querySelectorAll('.idea-card'));
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('.sf-idea-card'));
     cards.sort((a, b) => {
       const vA = Number(a.getAttribute('data-votes') || 0);
       const vB = Number(b.getAttribute('data-votes') || 0);
@@ -283,39 +688,60 @@
       if (activeSort === 'oldest') return dA - dB;
       return 0;
     });
-    cards.forEach(c => grid.appendChild(c));
+    cards.forEach((c, idx) => {
+      c.style.animationDelay = `${idx * 25}ms`;
+      c.classList.remove('sf-card-enter');
+      void c.offsetWidth;
+      c.classList.add('sf-card-enter');
+      grid.appendChild(c);
+    });
   }
 
   function sfSwitchTab(mode) {
     const isShare = mode === 'share';
-    document.getElementById('tab-share').setAttribute('aria-selected', String(isShare));
-    document.getElementById('tab-share').classList.toggle('active', isShare);
-    document.getElementById('tab-track').setAttribute('aria-selected', String(!isShare));
-    document.getElementById('tab-track').classList.toggle('active', !isShare);
-    document.getElementById('panel-share').hidden = !isShare;
-    document.getElementById('panel-track').hidden = isShare;
+    const tabShare = document.getElementById('tab-share');
+    const tabTrack = document.getElementById('tab-track');
+    const panelShare = document.getElementById('panel-share');
+    const panelTrack = document.getElementById('panel-track');
+
+    if (tabShare) {
+      tabShare.setAttribute('aria-selected', String(isShare));
+      tabShare.classList.toggle('sf-segmented-tab--active', isShare);
+    }
+    if (tabTrack) {
+      tabTrack.setAttribute('aria-selected', String(!isShare));
+      tabTrack.classList.toggle('sf-segmented-tab--active', !isShare);
+    }
+    if (panelShare) panelShare.hidden = !isShare;
+    if (panelTrack) panelTrack.hidden = isShare;
+    updateGlider();
   }
 
   function sfTrackInputChanged() {
-    const val = document.getElementById('tracking-input').value.trim();
-    document.getElementById('tracking-clear').hidden = !val;
+    const input = document.getElementById('tracking-input');
+    const clearBtn = document.getElementById('tracking-clear');
+    const val = input ? input.value.trim() : '';
+    if (clearBtn) clearBtn.hidden = !val;
   }
 
   function sfClearTrack() {
-    document.getElementById('tracking-input').value = '';
-    document.getElementById('tracking-clear').hidden = true;
+    const input = document.getElementById('tracking-input');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('tracking-clear');
+    if (clearBtn) clearBtn.hidden = true;
     document.getElementById('track-error').hidden = true;
     document.getElementById('track-result').hidden = true;
+    if (input) input.focus();
   }
 
   async function sfTrackSubmission(e) {
     e.preventDefault();
-    const code = document.getElementById('tracking-input').value.trim();
+    const code = document.getElementById('tracking-input')?.value.trim();
     if (!code) return;
 
     const btn = document.getElementById('track-submit-btn');
     btn.disabled = true;
-    btn.textContent = 'Looking up…';
+    btn.innerHTML = 'Looking up…';
     document.getElementById('track-error').hidden = true;
     document.getElementById('track-result').hidden = true;
 
@@ -328,8 +754,9 @@
 
       const item = data.data;
       document.getElementById('tr-category').textContent = item.category || 'Feedback';
-      document.getElementById('tr-status').textContent = (item.status || 'pending').replace('_', ' ');
-      document.getElementById('tr-status').className = `status-badge ${(item.status || 'pending').replace('_', '-')}`;
+      const statusEl = document.getElementById('tr-status');
+      statusEl.textContent = (item.status || 'pending').replace('_', ' ');
+      statusEl.className = `status-badge ${(item.status || 'pending').replace('_', '-')}`;
       document.getElementById('tr-date').textContent = new Date(item.created_at).toLocaleDateString();
       document.getElementById('tr-title').textContent = item.title;
       document.getElementById('tr-desc').textContent = item.description || '';
@@ -347,20 +774,39 @@
       document.getElementById('track-error').hidden = false;
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg> Check status';
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Check status';
     }
   }
 
   function sfSetCategory(btn, cat) {
     activeCategory = cat;
-    document.querySelectorAll('#cat-chips .filter-chip').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    document.querySelectorAll('#cat-chips .sf-cat-pill').forEach(b => b.classList.remove('sf-cat-pill--active'));
+    btn.classList.add('sf-cat-pill--active');
     sfFilterFeed();
   }
 
+  function sfClearSearch() {
+    const input = document.getElementById('home-search');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('search-clear-btn');
+    if (clearBtn) clearBtn.hidden = true;
+    const kbdHint = document.getElementById('search-kbd-hint');
+    if (kbdHint) kbdHint.style.opacity = '1';
+    sfFilterFeed();
+    if (input) input.focus();
+  }
+
   function sfFilterFeed() {
-    const q = (document.getElementById('home-search').value || '').toLowerCase().trim();
-    const cards = document.querySelectorAll('#ideas-grid .idea-card');
+    const input = document.getElementById('home-search');
+    const clearBtn = document.getElementById('search-clear-btn');
+    const kbdHint = document.getElementById('search-kbd-hint');
+    const q = (input?.value || '').toLowerCase().trim();
+    if (clearBtn) clearBtn.hidden = !q;
+    if (kbdHint) kbdHint.style.opacity = q ? '0' : '1';
+
+    const cards = document.querySelectorAll('#ideas-grid .sf-idea-card');
+    let visibleCount = 0;
+
     cards.forEach(card => {
       const cat = card.getAttribute('data-category');
       const title = card.getAttribute('data-title') || '';
@@ -369,12 +815,66 @@
       const matchCat = activeCategory === 'All' || cat === activeCategory;
       const matchSearch = !q || title.includes(q) || desc.includes(q);
 
-      card.style.display = (matchCat && matchSearch) ? '' : 'none';
+      if (matchCat && matchSearch) {
+        card.style.display = '';
+        card.classList.remove('sf-card-enter');
+        void card.offsetWidth;
+        card.style.animationDelay = `${visibleCount * 25}ms`;
+        card.classList.add('sf-card-enter');
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
     });
+
+    const countEl = document.getElementById('sf-visible-count');
+    if (countEl) countEl.textContent = visibleCount;
+  }
+
+  // Delightful particle burst on upvote
+  function spawnVoteParticles(btn) {
+    // 1. Floating +1 pill
+    const pop = document.createElement('span');
+    pop.className = 'sf-vote-pop';
+    pop.textContent = '+1';
+    btn.appendChild(pop);
+    setTimeout(() => pop.remove(), 720);
+
+    // 2. Confetti sparkle dots
+    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#06b6d4', '#6366f1'];
+    const count = 7;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('span');
+      p.className = 'sf-particle';
+      const angle = (i / count) * 2 * Math.PI + (Math.random() * 0.4 - 0.2);
+      const distance = 24 + Math.random() * 16;
+      const tx = Math.cos(angle) * distance;
+      const ty = Math.sin(angle) * distance;
+      p.style.setProperty('--tx', `${tx}px`);
+      p.style.setProperty('--ty', `${ty}px`);
+      p.style.background = colors[i % colors.length];
+      p.style.left = '50%';
+      p.style.top = '50%';
+      btn.appendChild(p);
+      setTimeout(() => p.remove(), 580);
+    }
+
+    btn.classList.add('sf-vote-btn--popping');
+    setTimeout(() => btn.classList.remove('sf-vote-btn--popping'), 380);
   }
 
   async function sfVote(id, btn) {
-    if (btn.classList.contains('voted')) return;
+    if (btn.classList.contains('sf-vote-btn--voted')) return;
+    
+    // Spawn interactive burst & pop
+    spawnVoteParticles(btn);
+
+    // Optimistic UI update
+    btn.classList.add('sf-vote-btn--voted');
+    const numSpan = btn.querySelector('.sf-vote-num');
+    const prevCount = Number(numSpan?.textContent || 0);
+    if (numSpan) numSpan.textContent = prevCount + 1;
+
     try {
       const res = await fetch(`/api/vote/${id}`, {
         method: 'POST',
@@ -383,12 +883,19 @@
       });
       const data = await res.json();
       if (data.success) {
-        btn.classList.add('voted');
-        const countSpan = btn.querySelector('.vote-count');
-        if (countSpan) countSpan.textContent = data.vote_count;
-        if (window.sfToast) sfToast('Vote recorded! Thank you.', 'success');
+        if (numSpan && data.vote_count !== undefined) {
+          numSpan.textContent = data.vote_count;
+        }
+        if (window.sfToast) sfToast('Vote recorded! Thank you for supporting this idea.', 'success');
+      } else {
+        // Revert
+        btn.classList.remove('sf-vote-btn--voted');
+        if (numSpan) numSpan.textContent = prevCount;
+        if (window.sfToast) sfToast(data.error || 'Could not record vote.', 'error');
       }
     } catch (err) {
+      btn.classList.remove('sf-vote-btn--voted');
+      if (numSpan) numSpan.textContent = prevCount;
       if (window.sfToast) sfToast('Could not record vote.', 'error');
     }
   }

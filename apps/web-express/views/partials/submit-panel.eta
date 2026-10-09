@@ -408,7 +408,7 @@
   let sipMaxVisitedStep = 1;
   let sipTrackingCode = '';
 
-  function openSubmitPanel() {
+  function openSubmitPanel(defaultCat) {
     sipCurrentStep = 1;
     sipMaxVisitedStep = 1;
     
@@ -427,6 +427,14 @@
     // Clear active card states
     document.querySelectorAll('.sip-cat-card').forEach(c => c.classList.remove('sip-cat-card--selected'));
     
+    if (defaultCat) {
+      const radio = document.querySelector(`input[name="sip-category"][value="${defaultCat}"]`);
+      if (radio) {
+        radio.checked = true;
+        onCategorySelected(defaultCat);
+      }
+    }
+
     // Reset validations
     handleTitleInput();
     handleDescInput();
@@ -435,7 +443,9 @@
 
     // Focus first element or category
     setTimeout(() => {
-      const firstRadio = document.querySelector('input[name="sip-category"]');
+      const firstRadio = defaultCat
+        ? document.querySelector(`input[name="sip-category"][value="${defaultCat}"]`)
+        : document.querySelector('input[name="sip-category"]');
       if (firstRadio) firstRadio.focus();
     }, 100);
   }

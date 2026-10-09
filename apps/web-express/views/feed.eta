@@ -6,7 +6,7 @@
   <aside class="community-left-nav" aria-label="Community navigation">
     <div class="left-nav-inner">
       <div class="nav-brand-title">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-brand-icon"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="nav-brand-icon"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
         <span>Community Hub</span>
       </div>
 
@@ -18,6 +18,7 @@
         <a href="/feed" class="nav-item active">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <span>Ideas Stream</span>
+          <span class="nav-pill-badge"><%= it.totalCount || (it.feed ? it.feed.length : 0) %></span>
         </a>
         <a href="/roadmap" class="nav-item">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
@@ -37,10 +38,12 @@
       </div>
       <div class="left-topic-list" id="left-topics">
         <button type="button" class="topic-item-btn<%= (!it.category || it.category === 'All') ? ' selected' : '' %>" onclick="sfSetLeftTopic('All')">
-          <span>All</span>
+          <span class="topic-dot topic-dot--all"></span>
+          <span>All Topics</span>
         </button>
         <% for (const cat of it.categories) { %>
           <button type="button" class="topic-item-btn<%= it.category === cat ? ' selected' : '' %>" onclick="sfSetLeftTopic('<%= cat %>')">
+            <span class="topic-dot topic-dot--<%= cat.toLowerCase().replace(/\s+/g,'-') %>"></span>
             <span><%= cat %></span>
           </button>
         <% } %>
@@ -62,18 +65,21 @@
     <!-- Sticky Header -->
     <div class="community-feed-header">
       <div class="feed-title-bar">
-        <div>
-          <h1 class="feed-heading">Community Ideas</h1>
-          <p class="feed-subheading">Student proposals, active discussions &amp; feedback shaping our campus.</p>
+        <div class="feed-heading-group">
+          <div class="feed-heading-row">
+            <h1 class="feed-heading">Community Ideas</h1>
+            <span class="feed-count-pill"><%= (it.totalCount || (it.feed ? it.feed.length : 0)) %> ideas</span>
+          </div>
+          <p class="feed-subheading">Student proposals, campus discussions &amp; feedback shaping our university.</p>
         </div>
         <!-- Mobile Filter Toggle -->
         <button type="button" class="btn-mobile-filter-toggle" id="mobile-filter-btn" aria-label="Filter topics and sort">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          <span>Filter</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <span>Filters</span>
         </button>
       </div>
 
-      <!-- Search -->
+      <!-- Search Box with Shortcut & Clear button -->
       <div class="feed-search-box">
         <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
@@ -85,6 +91,8 @@
           aria-label="Search ideas"
           oninput="sfFeedSearch(this.value)"
         />
+        <span class="feed-search-kbd-hint" id="search-kbd-hint" title="Press / to search"><kbd>/</kbd></span>
+        <button type="button" class="feed-search-clear-btn" id="feed-search-clear" onclick="sfClearSearch()" aria-label="Clear search" style="<%= (it.search && it.search.trim()) ? '' : 'display: none;' %>">✕</button>
       </div>
 
       <!-- Sort Modes Bar -->
@@ -98,7 +106,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
             <span>Top Support</span>
           </button>
-          <button type="button" role="tab" aria-selected="false" id="topics-sort-tab" class="sort-tab" onclick="sfToggleTopicsChips()">
+          <button type="button" role="tab" aria-selected="<%= (it.category && it.category !== 'All') ? 'true' : 'false' %>" id="topics-sort-tab" class="sort-tab<%= (it.category && it.category !== 'All') ? ' active' : '' %>" onclick="sfToggleTopicsChips()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
             <span id="topics-tab-label"><%= (it.category && it.category !== 'All') ? it.category : 'Topics' %></span>
           </button>
@@ -108,11 +116,17 @@
         </button>
       </div>
 
-      <!-- Topic Filter Chips (shown when 'Topics' tab active) -->
+      <!-- Topic Filter Chips (shown when 'Topics' active or category selected) -->
       <div class="topic-chips-carousel" id="topic-chips-panel" role="group" aria-label="Filter by category" <%= (!it.category || it.category === 'All') ? 'hidden' : '' %>>
-        <button type="button" class="topic-chip<%= (!it.category || it.category === 'All') ? ' active' : '' %>" onclick="sfSetTopic('All')">All</button>
+        <button type="button" class="topic-chip<%= (!it.category || it.category === 'All') ? ' active' : '' %>" onclick="sfSetTopic('All')">
+          <span class="chip-dot chip-dot--all"></span>
+          <span>All</span>
+        </button>
         <% for (const cat of it.categories) { %>
-          <button type="button" class="topic-chip<%= it.category === cat ? ' active' : '' %>" onclick="sfSetTopic('<%= cat %>')"><%= cat %></button>
+          <button type="button" class="topic-chip<%= it.category === cat ? ' active' : '' %>" onclick="sfSetTopic('<%= cat %>')">
+            <span class="chip-dot chip-dot--<%= cat.toLowerCase().replace(/\s+/g,'-') %>"></span>
+            <span><%= cat %></span>
+          </button>
         <% } %>
       </div>
     </div>
@@ -121,10 +135,15 @@
     <div class="post-cards-stream" id="post-stream">
       <% if (!it.feed || it.feed.length === 0) { %>
         <div class="feed-empty-state">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="feed-empty-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <h3>No ideas found</h3>
-          <p>No ideas match your current topic or search query.</p>
-          <a href="/feed" class="btn-clear-filters">Clear all filters</a>
+          <div class="feed-empty-icon-wrap" aria-hidden="true">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10" stroke-dasharray="3 3"/><path d="M12 8v4M12 16h.01"/></svg>
+          </div>
+          <h3>No proposals found</h3>
+          <p>No ideas match your current topic or search query. Try clearing your filters or be the first to share one!</p>
+          <div class="feed-empty-actions">
+            <a href="/feed" class="btn-clear-filters">Clear all filters</a>
+            <button type="button" class="btn-empty-create" onclick="openSubmitPanel()">Share an idea</button>
+          </div>
         </div>
       <% } else { %>
         <div id="feed-posts-container" class="feed-posts-list">
@@ -132,18 +151,18 @@
           <%
             const catName = item.category ?? (item.categories?.name ?? 'Other');
             const catColors = {
-              Facilities:   { bg: 'rgba(59,130,246,0.12)', text: '#3B82F6', border: 'rgba(59,130,246,0.25)' },
-              Learning:     { bg: 'rgba(16,185,129,0.12)', text: '#10B981', border: 'rgba(16,185,129,0.25)' },
-              Safety:       { bg: 'rgba(239,68,68,0.12)',  text: '#EF4444', border: 'rgba(239,68,68,0.25)' },
-              'Student life':{ bg: 'rgba(245,158,11,0.12)', text: '#F59E0B', border: 'rgba(245,158,11,0.25)' },
-              Other:        { bg: 'rgba(100,116,139,0.12)', text: '#94A3B8', border: 'rgba(100,116,139,0.25)' }
+              Facilities:    { bg: 'rgba(59,130,246,0.12)', text: '#2563EB', border: 'rgba(59,130,246,0.25)', dot: '#3B82F6' },
+              Learning:      { bg: 'rgba(16,185,129,0.12)', text: '#059669', border: 'rgba(16,185,129,0.25)', dot: '#10B981' },
+              Safety:        { bg: 'rgba(239,68,68,0.12)',  text: '#DC2626', border: 'rgba(239,68,68,0.25)', dot: '#EF4444' },
+              'Student life':{ bg: 'rgba(245,158,11,0.12)', text: '#D97706', border: 'rgba(245,158,11,0.25)', dot: '#F59E0B' },
+              Other:         { bg: 'rgba(100,116,139,0.12)', text: '#64748B', border: 'rgba(100,116,139,0.25)', dot: '#94A3B8' }
             };
             const cat = catColors[catName] || catColors.Other;
             const statusConfig = {
-              pending:     { color: '#F59E0B', label: 'Pending Review' },
-              approved:    { color: '#10B981', label: 'Approved' },
-              in_progress: { color: '#3B82F6', label: 'In Progress' },
-              resolved:    { color: '#0D9488', label: 'Resolved' }
+              pending:     { color: '#F59E0B', label: 'Pending Review', dot: '#F59E0B' },
+              approved:    { color: '#10B981', label: 'Approved', dot: '#10B981' },
+              in_progress: { color: '#3B82F6', label: 'In Progress', dot: '#3B82F6' },
+              resolved:    { color: '#0D9488', label: 'Resolved', dot: '#0D9488' }
             };
             const statusInfo = statusConfig[item.status] || statusConfig.pending;
             const isAnon = !item.author?.display_name;
@@ -167,38 +186,38 @@
             data-idea-id="<%= item.id %>"
             onclick="if(!event.ctrlKey && !event.metaKey){ event.preventDefault(); sfOpenIdeaDetail('<%= item.id %>'); }"
             role="article"
-            aria-label="Post: <%= item.title %>"
+            aria-label="Proposal: <%= item.title %>"
             tabindex="0"
             onkeydown="if(event.key==='Enter') sfOpenIdeaDetail('<%= item.id %>')"
           >
             <!-- Post Header -->
             <div class="post-header">
-              <div class="post-avatar" style="background:<%= isAnon ? 'linear-gradient(135deg,#64748B 0%,#475569 100%)' : 'linear-gradient(135deg,#3B82F6 0%,#1D4ED8 100%)' %>">
+              <div class="post-avatar" style="background:<%= isAnon ? 'linear-gradient(135deg,#64748B 0%,#475569 100%)' : 'linear-gradient(135deg,#0B3857 0%,#2563EB 100%)' %>">
                 <%= isAnon ? '?' : authorName[0].toUpperCase() %>
               </div>
               <div class="post-author-meta">
                 <div class="post-author-row">
                   <span class="post-author-name"><%= authorName %></span>
                   <span class="post-author-handle"><%= authorHandle %></span>
-                  <span class="post-dot">·</span>
+                  <span class="post-dot">&middot;</span>
                   <time class="post-timestamp" title="<%= new Date(item.created_at).toLocaleString() %>"><%= timeStr %></time>
                   <% if (voteCount >= 50) { %>
-                    <span class="post-trending-badge">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                    <span class="post-trending-badge" title="High campus engagement">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
                       Trending
                     </span>
                   <% } %>
                 </div>
                 <div class="post-badges-row">
-                  <span class="post-badge-category" style="background-color:<%= cat.bg %>;color:<%= cat.text %>;border-color:<%= cat.border %>"><%= catName %></span>
-                  <span class="post-badge-status" style="background-color:<%= statusInfo.color %>15;color:<%= statusInfo.color %>;border-color:<%= statusInfo.color %>35"><%= statusInfo.label %></span>
+                  <span class="post-badge-category cat-<%= catName.toLowerCase().replace(/\s+/g,'-') %>" style="background-color:<%= cat.bg %>;color:<%= cat.text %>;border-color:<%= cat.border %>">
+                    <span class="badge-dot" style="background-color:<%= cat.dot %>"></span>
+                    <%= catName %>
+                  </span>
+                  <span class="post-badge-status status-<%= item.status %>" style="background-color:<%= statusInfo.color %>15;color:<%= statusInfo.color %>;border-color:<%= statusInfo.color %>35">
+                    <span class="badge-dot" style="background-color:<%= statusInfo.dot %>"></span>
+                    <%= statusInfo.label %>
+                  </span>
                 </div>
-              </div>
-              <!-- More Actions -->
-              <div class="post-overflow-menu" onclick="event.stopPropagation()">
-                <button type="button" class="btn-icon-subtle" aria-label="Post actions">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                </button>
               </div>
             </div>
 
@@ -222,28 +241,29 @@
             <!-- Action Footer -->
             <div class="post-footer" onclick="event.stopPropagation()">
               <!-- Heart/Like -->
-              <button type="button" class="action-btn action-like" onclick="sfVoteFeed('<%= item.id %>', this)" aria-label="Like this idea" title="Like this idea">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <button type="button" class="action-btn action-like" data-id="<%= item.id %>" onclick="sfVoteFeed('<%= item.id %>', this)" aria-label="Support proposal" title="Support this proposal">
+                <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <span class="action-count"><%= voteCount %></span>
+                <span class="action-label">Support</span>
               </button>
+
               <!-- Comment -->
-              <button type="button" class="action-btn action-comment" onclick="sfOpenIdeaDetail('<%= item.id %>', 'comments')" aria-label="View <%= commentCount %> comments" title="Open comments">
+              <button type="button" class="action-btn action-comment" onclick="sfOpenIdeaDetail('<%= item.id %>', 'comments')" aria-label="View <%= commentCount %> comments" title="Open discussion">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 <span class="action-count"><%= commentCount %></span>
+                <span class="action-label">Comments</span>
               </button>
+
+              <!-- Save/Bookmark -->
+              <button type="button" class="action-btn action-bookmark" data-id="<%= item.id %>" onclick="sfBookmarkPost('<%= item.id %>', this, event)" aria-label="Bookmark proposal" title="Save to bookmarks">
+                <svg class="bookmark-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                <span class="action-label">Save</span>
+              </button>
+
               <!-- Share -->
-              <button type="button" class="action-btn action-share" onclick="sfSharePost('<%= item.id %>', event)" aria-label="Share idea" title="Share this idea">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                <span class="action-count action-label">Share</span>
-              </button>
-              <!-- Save -->
-              <button type="button" class="action-btn action-bookmark" aria-label="Bookmark post" title="Bookmark this idea">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-                <span class="action-count action-label">Save</span>
-              </button>
-              <!-- Expand -->
-              <button type="button" class="action-btn action-expand" onclick="sfOpenIdeaDetail('<%= item.id %>', 'details')" aria-label="Expand details" title="Expand idea details">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              <button type="button" class="action-btn action-share" onclick="sfSharePost('<%= item.id %>', event, this)" aria-label="Share proposal" title="Copy shareable link">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span class="action-label">Share</span>
               </button>
             </div>
           </article>
@@ -257,13 +277,15 @@
             <span class="spinner-dot"></span>
             <span class="spinner-dot"></span>
           </div>
-          <span class="feed-loading-text">Loading more community ideas...</span>
+          <span class="feed-loading-text">Loading more community proposals…</span>
         </div>
 
         <!-- End of feed -->
         <div id="feed-end-message" class="feed-end-notice" style="<%= !it.hasMore && it.feed.length > 0 ? '' : 'display: none;' %>">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>You've reached the end — you've seen all community ideas!</span>
+          <div class="end-icon-badge">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span>You're all caught up! You've reviewed all proposals in this stream.</span>
         </div>
       <% } %>
     </div>
@@ -275,13 +297,21 @@
       <!-- Campus Pulse Card -->
       <div class="pulse-card">
         <div class="pulse-header">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pulse-icon"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-          <h3>Campus Pulse</h3>
-          <span class="live-dot-badge"><span class="live-dot"></span>Live</span>
+          <div class="pulse-title-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="pulse-icon"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            <h3>Campus Pulse</h3>
+          </div>
+          <span class="live-dot-badge">
+            <span class="live-dot-radar">
+              <span class="live-dot-core"></span>
+              <span class="live-dot-ring"></span>
+            </span>
+            Live
+          </span>
         </div>
         <div class="pulse-metrics-grid">
           <div class="pulse-metric">
-            <span class="metric-number"><%= it.totalCount > 0 ? it.totalCount.toLocaleString() : '—' %></span>
+            <span class="metric-number"><%= it.totalCount > 0 ? it.totalCount.toLocaleString() : (it.feed ? it.feed.length : '—') %></span>
             <span class="metric-label">Ideas Shared</span>
           </div>
           <div class="pulse-metric">
@@ -297,7 +327,10 @@
             <span class="metric-label">Resolution Rate</span>
           </div>
         </div>
-        <p class="pulse-summary">Student ideas directly guide infrastructure, safety, and campus life improvements.</p>
+        <div class="pulse-bar-wrap">
+          <div class="pulse-bar-fill" style="width: 12%;"></div>
+        </div>
+        <p class="pulse-summary">Proposals guide infrastructure, student safety, and faculty decisions.</p>
       </div>
 
       <!-- Top Ideas Widget -->
@@ -310,11 +343,11 @@
           <div class="top-ideas-list">
             <% const topIdeas = [...it.feed].sort((a,b) => (b.vote_count||0) - (a.vote_count||0)).slice(0,3); %>
             <% for (let i = 0; i < topIdeas.length; i++) { const idea = topIdeas[i]; %>
-              <a href="/idea/<%= idea.id %>" class="top-idea-row">
-                <span class="top-idea-rank">#<%= i+1 %></span>
+              <a href="/idea/<%= idea.id %>" class="top-idea-row" title="<%= idea.title %>">
+                <span class="top-idea-rank rank-<%= i+1 %>">#<%= i+1 %></span>
                 <span class="top-idea-title"><%= idea.title %></span>
                 <span class="top-idea-votes">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   <%= idea.vote_count ?? 0 %>
                 </span>
               </a>
@@ -427,14 +460,28 @@
 
   function sfToggleTopicsChips() {
     const panel = document.getElementById('topic-chips-panel');
-    if(panel) panel.hidden = !panel.hidden;
-    document.querySelectorAll('.sort-tab')[2]?.classList.toggle('active');
+    if(panel) {
+      panel.hidden = !panel.hidden;
+      document.getElementById('topics-sort-tab')?.classList.toggle('active', !panel.hidden);
+    }
   }
 
   let _searchDebounce;
   function sfFeedSearch(val) {
+    const clearBtn = document.getElementById('feed-search-clear');
+    if (clearBtn) clearBtn.style.display = val && val.trim() ? 'block' : 'none';
     clearTimeout(_searchDebounce);
-    _searchDebounce = setTimeout(() => sfNavigate(), 400);
+    _searchDebounce = setTimeout(() => sfNavigate(), 350);
+  }
+
+  function sfClearSearch() {
+    const input = document.getElementById('feed-search');
+    if (input) {
+      input.value = '';
+      const clearBtn = document.getElementById('feed-search-clear');
+      if (clearBtn) clearBtn.style.display = 'none';
+      sfNavigate();
+    }
   }
 
   function sfNavigate() {
@@ -446,8 +493,93 @@
     window.location.href = url.toString();
   }
 
+  // Keyboard shortcut: Press / to focus search
+  document.addEventListener('keydown', function(e) {
+    if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+      e.preventDefault();
+      const input = document.getElementById('feed-search');
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    } else if (e.key === 'Escape' && document.activeElement?.id === 'feed-search') {
+      const input = document.getElementById('feed-search');
+      if (input && input.value) {
+        sfClearSearch();
+      } else {
+        input?.blur();
+      }
+    }
+  });
+
+  // Local vote persistence
+  function sfGetVotedSet() {
+    try {
+      return new Set(JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]'));
+    } catch {
+      return new Set();
+    }
+  }
+
+  function sfSaveVotedId(id) {
+    try {
+      const set = sfGetVotedSet();
+      set.add(id);
+      localStorage.setItem('sf_voted_ideas', JSON.stringify([...set]));
+    } catch {}
+  }
+
+  // Local bookmark persistence
+  function sfGetSavedSet() {
+    try {
+      return new Set(JSON.parse(localStorage.getItem('sf_saved_ideas') || '[]'));
+    } catch {
+      return new Set();
+    }
+  }
+
+  function sfBookmarkPost(id, btn, e) {
+    if (e) e.stopPropagation();
+    try {
+      const set = sfGetSavedSet();
+      const isSaved = set.has(id);
+      if (isSaved) {
+        set.delete(id);
+        btn.classList.remove('active');
+        if (window.sfToast) sfToast('Proposal removed from bookmarks.', 'info');
+      } else {
+        set.add(id);
+        btn.classList.add('active');
+        if (window.sfToast) sfToast('Proposal saved to bookmarks!', 'success');
+      }
+      localStorage.setItem('sf_saved_ideas', JSON.stringify([...set]));
+    } catch {}
+  }
+
+  function sfInitLocalStates() {
+    const votedSet = sfGetVotedSet();
+    const savedSet = sfGetSavedSet();
+
+    document.querySelectorAll('.action-like[data-id]').forEach(btn => {
+      const id = btn.getAttribute('data-id');
+      if (id && votedSet.has(id)) btn.classList.add('active');
+    });
+
+    document.querySelectorAll('.action-bookmark[data-id]').forEach(btn => {
+      const id = btn.getAttribute('data-id');
+      if (id && savedSet.has(id)) btn.classList.add('active');
+    });
+  }
+
   async function sfVoteFeed(id, btn) {
+    const votedSet = sfGetVotedSet();
+    const countEl = btn.querySelector('.action-count');
+    const prevCount = parseInt(countEl?.textContent || '0', 10);
+
+    // Optimistic toggle
     btn.classList.add('active');
+    sfSaveVotedId(id);
+
     try {
       const res = await fetch(`/api/vote/${id}`, {
         method: 'POST',
@@ -456,29 +588,42 @@
       });
       const data = await res.json();
       if (data.success) {
-        const countEl = btn.querySelector('.action-count');
         if (countEl) countEl.textContent = data.vote_count;
-        if (window.sfToast) sfToast('Vote recorded! Thank you.', 'success');
+        if (data.already_voted) {
+          if (window.sfToast) sfToast('You already supported this idea!', 'info');
+        } else {
+          if (window.sfToast) sfToast('Support recorded! Thank you for voting.', 'success');
+        }
+      } else {
+        if (window.sfToast) sfToast(data.error || 'Could not record vote.', 'error');
       }
     } catch {
-      btn.classList.remove('active');
-      if (window.sfToast) sfToast('Could not record vote.', 'error');
+      if (countEl) countEl.textContent = prevCount;
+      if (window.sfToast) sfToast('Network error while voting.', 'error');
     }
   }
 
-  function sfSharePost(id, e) {
-    e.stopPropagation();
+  function sfSharePost(id, e, btn) {
+    if (e) e.stopPropagation();
     const url = window.location.origin + '/idea/' + id;
     if (navigator.share) {
-      navigator.share({ url }).catch(() => {});
+      navigator.share({ title: 'SuggFeed Proposal', url }).catch(() => {});
     } else {
       navigator.clipboard.writeText(url).then(() => {
-        if (window.sfToast) sfToast('Link copied!', 'success');
+        if (btn) {
+          const label = btn.querySelector('.action-label');
+          if (label) {
+            const original = label.textContent;
+            label.textContent = 'Copied!';
+            setTimeout(() => { label.textContent = original; }, 2000);
+          }
+        }
+        if (window.sfToast) sfToast('Proposal link copied to clipboard!', 'success');
       });
     }
   }
 
-  // Mobile filter
+  // Mobile filter dialog
   document.getElementById('mobile-filter-btn')?.addEventListener('click', function() {
     document.getElementById('mobile-filter-backdrop').hidden = false;
   });
@@ -526,18 +671,18 @@
   function sfCreatePostCardHtml(item) {
     const catName = item.category || (item.categories && item.categories.name) || 'Other';
     const catColors = {
-      Facilities:    { bg: 'rgba(59,130,246,0.12)', text: '#3B82F6', border: 'rgba(59,130,246,0.25)' },
-      Learning:      { bg: 'rgba(16,185,129,0.12)', text: '#10B981', border: 'rgba(16,185,129,0.25)' },
-      Safety:        { bg: 'rgba(239,68,68,0.12)',  text: '#EF4444', border: 'rgba(239,68,68,0.25)' },
-      'Student life':{ bg: 'rgba(245,158,11,0.12)', text: '#F59E0B', border: 'rgba(245,158,11,0.25)' },
-      Other:         { bg: 'rgba(100,116,139,0.12)', text: '#94A3B8', border: 'rgba(100,116,139,0.25)' }
+      Facilities:    { bg: 'rgba(59,130,246,0.12)', text: '#2563EB', border: 'rgba(59,130,246,0.25)', dot: '#3B82F6' },
+      Learning:      { bg: 'rgba(16,185,129,0.12)', text: '#059669', border: 'rgba(16,185,129,0.25)', dot: '#10B981' },
+      Safety:        { bg: 'rgba(239,68,68,0.12)',  text: '#DC2626', border: 'rgba(239,68,68,0.25)', dot: '#EF4444' },
+      'Student life':{ bg: 'rgba(245,158,11,0.12)', text: '#D97706', border: 'rgba(245,158,11,0.25)', dot: '#F59E0B' },
+      Other:         { bg: 'rgba(100,116,139,0.12)', text: '#64748B', border: 'rgba(100,116,139,0.25)', dot: '#94A3B8' }
     };
     const cat = catColors[catName] || catColors.Other;
     const statusConfig = {
-      pending:     { color: '#F59E0B', label: 'Pending Review' },
-      approved:    { color: '#10B981', label: 'Approved' },
-      in_progress: { color: '#3B82F6', label: 'In Progress' },
-      resolved:    { color: '#0D9488', label: 'Resolved' }
+      pending:     { color: '#F59E0B', label: 'Pending Review', dot: '#F59E0B' },
+      approved:    { color: '#10B981', label: 'Approved', dot: '#10B981' },
+      in_progress: { color: '#3B82F6', label: 'In Progress', dot: '#3B82F6' },
+      resolved:    { color: '#0D9488', label: 'Resolved', dot: '#0D9488' }
     };
     const statusInfo = statusConfig[item.status] || statusConfig.pending;
     const isAnon = !item.author || !item.author.display_name;
@@ -561,8 +706,8 @@
     const safeDesc = sfEscapeHtml(item.description || '');
 
     const trendingBadge = voteCount >= 50 ? `
-      <span class="post-trending-badge">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+      <span class="post-trending-badge" title="High campus engagement">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
         Trending
       </span>` : '';
 
@@ -575,37 +720,41 @@
         </div>
       </div>` : '';
 
+    const isVoted = sfGetVotedSet().has(item.id) ? ' active' : '';
+    const isSaved = sfGetSavedSet().has(item.id) ? ' active' : '';
+
     return `
       <article
         class="post-card"
         data-idea-id="${item.id}"
         onclick="if(!event.ctrlKey && !event.metaKey){ event.preventDefault(); sfOpenIdeaDetail('${item.id}'); }"
         role="article"
-        aria-label="Post: ${safeTitle}"
+        aria-label="Proposal: ${safeTitle}"
         tabindex="0"
         onkeydown="if(event.key==='Enter') sfOpenIdeaDetail('${item.id}')"
       >
         <div class="post-header">
-          <div class="post-avatar" style="background:${isAnon ? 'linear-gradient(135deg,#64748B 0%,#475569 100%)' : 'linear-gradient(135deg,#3B82F6 0%,#1D4ED8 100%)'}">
+          <div class="post-avatar" style="background:${isAnon ? 'linear-gradient(135deg,#64748B 0%,#475569 100%)' : 'linear-gradient(135deg,#0B3857 0%,#2563EB 100%)'}">
             ${isAnon ? '?' : authorName[0].toUpperCase()}
           </div>
           <div class="post-author-meta">
             <div class="post-author-row">
               <span class="post-author-name">${sfEscapeHtml(authorName)}</span>
               <span class="post-author-handle">${sfEscapeHtml(authorHandle)}</span>
-              <span class="post-dot">·</span>
+              <span class="post-dot">&middot;</span>
               <time class="post-timestamp">${timeStr}</time>
               ${trendingBadge}
             </div>
             <div class="post-badges-row">
-              <span class="post-badge-category" style="background-color:${cat.bg};color:${cat.text};border-color:${cat.border}">${catName}</span>
-              <span class="post-badge-status" style="background-color:${statusInfo.color}15;color:${statusInfo.color};border-color:${statusInfo.color}35">${statusInfo.label}</span>
+              <span class="post-badge-category cat-${catName.toLowerCase().replace(/\s+/g,'-')}" style="background-color:${cat.bg};color:${cat.text};border-color:${cat.border}">
+                <span class="badge-dot" style="background-color:${cat.dot}"></span>
+                ${catName}
+              </span>
+              <span class="post-badge-status status-${item.status}" style="background-color:${statusInfo.color}15;color:${statusInfo.color};border-color:${statusInfo.color}35">
+                <span class="badge-dot" style="background-color:${statusInfo.dot}"></span>
+                ${statusInfo.label}
+              </span>
             </div>
-          </div>
-          <div class="post-overflow-menu" onclick="event.stopPropagation()">
-            <button type="button" class="btn-icon-subtle" aria-label="Post actions">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-            </button>
           </div>
         </div>
         <div class="post-content">
@@ -614,24 +763,23 @@
         </div>
         ${attachmentsHtml}
         <div class="post-footer" onclick="event.stopPropagation()">
-          <button type="button" class="action-btn action-like" onclick="sfVoteFeed('${item.id}', this)" aria-label="Like this idea" title="Like this idea">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <button type="button" class="action-btn action-like${isVoted}" data-id="${item.id}" onclick="sfVoteFeed('${item.id}', this)" aria-label="Support proposal" title="Support this proposal">
+            <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             <span class="action-count">${voteCount}</span>
+            <span class="action-label">Support</span>
           </button>
-          <button type="button" class="action-btn action-comment" onclick="sfOpenIdeaDetail('${item.id}', 'comments')" aria-label="View ${commentCount} comments" title="Open comments">
+          <button type="button" class="action-btn action-comment" onclick="sfOpenIdeaDetail('${item.id}', 'comments')" aria-label="View ${commentCount} comments" title="Open discussion">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span class="action-count">${commentCount}</span>
+            <span class="action-label">Comments</span>
           </button>
-          <button type="button" class="action-btn action-share" onclick="sfSharePost('${item.id}', event)" aria-label="Share idea" title="Share this idea">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            <span class="action-count action-label">Share</span>
+          <button type="button" class="action-btn action-bookmark${isSaved}" data-id="${item.id}" onclick="sfBookmarkPost('${item.id}', this, event)" aria-label="Bookmark proposal" title="Save to bookmarks">
+            <svg class="bookmark-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            <span class="action-label">Save</span>
           </button>
-          <button type="button" class="action-btn action-bookmark" aria-label="Bookmark post" title="Bookmark this idea">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-            <span class="action-count action-label">Save</span>
-          </button>
-          <button type="button" class="action-btn action-expand" onclick="sfOpenIdeaDetail('${item.id}', 'details')" aria-label="Expand details" title="Expand idea details">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          <button type="button" class="action-btn action-share" onclick="sfSharePost('${item.id}', event, this)" aria-label="Share proposal" title="Copy shareable link">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span class="action-label">Share</span>
           </button>
         </div>
       </article>`;
@@ -700,4 +848,8 @@
     }, { rootMargin: '200px 0px' });
     _feedObserver.observe(_feedLoader);
   }
+
+  // Restore states
+  document.addEventListener('DOMContentLoaded', sfInitLocalStates);
+  sfInitLocalStates();
 </script>
