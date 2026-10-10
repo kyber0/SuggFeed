@@ -238,7 +238,7 @@ app.use((_req: Request, res: Response) => {
 // Returns a generic message — never leaks stack traces or file paths.
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   console.error(`[error] ${req.method} ${req.path}: ${err.name}`);
-  const isJson = req.path.startsWith("/api/") || req.path.startsWith("/auth/") || req.headers.accept?.includes("application/json") || req.xhr;
+  const isJson = req.path.startsWith("/api/") || req.path.startsWith("/auth/") || req.path.startsWith('/roadmap/idea/') || req.headers.accept?.includes("application/json") || req.xhr;
   if (isJson) {
     const status = (err as any).status === 400 ? 400 : (err as any).status === 413 ? 413 : 500;
     return res.status(status).json({ success: false, error: status === 400 ? "Invalid request body." : status === 413 ? "Request is too large." : "The service could not complete this request. Please try again." });

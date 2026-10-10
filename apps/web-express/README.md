@@ -99,6 +99,14 @@ History shows the latest 100 workflow events, 100 status changes, and 100 privat
 notes. Internal notes are append-only; correct mistakes with a follow-up note.
 Private records cascade when their submission is deleted through retention.
 
+Review, Internal notes, and History have separate keyboard-accessible tabs. Save
+controls stay visible while the drawer body scrolls. "Assign to me" selects the
+current staff profile. Saving refreshes the queue and school-wide counts without
+reloading the page. "Save & next" advances through remaining unreviewed items on
+the current page; it requires saving or clearing a private-note draft first.
+If saving succeeds but refreshing fails, the drawer explicitly reports that
+distinction rather than presenting the saved review as a failed save.
+
 Saved views store the currently applied URL filters (not unsent filter edits),
 belong only to their creator, and have a ten-view limit. Removing a view requires
 a second click; it does not delete submissions. Views can be recreated from their
@@ -116,7 +124,13 @@ The public roadmap uses actual database statuses: approved → Planned,
 in_progress → In progress, resolved → Completed. It includes category search,
 board/list layouts, mobile stage selection, keyboard-accessible detail panels,
 and shareable item URLs. It does not imply an assigned team, effort estimate,
-or delivery date. The board currently displays up to 100 most-supported ideas.
+or delivery date. Search, category, and stage filters apply before database
+pagination, with exact matched counts and up to eight ideas per visible stage
+per page. List view uses compact rows rather than board cards. Filters, layout,
+and page are preserved in the URL. Details include the latest public school
+response, and shared item links can load published ideas outside the current
+page. Public detail JSON is not cached by the service worker and never selects
+private workflow, author, or tracking-code fields.
 
 For local visual QA with sample data (no database writes), run
 `node -r ts-node/register/transpile-only tests/support/workspace-preview.ts`

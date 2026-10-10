@@ -1,45 +1,57 @@
 <% layout('layout') %>
-<% const stages = [
-  { key: 'approved', label: 'Planned', caption: 'Approved ideas, ready for the next step.', empty: 'Newly approved ideas will appear here.' },
-  { key: 'in_progress', label: 'In progress', caption: 'Ideas the school is working on.', empty: 'Ideas will move here when work begins.' },
-  { key: 'resolved', label: 'Completed', caption: 'Community feedback put into action.', empty: 'Completed improvements will appear here.' }
-]; %>
+<%
+ const stages=[
+  {key:'approved',label:'Planned',caption:'Approved ideas ready for the next step.',empty:'Newly approved ideas will appear here.'},
+  {key:'in_progress',label:'In progress',caption:'Improvements the school is working on.',empty:'Ideas will move here when work begins.'},
+  {key:'resolved',label:'Completed',caption:'Community feedback put into action.',empty:'Completed improvements will appear here.'}
+ ];
+ const filters=it.filters || {search:'',category:'all',stage:'all',view:'board',page:1};
+ const counts=it.counts || Object.fromEntries(stages.map(s=>[s.key,it.items.filter(i=>i.status===s.key).length]));
+ const totalCount=it.totalCount ?? it.items.length;
+ const matchingCount=it.matchingCount ?? it.items.length;
+ const pageCount=it.pageCount || 1;
+ const urlFor=(changes={})=>'/roadmap?'+new URLSearchParams({...filters,page:String(filters.page),...changes}).toString();
+ const icon=name=>'<svg class="workspace-svg" aria-hidden="true"><use href="#ws-'+name+'"></use></svg>';
+ const filtered=!!filters.search || filters.category!=='all';
+%>
 <main class="campus-roadmap">
-  <header class="workspace-heading roadmap-heading"><div><p class="workspace-kicker">YOUR VOICE, IN ACTION</p><h1>A better campus,<br />one idea at a time<span class="workspace-title-dot">.</span></h1><p>Follow the ideas moving our community forward.</p></div><div class="roadmap-heading-aside"><span class="roadmap-orbit" aria-hidden="true">↗</span><span><strong><%= it.items.length %></strong> public ideas on the roadmap</span><a class="workspace-text-link" href="/feed">Explore the community feed →</a></div></header>
-  <div class="roadmap-summary" aria-label="Roadmap overview"><% for (const stage of stages) { %><div><span class="workspace-status" data-status="<%= stage.key %>"><%= stage.label %></span><strong><%= it.items.filter(i => i.status === stage.key).length %></strong></div><% } %></div>
-  <section class="roadmap-workspace" aria-label="Campus improvement board">
-    <div class="roadmap-controls">
-      <label class="workspace-search"><span aria-hidden="true">⌕</span><input class="workspace-search-input" id="roadmap-search" type="search" placeholder="Find an idea…" aria-label="Search roadmap titles and descriptions" /></label>
-      <label class="roadmap-category-label"><span class="sr-only">Category</span><select class="workspace-input" id="roadmap-category"><option value="all">All categories</option><% for (const category of it.categories) { %><option value="<%= category %>"><%= category %></option><% } %></select></label>
-      <div class="roadmap-view-switch" role="group" aria-label="Roadmap layout"><button type="button" data-roadmap-view="board" aria-pressed="true">▥ Board</button><button type="button" data-roadmap-view="list" aria-pressed="false">☰ List</button></div>
-    </div>
-    <div class="roadmap-results"><p id="roadmap-result-count" role="status" aria-live="polite"><%= it.items.length %> ideas</p><button class="workspace-text-link" id="roadmap-clear" type="button" hidden>Clear filters</button><span>Approval does not guarantee a delivery date.</span></div>
-    <div class="roadmap-stage-switch" role="group" aria-label="Choose a stage on mobile"><% for (const [index, stage] of stages.entries()) { %><button type="button" data-stage="<%= stage.key %>" aria-pressed="<%= index === 0 %>"><%= stage.label %> <span data-mobile-count="<%= stage.key %>"><%= it.items.filter(i => i.status === stage.key).length %></span></button><% } %></div>
-    <div class="roadmap-board" id="campus-roadmap-board" data-view="board">
-      <% for (const [index, stage] of stages.entries()) { %>
-        <section class="roadmap-lane<%= index === 0 ? ' is-mobile-active' : '' %>" data-lane="<%= stage.key %>" aria-labelledby="lane-<%= stage.key %>">
-          <header class="roadmap-lane-heading"><div><h2 id="lane-<%= stage.key %>"><span class="roadmap-stage-dot" data-status="<%= stage.key %>" aria-hidden="true"></span><%= stage.label %></h2><span data-lane-count="<%= stage.key %>"><%= it.items.filter(i => i.status === stage.key).length %></span></div><p><%= stage.caption %></p></header>
-          <div class="roadmap-lane-cards">
-            <% for (const item of it.items.filter(i => i.status === stage.key)) { %>
-              <article class="roadmap-idea" data-roadmap-id="<%= item.id %>">
-                <span class="workspace-tag"><%= item.category %></span>
-                <h3><button type="button" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button></h3>
-                <p><%= item.description %></p>
-                <footer><span>↑ <%= item.votes %> <span class="roadmap-vote-label">votes</span><span class="roadmap-comment-count"> · <%= item.comments %> comments</span></span><span aria-hidden="true" class="roadmap-card-arrow">↗</span></footer>
-              </article>
-            <% } %>
-            <div class="roadmap-lane-empty" data-lane-empty="<%= stage.key %>" <%= it.items.some(i => i.status === stage.key) ? 'hidden' : '' %>><span aria-hidden="true">◌</span><h3>Nothing here yet</h3><p><%= stage.empty %></p></div>
-          </div>
-        </section>
+ <header class="workspace-heading roadmap-heading"><div><p class="workspace-kicker">YOUR VOICE, IN ACTION</p><h1>A better campus,<br/>one idea at a time<span class="workspace-title-dot">.</span></h1><p>See what’s planned, what’s changing, and what’s already improved.</p></div><div class="roadmap-heading-aside"><span class="roadmap-orbit" aria-hidden="true"><%~ icon('arrow') %></span><span><strong><%= totalCount %></strong> published ideas</span><a class="workspace-text-link" href="/feed">Explore the community feed →</a></div></header>
+ <div class="roadmap-summary" aria-label="Ideas matching the current search and category"><% for(const stage of stages) { %><a href="<%= urlFor({stage:stage.key,page:'1'}) %>" data-roadmap-state-link><span class="workspace-status" data-status="<%= stage.key %>"><%= stage.label %></span><strong><%= counts[stage.key] %></strong></a><% } %></div>
+ <section class="roadmap-workspace" aria-label="Campus improvement board">
+  <form class="roadmap-controls" action="/roadmap" method="get" role="search">
+   <input type="hidden" name="stage" value="<%= filters.stage %>"/><input type="hidden" name="view" id="roadmap-view-input" value="<%= filters.view %>"/>
+   <label class="workspace-search"><%~ icon('search') %><input class="workspace-search-input" id="roadmap-search" name="search" type="search" maxlength="120" value="<%= filters.search %>" placeholder="Search all published ideas…" aria-label="Search roadmap titles and descriptions"/></label>
+   <label class="roadmap-category-label"><span class="sr-only">Category</span><select class="workspace-input" id="roadmap-category" name="category"><option value="all">All categories</option><% for(const category of it.categories) { %><option value="<%= category %>" <%= filters.category===category?'selected':'' %>><%= category %></option><% } %></select></label>
+   <button type="submit" class="workspace-button">Apply</button>
+   <div class="roadmap-view-switch" role="group" aria-label="Roadmap layout"><button type="button" data-roadmap-view="board" aria-pressed="<%= filters.view==='board' %>"><%~ icon('board') %> Board</button><button type="button" data-roadmap-view="list" aria-pressed="<%= filters.view==='list' %>"><%~ icon('list') %> List</button></div>
+  </form>
+  <nav class="roadmap-stage-switch" aria-label="Filter roadmap stage"><% for(const [key,name] of [['all','All stages'],...stages.map(s=>[s.key,s.label])]) { %><a href="<%= urlFor({stage:key,page:'1'}) %>" data-roadmap-state-link class="<%= filters.stage===key?'is-active':'' %>" aria-current="<%= filters.stage===key?'page':'false' %>"><%= name %><% if(key!=='all') { %><span><%= counts[key] %></span><% } %></a><% } %></nav>
+  <div class="roadmap-results"><p role="status"><%= it.items.length %> shown · <%= filters.stage==='all'?matchingCount:counts[filters.stage] %> matching ideas<%= filtered ? ' across all pages' : '' %></p><% if(filtered) { %><a class="workspace-text-link" id="roadmap-clear" data-roadmap-state-link href="<%= urlFor({search:'',category:'all',page:'1'}) %>">Clear filters</a><% } %><span>Planned ideas may change as the school reviews priorities.</span></div>
+  <div class="roadmap-board" id="campus-roadmap-board" data-view="<%= filters.view %>" data-stage="<%= filters.stage %>">
+   <% for(const stage of stages.filter(s=>filters.stage==='all' || filters.stage===s.key)) { const laneItems=it.items.filter(i=>i.status===stage.key); %>
+    <section class="roadmap-lane" data-lane="<%= stage.key %>" aria-labelledby="lane-<%= stage.key %>">
+     <header class="roadmap-lane-heading"><div><h2 id="lane-<%= stage.key %>"><span class="roadmap-stage-dot" data-status="<%= stage.key %>" aria-hidden="true"></span><%= stage.label %></h2><span><%= counts[stage.key] %> total</span></div><p><%= stage.caption %></p></header>
+     <div class="roadmap-lane-cards">
+      <% for(const item of laneItems) { %>
+       <article class="roadmap-idea" data-roadmap-id="<%= item.id %>">
+        <span class="workspace-tag"><%= item.category %></span>
+        <div class="roadmap-card-copy"><h3><button type="button" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button></h3><p><%= item.description %></p></div>
+        <time class="roadmap-card-date" datetime="<%= item.updated_at %>">Updated <%= new Date(item.updated_at).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}) %></time>
+        <footer><span>↑ <%= item.votes %> votes<span class="roadmap-comment-count"> · <%= item.comments %> comments</span></span><span class="roadmap-card-arrow" aria-hidden="true"><%~ icon('arrow') %></span></footer>
+       </article>
       <% } %>
-    </div>
-    <% if (it.items.length >= 100) { %><p class="staff-footnote">Showing the 100 most-supported ideas. Visit the community feed to browse more.</p><% } %>
-  </section>
-  <footer class="roadmap-footer"><div><strong>Your next idea could start here.</strong><p>See a way to improve campus life? Share it with your community.</p></div><button type="button" class="workspace-button workspace-button--primary" data-sf-click="action-49">Share an idea <span aria-hidden="true">↗</span></button></footer>
-  <dialog class="workspace-dialog" id="roadmap-dialog" aria-labelledby="roadmap-detail-title">
-    <header class="workspace-dialog-header"><span class="workspace-kicker">CAMPUS ROADMAP</span><button type="button" class="workspace-icon-button" id="roadmap-close" aria-label="Close idea details">×</button></header>
-    <div class="workspace-dialog-body"><span class="workspace-status" id="roadmap-detail-status"></span><h2 id="roadmap-detail-title"></h2><p id="roadmap-detail-meta" class="workspace-detail-meta"></p><h3 class="workspace-field-label">About this idea</h3><p class="workspace-description" id="roadmap-detail-description"></p><div class="roadmap-detail-progress"><h3 class="workspace-field-label">Current stage</h3><ol><% for (const stage of stages) { %><li data-progress-stage="<%= stage.key %>"><span aria-hidden="true"></span><%= stage.label %></li><% } %></ol><p id="roadmap-detail-hint"></p></div><a class="workspace-button workspace-button--primary" id="roadmap-detail-link" href="/feed">Open idea & discussion →</a></div>
-  </dialog>
+      <% if(!laneItems.length) { %><div class="roadmap-lane-empty"><span aria-hidden="true">◌</span><h3><%= counts[stage.key]>0?'No more ideas in this stage on this page':filtered?'No matching ideas':'Nothing here yet' %></h3><p><%= counts[stage.key]>0?'Explore this stage from the first page.':filtered?'Try a different category or search phrase.':stage.empty %></p><% if(counts[stage.key]>0) { %><a class="workspace-text-link" data-roadmap-state-link href="<%= urlFor({stage:stage.key,page:'1'}) %>">Explore <%= stage.label.toLowerCase() %> →</a><% } %></div><% } %>
+     </div>
+    </section>
+   <% } %>
+  </div>
+  <nav class="roadmap-pagination" aria-label="Roadmap pages"><span>Page <%= filters.page %> of <%= pageCount %><span class="roadmap-page-hint"> · Up to <%= it.perStage || 8 %> ideas per stage</span></span><div><% if(filters.page>1) { %><a class="workspace-button" data-roadmap-state-link href="<%= urlFor({page:String(filters.page-1)}) %>">← Previous</a><% } %><% if(filters.page<pageCount) { %><a class="workspace-button" data-roadmap-state-link href="<%= urlFor({page:String(filters.page+1)}) %>">Next →</a><% } %></div></nav>
+ </section>
+ <footer class="roadmap-footer"><div><strong>Your next idea could start here.</strong><p>See a way to improve campus life? Share it with your community.</p></div><button type="button" class="workspace-button workspace-button--primary" data-sf-click="action-49">Share an idea <%~ icon('arrow') %></button></footer>
+ <dialog class="workspace-dialog" id="roadmap-dialog" aria-labelledby="roadmap-detail-title">
+  <header class="workspace-dialog-header"><span class="workspace-kicker">CAMPUS ROADMAP</span><button type="button" class="workspace-icon-button" id="roadmap-close" aria-label="Close idea details">×</button></header>
+  <div class="workspace-dialog-body"><span class="workspace-status" id="roadmap-detail-status"></span><h2 id="roadmap-detail-title"></h2><p id="roadmap-detail-meta" class="workspace-detail-meta"></p><p id="roadmap-detail-error" class="workspace-message" role="status"></p><div id="roadmap-detail-content"><h3 class="workspace-field-label">About this idea</h3><p class="workspace-description" id="roadmap-detail-description"></p><section class="roadmap-school-update" aria-labelledby="roadmap-update-title"><h3 id="roadmap-update-title">Latest school response</h3><p id="roadmap-detail-response"></p></section><div class="roadmap-detail-progress"><h3 class="workspace-field-label">Current stage</h3><ol><% for(const stage of stages) { %><li data-progress-stage="<%= stage.key %>"><span aria-hidden="true"></span><%= stage.label %></li><% } %></ol><p id="roadmap-detail-hint"></p></div><a class="workspace-button workspace-button--primary" id="roadmap-detail-link" href="/feed">Open idea & discussion →</a></div></div>
+ </dialog>
 </main>
-<script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g, '\\u003c') %></script>
-<script src="/js/roadmap.js?v=20261010-workspace"></script>
+<script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script>
+<script src="/js/roadmap.js?v=20261011-workspace"></script>

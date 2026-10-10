@@ -1,4 +1,8 @@
 /* Shared language for the public roadmap and private staff workspace. */
+.workspace-sprite { position:absolute; overflow:hidden; }
+.workspace-svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+.workspace-skip { position:fixed; top:-100px; left:16px; background:var(--surface); border:2px solid var(--navy); padding:12px; z-index:9999; border-radius:8px; }
+.workspace-skip:focus { top:12px; }
 .workspace-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:28px; }
 .workspace-kicker { font-size:10px; font-weight:700; letter-spacing:.14em; color:var(--ink-2); margin-bottom:12px; }
 .workspace-heading h1 { font-size:clamp(30px,3.4vw,44px); line-height:1.12; letter-spacing:-.045em; margin-bottom:12px; }
@@ -57,3 +61,13 @@ body:has(.workspace-dialog[open]) { overflow:hidden; }
 @keyframes workspace-enter { from { transform:translateX(30px); opacity:0; } to { transform:translateX(0); opacity:1; } }
 @media (max-width:600px) { .workspace-heading { align-items:flex-start; flex-direction:column; } .workspace-dialog { width:100%; } .workspace-dialog-body { padding:22px; } .workspace-search input[type="search"], .workspace-input { font-size:16px; } }
 @media (prefers-reduced-motion:reduce) { .staff-workspace *, .campus-roadmap *, .staff-login-layout * { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+.staff-workspace .workspace-button,.campus-roadmap .workspace-button { font-size:13px; }
+.staff-workspace .workspace-input,.campus-roadmap .workspace-input { font-size:14px; }
+.staff-workspace .workspace-status,.campus-roadmap .workspace-status { font-size:12px; }
+.staff-workspace .workspace-tag,.campus-roadmap .workspace-tag { font-size:11px; }
+.staff-workspace .workspace-text-link,.campus-roadmap .workspace-text-link { font-size:13px; }
+.workspace-search > .workspace-svg { color:var(--muted); }
+.workspace-empty-symbol .workspace-svg { width:26px; height:26px; }
+[data-theme="dark"] .workspace-text-link { color:#93c5fd; }
+[data-theme="dark"] .staff-workspace :focus-visible,[data-theme="dark"] .campus-roadmap :focus-visible { outline-color:#93c5fd; }
+@media(max-width:600px) { .campus-roadmap .workspace-input,.campus-roadmap input[type="search"] { font-size:16px; } }

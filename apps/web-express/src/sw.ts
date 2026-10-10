@@ -7,7 +7,7 @@
 
 declare const self: ServiceWorkerGlobalScope;
 
-const CACHE_VERSION = "cv-v7-staff-workflow";
+const CACHE_VERSION = "cv-v8-workspace-ux";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
@@ -67,6 +67,8 @@ self.addEventListener("fetch", (event: FetchEvent) => {
   if (url.origin !== self.location.origin) return;
   // Never cache login callbacks, session state, private pages or API responses.
   if (/^\/(auth|api|admin|profile)(\/|$)/.test(url.pathname)) return;
+  // Public detail JSON must reflect moderation changes and unpublished ideas immediately.
+  if (url.pathname.startsWith("/roadmap/idea/")) return;
 
   // Supabase / edge function calls — network-first
   if (
