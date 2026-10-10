@@ -894,6 +894,42 @@ textarea { height: 130px; resize: vertical; }
   body { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
 }
 
+@media (max-width: 800px) {
+  .site-header { padding-inline: 16px; gap: 12px; }
+  .site-header nav { gap: 8px; }
+  .site-header .nav-link-hide-mobile { display: none !important; }
+  .mobile-tab-bar { display: flex; }
+  .mobile-tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(60px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    z-index: 200;
+  }
+  .mobile-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 0;
+    color: var(--muted);
+    font-size: 10px;
+  }
+  .mobile-tab--active { color: var(--navy); font-weight: 700; }
+  body { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--navy);
+  outline-offset: 3px;
+}
+
 /* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile bottom tab bar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .mobile-tab-bar {
   display: none; /* hidden on desktop */
@@ -1032,4 +1068,15 @@ html:not([data-theme="dark"]) .theme-icon-moon { display: block !important; }
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+@media (max-width: 800px) {
+  .mobile-tab-bar { display: flex; }
+}
+
+@media (max-width: 420px) {
+  .mobile-tab { font-size: 9px; }
+  .mobile-tab svg { width: 20px; height: 20px; }
+  .site-header { padding-inline: 10px; }
+  .site-header .btn-primary-sm { padding-inline: 9px; }
 }

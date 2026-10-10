@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="<%= it.description ?? 'A safer way to make your school better.' %>" />
+  <meta name="description" content="<%= it.description ?? 'Share campus feedback and follow submission progress on SuggFeed.' %>" />
   <title><%= it.title ?? 'SuggFeed' %></title>
 
   <!-- PWA / Icons -->

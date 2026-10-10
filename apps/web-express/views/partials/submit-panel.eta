@@ -239,7 +239,7 @@
               <span id="sip-anon-status-pill" class="sip-badge-anon-state">Identity Hidden</span>
             </div>
             <div class="sip-toggle-sub">
-              Your name and email will never be displayed or shared with the public or administrators.
+              Your account will not be attached to this submission. Service logs may still record connection details; see the privacy notice.
             </div>
           </div>
           <div class="sip-switch">
@@ -318,7 +318,7 @@
         </div>
         <h3 class="sip-success-title">Idea submitted successfully</h3>
         <p class="sip-success-sub">
-          Your feedback has been routed to the campus administrative board for review and community voting.
+          Your suggestion has been submitted for review. Keep your tracking code to check its status.
         </p>
       </div>
 
@@ -359,7 +359,7 @@
             <line x1="12" y1="16" x2="12" y2="12"/>
             <line x1="12" y1="8" x2="12.01" y2="8"/>
           </svg>
-          Keep this code safe. Use it anytime in the "Track Idea" search to view updates anonymously.
+          Keep this code safe. Use it in “Track submission” to check for updates without signing in.
         </div>
       </div>
 
@@ -407,8 +407,10 @@
   let sipCurrentStep = 1;
   let sipMaxVisitedStep = 1;
   let sipTrackingCode = '';
+  let sipReturnFocusTo = null;
 
   function openSubmitPanel(defaultCat) {
+    sipReturnFocusTo = document.activeElement;
     sipCurrentStep = 1;
     sipMaxVisitedStep = 1;
     
@@ -456,6 +458,7 @@
     if (overlay) overlay.hidden = true;
     if (panel) panel.hidden = true;
     document.body.style.overflow = '';
+    if (sipReturnFocusTo && typeof sipReturnFocusTo.focus === 'function') sipReturnFocusTo.focus();
   }
 
   // Keyboard shortcut: Esc closes panel
@@ -463,7 +466,25 @@
     if (e.key === 'Escape') {
       const panel = document.getElementById('submit-panel');
       if (panel && !panel.hidden) {
+        e.preventDefault();
         closeSubmitPanel();
+        return;
+      }
+    }
+    if (e.key === 'Tab') {
+      const panel = document.getElementById('submit-panel');
+      if (!panel || panel.hidden) return;
+      const focusable = Array.from(panel.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+        .filter(el => !el.closest('[hidden]') && el.getClientRects().length);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !focusable.includes(document.activeElement))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (document.activeElement === last || !focusable.includes(document.activeElement))) {
+        e.preventDefault();
+        first.focus();
       }
     }
   });

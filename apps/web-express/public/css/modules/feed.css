@@ -2333,7 +2333,16 @@ input.feed-search {
   gap: 10px;
   padding: 32px 16px;
   margin: 12px 0 24px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
+.feed-loader-container:hover .feed-loading-text { color: var(--ink); }
+.feed-loader-container:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+.feed-loader-container:disabled { cursor: wait; }
 .feed-loading-spinner {
   display: flex;
   align-items: center;

@@ -271,14 +271,14 @@
         </div>
 
         <!-- Lazy loading sentinel & indicator -->
-        <div id="feed-loader" class="feed-loader-container" onclick="sfLoadMoreFeed()" style="<%= it.hasMore ? '' : 'display: none;' %>; cursor: pointer;" title="Click to load more ideas">
-          <div class="feed-loading-spinner" aria-label="Loading more ideas...">
+        <button type="button" id="feed-loader" class="feed-loader-container" onclick="sfLoadMoreFeed()" style="<%= it.hasMore ? '' : 'display: none;' %>" aria-label="Load more community ideas">
+          <span class="feed-loading-spinner" aria-hidden="true">
             <span class="spinner-dot"></span>
             <span class="spinner-dot"></span>
             <span class="spinner-dot"></span>
-          </div>
-          <span class="feed-loading-text">Loading more community proposals…</span>
-        </div>
+          </span>
+          <span class="feed-loading-text" aria-live="polite">Load more ideas</span>
+        </button>
 
         <!-- End of feed -->
         <div id="feed-end-message" class="feed-end-notice" style="<%= !it.hasMore && it.feed.length > 0 ? '' : 'display: none;' %>">
@@ -301,36 +301,19 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="pulse-icon"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
             <h3>Campus Pulse</h3>
           </div>
-          <span class="live-dot-badge">
-            <span class="live-dot-radar">
-              <span class="live-dot-core"></span>
-              <span class="live-dot-ring"></span>
-            </span>
-            Live
-          </span>
+          <span class="pulse-context-label">Community overview</span>
         </div>
         <div class="pulse-metrics-grid">
           <div class="pulse-metric">
-            <span class="metric-number"><%= it.totalCount > 0 ? it.totalCount.toLocaleString() : (it.feed ? it.feed.length : '—') %></span>
-            <span class="metric-label">Ideas Shared</span>
+            <span class="metric-number"><%= (it.feed || []).length %></span>
+            <span class="metric-label">Ideas in this view</span>
           </div>
           <div class="pulse-metric">
-            <span class="metric-number">118</span>
-            <span class="metric-label">Implemented</span>
-          </div>
-          <div class="pulse-metric">
-            <span class="metric-number"><%= it.feed ? it.feed.filter(f => f.comment_count > 0).length : 0 %></span>
-            <span class="metric-label">Active Threads</span>
-          </div>
-          <div class="pulse-metric">
-            <span class="metric-number">12%</span>
-            <span class="metric-label">Resolution Rate</span>
+            <span class="metric-number"><%= (it.totalCount || 0).toLocaleString() %></span>
+            <span class="metric-label">Ideas in community</span>
           </div>
         </div>
-        <div class="pulse-bar-wrap">
-          <div class="pulse-bar-fill" style="width: 12%;"></div>
-        </div>
-        <p class="pulse-summary">Proposals guide infrastructure, student safety, and faculty decisions.</p>
+        <p class="pulse-summary">Search by topic or keyword, then open an idea to read its discussion.</p>
       </div>
 
       <!-- Top Ideas Widget -->
@@ -338,7 +321,7 @@
         <div class="top-ideas-card">
           <div class="top-ideas-header">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="top-ideas-icon"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-            <h4>Top Ideas Right Now</h4>
+            <h4>Top Ideas in This View</h4>
           </div>
           <div class="top-ideas-list">
             <% const topIdeas = [...it.feed].sort((a,b) => (b.vote_count||0) - (a.vote_count||0)).slice(0,3); %>
@@ -364,8 +347,8 @@
         </div>
         <ul class="guidelines-list">
           <li><strong>Be constructive:</strong> Focus on realistic improvements.</li>
-          <li><strong>Safe &amp; Anonymous:</strong> Share without fear of retaliation.</li>
-          <li><strong>Direct Review:</strong> Campus moderators review every proposal.</li>
+          <li><strong>Anonymous option:</strong> You can choose not to attach your account to a submission. Read the <a href="/privacy">privacy notice</a> for details.</li>
+          <li><strong>Public feed:</strong> Submissions are reviewed before they appear in the community feed.</li>
         </ul>
         <a href="/admin" class="guidelines-admin-link">
           <span>Staff Moderation Portal</span>
@@ -788,7 +771,12 @@
   async function sfLoadMoreFeed() {
     if (_isLoading || !_hasMore) return;
     _isLoading = true;
-    if (_feedLoader) _feedLoader.style.display = 'flex';
+    if (_feedLoader) {
+      _feedLoader.disabled = true;
+      _feedLoader.setAttribute('aria-busy', 'true');
+      _feedLoader.style.display = 'flex';
+      _feedLoader.querySelector('.feed-loading-text').textContent = 'Loading more ideas…';
+    }
 
     try {
       const nextPage = _currentPage + 1;
@@ -830,8 +818,16 @@
       }
     } catch (err) {
       console.error('Error loading more ideas:', err);
+      if (_feedLoader) _feedLoader.querySelector('.feed-loading-text').textContent = 'Could not load ideas. Select to retry.';
     } finally {
       _isLoading = false;
+      if (_feedLoader) {
+        _feedLoader.disabled = false;
+        _feedLoader.removeAttribute('aria-busy');
+        if (_hasMore && _feedLoader.querySelector('.feed-loading-text').textContent === 'Loading more ideas…') {
+          _feedLoader.querySelector('.feed-loading-text').textContent = 'Load more ideas';
+        }
+      }
       if (!_hasMore && _feedLoader) {
         _feedLoader.style.display = 'none';
       }

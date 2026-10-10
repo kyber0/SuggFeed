@@ -11,8 +11,8 @@
 
     <!-- Tab Switcher -->
     <div class="am-tabs" id="auth-modal-tabs" role="tablist">
-      <button type="button" role="tab" class="am-tab am-tab--active" id="tab-signin" data-tab="signin" aria-selected="true">Sign in</button>
-      <button type="button" role="tab" class="am-tab" id="tab-signup" data-tab="signup" aria-selected="false">Create account</button>
+      <button type="button" role="tab" class="am-tab am-tab--active" id="tab-signin" data-tab="signin" aria-controls="panel-signin" aria-selected="true" tabindex="0">Sign in</button>
+      <button type="button" role="tab" class="am-tab" id="tab-signup" data-tab="signup" aria-controls="panel-signup" aria-selected="false" tabindex="-1">Create account</button>
     </div>
 
     <!-- Brand Header -->
@@ -43,7 +43,7 @@
     <div class="am-divider"><span>or</span></div>
 
     <!-- Sign In Panel -->
-    <div id="panel-signin" class="am-panel">
+    <div id="panel-signin" class="am-panel" role="tabpanel" aria-labelledby="tab-signin" tabindex="0">
       <form id="form-signin" class="am-form" novalidate>
         <div class="am-field">
           <label class="am-label" for="signin-email">Email address</label>
@@ -79,7 +79,7 @@
     </div>
 
     <!-- Sign Up Panel -->
-    <div id="panel-signup" class="am-panel" hidden>
+    <div id="panel-signup" class="am-panel" role="tabpanel" aria-labelledby="tab-signup" tabindex="0" hidden>
       <form id="form-signup" class="am-form" novalidate>
         <div class="am-field">
           <label class="am-label" for="signup-name">Full name <span class="am-label-hint">(optional)</span></label>
@@ -120,7 +120,7 @@
     </div>
 
     <!-- Forgot Password Panel -->
-    <div id="panel-forgot" class="am-panel" hidden>
+    <div id="panel-forgot" class="am-panel" role="tabpanel" aria-labelledby="am-heading-text" tabindex="0" hidden>
       <form id="form-forgot" class="am-form" novalidate>
         <div class="am-field">
           <label class="am-label" for="forgot-email">Email address</label>
@@ -172,6 +172,8 @@
   var panelForgot = document.getElementById('panel-forgot');
   var heading = document.getElementById('am-heading-text');
   var subtext = document.getElementById('am-subtext-text');
+  var returnFocusTo = null;
+  var previousBodyOverflow = '';
 
   function showPanel(name) {
     if (panelSignin) panelSignin.hidden = (name !== 'signin');
@@ -184,10 +186,12 @@
     if (tabSignin) {
       tabSignin.classList.toggle('am-tab--active', name === 'signin');
       tabSignin.setAttribute('aria-selected', String(name === 'signin'));
+      tabSignin.tabIndex = name === 'signin' ? 0 : -1;
     }
     if (tabSignup) {
       tabSignup.classList.toggle('am-tab--active', name === 'signup');
       tabSignup.setAttribute('aria-selected', String(name === 'signup'));
+      tabSignup.tabIndex = name === 'signup' ? 0 : -1;
     }
 
     if (heading && subtext) {
@@ -206,14 +210,24 @@
 
   window.openAuthModal = function (tab) {
     if (modal) {
+      returnFocusTo = document.activeElement;
+      previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
       modal.removeAttribute('hidden');
       showPanel(tab || 'signin');
+      window.requestAnimationFrame(function () {
+        var fieldId = tab === 'signup' ? '#signup-name' : tab === 'forgot' ? '#forgot-email' : '#signin-email';
+        var firstField = modal.querySelector(fieldId);
+        (firstField || closeBtn)?.focus();
+      });
     }
   };
 
   window.closeAuthModal = function () {
     if (modal) {
       modal.setAttribute('hidden', '');
+      document.body.style.overflow = previousBodyOverflow;
+      if (returnFocusTo && typeof returnFocusTo.focus === 'function') returnFocusTo.focus();
     }
   };
 
@@ -226,25 +240,51 @@
     });
   }
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && modal && !modal.hasAttribute('hidden')) {
+    if (!modal || modal.hasAttribute('hidden')) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
       window.closeAuthModal();
+      return;
+    }
+    if (e.key === 'Tab') {
+      var focusable = Array.from(modal.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+        .filter(function (el) { return !el.closest('[hidden]') && el.getClientRects().length; });
+      if (!focusable.length) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !focusable.includes(document.activeElement))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (document.activeElement === last || !focusable.includes(document.activeElement))) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   });
 
   if (tabSignin) tabSignin.addEventListener('click', function () { showPanel('signin'); });
   if (tabSignup) tabSignup.addEventListener('click', function () { showPanel('signup'); });
+  if (tabsContainer) tabsContainer.addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    var next = document.activeElement === tabSignin ? tabSignup : tabSignin;
+    if (next) {
+      showPanel(next === tabSignin ? 'signin' : 'signup');
+      next.focus();
+    }
+  });
 
   var linkToSignup = document.getElementById('link-to-signup');
-  if (linkToSignup) linkToSignup.addEventListener('click', function () { showPanel('signup'); });
+  if (linkToSignup) linkToSignup.addEventListener('click', function () { showPanel('signup'); tabSignup?.focus(); });
 
   var linkToSignin = document.getElementById('link-to-signin');
-  if (linkToSignin) linkToSignin.addEventListener('click', function () { showPanel('signin'); });
+  if (linkToSignin) linkToSignin.addEventListener('click', function () { showPanel('signin'); tabSignin?.focus(); });
 
   var btnToForgot = document.getElementById('btn-to-forgot');
-  if (btnToForgot) btnToForgot.addEventListener('click', function () { showPanel('forgot'); });
+  if (btnToForgot) btnToForgot.addEventListener('click', function () { showPanel('forgot'); modal.querySelector('#forgot-email')?.focus(); });
 
   var btnBackSignin = document.getElementById('btn-back-signin');
-  if (btnBackSignin) btnBackSignin.addEventListener('click', function () { showPanel('signin'); });
+  if (btnBackSignin) btnBackSignin.addEventListener('click', function () { showPanel('signin'); modal.querySelector('#signin-email')?.focus(); });
 
   // Password visibility toggles
   document.querySelectorAll('.am-pw-toggle').forEach(function (btn) {
@@ -262,7 +302,13 @@
     }
     var t = document.createElement('div');
     t.className = 'sf-toast sf-toast--' + (type || 'info');
-    t.innerHTML = '<div class="sf-toast__body"><div class="sf-toast__message">' + msg + '</div></div>';
+    var body = document.createElement('div');
+    body.className = 'sf-toast__body';
+    var message = document.createElement('div');
+    message.className = 'sf-toast__message';
+    message.textContent = msg;
+    body.appendChild(message);
+    t.appendChild(body);
     r.appendChild(t);
     setTimeout(function () { t.remove(); }, 5000);
   }

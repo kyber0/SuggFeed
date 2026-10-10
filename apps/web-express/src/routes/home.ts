@@ -22,7 +22,7 @@ router.get(
 
     res.render("home", {
       title: "SuggFeed — Share feedback, track progress",
-      description: "A safer way to make your school better. Share feedback anonymously and follow its progress.",
+      description: "Share campus feedback, choose whether to attach your account, and check submission progress with a private tracking code.",
       feed,
       totalCount: count,
       categories: DEFAULT_CATEGORIES,
