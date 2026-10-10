@@ -1072,6 +1072,8 @@ html:not([data-theme="dark"]) .theme-icon-moon { display: block !important; }
 
 @media (max-width: 800px) {
   .mobile-tab-bar { display: flex; }
+  /* Staff tools are offered through the desktop interface. */
+  a[href="/admin"], a[href^="/admin/"] { display: none !important; }
 }
 
 @media (max-width: 420px) {

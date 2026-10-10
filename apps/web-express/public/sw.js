@@ -4,12 +4,11 @@
 //   - Supabase API / Edge Functions: Network-first, fallback to cache
 //   - Navigation (HTML): Network-first, fallback to offline shell
 
-const CACHE_VERSION = "cv-v4";
+const CACHE_VERSION = "cv-v5";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
 const STATIC_ASSETS = [
-  "/",
   "/offline.html",
   "/manifest.json",
 ];
@@ -52,6 +51,8 @@ self.addEventListener("fetch", (event) => {
   // The CSP connect-src directive blocks the SW from re-fetching external origins,
   // which causes a flood of "Failed to fetch" / CSP violation errors.
   if (url.origin !== self.location.origin) return;
+  // Never cache login callbacks, session state, private pages or API responses.
+  if (/^\/(auth|api|admin|profile)(\/|$)/.test(url.pathname)) return;
 
   // Supabase / edge function calls — network-first
   if (url.hostname.endsWith(".supabase.co") || url.pathname.startsWith("/functions/")) {

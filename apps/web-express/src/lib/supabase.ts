@@ -16,7 +16,8 @@ export const supabaseAnonKey =
  */
 export const supabase = createClient(
   supabaseUrl || "https://placeholder-project.supabase.co",
-  supabaseAnonKey || "placeholder-anon-key"
+  supabaseAnonKey || "placeholder-anon-key",
+  { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
 );
 
 /**
@@ -27,5 +28,13 @@ export const supabase = createClient(
  */
 export const supabaseService = createClient(
   supabaseUrl || "https://placeholder-project.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey || "placeholder-anon-key"
+  process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey || "placeholder-anon-key",
+  { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
 );
+
+/** Never share mutable Auth state between requests or with the service-role client. */
+export function createAuthClient() {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+}

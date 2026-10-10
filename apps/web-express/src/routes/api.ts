@@ -199,8 +199,8 @@ router.post(
       .single();
 
     if (error) {
-      console.error("[api/submit] Insert failed:", error);
-      return res.status(500).json({ success: false, error: error.message || "Failed to create submission." });
+      console.error("[api/submit] Insert failed:", error.code);
+      return res.status(500).json({ success: false, error: "Could not create your submission. Please try again." });
     }
 
     invalidateCache("feed_");
@@ -224,16 +224,22 @@ router.patch(
       return res.status(400).json({ error: "Invalid submission ID." });
     }
 
-    const { status } = req.body as { status?: unknown };
+    const { status, note } = req.body as { status?: unknown; note?: unknown };
     const VALID_STATUSES = ["pending", "approved", "rejected", "in_progress", "resolved"] as const;
     if (typeof status !== "string" || !(VALID_STATUSES as readonly string[]).includes(status)) {
       return res.status(400).json({ error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}` });
     }
 
-    const { error } = await supabaseService
-      .from("submissions")
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq("id", id);
+    if (note !== undefined && (typeof note !== "string" || note.length > 2000)) {
+      return res.status(400).json({ success: false, error: "Staff note must be text with 2000 characters or fewer." });
+    }
+    const { error } = await supabaseService.rpc("moderate_submission", {
+      p_submission_id: id, p_staff_id: user.id, p_status: status,
+      p_note: typeof note === "string" ? note.trim() : null,
+    });
+
+    if (error?.code === "P0002") return res.status(404).json({ success: false, error: "Submission not found." });
+    if (error?.code === "42501") return res.status(403).json({ success: false, error: "Staff access required." });
 
     if (error) throw error;
 

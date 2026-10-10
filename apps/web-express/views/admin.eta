@@ -230,7 +230,7 @@
           data-desc="<%= (item.description || '').toLowerCase() %>"
           data-code="<%= (item.tracking_code || '').toLowerCase() %>"
           data-status="<%= item.status || 'pending' %>"
-          onclick="sfOpenDecisionModal('<%= item.id %>', '<%= (item.title || '').replace(/'/g, \"\\'\") %>', '<%= item.status || 'pending' %>')"
+          onclick="sfOpenDecisionModal(this.dataset.id, this.querySelector('.sp-card-title').textContent, this.dataset.status)"
         >
           <!-- Upvote count -->
           <div class="sp-card-votes" title="Community votes">
@@ -410,7 +410,7 @@
 
   async function sfUpdateSubmission(id, newStatus, note) {
     try {
-      const res = await fetch(`/api/admin/submissions/${id}`, {
+      const res = await fetch(`/api/submissions/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus, note })

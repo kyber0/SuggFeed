@@ -9,8 +9,12 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
+import { randomBytes } from "crypto";
+import { SupabaseSessionStore } from "./lib/session-store";
+import { sameOriginOnly } from "./lib/security";
+import { validateIdentity } from "./lib/identity";
 import "./types"; // session augmentation
-import { supabase as publicSupabase, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
+import { supabase as publicSupabase, supabaseService, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
 
 /* ── Environment validation ────────────────────────────────────────────────── */
 const REQUIRED_ENV = ["SUPABASE_URL", "SUPABASE_ANON_KEY"] as const;
@@ -18,10 +22,12 @@ const missingEnv = REQUIRED_ENV.filter((key) => !process.env[key] && !process.en
 if (missingEnv.length > 0) {
   console.error(`[startup] WARNING: Missing required environment variables: ${missingEnv.join(", ")}. Please configure them in your Vercel Project Settings.`);
 }
-const sessionSecret =
-  process.env.SESSION_SECRET && !process.env.SESSION_SECRET.includes("change-in-production")
-    ? process.env.SESSION_SECRET
-    : "sf-session-secure-prod-key-64b-fallback-f10c3b";
+const configuredSecret = process.env.SESSION_SECRET;
+if (process.env.NODE_ENV === "production" && (
+  missingEnv.length || !process.env.SUPABASE_SERVICE_ROLE_KEY || !configuredSecret ||
+  configuredSecret.length < 32 || /change-|placeholder|fallback/i.test(configuredSecret)
+)) throw new Error("Production requires Supabase keys and a strong SESSION_SECRET (32+ characters).");
+const sessionSecret = configuredSecret || randomBytes(32).toString("hex");
 
 // Import routes
 import homeRouter from "./routes/home";
@@ -119,7 +125,9 @@ app.use(
 app.use(compression());
 
 /* ── Request logging ─────────────────────────────────────────────────────── */
-app.use(morgan(isProd ? "combined" : "dev"));
+// OAuth and tracking codes must not enter request logs.
+morgan.token("safe-path", req => (req.url ?? "/").split("?")[0]);
+app.use(morgan(":method :safe-path :status :response-time ms"));
 
 /* ── Rate limiters ───────────────────────────────────────────────────────── */
 // General API: 200 req / 15 min per IP
@@ -153,11 +161,15 @@ const authLimiter = rateLimit({
 app.use(express.json({ limit: "512kb" }));
 app.use(express.urlencoded({ extended: true, limit: "512kb" }));
 app.use(cookieParser());
+app.use(sameOriginOnly);
+// Assets do not need session DB reads.
+app.use(express.static(publicDir, { maxAge: isProd ? "7d" : 0 }));
 
 /* ── Session ─────────────────────────────────────────────────────────────── */
 app.use(
   session({
     secret: sessionSecret,
+    store: isProd ? new SupabaseSessionStore(supabaseService, sessionSecret) : undefined,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -169,10 +181,9 @@ app.use(
   })
 );
 
-/* ── Static files ────────────────────────────────────────────────────────── */
-app.use(express.static(publicDir, {
-  maxAge: isProd ? "7d" : 0,
-}));
+app.use(validateIdentity);
+// HTML and API responses can contain account-specific data.
+app.use((_req, res, next) => { res.setHeader("Cache-Control", "private, no-store"); next(); });
 
 /* ── Locals available in every template ──────────────────────────────────── */
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -202,7 +213,7 @@ app.use("/api/", generalApiLimiter);
 app.use("/api/submit", writeLimiter);
 app.use("/api/vote", writeLimiter);
 app.use("/api/comments", writeLimiter);
-app.use("/auth/", authLimiter);
+app.use("/auth/", (req, res, next) => req.method === "POST" ? authLimiter(req, res, next) : next());
 
 /* ── Routes ──────────────────────────────────────────────────────────────── */
 app.use("/", homeRouter);
@@ -224,11 +235,11 @@ app.use((_req: Request, res: Response) => {
 // Must have 4 parameters for Express to treat it as an error handler.
 // Returns a generic message — never leaks stack traces or file paths.
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-  console.error(`[error] ${req.method} ${req.path}`, err);
-  const isJson = req.path.startsWith("/api/") || req.headers.accept?.includes("application/json") || req.xhr;
+  console.error(`[error] ${req.method} ${req.path}: ${err.name}`);
+  const isJson = req.path.startsWith("/api/") || req.path.startsWith("/auth/") || req.headers.accept?.includes("application/json") || req.xhr;
   if (isJson) {
-    const errorMsg = (err as any).message || "Internal Server Error";
-    return res.status(500).json({ success: false, error: errorMsg });
+    const status = (err as any).status === 400 ? 400 : (err as any).status === 413 ? 413 : 500;
+    return res.status(status).json({ success: false, error: status === 400 ? "Invalid request body." : status === 413 ? "Request is too large." : "The service could not complete this request. Please try again." });
   }
   res.status(500).render("500", { title: "Server Error — SuggFeed" });
 });

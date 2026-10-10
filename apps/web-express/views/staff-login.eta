@@ -46,15 +46,16 @@
     button.textContent = 'Signing in…';
     showMessage('', false);
     try {
-      var client = window._sb || window.supabase.createClient(url, key);
+      var client = window._sb;
+      if (!client) throw new Error('Sign-in service unavailable.');
       var result = await client.auth.signInWithPassword({
         email: document.getElementById('staff-email').value.trim(),
         password: document.getElementById('staff-password').value
       });
       if (result.error) showMessage(result.error.message, true);
-      // On successful auth, the shared layout syncs the session cookie and reloads.
-    } catch (_) {
-      showMessage('Could not reach the sign-in service. Check your connection and try again.', true);
+      else if (result.data.session) await window.sfCompleteSignIn(result.data.session);
+    } catch (error) {
+      showMessage(error.message || 'Could not reach the sign-in service. Check your connection and try again.', true);
     } finally {
       button.disabled = false;
       button.textContent = 'Sign in to staff portal';

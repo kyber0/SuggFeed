@@ -323,11 +323,9 @@
         return;
       }
       googleBtn.disabled = true;
-      var { error } = await sb.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin + '/auth/callback' }
-      });
-      if (error) {
+      try {
+        await window.sfStartGoogleSignIn();
+      } catch (error) {
         googleBtn.disabled = false;
         sfToast(error.message, 'error');
       }
@@ -371,19 +369,8 @@
       // If session directly returned, sync immediately
       if (data && data.session) {
         try {
-          var syncRes = await fetch('/auth/session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              access_token: data.session.access_token,
-              refresh_token: data.session.refresh_token,
-            }),
-          });
-          if (syncRes.ok) {
-            window.location.reload();
-            return;
-          }
-        } catch (_) {}
+          await window.sfCompleteSignIn(data.session);
+        } catch (syncError) { sfToast(syncError.message || 'Could not finish signing in. Please try again.', 'error'); }
       }
     });
   }
@@ -422,7 +409,7 @@
       var { data, error } = await sb.auth.signUp({
         email: email,
         password: password,
-        options: { data: { full_name: name, display_name: name } }
+        options: { data: { full_name: name, display_name: name }, emailRedirectTo: window.location.origin + '/auth/callback' }
       });
       btn.disabled = false;
       btn.innerHTML = origText;
@@ -435,17 +422,12 @@
       // If auto-confirmed session
       if (data && data.session) {
         try {
-          await fetch('/auth/session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              access_token: data.session.access_token,
-              refresh_token: data.session.refresh_token,
-            }),
-          });
-          window.location.reload();
+          await window.sfCompleteSignIn(data.session);
           return;
-        } catch (_) {}
+        } catch (syncError) {
+          sfToast(syncError.message || 'Could not save your sign-in. Please try again.', 'error');
+          return;
+        }
       }
 
       sfToast('Account created! Please check your email to confirm.', 'success');
