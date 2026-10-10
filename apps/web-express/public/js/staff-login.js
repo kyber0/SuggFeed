@@ -7,6 +7,15 @@
         var button = document.getElementById('staff-login-submit');
         var url = document.getElementById('sf-auth-config')?.dataset.url || '';
         var key = document.getElementById('sf-auth-config')?.dataset.key || '';
+        const passwordToggle = document.getElementById('staff-password-toggle');
+        passwordToggle.addEventListener('click', () => {
+            const password = document.getElementById('staff-password');
+            const show = password.type === 'password';
+            password.type = show ? 'text' : 'password';
+            passwordToggle.textContent = show ? 'Hide' : 'Show';
+            passwordToggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            passwordToggle.setAttribute('aria-pressed', String(show));
+        });
         function showMessage(text, isError) {
             message.textContent = text;
             message.classList.toggle('is-error', Boolean(isError));

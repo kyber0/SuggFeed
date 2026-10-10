@@ -1,24 +1,15 @@
 <% layout('layout') %>
-
-<main class="admin-shell admin-login">
-  <section class="login-card staff-login-card" aria-labelledby="staff-login-title">
-    <p class="eyebrow">SUGGFEED STAFF PORTAL</p>
-    <h1 id="staff-login-title">Sign in to continue</h1>
-    <p class="staff-login-copy">Use your school staff account. Only accounts with a staff, moderator, or admin role can open the portal.</p>
-    <form id="staff-login-form" novalidate>
-      <div class="field">
-        <label for="staff-email">School email</label>
-        <input id="staff-email" name="email" type="email" autocomplete="username" required />
-      </div>
-      <div class="field">
-        <label for="staff-password">Password</label>
-        <input id="staff-password" name="password" type="password" autocomplete="current-password" required />
-      </div>
-      <p id="staff-login-message" class="staff-login-message" role="status" aria-live="polite"></p>
-      <button id="staff-login-submit" type="submit" class="btn-primary btn-full staff-login-submit">Sign in to staff portal</button>
+<main class="staff-login-layout">
+  <section class="staff-login-intro"><p class="workspace-kicker">SUGGFEED / STAFF WORKSPACE</p><h1>Good ideas.<br />Thoughtful action.</h1><p>A shared space for your school to listen, respond, and make campus life better.</p><ol><li><span>01</span>Review feedback from your community</li><li><span>02</span>Respond with clarity and care</li><li><span>03</span>Keep everyone informed of progress</li></ol></section>
+  <section class="staff-login-card" aria-labelledby="staff-login-title">
+    <p class="workspace-kicker">WELCOME BACK</p><h2 id="staff-login-title">Sign in to your workspace</h2><p class="staff-login-copy">Use your school’s staff account. Access is limited to authorized moderators and administrators.</p>
+    <form id="staff-login-form">
+      <label class="workspace-field-label" for="staff-email">School email</label><input class="workspace-input" id="staff-email" name="email" type="email" autocomplete="username" placeholder="you@school.edu.ph" required />
+      <label class="workspace-field-label" for="staff-password">Password</label><div class="staff-password-field"><input class="workspace-input" id="staff-password" name="password" type="password" autocomplete="current-password" required /><button type="button" id="staff-password-toggle" aria-controls="staff-password" aria-pressed="false" aria-label="Show password">Show</button></div>
+      <p id="staff-login-message" class="staff-login-message" role="status" aria-live="polite"></p><button id="staff-login-submit" type="submit" class="workspace-button workspace-button--primary staff-login-submit">Sign in to staff portal</button>
     </form>
-    <p class="staff-login-back"><a href="/">← Back to community</a></p>
+    <p class="staff-login-copy staff-login-back">Need access? Contact your school administrator.</p><p class="staff-login-back"><a class="workspace-text-link" href="/">← Back to community</a></p>
   </section>
 </main>
-
-<script src="/js/staff-login.js?v=20261010-ts"></script>
+<section class="staff-mobile-notice"><span class="workspace-empty-symbol" aria-hidden="true">▤</span><h1>Staff workspace</h1><p>Use a desktop or larger screen to sign in and review submissions.</p><a class="workspace-button" href="/roadmap">Explore the campus roadmap →</a></section>
+<script src="/js/staff-login.js?v=20261010-workspace"></script>

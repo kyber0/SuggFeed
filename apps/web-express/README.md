@@ -71,3 +71,55 @@ dropping the session table. Older code using MemoryStore will require login agai
 Mobile navigation exposes community features only; staff entry links are hidden
 at widths of 800px or less. Backend staff permissions are still enforced by role
 for every request; viewport width is not an authorization boundary.
+
+## Staff workspace and campus roadmap
+
+### Phase 1 workflow deployment
+
+Apply `supabase/migrations/202610100003_staff_workspace.sql` after the existing
+migrations, **before deploying this version of the web app**. Review the pending
+remote migration list first (`npx supabase migration list`), then apply approved
+migrations using your normal Supabase deployment workflow. No remote migrations
+are applied by the local build. A missing workspace migration will prevent the
+staff queue from loading; public feed and roadmap do not use the private tables.
+
+The migration adds server-only workflow, internal-note, history, and per-user
+saved-view tables and a private queue view. RLS is enabled with no browser access;
+only the service role can access them. Do not grant these tables or the view to
+`anon` or `authenticated`. Keep the service key on the server. Existing submissions
+start unassigned with normal priority and no target date. Assignment choices come
+from current moderator/admin profiles, not newly created accounts or auth metadata.
+
+Queue filters (assignment, priority, overdue, status, and search) run before
+pagination. Overdue means a target date before today in Asia/Manila, excluding
+completed and declined work. Target dates, assignments, and priorities are private.
+Public response and internal notes have separate forms and storage. Reviews save
+atomically with optimistic conflict detection; conflicting edits retain the draft.
+History shows the latest 100 workflow events, 100 status changes, and 100 private
+notes. Internal notes are append-only; correct mistakes with a follow-up note.
+Private records cascade when their submission is deleted through retention.
+
+Saved views store the currently applied URL filters (not unsent filter edits),
+belong only to their creator, and have a ten-view limit. Removing a view requires
+a second click; it does not delete submissions. Views can be recreated from their
+filters. Roll back application code if needed while retaining the additive tables.
+Test the migration and privileges in a staging Supabase project before production.
+
+The staff portal opens the oldest pending submissions first. Dashboard counts
+cover all submissions, while search, status filters, and pagination apply to
+the queue. CSV exports contain only the displayed page and protect against
+spreadsheet formula execution. Staff review the full suggestion before saving
+a status and public response. Failed saves retain the draft; leaving an unsaved
+review asks for confirmation. The portal UI is desktop-only at widths above 800px.
+
+The public roadmap uses actual database statuses: approved → Planned,
+in_progress → In progress, resolved → Completed. It includes category search,
+board/list layouts, mobile stage selection, keyboard-accessible detail panels,
+and shareable item URLs. It does not imply an assigned team, effort estimate,
+or delivery date. The board currently displays up to 100 most-supported ideas.
+
+For local visual QA with sample data (no database writes), run
+`node -r ts-node/register/transpile-only tests/support/workspace-preview.ts`
+from this app folder and open `http://127.0.0.1:4317/admin`,
+`/roadmap`, or `/staff-login`. The test harness is never mounted by the
+production app. Its first moderation save deliberately fails to exercise retry UI.

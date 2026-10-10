@@ -1,124 +1,105 @@
 "use strict";
-// Browser source extracted from views/roadmap.eta.
-(function () {
-    const RM_ITEMS = JSON.parse(document.getElementById('sf-roadmap-data').textContent || '[]');
-    function rmSetViewMode(mode) {
-        const isBoard = mode === 'board';
-        document.getElementById('rm-btn-board').classList.toggle('rm-view-btn--active', isBoard);
-        document.getElementById('rm-btn-board').setAttribute('aria-pressed', String(isBoard));
-        document.getElementById('rm-btn-timeline').classList.toggle('rm-view-btn--active', !isBoard);
-        document.getElementById('rm-btn-timeline').setAttribute('aria-pressed', String(!isBoard));
-        if (isBoard) {
-            document.getElementById('rm-board-view').removeAttribute('hidden');
-            document.getElementById('rm-timeline-view').setAttribute('hidden', '');
-        }
-        else {
-            document.getElementById('rm-board-view').setAttribute('hidden', '');
-            document.getElementById('rm-timeline-view').removeAttribute('hidden');
-        }
-    }
-    function rmSetMobileTab(tab) {
-        ['now', 'next', 'later'].forEach(t => {
-            const active = t === tab;
-            const btn = document.getElementById(`rm-tab-${t}`);
-            const col = document.getElementById(`col-${t}`);
-            if (btn) {
-                btn.classList.toggle('rm-mobile-tab-btn--active', active);
-                btn.setAttribute('aria-selected', String(active));
-            }
-            if (col) {
-                col.classList.toggle('rm-column--mobile-active', active);
-            }
+(() => {
+    const items = JSON.parse(document.getElementById('sf-roadmap-data').textContent || '[]');
+    const stages = ['approved', 'in_progress', 'resolved'];
+    const labels = { approved: 'Planned', in_progress: 'In progress', resolved: 'Completed' };
+    const hints = {
+        approved: 'The school has approved this idea. A delivery date has not been announced.',
+        in_progress: 'Work on this idea is underway. Follow the discussion for updates from your school.',
+        resolved: 'The school has marked this idea as completed.',
+    };
+    const search = document.getElementById('roadmap-search');
+    const category = document.getElementById('roadmap-category');
+    const board = document.getElementById('campus-roadmap-board');
+    const dialog = document.getElementById('roadmap-dialog');
+    const clear = document.getElementById('roadmap-clear');
+    let returnFocus = null;
+    let syncingHistory = false;
+    function filter() {
+        const query = search.value.trim().toLocaleLowerCase();
+        const matches = items.filter(item => (!query || [item.title, item.description, item.category].join(' ').toLocaleLowerCase().includes(query)) && (category.value === 'all' || item.category === category.value));
+        const ids = new Set(matches.map(item => item.id));
+        document.querySelectorAll('[data-roadmap-id]').forEach(card => { card.hidden = !ids.has(card.dataset.roadmapId); });
+        const filtered = Boolean(query || category.value !== 'all');
+        clear.hidden = !filtered;
+        document.getElementById('roadmap-result-count').textContent = matches.length + ' of ' + items.length + ' ideas';
+        stages.forEach(stage => {
+            const count = matches.filter(item => item.status === stage).length;
+            document.querySelector('[data-lane-count="' + stage + '"]').textContent = String(count);
+            document.querySelector('[data-mobile-count="' + stage + '"]').textContent = String(count);
+            const empty = document.querySelector('[data-lane-empty="' + stage + '"]');
+            empty.hidden = count > 0;
+            empty.querySelector('h3').textContent = filtered ? 'No matching ideas' : 'Nothing here yet';
+            empty.querySelector('p').textContent = filtered ? 'Try another category or clear your search.' : 'Ideas will appear here as their status changes.';
         });
     }
-    function rmApplyFilters() {
-        const q = (document.getElementById('rm-search-input').value || '').toLowerCase().trim();
-        const owner = document.getElementById('rm-owner-filter').value;
-        const tag = document.getElementById('rm-tag-filter').value.toLowerCase();
-        const quarter = document.getElementById('rm-quarter-filter').value;
-        const hasActive = q || owner !== 'all' || tag !== 'all' || quarter !== 'all';
-        const resetBtn = document.getElementById('rm-filter-reset');
-        if (resetBtn)
-            resetBtn.classList.toggle('rm-filter-reset-hidden', !hasActive);
-        document.querySelectorAll('.rm-card').forEach(card => {
-            const cardTitle = card.getAttribute('data-title') || '';
-            const cardDesc = card.getAttribute('data-desc') || '';
-            const cardOwner = card.getAttribute('data-owner') || '';
-            const cardTag = card.getAttribute('data-tag') || '';
-            const cardQuarter = card.getAttribute('data-quarter') || '';
-            const matchQ = !q || cardTitle.includes(q) || cardDesc.includes(q) || cardTag.includes(q);
-            const matchOwner = owner === 'all' || cardOwner === owner;
-            const matchTag = tag === 'all' || cardTag.includes(tag);
-            const matchQuarter = quarter === 'all' || cardQuarter === quarter;
-            const matches = matchQ && matchOwner && matchTag && matchQuarter;
-            card.classList.toggle('rm-card--dimmed', !matches);
+    search.addEventListener('input', filter);
+    category.addEventListener('change', filter);
+    clear.addEventListener('click', () => { search.value = ''; category.value = 'all'; filter(); search.focus(); });
+    document.querySelectorAll('[data-roadmap-view]').forEach(button => {
+        button.addEventListener('click', () => {
+            board.dataset.view = button.dataset.roadmapView;
+            document.querySelectorAll('[data-roadmap-view]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+            document.querySelector('.roadmap-stage-switch').hidden = button.dataset.roadmapView === 'list';
         });
-    }
-    function rmClearFilters() {
-        document.getElementById('rm-search-input').value = '';
-        document.getElementById('rm-owner-filter').value = 'all';
-        document.getElementById('rm-tag-filter').value = 'all';
-        document.getElementById('rm-quarter-filter').value = 'all';
-        rmApplyFilters();
-    }
-    function rmOpenDrawer(id) {
-        const item = RM_ITEMS.find(i => i.id === id);
+    });
+    document.querySelectorAll('[data-stage]').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('[data-stage]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+            document.querySelectorAll('[data-lane]').forEach(lane => lane.classList.toggle('is-mobile-active', lane.dataset.lane === button.dataset.stage));
+        });
+    });
+    function open(id, push = true) {
+        const item = items.find(i => i.id === id);
         if (!item)
             return;
-        const overlay = document.getElementById('rm-drawer-overlay');
-        const colorHex = item.status === 'now' ? '#F59E0B' : (item.status === 'next' ? '#3B82F6' : '#64748B');
-        const statusLabel = item.status === 'now' ? 'Now' : (item.status === 'next' ? 'Next' : 'Later');
-        document.getElementById('drawer-dot').style.background = colorHex;
-        document.getElementById('drawer-status-label').textContent = statusLabel;
-        document.getElementById('drawer-title').textContent = item.title;
-        document.getElementById('drawer-pill-status').textContent = statusLabel + ' (' + (item.status === 'now' ? 'In Development' : (item.status === 'next' ? 'Approved & Prioritized' : 'Future Consideration')) + ')';
-        document.getElementById('drawer-effort').textContent = item.effort || 'M';
-        document.getElementById('drawer-avatar').textContent = (item.owner?.name || 'CO').slice(0, 2).toUpperCase();
-        document.getElementById('drawer-owner-name').textContent = item.owner?.name || 'Campus Team';
-        document.getElementById('drawer-owner-role').textContent = item.owner?.role || 'Campus Administration';
-        document.getElementById('drawer-quarter').textContent = item.quarter || 'Q3 2026';
-        const ideaLink = document.getElementById('drawer-idea-link');
-        ideaLink.href = `/idea/${item.id}`;
-        ideaLink.setAttribute('data-idea-id', item.id);
-        const tagsCont = document.getElementById('drawer-tags');
-        tagsCont.innerHTML = '';
-        (item.tags || []).forEach(t => {
-            const sp = document.createElement('span');
-            sp.className = 'rm-card-tag';
-            sp.textContent = t;
-            tagsCont.appendChild(sp);
+        if (!dialog.open)
+            returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        const badge = document.getElementById('roadmap-detail-status');
+        badge.textContent = labels[item.status];
+        badge.dataset.status = item.status;
+        document.getElementById('roadmap-detail-title').textContent = item.title;
+        document.getElementById('roadmap-detail-description').textContent = item.description;
+        document.getElementById('roadmap-detail-meta').textContent = item.category + ' · ' + item.votes + ' votes · Updated ' + new Date(item.updated_at).toLocaleDateString('en-PH', { dateStyle: 'medium' });
+        document.getElementById('roadmap-detail-hint').textContent = hints[item.status];
+        document.getElementById('roadmap-detail-link').href = '/idea/' + encodeURIComponent(item.id);
+        document.querySelectorAll('[data-progress-stage]').forEach(step => {
+            if (step.dataset.progressStage === item.status)
+                step.setAttribute('aria-current', 'step');
+            else
+                step.removeAttribute('aria-current');
         });
-        overlay.removeAttribute('hidden');
-        try {
+        if (!dialog.open)
+            dialog.showModal();
+        if (push) {
             const url = new URL(window.location.href);
-            url.searchParams.set('item', id);
-            window.history.pushState({ itemId: id }, '', url.toString());
+            url.searchParams.set('item', item.id);
+            window.history.pushState(null, '', url);
         }
-        catch (e) { }
     }
-    function rmCloseDrawer() {
-        const overlay = document.getElementById('rm-drawer-overlay');
-        overlay.setAttribute('hidden', '');
-        try {
+    document.querySelectorAll('[data-roadmap-open]').forEach(button => button.addEventListener('click', () => open(button.dataset.roadmapOpen)));
+    document.getElementById('roadmap-close').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => { if (event.target === dialog && event.clientX < dialog.getBoundingClientRect().left)
+        dialog.close(); });
+    dialog.addEventListener('close', () => {
+        returnFocus?.focus();
+        if (!syncingHistory) {
             const url = new URL(window.location.href);
             url.searchParams.delete('item');
-            window.history.replaceState({}, '', url.toString());
+            window.history.replaceState(null, '', url);
         }
-        catch (e) { }
-    }
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape')
-            rmCloseDrawer();
+        syncingHistory = false;
     });
-    // URL sync on load
-    document.addEventListener('DOMContentLoaded', function () {
-        try {
-            const params = new URLSearchParams(window.location.search);
-            const itemId = params.get('item');
-            if (itemId)
-                rmOpenDrawer(itemId);
+    window.addEventListener('popstate', () => {
+        const id = new URL(window.location.href).searchParams.get('item');
+        if (id)
+            open(id, false);
+        else if (dialog.open) {
+            syncingHistory = true;
+            dialog.close();
         }
-        catch (e) { }
     });
-    Object.assign(window, { rmSetViewMode, rmSetMobileTab, rmApplyFilters, rmClearFilters, rmOpenDrawer, rmCloseDrawer });
+    const initial = new URL(window.location.href).searchParams.get('item');
+    if (initial)
+        open(initial, false);
 })();

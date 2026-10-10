@@ -38,6 +38,7 @@ import profileRouter from "./routes/profile";
 import adminRouter from "./routes/admin";
 import authRouter from "./routes/auth";
 import apiRouter from "./routes/api";
+import staffWorkspaceRouter from './routes/staff-workspace';
 import legalRouter from "./routes/legal";
 
 const app = express();
@@ -224,6 +225,7 @@ app.use("/profile", profileRouter);
 app.use("/admin", adminRouter);
 app.use("/auth", authRouter);
 app.use("/api", apiRouter);
+app.use('/api/staff', staffWorkspaceRouter);
 app.use("/", legalRouter);
 
 /* ── 404 ─────────────────────────────────────────────────────────────────── */

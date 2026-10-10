@@ -218,8 +218,7 @@ export async function loadRoadmapSubmissions(): Promise<Submission[]> {
       const { data, error } = await supabase
         .from("submissions")
         .select(SUBMISSION_SELECT)
-        // Match Next.js: only in_progress and resolved on the roadmap
-        .in("status", ["in_progress", "resolved"])
+        .in("status", ["approved", "in_progress", "resolved"])
         .order("vote_count", { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -264,6 +263,18 @@ export async function loadUserBookmarks(userId: string): Promise<Submission[]> {
 }
 
 /* ─── Admin ────────────────────────────────────────────────────────────── */
+export const MODERATION_STATUSES = ["pending", "approved", "in_progress", "resolved", "rejected"] as const;
+
+export async function loadModerationCounts(): Promise<Record<string, number>> {
+  const entries = await Promise.all(MODERATION_STATUSES.map(async (status) => {
+    const { count, error } = await supabaseService.from("submissions")
+      .select("id", { count: "exact", head: true }).eq("status", status);
+    if (error) throw error;
+    return [status, count ?? 0] as const;
+  }));
+  return Object.fromEntries([...entries, ["all", entries.reduce((sum, [, count]) => sum + count, 0)]]);
+}
+
 export async function loadPendingSubmissions(): Promise<Submission[]> {
   const { data, error } = await supabaseService
     .from("submissions")
@@ -283,14 +294,14 @@ export async function loadAllSubmissionsForAdmin(opts: {
 
   let query = supabaseService
     .from("submissions")
-    .select(SUBMISSION_SELECT, { count: "exact" });
+    .select(`${SUBMISSION_SELECT},staff_note`, { count: "exact" });
 
   if (status && status !== "all") query = query.eq("status", status);
   if (search) {
     const safe = sanitizeSearch(search);
     query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
   }
-  query = query.order("created_at", { ascending: false });
+  query = query.order("created_at", { ascending: status === "pending" }).order("id");
 
   const from = (page - 1) * PER_PAGE;
   query = query.range(from, from + PER_PAGE - 1);

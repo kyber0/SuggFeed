@@ -6,33 +6,6 @@
     }
     Object.assign(window, { sfEscapeAttribute });
     const actions = {
-        'action-1': (event, element) => { const actionEvent = event; location.reload(); },
-        'action-2': (event, element) => { const actionEvent = event; sfExportAdminCsv(); },
-        'action-3': (event, element) => { const actionEvent = event; sfFilterStatus('all'); },
-        'action-4': (event, element) => { const actionEvent = event; sfFilterStatus('pending'); },
-        'action-5': (event, element) => { const actionEvent = event; sfFilterStatus('approved'); },
-        'action-6': (event, element) => { const actionEvent = event; sfFilterStatus('in_progress'); },
-        'action-7': (event, element) => { const actionEvent = event; sfFilterStatus('resolved'); },
-        'action-8': (event, element) => { const actionEvent = event; sfFilterQueueCards(); },
-        'action-9': (event, element) => { const actionEvent = event; sfFilterStatus('all'); },
-        'action-10': (event, element) => { const actionEvent = event; sfFilterStatus('pending'); },
-        'action-11': (event, element) => { const actionEvent = event; sfFilterStatus('approved'); },
-        'action-12': (event, element) => { const actionEvent = event; sfFilterStatus('in_progress'); },
-        'action-13': (event, element) => { const actionEvent = event; sfFilterStatus('resolved'); },
-        'action-14': (event, element) => { const actionEvent = event; sfOpenDecisionModal(element.dataset.id, element.querySelector('.sp-card-title').textContent, element.dataset.status); },
-        'action-15': (event, element) => { const actionEvent = event; actionEvent.stopPropagation(); },
-        'action-16': (event, element) => { const actionEvent = event; sfQuickUpdateStatus(element.getAttribute('data-sf-click-arg-0'), 'approved'); },
-        'action-17': (event, element) => { const actionEvent = event; sfQuickUpdateStatus(element.getAttribute('data-sf-click-arg-0'), 'rejected'); },
-        'action-18': (event, element) => { const actionEvent = event; if (actionEvent.target === element)
-            sfCloseDecisionModal(); },
-        'action-19': (event, element) => { const actionEvent = event; sfCloseDecisionModal(); },
-        'action-20': (event, element) => { const actionEvent = event; sfApplyModalStatus('approved'); },
-        'action-21': (event, element) => { const actionEvent = event; sfApplyModalStatus('in_progress'); },
-        'action-22': (event, element) => { const actionEvent = event; sfApplyModalStatus('resolved'); },
-        'action-23': (event, element) => { const actionEvent = event; sfApplyModalStatus('rejected'); },
-        'action-24': (event, element) => { const actionEvent = event; sfSetModalNote(element.textContent); },
-        'action-25': (event, element) => { const actionEvent = event; sfSetModalNote(element.textContent); },
-        'action-26': (event, element) => { const actionEvent = event; sfSetModalNote(element.textContent); },
         'action-27': (event, element) => { const actionEvent = event; sfSetLeftTopic('All'); },
         'action-28': (event, element) => { const actionEvent = event; sfSetLeftTopic(element.getAttribute('data-sf-click-arg-0')); },
         'action-29': (event, element) => { const actionEvent = event; openSubmitPanel(); },
@@ -153,39 +126,6 @@
         'action-139': (event, element) => { const actionEvent = event; sfSetProfileTab('shared'); },
         'action-140': (event, element) => { const actionEvent = event; sfSetProfileTab('voted'); },
         'action-141': (event, element) => { const actionEvent = event; openSubmitPanel(); },
-        'action-142': (event, element) => { const actionEvent = event; rmSetViewMode('board'); },
-        'action-143': (event, element) => { const actionEvent = event; rmSetViewMode('timeline'); },
-        'action-144': (event, element) => { const actionEvent = event; rmApplyFilters(); },
-        'action-145': (event, element) => { const actionEvent = event; rmApplyFilters(); },
-        'action-146': (event, element) => { const actionEvent = event; rmApplyFilters(); },
-        'action-147': (event, element) => { const actionEvent = event; rmApplyFilters(); },
-        'action-148': (event, element) => { const actionEvent = event; rmClearFilters(); },
-        'action-149': (event, element) => { const actionEvent = event; rmSetMobileTab('now'); },
-        'action-150': (event, element) => { const actionEvent = event; rmSetMobileTab('next'); },
-        'action-151': (event, element) => { const actionEvent = event; rmSetMobileTab('later'); },
-        'action-152': (event, element) => { const actionEvent = event; rmOpenDrawer(element.getAttribute('data-sf-click-arg-0')); },
-        'action-153': (event, element) => { const actionEvent = event; if (actionEvent.key === 'Enter' || actionEvent.key === ' ') {
-            actionEvent.preventDefault();
-            rmOpenDrawer(element.getAttribute('data-sf-keydown-arg-0'));
-        } ; },
-        'action-154': (event, element) => { const actionEvent = event; rmOpenDrawer(element.getAttribute('data-sf-click-arg-0')); },
-        'action-155': (event, element) => { const actionEvent = event; if (actionEvent.key === 'Enter' || actionEvent.key === ' ') {
-            actionEvent.preventDefault();
-            rmOpenDrawer(element.getAttribute('data-sf-keydown-arg-0'));
-        } ; },
-        'action-156': (event, element) => { const actionEvent = event; rmOpenDrawer(element.getAttribute('data-sf-click-arg-0')); },
-        'action-157': (event, element) => { const actionEvent = event; if (actionEvent.key === 'Enter' || actionEvent.key === ' ') {
-            actionEvent.preventDefault();
-            rmOpenDrawer(element.getAttribute('data-sf-keydown-arg-0'));
-        } ; },
-        'action-158': (event, element) => { const actionEvent = event; rmOpenDrawer(element.getAttribute('data-sf-click-arg-0')); },
-        'action-159': (event, element) => { const actionEvent = event; if (actionEvent.target === element)
-            rmCloseDrawer(); },
-        'action-160': (event, element) => { const actionEvent = event; rmCloseDrawer(); },
-        'action-161': (event, element) => { const actionEvent = event; if (!actionEvent.ctrlKey && !actionEvent.metaKey) {
-            actionEvent.preventDefault();
-            sfOpenIdeaDetail(element.getAttribute('data-idea-id'));
-        } ; },
         'action-162': (event, element) => { const actionEvent = event; window.location.reload(); },
         'open-detail': (event, element) => { const actionEvent = event; if (!actionEvent.ctrlKey && !actionEvent.metaKey) {
             event.preventDefault();

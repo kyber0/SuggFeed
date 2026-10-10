@@ -1,351 +1,115 @@
 <% layout('layout') %>
-
 <%
-  const pendingCount = (it.pending || []).length;
-  const submissions = it.submissions || [];
-  const totalCount = it.totalCount || submissions.length;
-  const approvedCount = submissions.filter(s => s.status === 'approved').length;
-  const inProgressCount = submissions.filter(s => s.status === 'in_progress').length;
-  const resolvedCount = submissions.filter(s => s.status === 'resolved').length;
-  const currentStatus = it.status || 'all';
-  const currentSearch = it.search || '';
+  const labels = { all: 'All submissions', pending: 'Needs review', approved: 'Planned', in_progress: 'In progress', resolved: 'Completed', rejected: 'Declined' };
+  const counts = it.counts;
+  const status = it.status;
+  const filters = it.filters || { status, search: it.search, assignment: 'all', priority: 'all', overdue: 'false' };
+  const urlFor = (s, p = 1) => '/admin?' + new URLSearchParams({ ...filters, status: s, page: String(p) }).toString();
+  const viewUrl = f => '/admin?' + new URLSearchParams(f).toString();
+  const isFiltered = !!it.search || filters.assignment !== 'all' || filters.priority !== 'all' || filters.overdue === 'true';
 %>
-
-<main class="admin-shell">
-  <!-- ── Header Command Bar ── -->
-  <div class="sp-header">
-    <div class="sp-title-area">
-      <span class="sp-eyebrow">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        STAFF COMMAND CENTER
-      </span>
-      <h1 class="sp-title">Community Moderation Queue</h1>
-      <p class="sp-subtitle">Review, triage, and route community ideas into campus delivery.</p>
-    </div>
-
-    <div class="sp-header-actions">
-      <!-- Main Navigation Tabs -->
-      <div class="sp-nav-tabs" role="tablist" aria-label="Staff Portal Views">
-        <a href="/admin" class="sp-nav-tab sp-nav-tab--active">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-          <span>Queue</span>
-          <% if (pendingCount > 0) { %>
-            <span class="sp-tab-badge sp-tab-badge--urgent"><%= pendingCount %></span>
-          <% } %>
+<main class="staff-workspace">
+  <aside class="staff-sidebar" aria-label="Staff workspace">
+    <a class="staff-brand" href="/admin"><span class="staff-brand-mark" aria-hidden="true">S</span><span>SuggFeed<small>STAFF WORKSPACE</small></span></a>
+    <p class="workspace-kicker">WORKSPACE</p>
+    <nav aria-label="Staff navigation">
+      <a class="staff-nav-item is-current" href="/admin" aria-current="page"><span aria-hidden="true">▤</span> Review queue <span class="staff-nav-count"><%= counts.pending %></span></a>
+      <a class="staff-nav-item" href="/roadmap"><span aria-hidden="true">◫</span> Campus roadmap <span aria-hidden="true">↗</span></a>
+      <a class="staff-nav-item" href="/feed"><span aria-hidden="true">◎</span> Community feed <span aria-hidden="true">↗</span></a>
+    </nav>
+    <p class="workspace-kicker">YOUR QUEUES</p>
+    <nav aria-label="Personal queues">
+      <a class="staff-nav-item" href="<%= viewUrl({status:'all',assignment:'mine'}) %>">Assigned to me</a>
+      <a class="staff-nav-item" href="<%= viewUrl({status:'pending',assignment:'unassigned'}) %>">Unassigned review</a>
+      <a class="staff-nav-item" href="<%= viewUrl({status:'all',overdue:'true'}) %>">Past target date</a>
+    </nav>
+    <p class="workspace-kicker">SAVED VIEWS · PRIVATE TO YOU</p>
+    <div class="staff-saved-views"><% for (const view of it.savedViews || []) { %><div><a class="staff-nav-item" href="<%= viewUrl(view.filters) %>"><%= view.name %></a><button class="workspace-icon-button" type="button" data-delete-view="<%= view.id %>" aria-label="Remove saved view: <%= view.name %>">×</button></div><% } %><% if (!it.savedViews?.length) { %><p class="workspace-field-hint">Save frequently used filters from the queue.</p><% } %></div>
+    <div class="staff-sidebar-note"><span class="workspace-kicker">A THOUGHTFUL REVIEW</span><h2>Every idea deserves a response.</h2><p>Keep updates clear, constructive, and free of personal information.</p></div>
+    <div class="staff-identity"><span class="staff-brand-mark" aria-hidden="true"><%= (it.user?.display_name || 'S').slice(0, 1).toUpperCase() %></span><div><strong><%= it.user?.display_name || 'School staff' %></strong><small><%= it.user?.role === 'admin' ? 'Administrator' : 'Moderator' %></small></div></div>
+  </aside>
+  <div class="staff-main">
+    <header class="workspace-heading">
+      <div><p class="workspace-kicker">COMMUNITY / MODERATION</p><h1>Review queue<span class="workspace-title-dot">.</span></h1><p>Turn student feedback into thoughtful action.</p></div>
+      <div class="workspace-actions"><button class="workspace-button" id="staff-refresh" type="button">↻ <span>Refresh</span></button><button class="workspace-button" id="staff-export" type="button" <%= it.submissions.length ? '' : 'disabled' %>>↓ <span>Export this page</span></button></div>
+    </header>
+    <section class="staff-metrics" aria-label="All-time submission counts">
+      <% for (const [key, caption] of [['pending', 'Ready for a first look'], ['in_progress', 'Work is underway'], ['resolved', 'Feedback put into action'], ['all', 'Across every status']]) { %>
+        <a class="staff-metric staff-metric--<%= key %><%= status === key ? ' is-selected' : '' %>" href="<%= urlFor(key) %>" aria-current="<%= status === key ? 'true' : 'false' %>">
+          <span><%= labels[key] %><span aria-hidden="true">↗</span></span><strong><%= counts[key].toLocaleString() %></strong><small><%= caption %></small>
         </a>
-        <a href="/roadmap" class="sp-nav-tab">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-          <span>Roadmap</span>
-        </a>
-      </div>
-
-      <button
-        type="button"
-        class="sp-btn-action"
-        data-sf-click="action-1"
-        title="Refresh submissions from database"
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        <span>Refresh</span>
-      </button>
-
-      <button
-        type="button"
-        class="sp-btn-action"
-        data-sf-click="action-2"
-        title="Export current view to CSV"
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Export CSV</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- ── KPI Metric Cards ── -->
-  <div class="sp-kpi-grid">
-    <!-- All -->
-    <div
-      class="sp-kpi-card sp-kpi-card--total<%= currentStatus === 'all' ? ' sp-kpi-card--active' : '' %>"
-      data-sf-click="action-3"
-    >
-      <div class="sp-kpi-top">
-        <span class="sp-kpi-label">Total Ideas</span>
-        <div class="sp-kpi-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-      </div>
-      <span class="sp-kpi-num"><%= totalCount %></span>
-      <span class="sp-kpi-sub">All submissions</span>
-    </div>
-
-    <!-- Pending -->
-    <div
-      class="sp-kpi-card sp-kpi-card--pending<%= currentStatus === 'pending' ? ' sp-kpi-card--active' : '' %>"
-      data-sf-click="action-4"
-    >
-      <div class="sp-kpi-top">
-        <span class="sp-kpi-label">Pending Review</span>
-        <div class="sp-kpi-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-      </div>
-      <span class="sp-kpi-num"><%= pendingCount %></span>
-      <span class="sp-kpi-sub">Needs attention</span>
-    </div>
-
-    <!-- Approved -->
-    <div
-      class="sp-kpi-card sp-kpi-card--approved<%= currentStatus === 'approved' ? ' sp-kpi-card--active' : '' %>"
-      data-sf-click="action-5"
-    >
-      <div class="sp-kpi-top">
-        <span class="sp-kpi-label">Approved</span>
-        <div class="sp-kpi-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-        </div>
-      </div>
-      <span class="sp-kpi-num"><%= approvedCount %></span>
-      <span class="sp-kpi-sub">Public on feed</span>
-    </div>
-
-    <!-- In Progress -->
-    <div
-      class="sp-kpi-card sp-kpi-card--in_progress<%= currentStatus === 'in_progress' ? ' sp-kpi-card--active' : '' %>"
-      data-sf-click="action-6"
-    >
-      <div class="sp-kpi-top">
-        <span class="sp-kpi-label">In Progress</span>
-        <div class="sp-kpi-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        </div>
-      </div>
-      <span class="sp-kpi-num"><%= inProgressCount %></span>
-      <span class="sp-kpi-sub">Active delivery</span>
-    </div>
-
-    <!-- Resolved -->
-    <div
-      class="sp-kpi-card sp-kpi-card--resolved<%= currentStatus === 'resolved' ? ' sp-kpi-card--active' : '' %>"
-      data-sf-click="action-7"
-    >
-      <div class="sp-kpi-top">
-        <span class="sp-kpi-label">Resolved</span>
-        <div class="sp-kpi-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-        </div>
-      </div>
-      <span class="sp-kpi-num"><%= resolvedCount %></span>
-      <span class="sp-kpi-sub">Completed</span>
-    </div>
-  </div>
-
-  <!-- ── Filter & Search Toolbar ── -->
-  <div class="sp-controls-card">
-    <div class="sp-controls-row">
-      <!-- Search Input -->
-      <div class="sp-search-box">
-        <svg class="sp-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input
-          type="text"
-          id="sp-search"
-          class="sp-search-input"
-          placeholder="Search by title, description, or tracking code..."
-          value="<%= currentSearch %>"
-          data-sf-input="action-8"
-        />
-      </div>
-
-      <!-- Status Filter Chips -->
-      <div class="sp-status-chips" role="group" aria-label="Filter by status">
-        <button
-          type="button"
-          class="sp-chip<%= currentStatus === 'all' ? ' sp-chip--active' : '' %>"
-          data-sf-click="action-9"
-        >
-          <span>All</span>
-          <span class="sp-chip-count"><%= totalCount %></span>
-        </button>
-        <button
-          type="button"
-          class="sp-chip<%= currentStatus === 'pending' ? ' sp-chip--active' : '' %>"
-          data-sf-click="action-10"
-        >
-          <span>Pending</span>
-          <span class="sp-chip-count"><%= pendingCount %></span>
-        </button>
-        <button
-          type="button"
-          class="sp-chip<%= currentStatus === 'approved' ? ' sp-chip--active' : '' %>"
-          data-sf-click="action-11"
-        >
-          <span>Approved</span>
-          <span class="sp-chip-count"><%= approvedCount %></span>
-        </button>
-        <button
-          type="button"
-          class="sp-chip<%= currentStatus === 'in_progress' ? ' sp-chip--active' : '' %>"
-          data-sf-click="action-12"
-        >
-          <span>In Progress</span>
-          <span class="sp-chip-count"><%= inProgressCount %></span>
-        </button>
-        <button
-          type="button"
-          class="sp-chip<%= currentStatus === 'resolved' ? ' sp-chip--active' : '' %>"
-          data-sf-click="action-13"
-        >
-          <span>Resolved</span>
-          <span class="sp-chip-count"><%= resolvedCount %></span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Queue Table / Card List ── -->
-  <div class="sp-table-head">
-    <div class="sp-table-head-left">
-      <span>Submissions (<span id="sp-visible-count"><%= submissions.length %></span>)</span>
-    </div>
-    <span>Status &amp; Actions</span>
-  </div>
-
-  <div class="sp-list" id="sp-cards-list">
-    <% if (submissions.length === 0) { %>
-      <div class="sp-empty-state">
-        <svg class="sp-empty-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <p class="sp-empty-text">No submissions found in this view</p>
-      </div>
-    <% } else { %>
-      <% for (const item of submissions) { %>
-        <%
-          const cat = item.category ?? (item.categories?.name ?? 'Other');
-          const isPending = item.status === 'pending';
-          const statusColor = item.status === 'approved' ? '#10B981' : (item.status === 'in_progress' ? '#3B82F6' : (item.status === 'resolved' ? '#0D9488' : (item.status === 'rejected' ? '#EF4444' : '#F59E0B')));
-        %>
-        <div
-          class="sp-card"
-          id="sp-item-<%= item.id %>"
-          data-id="<%= item.id %>"
-          data-title="<%= (item.title || '').toLowerCase() %>"
-          data-desc="<%= (item.description || '').toLowerCase() %>"
-          data-code="<%= (item.tracking_code || '').toLowerCase() %>"
-          data-status="<%= item.status || 'pending' %>"
-          data-sf-click="action-14"
-        >
-          <!-- Upvote count -->
-          <div class="sp-card-votes" title="Community votes">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-            <span><%= item.vote_count ?? 0 %></span>
-          </div>
-
-          <!-- Body -->
-          <div class="sp-card-body">
-            <div class="sp-card-title-row">
-              <h3 class="sp-card-title"><%= item.title %></h3>
-            </div>
-            <p class="sp-card-desc"><%= item.description %></p>
-            <div class="sp-card-meta">
-              <span class="sp-meta-pill sp-meta-pill--category"><%= cat %></span>
-              <span class="sp-meta-pill sp-meta-pill--<%= item.status || 'pending' %>">
-                <%= (item.status || 'pending').replace('_', ' ') %>
-              </span>
-              <span class="sp-meta-pill sp-meta-pill--code">#<%= item.tracking_code %></span>
-              <span class="sp-card-date">
-                <%= new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) %>
-              </span>
-            </div>
-          </div>
-
-          <!-- Quick Actions -->
-          <div class="sp-quick-actions" data-sf-click="action-15">
-            <button
-              type="button"
-              class="sp-action-icon-btn sp-action-icon-btn--approve"
-              title="Approve &amp; Publish"
-              data-sf-click="action-16" data-sf-click-arg-0="<%= item.id %>"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </button>
-            <button
-              type="button"
-              class="sp-action-icon-btn sp-action-icon-btn--reject"
-              title="Reject"
-              data-sf-click="action-17" data-sf-click-arg-0="<%= item.id %>"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-            <a
-              href="/idea/<%= item.id %>"
-              class="sp-action-icon-btn sp-action-icon-btn--inspect"
-              title="View full idea page"
-              target="_blank"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </a>
-          </div>
-        </div>
       <% } %>
-    <% } %>
-  </div>
-
-  <!-- ── Decision Modal / Drawer ── -->
-  <div
-    id="sp-decision-modal"
-    class="rm-drawer-overlay"
-    hidden
-    data-sf-click="action-18"
-  >
-    <div class="rm-drawer" role="dialog" aria-modal="true" aria-label="Moderate Submission">
-      <div class="rm-drawer-head">
-        <div class="sp-modal-head-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Staff Moderation Action
+    </section>
+    <section class="staff-queue" aria-labelledby="queue-title">
+      <div class="staff-queue-heading"><div><h2 id="queue-title"><%= labels[status] %></h2><p><%= status === 'pending' ? 'Oldest first, so no idea gets left behind.' : 'Most recent submissions first.' %></p></div><span class="workspace-tag"><%= it.totalCount %> results</span></div>
+      <nav class="staff-status-tabs" aria-label="Filter submissions by status">
+        <% for (const key of Object.keys(labels)) { %><a href="<%= urlFor(key) %>" class="<%= status === key ? 'is-active' : '' %>" aria-current="<%= status === key ? 'page' : 'false' %>"><%= labels[key] %><span><%= counts[key] %></span></a><% } %>
+      </nav>
+      <form action="/admin" method="get" class="staff-search-form" role="search">
+        <input type="hidden" name="status" value="<%= status %>" />
+        <label class="workspace-search"><span aria-hidden="true">⌕</span><input class="workspace-search-input" type="search" name="search" maxlength="120" value="<%= it.search %>" placeholder="Search titles and descriptions…" aria-label="Search all submissions in this status" /></label>
+        <button class="workspace-button" type="submit">Search</button>
+        <% if (it.search) { %><a class="workspace-text-link" href="/admin?status=<%= status %>">Clear search</a><% } %>
+        <div class="staff-queue-filters">
+          <label>Assignment<select class="workspace-input" name="assignment"><% for (const [key,name] of [['all','Anyone'],['mine','Assigned to me'],['unassigned','Unassigned']]) { %><option value="<%= key %>" <%= filters.assignment === key ? 'selected' : '' %>><%= name %></option><% } %></select></label>
+          <label>Priority<select class="workspace-input" name="priority"><% for (const key of ['all','low','normal','high','urgent']) { %><option value="<%= key %>" <%= filters.priority === key ? 'selected' : '' %>><%= key === 'all' ? 'Any priority' : key.charAt(0).toUpperCase()+key.slice(1) %></option><% } %></select></label>
+          <label class="staff-overdue-filter"><input type="checkbox" name="overdue" value="true" <%= filters.overdue === 'true' ? 'checked' : '' %> /> Past target date</label>
         </div>
-        <button type="button" class="rm-drawer-close" data-sf-click="action-19" aria-label="Close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+      </form>
+      <form id="staff-save-view" class="staff-save-view"><label for="staff-view-name">Save applied filters</label><input id="staff-view-name" class="workspace-input" required maxlength="60" placeholder="e.g. Urgent facilities" /><button class="workspace-button" type="submit">Save view</button><p id="staff-view-message" role="status"></p></form>
+      <div class="staff-table-labels" aria-hidden="true"><span>SUBMISSION</span><span>STATUS</span><span>RECEIVED</span><span>REVIEW</span></div>
+      <div class="staff-rows">
+        <% for (const item of it.submissions) { %>
+          <article class="staff-row" data-id="<%= item.id %>">
+            <div class="staff-row-content"><span class="workspace-tag"><%= item.category || item.categories?.name || 'Other' %></span><h3><button class="staff-title-button" type="button" data-review="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button></h3><p><%= item.description %></p><small><%= item.vote_count || 0 %> votes <span aria-hidden="true">·</span> <%= item.comment_count || 0 %> comments</small></div>
+            <div><span class="workspace-status" data-status="<%= item.status %>"><%= labels[item.status] || item.status %></span><div class="staff-workflow-summary"><span data-priority="<%= item.priority || 'normal' %>"><%= item.priority || 'normal' %> priority</span><span><%= item.assignee_name || (item.assignee_id ? 'Assigned staff' : 'Unassigned') %></span><% if(item.target_date) { %><time datetime="<%= item.target_date %>">Target <%= item.target_date %></time><% } %></div></div>
+            <time class="staff-row-date" datetime="<%= item.created_at %>"><%= new Date(item.created_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) %></time>
+            <button class="workspace-button staff-review-button" type="button" data-review="<%= item.id %>" aria-label="Review: <%= item.title %>" aria-haspopup="dialog">Review <span aria-hidden="true">↗</span></button>
+          </article>
+        <% } %>
+        <% if (!it.submissions.length) { %><div class="workspace-empty"><span class="workspace-empty-symbol" aria-hidden="true"><%= isFiltered ? '⌕' : '✓' %></span><h3><%= isFiltered ? 'No matching submissions' : status === 'pending' ? 'You’re all caught up' : 'No submissions here yet' %></h3><p><%= isFiltered ? 'Adjust the assignment, priority, date, or search filters.' : status === 'pending' ? 'New feedback will appear here when it is ready for review.' : 'Choose another status to explore the queue.' %></p><a class="workspace-button" href="/admin?status=all">View all submissions</a></div><% } %>
       </div>
-
-      <div class="rm-drawer-body">
-        <h3 id="modal-item-title" class="sp-modal-item-title"></h3>
-
-        <div>
-          <label class="rm-drawer-field-label sp-modal-label">Change Status To</label>
-          <div class="sp-modal-btn-grid">
-            <button type="button" class="btn-primary btn-mod-approve" data-sf-click="action-20">
-              ✓ Approve (Publish)
-            </button>
-            <button type="button" class="btn-primary btn-mod-in-progress" data-sf-click="action-21">
-              ⚡ In Progress
-            </button>
-            <button type="button" class="btn-primary btn-mod-resolved" data-sf-click="action-22">
-              🎯 Resolved
-            </button>
-            <button type="button" class="btn-ghost btn-mod-reject" data-sf-click="action-23">
-              ✕ Reject
-            </button>
+      <footer class="staff-pagination">
+        <span><%= it.totalCount ? (it.page - 1) * it.perPage + 1 : 0 %>–<%= Math.min(it.page * it.perPage, it.totalCount) %> of <%= it.totalCount %> submissions</span>
+        <nav aria-label="Submission pages"><% if (it.page > 1) { %><a class="workspace-button" href="<%= urlFor(status, it.page - 1) %>">← Previous</a><% } %><span>Page <%= it.page %> of <%= it.pageCount %></span><% if (it.page < it.pageCount) { %><a class="workspace-button" href="<%= urlFor(status, it.page + 1) %>">Next →</a><% } %></nav>
+      </footer>
+    </section>
+    <p class="staff-footnote">Only approved, in-progress, and completed ideas appear publicly. Review private details before publishing.</p>
+  </div>
+  <dialog class="workspace-dialog" id="staff-review-dialog" aria-labelledby="review-title">
+    <header class="workspace-dialog-header"><span class="workspace-kicker">SUBMISSION REVIEW</span><button type="button" class="workspace-icon-button" data-close-review aria-label="Close review">×</button></header>
+    <div class="workspace-dialog-body">
+      <span class="workspace-status" id="review-current-status"></span><h2 id="review-title"></h2><p id="review-meta" class="workspace-detail-meta"></p>
+      <h3 class="workspace-field-label">The suggestion</h3><p class="workspace-description" id="review-description"></p>
+      <form id="staff-review-form">
+        <fieldset id="staff-review-fields">
+          <legend class="workspace-field-label">Your decision</legend>
+          <label class="workspace-field-label" for="review-status">Status</label>
+          <select id="review-status" class="workspace-input" required><% for (const key of Object.keys(labels).filter(k => k !== 'all')) { %><option value="<%= key %>"><%= labels[key] %></option><% } %></select>
+          <p class="workspace-field-hint" id="review-status-hint"></p>
+          <div class="staff-review-workflow">
+            <label>Assigned staff<select id="review-assignee" class="workspace-input"><option value="">Unassigned</option><% for(const staff of it.staffMembers || []) { %><option value="<%= staff.id %>"><%= staff.display_name || 'Unnamed staff' %> · <%= staff.role %></option><% } %></select></label>
+            <label>Priority<select id="review-priority" class="workspace-input"><% for(const key of ['low','normal','high','urgent']) { %><option value="<%= key %>"><%= key.charAt(0).toUpperCase()+key.slice(1) %></option><% } %></select></label>
+            <label>Target date · optional<input id="review-target-date" class="workspace-input" type="date" min="2000-01-01" max="2100-12-31" /></label>
           </div>
-        </div>
-
-        <div>
-          <label class="rm-drawer-field-label sp-modal-label sp-modal-label--note">Staff Response Note (Public)</label>
-          <textarea
-            id="modal-staff-note"
-            class="form-input sp-modal-textarea"
-            rows="3"
-            placeholder="Explain the update to the student community…"
-          ></textarea>
-        </div>
-
-        <div class="sp-quick-responses">
-          <span class="sp-quick-responses-label">Quick responses:</span>
-          <button type="button" class="tag tag-clickable" data-sf-click="action-24">Approved — queued for campus operations review.</button>
-          <button type="button" class="tag tag-clickable" data-sf-click="action-25">Under active evaluation by student affairs.</button>
-          <button type="button" class="tag tag-clickable" data-sf-click="action-26">Resolved in recent campus facility upgrades.</button>
-        </div>
-      </div>
+          <p class="workspace-field-hint">Assignment, priority, and target date are staff-only. A target date is not a public promise.</p>
+          <label class="workspace-field-label" for="review-note">Response to the submitter <span>Optional · may be public</span></label>
+          <textarea id="review-note" class="workspace-input" rows="5" maxlength="2000" placeholder="Explain the decision and what happens next."></textarea>
+          <div class="staff-note-footer"><span>Avoid names or other personal information.</span><span id="review-note-count">0 / 2,000</span></div>
+        </fieldset>
+        <p id="review-message" class="workspace-message" role="status" aria-live="polite" tabindex="-1"></p>
+        <div id="review-discard-warning" class="staff-discard-warning" role="alert" hidden><strong>Leave without saving?</strong><p>Unsaved review changes and private-note drafts will be discarded.</p><div><button type="button" class="workspace-button" id="review-keep-editing">Keep editing</button><button type="button" class="workspace-button" id="review-discard-confirm">Discard draft</button></div></div>
+        <div class="workspace-dialog-actions"><button type="button" class="workspace-button" id="review-dismiss" data-close-review>Cancel</button><button type="submit" class="workspace-button workspace-button--primary" id="review-save">Save update</button></div>
+      </form>
+      <section class="staff-private-panel" aria-labelledby="staff-private-title"><h3 id="staff-private-title">Internal notes <span class="workspace-tag">Staff only</span></h3><p>Keep coordination here, not in the public response. Avoid unnecessary personal information.</p>
+        <div id="review-internal-notes" class="staff-activity-list" aria-live="polite"></div>
+        <form id="staff-internal-note-form"><label class="workspace-field-label" for="review-internal-note">New private note</label><textarea id="review-internal-note" class="workspace-input" required maxlength="2000" rows="3" placeholder="Add context for other staff…"></textarea><button class="workspace-button" type="submit" id="review-add-note">Add internal note</button><p id="review-internal-message" role="status"></p></form>
+      </section>
+      <section class="staff-history-panel" aria-labelledby="staff-history-title"><h3 id="staff-history-title">Submission history</h3><p>Latest 100 events per history type. Earlier public status changes are included.</p><button class="workspace-button" type="button" id="review-retry-activity">Refresh history & notes</button><p id="review-activity-message" role="status"></p><div id="review-history" class="staff-activity-list"></div></section>
     </div>
-  </div>
+  </dialog>
 </main>
-
-<script src="/js/admin.js?v=20261010-ts"></script>
+<section class="staff-mobile-notice"><span class="workspace-empty-symbol" aria-hidden="true">▤</span><h1>Staff workspace</h1><p>Open the staff portal on a desktop or larger screen to review submissions.</p><a class="workspace-button" href="/roadmap">Explore the campus roadmap →</a></section>
+<script id="staff-queue-data" type="application/json"><%~ JSON.stringify(it.submissions.map(s => ({ id:s.id, title:s.title, description:s.description, status:s.status, category:s.category || s.categories?.name || 'Other', created_at:s.created_at, updated_at:s.updated_at, staff_note:s.staff_note || '', assignee_id:s.assignee_id || '', priority:s.priority || 'normal', target_date:s.target_date || '' }))).replace(/</g, '\\u003c') %></script>
+<script id="staff-filter-data" type="application/json"><%~ JSON.stringify(filters).replace(/</g, '\\u003c') %></script>
+<script src="/js/admin.js?v=20261010-workflow"></script>

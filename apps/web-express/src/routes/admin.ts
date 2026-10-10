@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { loadPendingSubmissions, loadAllSubmissionsForAdmin } from "../lib/data";
+import { loadModerationCounts, MODERATION_STATUSES, PER_PAGE } from "../lib/data";
+import { queueFilters, loadStaffQueue, loadStaffMembers, loadSavedViews } from '../lib/staff-workspace';
 
 const router = Router();
 
@@ -28,24 +29,35 @@ router.get(
   "/",
   requireStaff,
   asyncHandler(async (req: Request, res: Response) => {
-    const page = Math.max(1, Number(req.query["page"]) || 1);
-    const status = (req.query["status"] as string) || "all";
-    const search = (req.query["search"] as string) || "";
+    const requestedPage = Number(req.query["page"]);
+    const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+    const rawStatus = typeof req.query["status"] === "string" ? req.query["status"] : "pending";
+    const status = rawStatus === "all" || MODERATION_STATUSES.some(s => s === rawStatus) ? rawStatus : "pending";
+    const search = typeof req.query["search"] === "string" ? req.query["search"].trim().slice(0, 120) : "";
 
-    const [pending, { data: allSubmissions, count }] = await Promise.all([
-      loadPendingSubmissions(),
-      loadAllSubmissionsForAdmin({ page, status, search }),
+    const filters = queueFilters(req.query);
+    const [counts, { data: allSubmissions, count }, staffMembers, savedViews] = await Promise.all([
+      loadModerationCounts(),
+      loadStaffQueue(filters, req.session.user!.id, page),
+      loadStaffMembers(), loadSavedViews(req.session.user!.id),
     ]);
 
+    const pageCount = Math.max(1, Math.ceil(count / PER_PAGE));
+    if (page > pageCount) {
+      return res.redirect(`/admin?${new URLSearchParams({ ...filters, page: String(pageCount) })}`);
+    }
     res.render("admin", {
       title: "Staff Portal — SuggFeed",
       description: "Review and manage all submissions.",
-      pending,
+      counts,
       submissions: allSubmissions,
       totalCount: count,
       page,
+      pageCount,
+      perPage: PER_PAGE,
       status,
       search,
+      filters, staffMembers, savedViews,
     });
   })
 );
