@@ -7,11 +7,11 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "dev": "nodemon --exec ts-node src/server.ts",
+    "dev": "nodemon --exec \"node --use-system-ca -r ts-node/register\" src/server.ts",
     "build:server": "tsc -p tsconfig.json",
     "build:sw": "tsc -p tsconfig.sw.json",
     "build": "npm run build:server && npm run build:sw",
-    "start": "node dist/server.js"
+    "start": "node --use-system-ca dist/server.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10",
