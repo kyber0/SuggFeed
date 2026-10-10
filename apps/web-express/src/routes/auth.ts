@@ -19,16 +19,27 @@ function asyncHandler(
 function sameOriginOnly(req: Request, res: Response, next: NextFunction) {
   const origin = req.headers.origin;
   const referer = req.headers.referer;
+  const host = req.get("host");
 
-  // In production, enforce strict origin matching.
-  // In development, localhost is always allowed.
-  // APP_ORIGIN is preferred, but infer the current host when it is not set so
-  // deployments on a custom domain do not reject their own browser session sync.
-  const allowedOrigin = process.env.APP_ORIGIN ?? `${req.protocol}://${req.get("host")}`;
   const requestOrigin = origin || (referer ? new URL(referer).origin : null);
 
-  if (process.env.NODE_ENV === "production" && requestOrigin !== allowedOrigin) {
-    return res.status(403).json({ error: "Cross-origin request rejected." });
+  if (process.env.NODE_ENV === "production" && requestOrigin) {
+    try {
+      const parsedReq = new URL(requestOrigin);
+      const hostMatches = Boolean(host && parsedReq.host.toLowerCase() === host.toLowerCase());
+
+      let appOriginMatches = false;
+      if (process.env.APP_ORIGIN) {
+        const parsedApp = new URL(process.env.APP_ORIGIN);
+        appOriginMatches = parsedReq.host.toLowerCase() === parsedApp.host.toLowerCase();
+      }
+
+      if (!hostMatches && !appOriginMatches) {
+        return res.status(403).json({ error: "Cross-origin request rejected." });
+      }
+    } catch {
+      return res.status(403).json({ error: "Invalid request origin." });
+    }
   }
   next();
 }
@@ -38,37 +49,44 @@ router.get(
   "/callback",
   asyncHandler(async (req: Request, res: Response) => {
     const code = req.query["code"] as string | undefined;
-    if (!code) return res.redirect("/?error=no_code");
+    if (!code) {
+      return res.render("auth-callback", { title: "Signing in… — SuggFeed" });
+    }
 
-    const { data, error } = await supabaseService.auth.exchangeCodeForSession(code);
-    if (error || !data.session) throw error ?? new Error("No session");
+    try {
+      const { data, error } = await supabaseService.auth.exchangeCodeForSession(code);
+      if (error || !data.session) throw error ?? new Error("No session");
 
-    const { user, session } = data;
+      const { user, session } = data;
 
-    const { data: profile } = await supabaseService
-      .from("profiles")
-      .select("role, display_name")
-      .eq("id", user.id)
-      .single();
+      const { data: profile } = await supabaseService
+        .from("profiles")
+        .select("role, display_name")
+        .eq("id", user.id)
+        .single();
 
-    // Regenerate session ID on login to prevent session fixation
-    await new Promise<void>((resolve, reject) => {
-      req.session.regenerate((err) => (err ? reject(err) : resolve()));
-    });
+      // Regenerate session ID on login to prevent session fixation
+      await new Promise<void>((resolve, reject) => {
+        req.session.regenerate((err) => (err ? reject(err) : resolve()));
+      });
 
-    req.session.user = {
-      id: user.id,
-      email: user.email!,
-      display_name:
-        profile?.display_name ??
-        user.user_metadata?.["display_name"] ??
-        user.user_metadata?.["full_name"],
-      role: profile?.role ?? "user",
-    };
-    req.session.accessToken = session.access_token;
-    req.session.refreshToken = session.refresh_token;
+      req.session.user = {
+        id: user.id,
+        email: user.email!,
+        display_name:
+          profile?.display_name ??
+          user.user_metadata?.["display_name"] ??
+          user.user_metadata?.["full_name"],
+        role: profile?.role ?? "user",
+      };
+      req.session.accessToken = session.access_token;
+      req.session.refreshToken = session.refresh_token;
 
-    res.redirect("/profile");
+      res.redirect("/profile");
+    } catch {
+      // If server code exchange fails (e.g. PKCE verifier stored in browser), render client callback
+      res.render("auth-callback", { title: "Signing in… — SuggFeed" });
+    }
   })
 );
 

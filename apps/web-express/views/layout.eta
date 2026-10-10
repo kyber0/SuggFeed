@@ -48,37 +48,39 @@
 <!-- Client-side auth state sync -->
 <script>
   (function () {
-    const SUPABASE_URL = '<%= it.supabaseUrl %>';
-    const SUPABASE_ANON_KEY = '<%= it.supabaseAnonKey %>';
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+    const SUPABASE_URL = '<%= it.supabaseUrl || "" %>';
+    const SUPABASE_ANON_KEY = '<%= it.supabaseAnonKey || "" %>';
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase) return;
 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    try {
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      window._sb = sb;
 
-    // Listen for auth state changes and sync with server session
-    sb.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // POST session tokens to server to set session cookie
-        const response = await fetch('/auth/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            access_token: session.access_token,
-            refresh_token: session.refresh_token,
-          }),
-        });
-        if (response.ok) {
+      // Listen for auth state changes and sync with server session
+      sb.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          // POST session tokens to server to set session cookie
+          const response = await fetch('/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+            }),
+          });
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            window.dispatchEvent(new CustomEvent('sf:auth-sync-error'));
+          }
+        } else if (event === 'SIGNED_OUT') {
+          await fetch('/auth/signout', { method: 'POST' });
           window.location.reload();
-        } else {
-          window.dispatchEvent(new CustomEvent('sf:auth-sync-error'));
         }
-      } else if (event === 'SIGNED_OUT') {
-        await fetch('/auth/signout', { method: 'POST' });
-        window.location.reload();
-      }
-    });
-
-    // Expose sb globally for other scripts
-    window._sb = sb;
+      });
+    } catch (e) {
+      console.error('Failed to create Supabase client:', e);
+    }
   })();
 </script>
 

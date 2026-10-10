@@ -10,10 +10,11 @@ import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
 import "./types"; // session augmentation
+import { supabase as publicSupabase, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
 
 /* ── Environment validation ────────────────────────────────────────────────── */
 const REQUIRED_ENV = ["SUPABASE_URL", "SUPABASE_ANON_KEY"] as const;
-const missingEnv = REQUIRED_ENV.filter((key) => !process.env[key]);
+const missingEnv = REQUIRED_ENV.filter((key) => !process.env[key] && !process.env[`NEXT_PUBLIC_${key}`]);
 if (missingEnv.length > 0) {
   console.error(`[startup] WARNING: Missing required environment variables: ${missingEnv.join(", ")}. Please configure them in your Vercel Project Settings.`);
 }
@@ -90,11 +91,19 @@ app.use(
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         connectSrc: [
           "'self'",
-          process.env.SUPABASE_URL!,
+          ...(supabaseUrl ? [supabaseUrl] : []),
           // Supabase realtime / storage sub-domains
           "https://*.supabase.co",
+          "https://challenges.cloudflare.com",
         ],
-        imgSrc: ["'self'", "data:", "blob:", "https://*.supabase.co"],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "blob:",
+          "https://*.supabase.co",
+          "https://*.googleusercontent.com",
+          "https://lh3.googleusercontent.com",
+        ],
         frameSrc: ["https://challenges.cloudflare.com"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: isProd ? [] : null,
@@ -169,8 +178,8 @@ app.use(express.static(publicDir, {
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.locals["user"] = req.session.user ?? null;
   // Anon key is safe to expose to templates (used for client-side Supabase Auth)
-  res.locals["supabaseUrl"] = process.env.SUPABASE_URL;
-  res.locals["supabaseAnonKey"] = process.env.SUPABASE_ANON_KEY;
+  res.locals["supabaseUrl"] = supabaseUrl;
+  res.locals["supabaseAnonKey"] = supabaseAnonKey;
   res.locals["currentPath"] = req.path;
   next();
 });
@@ -178,7 +187,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 /* ── Health check (before rate limiters) ─────────────────────────────────── */
 // Aliased at both /health and /api/health so container orchestrators and the
 // API router both work correctly.
-import { supabase as publicSupabase } from "./lib/supabase";
 app.get(["/health", "/api/health"], async (_req: Request, res: Response) => {
   try {
     const { error } = await publicSupabase.from("categories").select("id").limit(1);

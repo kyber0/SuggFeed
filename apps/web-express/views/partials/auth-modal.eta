@@ -1,106 +1,144 @@
-<!-- Auth Modal — client-side only, powered by Supabase JS SDK -->
-<div id="auth-modal" class="sf-modal-backdrop" hidden>
-  <div class="sf-modal" id="auth-modal-card" role="dialog" aria-modal="true" aria-label="Sign in to SuggFeed">
-    <button class="sf-modal-close" id="auth-modal-close" aria-label="Close">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+<!-- Auth Modal — powered by Supabase Auth -->
+<div id="auth-modal" class="am-backdrop" hidden role="presentation">
+  <div class="am-card" role="dialog" aria-modal="true" aria-labelledby="am-heading-text">
+    <!-- Mobile drag handle -->
+    <div class="am-handle" aria-hidden="true"></div>
+
+    <!-- Close button -->
+    <button type="button" class="am-close" id="auth-modal-close" aria-label="Close dialog">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
 
-    <!-- Tabs -->
-    <div class="sf-modal-tabs">
-      <button class="sf-modal-tab active" id="tab-signin" data-tab="signin">Sign in</button>
-      <button class="sf-modal-tab" id="tab-signup" data-tab="signup">Create account</button>
+    <!-- Tab Switcher -->
+    <div class="am-tabs" id="auth-modal-tabs" role="tablist">
+      <button type="button" role="tab" class="am-tab am-tab--active" id="tab-signin" data-tab="signin" aria-selected="true">Sign in</button>
+      <button type="button" role="tab" class="am-tab" id="tab-signup" data-tab="signup" aria-selected="false">Create account</button>
     </div>
 
-    <!-- Sign In Panel -->
-    <div id="panel-signin" class="sf-modal-panel">
-      <h2 class="sf-modal-title">Welcome back</h2>
-      <p class="sf-modal-sub">Sign in to manage your ideas and track your submissions.</p>
-
-      <!-- Google -->
-      <button class="btn-oauth" id="btn-google-signin" type="button">
-        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-          <path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-19.3 0-1.3-.1-2.5-.3-3.7z"/>
-          <path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3c-7.7 0-14.4 4.4-17.7 10.7z"/>
-          <path fill="#FBBC05" d="M24 45c5.6 0 10.6-1.9 14.5-5.1L32 33.8c-2 1.3-4.5 2.2-8 2.2-6.3 0-11.6-4.2-13.5-10l-7.1 5.5C8.9 40.4 15.9 45 24 45z"/>
-          <path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.9 2.9-2.8 5.3-5.4 6.9l6.5 5.1c3.8-3.5 6.1-8.7 6.1-15.2 0-1.3-.1-2.5-.5-5.3z"/>
+    <!-- Brand Header -->
+    <div class="am-brand">
+      <div class="am-brand-icon" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="10" fill="var(--navy, #0b3857)" />
+          <path d="M8 12h16M8 16h10M8 20h12" stroke="white" stroke-width="2.2" stroke-linecap="round" />
         </svg>
-        Continue with Google
-      </button>
+      </div>
+      <div>
+        <h2 class="am-heading" id="am-heading-text">Welcome back</h2>
+        <p class="am-subtext" id="am-subtext-text">Sign in to manage your ideas and track submissions.</p>
+      </div>
+    </div>
 
-      <div class="sf-modal-divider"><span>or</span></div>
+    <!-- Google OAuth Button -->
+    <button type="button" class="am-btn-google" id="btn-google-auth">
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+        <path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-19.3 0-1.3-.1-2.5-.3-3.7z"/>
+        <path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3c-7.7 0-14.4 4.4-17.7 10.7z"/>
+        <path fill="#FBBC05" d="M24 45c5.6 0 10.6-1.9 14.5-5.1L32 33.8c-2 1.3-4.5 2.2-8 2.2-6.3 0-11.6-4.2-13.5-10l-7.1 5.5C8.9 40.4 15.9 45 24 45z"/>
+        <path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.9 2.9-2.8 5.3-5.4 6.9l6.5 5.1c3.8-3.5 6.1-8.7 6.1-15.2 0-1.3-.1-2.5-.5-5.3z"/>
+      </svg>
+      <span>Continue with Google</span>
+    </button>
 
-      <form id="form-signin" novalidate>
-        <div class="sf-field">
-          <label for="signin-email">Email</label>
-          <input id="signin-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+    <div class="am-divider"><span>or</span></div>
+
+    <!-- Sign In Panel -->
+    <div id="panel-signin" class="am-panel">
+      <form id="form-signin" class="am-form" novalidate>
+        <div class="am-field">
+          <label class="am-label" for="signin-email">Email address</label>
+          <div class="am-input-wrap">
+            <svg class="am-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input id="signin-email" class="am-input" type="email" autocomplete="email" placeholder="you@university.edu" required />
+          </div>
         </div>
-        <div class="sf-field">
-          <label for="signin-password">Password</label>
-          <div class="sf-input-group">
-            <input id="signin-password" type="password" autocomplete="current-password" placeholder="••••••••" required />
-            <button type="button" class="sf-input-toggle" data-target="signin-password" aria-label="Show password">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+
+        <div class="am-field">
+          <div class="am-label-row">
+            <label class="am-label" for="signin-password">Password</label>
+            <button type="button" class="am-forgot-link" id="btn-to-forgot">Forgot password?</button>
+          </div>
+          <div class="am-input-wrap">
+            <svg class="am-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input id="signin-password" class="am-input am-input--has-toggle" type="password" autocomplete="current-password" placeholder="••••••••" required />
+            <button type="button" class="am-pw-toggle" data-target="signin-password" aria-label="Toggle password visibility">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
         </div>
-        <button type="submit" class="btn-primary btn-full" id="btn-signin">Sign in</button>
-        <button type="button" id="btn-forgot" class="btn-link btn-forgot">Forgot password?</button>
+
+        <button type="submit" class="am-btn-primary" id="btn-signin">
+          <span>Sign in</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+
+        <p class="am-switch-hint">
+          Don't have an account? <button type="button" class="am-switch-link" id="link-to-signup">Create one</button>
+        </p>
       </form>
     </div>
 
     <!-- Sign Up Panel -->
-    <div id="panel-signup" class="sf-modal-panel" hidden>
-      <h2 class="sf-modal-title">Create your account</h2>
-      <p class="sf-modal-sub">Join SuggFeed to track and manage your ideas.</p>
-
-      <button class="btn-oauth" id="btn-google-signup" type="button">
-        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-          <path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-19.3 0-1.3-.1-2.5-.3-3.7z"/>
-          <path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3c-7.7 0-14.4 4.4-17.7 10.7z"/>
-          <path fill="#FBBC05" d="M24 45c5.6 0 10.6-1.9 14.5-5.1L32 33.8c-2 1.3-4.5 2.2-8 2.2-6.3 0-11.6-4.2-13.5-10l-7.1 5.5C8.9 40.4 15.9 45 24 45z"/>
-          <path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.9 2.9-2.8 5.3-5.4 6.9l6.5 5.1c3.8-3.5 6.1-8.7 6.1-15.2 0-1.3-.1-2.5-.5-5.3z"/>
-        </svg>
-        Continue with Google
-      </button>
-
-      <div class="sf-modal-divider"><span>or</span></div>
-
-      <form id="form-signup" novalidate>
-        <div class="sf-field">
-          <label for="signup-name">Full name</label>
-          <input id="signup-name" type="text" autocomplete="name" placeholder="Your name" />
+    <div id="panel-signup" class="am-panel" hidden>
+      <form id="form-signup" class="am-form" novalidate>
+        <div class="am-field">
+          <label class="am-label" for="signup-name">Full name <span class="am-label-hint">(optional)</span></label>
+          <div class="am-input-wrap">
+            <svg class="am-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input id="signup-name" class="am-input" type="text" autocomplete="name" placeholder="Alex Morgan" />
+          </div>
         </div>
-        <div class="sf-field">
-          <label for="signup-email">Email</label>
-          <input id="signup-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+
+        <div class="am-field">
+          <label class="am-label" for="signup-email">Email address</label>
+          <div class="am-input-wrap">
+            <svg class="am-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input id="signup-email" class="am-input" type="email" autocomplete="email" placeholder="you@university.edu" required />
+          </div>
         </div>
-        <div class="sf-field">
-          <label for="signup-password">Password</label>
-          <div class="sf-input-group">
-            <input id="signup-password" type="password" autocomplete="new-password" placeholder="At least 8 characters" required minlength="8" />
-            <button type="button" class="sf-input-toggle" data-target="signup-password" aria-label="Show password">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+
+        <div class="am-field">
+          <label class="am-label" for="signup-password">Password</label>
+          <div class="am-input-wrap">
+            <svg class="am-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input id="signup-password" class="am-input am-input--has-toggle" type="password" autocomplete="new-password" placeholder="At least 8 characters" required minlength="8" />
+            <button type="button" class="am-pw-toggle" data-target="signup-password" aria-label="Toggle password visibility">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
         </div>
-        <button type="submit" class="btn-primary btn-full">Create account</button>
+
+        <button type="submit" class="am-btn-primary" id="btn-signup">
+          <span>Create account</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+
+        <p class="am-switch-hint">
+          Already have an account? <button type="button" class="am-switch-link" id="link-to-signin">Sign in</button>
+        </p>
       </form>
     </div>
 
     <!-- Forgot Password Panel -->
-    <div id="panel-forgot" class="sf-modal-panel" hidden>
-      <button type="button" id="btn-back-signin" class="btn-link btn-back-signin">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-        Back to sign in
-      </button>
-      <h2 class="sf-modal-title">Reset password</h2>
-      <p class="sf-modal-sub">Enter your email and we'll send you a reset link.</p>
-      <form id="form-forgot" novalidate>
-        <div class="sf-field">
-          <label for="forgot-email">Email</label>
-          <input id="forgot-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+    <div id="panel-forgot" class="am-panel" hidden>
+      <form id="form-forgot" class="am-form" novalidate>
+        <div class="am-field">
+          <label class="am-label" for="forgot-email">Email address</label>
+          <div class="am-input-wrap">
+            <svg class="am-input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input id="forgot-email" class="am-input" type="email" autocomplete="email" placeholder="you@university.edu" required />
+          </div>
         </div>
-        <button type="submit" class="btn-primary btn-full">Send reset link</button>
+
+        <button type="submit" class="am-btn-primary" id="btn-forgot-submit">
+          <span>Send reset link</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+
+        <button type="button" class="am-btn-ghost btn-back-signin" id="btn-back-signin">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to sign in
+        </button>
       </form>
     </div>
   </div>
@@ -108,35 +146,109 @@
 
 <script>
 (function () {
-  var SURL = '<%= it.supabaseUrl %>';
-  var SKEY = '<%= it.supabaseAnonKey %>';
-  if (!SURL || !SKEY) return;
+  var SURL = '<%= it.supabaseUrl || "" %>';
+  var SKEY = '<%= it.supabaseAnonKey || "" %>';
 
-  function getSb() { return window._sb || window.supabase.createClient(SURL, SKEY); }
-
-  var modal   = document.getElementById('auth-modal');
-  var closeBtn = document.getElementById('auth-modal-close');
-  var tabs    = document.querySelectorAll('.sf-modal-tab');
-  var panels  = { signin: document.getElementById('panel-signin'), signup: document.getElementById('panel-signup'), forgot: document.getElementById('panel-forgot') };
-
-  function showPanel(name) {
-    Object.keys(panels).forEach(function(k) { if (panels[k]) panels[k].hidden = (k !== name); });
-    tabs.forEach(function(t) { t.classList.toggle('active', t.dataset.tab === name); });
+  function getSb() {
+    if (window._sb) return window._sb;
+    if (SURL && SKEY && window.supabase && typeof window.supabase.createClient === 'function') {
+      try {
+        window._sb = window.supabase.createClient(SURL, SKEY);
+        return window._sb;
+      } catch (e) {
+        console.error('Failed to initialize Supabase client:', e);
+      }
+    }
+    return null;
   }
 
-  if (closeBtn) closeBtn.addEventListener('click', function() { if (modal) modal.hidden = true; });
-  if (modal) modal.addEventListener('click', function(e) { if (e.target === modal) modal.hidden = true; });
-  tabs.forEach(function(t) { t.addEventListener('click', function() { showPanel(t.dataset.tab); }); });
+  var modal = document.getElementById('auth-modal');
+  var closeBtn = document.getElementById('auth-modal-close');
+  var tabsContainer = document.getElementById('auth-modal-tabs');
+  var tabSignin = document.getElementById('tab-signin');
+  var tabSignup = document.getElementById('tab-signup');
+  var panelSignin = document.getElementById('panel-signin');
+  var panelSignup = document.getElementById('panel-signup');
+  var panelForgot = document.getElementById('panel-forgot');
+  var heading = document.getElementById('am-heading-text');
+  var subtext = document.getElementById('am-subtext-text');
 
-  var backSignin = document.getElementById('btn-back-signin');
-  if (backSignin) backSignin.addEventListener('click', function() { showPanel('signin'); });
+  function showPanel(name) {
+    if (panelSignin) panelSignin.hidden = (name !== 'signin');
+    if (panelSignup) panelSignup.hidden = (name !== 'signup');
+    if (panelForgot) panelForgot.hidden = (name !== 'forgot');
 
-  var forgotBtn = document.getElementById('btn-forgot');
-  if (forgotBtn) forgotBtn.addEventListener('click', function() { showPanel('forgot'); });
+    if (tabsContainer) {
+      tabsContainer.hidden = (name === 'forgot');
+    }
+    if (tabSignin) {
+      tabSignin.classList.toggle('am-tab--active', name === 'signin');
+      tabSignin.setAttribute('aria-selected', String(name === 'signin'));
+    }
+    if (tabSignup) {
+      tabSignup.classList.toggle('am-tab--active', name === 'signup');
+      tabSignup.setAttribute('aria-selected', String(name === 'signup'));
+    }
 
-  // Password toggles
-  document.querySelectorAll('.sf-input-toggle').forEach(function(btn) {
-    btn.addEventListener('click', function() {
+    if (heading && subtext) {
+      if (name === 'signup') {
+        heading.textContent = 'Create account';
+        subtext.textContent = 'Join SuggFeed to submit and track ideas.';
+      } else if (name === 'forgot') {
+        heading.textContent = 'Reset password';
+        subtext.textContent = "We'll send you a secure password reset link.";
+      } else {
+        heading.textContent = 'Welcome back';
+        subtext.textContent = 'Sign in to manage your ideas and track feedback.';
+      }
+    }
+  }
+
+  window.openAuthModal = function (tab) {
+    if (modal) {
+      modal.removeAttribute('hidden');
+      showPanel(tab || 'signin');
+    }
+  };
+
+  window.closeAuthModal = function () {
+    if (modal) {
+      modal.setAttribute('hidden', '');
+    }
+  };
+
+  window.sfSwitchAuthTab = showPanel;
+
+  if (closeBtn) closeBtn.addEventListener('click', window.closeAuthModal);
+  if (modal) {
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) window.closeAuthModal();
+    });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal && !modal.hasAttribute('hidden')) {
+      window.closeAuthModal();
+    }
+  });
+
+  if (tabSignin) tabSignin.addEventListener('click', function () { showPanel('signin'); });
+  if (tabSignup) tabSignup.addEventListener('click', function () { showPanel('signup'); });
+
+  var linkToSignup = document.getElementById('link-to-signup');
+  if (linkToSignup) linkToSignup.addEventListener('click', function () { showPanel('signup'); });
+
+  var linkToSignin = document.getElementById('link-to-signin');
+  if (linkToSignin) linkToSignin.addEventListener('click', function () { showPanel('signin'); });
+
+  var btnToForgot = document.getElementById('btn-to-forgot');
+  if (btnToForgot) btnToForgot.addEventListener('click', function () { showPanel('forgot'); });
+
+  var btnBackSignin = document.getElementById('btn-back-signin');
+  if (btnBackSignin) btnBackSignin.addEventListener('click', function () { showPanel('signin'); });
+
+  // Password visibility toggles
+  document.querySelectorAll('.am-pw-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
       var inp = document.getElementById(btn.dataset.target);
       if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
     });
@@ -144,63 +256,194 @@
 
   function sfToast(msg, type) {
     var r = document.getElementById('sf-toast-region');
-    if (!r) return;
+    if (!r) {
+      alert(msg);
+      return;
+    }
     var t = document.createElement('div');
     t.className = 'sf-toast sf-toast--' + (type || 'info');
     t.innerHTML = '<div class="sf-toast__body"><div class="sf-toast__message">' + msg + '</div></div>';
     r.appendChild(t);
-    setTimeout(function() { t.remove(); }, 5000);
+    setTimeout(function () { t.remove(); }, 5000);
   }
 
-  function googleSignIn() {
-    getSb().auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } });
+  // Google OAuth
+  var googleBtn = document.getElementById('btn-google-auth');
+  if (googleBtn) {
+    googleBtn.addEventListener('click', async function () {
+      var sb = getSb();
+      if (!sb) {
+        sfToast('Authentication is not configured on this environment.', 'error');
+        return;
+      }
+      googleBtn.disabled = true;
+      var { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/auth/callback' }
+      });
+      if (error) {
+        googleBtn.disabled = false;
+        sfToast(error.message, 'error');
+      }
+    });
   }
 
-  var gg1 = document.getElementById('btn-google-signin');
-  var gg2 = document.getElementById('btn-google-signup');
-  if (gg1) gg1.addEventListener('click', googleSignIn);
-  if (gg2) gg2.addEventListener('click', googleSignIn);
-
+  // Sign In Form
   var formSignin = document.getElementById('form-signin');
-  if (formSignin) formSignin.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    var email = document.getElementById('signin-email').value;
-    var password = document.getElementById('signin-password').value;
-    var btn = document.getElementById('btn-signin');
-    btn.disabled = true; btn.textContent = 'Signing in…';
-    var sb = getSb();
-    var { error } = await sb.auth.signInWithPassword({ email, password });
-    btn.disabled = false; btn.textContent = 'Sign in';
-    if (error) { sfToast(error.message, 'error'); return; }
-    // onAuthStateChange will handle the rest
-  });
+  if (formSignin) {
+    formSignin.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var sb = getSb();
+      if (!sb) {
+        sfToast('Authentication is not configured on this environment.', 'error');
+        return;
+      }
+      var emailEl = document.getElementById('signin-email');
+      var passEl = document.getElementById('signin-password');
+      var btn = document.getElementById('btn-signin');
+      var email = emailEl ? emailEl.value.trim() : '';
+      var password = passEl ? passEl.value : '';
 
-  window.addEventListener('sf:auth-sync-error', function() {
-    sfToast('Signed in, but we could not connect your session to this site. Please check the site configuration and try again.', 'error');
-  });
+      if (!email || !password) {
+        sfToast('Please enter both email and password.', 'error');
+        return;
+      }
 
+      btn.disabled = true;
+      var origText = btn.innerHTML;
+      btn.innerHTML = '<span>Signing in…</span>';
+
+      var { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
+      btn.disabled = false;
+      btn.innerHTML = origText;
+
+      if (error) {
+        sfToast(error.message, 'error');
+        return;
+      }
+
+      // If session directly returned, sync immediately
+      if (data && data.session) {
+        try {
+          var syncRes = await fetch('/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+            }),
+          });
+          if (syncRes.ok) {
+            window.location.reload();
+            return;
+          }
+        } catch (_) {}
+      }
+    });
+  }
+
+  // Sign Up Form
   var formSignup = document.getElementById('form-signup');
-  if (formSignup) formSignup.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    var name = document.getElementById('signup-name').value;
-    var email = document.getElementById('signup-email').value;
-    var password = document.getElementById('signup-password').value;
-    var sb = getSb();
-    var { error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
-    if (error) { sfToast(error.message, 'error'); return; }
-    sfToast('Account created! Check your email to confirm.', 'success');
-    if (modal) modal.hidden = true;
-  });
+  if (formSignup) {
+    formSignup.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var sb = getSb();
+      if (!sb) {
+        sfToast('Authentication is not configured on this environment.', 'error');
+        return;
+      }
+      var nameEl = document.getElementById('signup-name');
+      var emailEl = document.getElementById('signup-email');
+      var passEl = document.getElementById('signup-password');
+      var btn = document.getElementById('btn-signup');
+      var name = nameEl ? nameEl.value.trim() : '';
+      var email = emailEl ? emailEl.value.trim() : '';
+      var password = passEl ? passEl.value : '';
 
+      if (!email || !password) {
+        sfToast('Please provide an email and password.', 'error');
+        return;
+      }
+      if (password.length < 8) {
+        sfToast('Password must be at least 8 characters.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      var origText = btn.innerHTML;
+      btn.innerHTML = '<span>Creating account…</span>';
+
+      var { data, error } = await sb.auth.signUp({
+        email: email,
+        password: password,
+        options: { data: { full_name: name, display_name: name } }
+      });
+      btn.disabled = false;
+      btn.innerHTML = origText;
+
+      if (error) {
+        sfToast(error.message, 'error');
+        return;
+      }
+
+      // If auto-confirmed session
+      if (data && data.session) {
+        try {
+          await fetch('/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+            }),
+          });
+          window.location.reload();
+          return;
+        } catch (_) {}
+      }
+
+      sfToast('Account created! Please check your email to confirm.', 'success');
+      window.closeAuthModal();
+    });
+  }
+
+  // Forgot Password Form
   var formForgot = document.getElementById('form-forgot');
-  if (formForgot) formForgot.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    var email = document.getElementById('forgot-email').value;
-    var sb = getSb();
-    var { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth/callback' });
-    if (error) { sfToast(error.message, 'error'); return; }
-    sfToast('Password reset link sent — check your inbox.', 'success');
-    showPanel('signin');
-  });
+  if (formForgot) {
+    formForgot.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var sb = getSb();
+      if (!sb) {
+        sfToast('Authentication is not configured on this environment.', 'error');
+        return;
+      }
+      var emailEl = document.getElementById('forgot-email');
+      var btn = document.getElementById('btn-forgot-submit');
+      var email = emailEl ? emailEl.value.trim() : '';
+
+      if (!email) {
+        sfToast('Please enter your email address.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      var origText = btn.innerHTML;
+      btn.innerHTML = '<span>Sending link…</span>';
+
+      var { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/auth/callback'
+      });
+      btn.disabled = false;
+      btn.innerHTML = origText;
+
+      if (error) {
+        sfToast(error.message, 'error');
+        return;
+      }
+
+      sfToast('Password reset link sent! Check your inbox.', 'success');
+      showPanel('signin');
+    });
+  }
 })();
 </script>

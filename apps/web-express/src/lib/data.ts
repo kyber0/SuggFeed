@@ -300,15 +300,19 @@ export async function loadAllSubmissionsForAdmin(opts: {
   return { data: (data ?? []) as unknown as Submission[], count: count ?? 0 };
 }
 
+import { supabaseUrl, supabaseAnonKey } from "./supabase";
+
 /* ─── Tracking ─────────────────────────────────────────────────────────── */
 export async function lookupTrackingCode(code: string) {
-  const url = `${process.env.SUPABASE_URL}/functions/v1/lookup-by-tracking-code`;
+  const baseUrl = supabaseUrl || process.env.SUPABASE_URL || "";
+  const anonKey = supabaseAnonKey || process.env.SUPABASE_ANON_KEY || "";
+  const url = `${baseUrl}/functions/v1/lookup-by-tracking-code`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      apikey: process.env.SUPABASE_ANON_KEY!,
-      Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+      apikey: anonKey,
+      Authorization: `Bearer ${anonKey}`,
     },
     body: JSON.stringify({ trackingCode: code.trim().toUpperCase() }),
   });

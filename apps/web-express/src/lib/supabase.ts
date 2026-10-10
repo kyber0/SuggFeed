@@ -1,20 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl =
+export const supabaseUrl =
   process.env.SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "https://placeholder-project.supabase.co";
+  "";
 
-const supabaseAnonKey =
+export const supabaseAnonKey =
   process.env.SUPABASE_ANON_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  "placeholder-anon-key";
+  "";
 
 /**
  * Public (anon) client — respects RLS.
  * Use this for all reads that should be filtered by RLS policies (public feed, categories, etc.).
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(
+  supabaseUrl || "https://placeholder-project.supabase.co",
+  supabaseAnonKey || "placeholder-anon-key"
+);
 
 /**
  * Service-role client — bypasses RLS.
@@ -23,6 +26,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
  * Falls back to anon key in dev when service key is absent (writes will fail via RLS — expected).
  */
 export const supabaseService = createClient(
-  supabaseUrl,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
+  supabaseUrl || "https://placeholder-project.supabase.co",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey || "placeholder-anon-key"
 );

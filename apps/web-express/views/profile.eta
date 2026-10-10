@@ -65,7 +65,7 @@
         <button
           type="button"
           class="btn-primary-sm prof-hero-signin-btn"
-          onclick="document.getElementById('auth-modal').removeAttribute('hidden')"
+          onclick="openAuthModal('signin')"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
           Sign in
@@ -107,11 +107,11 @@
           <div class="prof-auth-callout">
             <p>Sign in to sync your activity across devices.</p>
             <div class="prof-auth-btns">
-              <button class="btn-primary" onclick="document.getElementById('auth-modal').removeAttribute('hidden')">
+              <button class="btn-primary" type="button" onclick="openAuthModal('signin')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
                 Sign in
               </button>
-              <button class="btn-ghost" onclick="document.getElementById('auth-modal').removeAttribute('hidden')">
+              <button class="btn-ghost" type="button" onclick="openAuthModal('signup')">
                 Create account
               </button>
             </div>
