@@ -1,9 +1,9 @@
 <!-- Submit Idea Panel / Drawer -->
-<div id="submit-panel-overlay" class="panel-overlay sip-overlay" hidden onclick="closeSubmitPanel()"></div>
+<div id="submit-panel-overlay" class="panel-overlay sip-overlay" hidden data-sf-click="action-109"></div>
 
 <aside id="submit-panel" class="detail-panel sip-panel" role="dialog" aria-modal="true" aria-label="Share feedback" hidden>
   <!-- Mobile drag handle -->
-  <div class="mobile-drag-handle" aria-hidden="true" onclick="closeSubmitPanel()"></div>
+  <div class="mobile-drag-handle" aria-hidden="true" data-sf-click="action-110"></div>
 
   <!-- Header -->
   <div class="sip-header">
@@ -19,7 +19,7 @@
         </div>
       </div>
     </div>
-    <button type="button" class="panel-close-btn sip-close-btn" onclick="closeSubmitPanel()" aria-label="Close submit panel">
+    <button type="button" class="panel-close-btn sip-close-btn" data-sf-click="action-111" aria-label="Close submit panel">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18"/>
         <line x1="6" y1="6" x2="18" y2="18"/>
@@ -31,7 +31,7 @@
   <div class="sip-stepper-wrap">
     <div class="sip-stepper" role="tablist" id="sip-stepper" aria-label="Submission steps">
       <!-- Step 1 -->
-      <button type="button" class="sip-step-item sip-step-item--active" id="step-btn-1" onclick="goToStep(1)">
+      <button type="button" class="sip-step-item sip-step-item--active" id="step-btn-1" data-sf-click="action-112">
         <span class="sip-step-dot" id="step-dot-1">
           <span class="sip-step-num">1</span>
           <svg class="sip-step-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -46,7 +46,7 @@
       </div>
 
       <!-- Step 2 -->
-      <button type="button" class="sip-step-item" id="step-btn-2" onclick="goToStep(2)">
+      <button type="button" class="sip-step-item" id="step-btn-2" data-sf-click="action-113">
         <span class="sip-step-dot" id="step-dot-2">
           <span class="sip-step-num">2</span>
           <svg class="sip-step-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -61,7 +61,7 @@
       </div>
 
       <!-- Step 3 -->
-      <button type="button" class="sip-step-item" id="step-btn-3" onclick="goToStep(3)">
+      <button type="button" class="sip-step-item" id="step-btn-3" data-sf-click="action-114">
         <span class="sip-step-dot" id="step-dot-3">
           <span class="sip-step-num">3</span>
           <svg class="sip-step-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -73,7 +73,7 @@
     </div>
   </div>
 
-  <form id="submit-idea-form" onsubmit="handleIdeaSubmit(event)" class="sip-form">
+  <form id="submit-idea-form" data-sf-submit="action-115" class="sip-form">
     <!-- Step 1: Category Selection -->
     <div id="sip-step-1" class="sip-step-content sip-step-body" role="tabpanel" aria-labelledby="step-btn-1">
       <div class="sip-step-intro">
@@ -84,7 +84,7 @@
       <div class="sip-cat-grid" role="radiogroup" aria-label="Feedback category">
         <!-- Facilities -->
         <label class="sip-cat-card" id="cat-card-Facilities">
-          <input type="radio" name="sip-category" value="Facilities" class="sip-cat-radio" required onchange="onCategorySelected('Facilities')" />
+          <input type="radio" name="sip-category" value="Facilities" class="sip-cat-radio" required data-sf-change="action-116" />
           <div class="sip-cat-icon-wrap" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
@@ -103,7 +103,7 @@
 
         <!-- Learning -->
         <label class="sip-cat-card" id="cat-card-Learning">
-          <input type="radio" name="sip-category" value="Learning" class="sip-cat-radio" onchange="onCategorySelected('Learning')" />
+          <input type="radio" name="sip-category" value="Learning" class="sip-cat-radio" data-sf-change="action-117" />
           <div class="sip-cat-icon-wrap" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
@@ -121,7 +121,7 @@
 
         <!-- Safety -->
         <label class="sip-cat-card" id="cat-card-Safety">
-          <input type="radio" name="sip-category" value="Safety" class="sip-cat-radio" onchange="onCategorySelected('Safety')" />
+          <input type="radio" name="sip-category" value="Safety" class="sip-cat-radio" data-sf-change="action-118" />
           <div class="sip-cat-icon-wrap" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -139,7 +139,7 @@
 
         <!-- Student life -->
         <label class="sip-cat-card" id="cat-card-Student-life">
-          <input type="radio" name="sip-category" value="Student life" class="sip-cat-radio" onchange="onCategorySelected('Student life')" />
+          <input type="radio" name="sip-category" value="Student life" class="sip-cat-radio" data-sf-change="action-119" />
           <div class="sip-cat-icon-wrap" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -159,7 +159,7 @@
 
         <!-- Other -->
         <label class="sip-cat-card" id="cat-card-Other">
-          <input type="radio" name="sip-category" value="Other" class="sip-cat-radio" onchange="onCategorySelected('Other')" />
+          <input type="radio" name="sip-category" value="Other" class="sip-cat-radio" data-sf-change="action-120" />
           <div class="sip-cat-icon-wrap" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
@@ -202,7 +202,7 @@
             placeholder="Brief, specific summary (e.g. Add water refill stations in Library)"
             maxlength="100"
             autocomplete="off"
-            oninput="handleTitleInput()"
+            data-sf-input="action-121"
           />
         </div>
       </div>
@@ -225,7 +225,7 @@
             rows="5"
             placeholder="Describe what needs improvement, why it matters, and any suggested solutions or next steps."
             maxlength="1500"
-            oninput="handleDescInput()"
+            data-sf-input="action-122"
           ></textarea>
         </div>
       </div>
@@ -243,7 +243,7 @@
             </div>
           </div>
           <div class="sip-switch">
-            <input type="checkbox" id="sip-anon" checked class="sip-switch-input" onchange="handleAnonToggle()" />
+            <input type="checkbox" id="sip-anon" checked class="sip-switch-input" data-sf-change="action-123" />
             <span class="sip-switch-slider"></span>
           </div>
         </label>
@@ -261,7 +261,7 @@
       <div class="sip-review-preview">
         <div class="sip-preview-header">
           <span class="sip-preview-kicker">Live Preview</span>
-          <button type="button" class="sip-edit-link" onclick="goToStep(2)">
+          <button type="button" class="sip-edit-link" data-sf-click="action-124">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
             </svg>
@@ -294,7 +294,7 @@
       <!-- Guidelines Consent Checkbox -->
       <label class="sip-consent-card" id="sip-consent-wrapper">
         <div class="sip-custom-checkbox">
-          <input type="checkbox" id="sip-consent" required class="sip-consent-check" onchange="handleConsentChange()" />
+          <input type="checkbox" id="sip-consent" required class="sip-consent-check" data-sf-change="action-125" />
           <span class="sip-checkbox-box">
             <svg class="sip-check-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"/>
@@ -334,9 +334,9 @@
           <span class="sip-tracking-copy-hint">Click code or button to copy</span>
         </div>
 
-        <div class="sip-tracking-code-container" onclick="copyTrackingCode()" role="button" tabindex="0" title="Click to copy tracking code" onkeydown="if(event.key==='Enter'||event.key===' ')copyTrackingCode()">
+        <div class="sip-tracking-code-container" data-sf-click="action-126" role="button" tabindex="0" title="Click to copy tracking code" data-sf-keydown="action-127">
           <code id="sip-success-code" class="sip-tracking-code">—</code>
-          <button type="button" class="sip-copy-btn" id="sip-copy-btn" onclick="event.stopPropagation(); copyTrackingCode()" aria-label="Copy tracking code">
+          <button type="button" class="sip-copy-btn" id="sip-copy-btn" data-sf-click="action-128" aria-label="Copy tracking code">
             <svg id="sip-copy-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -364,7 +364,7 @@
       </div>
 
       <div class="sip-success-actions">
-        <button type="button" class="sip-btn-done" onclick="closeSubmitPanel()">
+        <button type="button" class="sip-btn-done" data-sf-click="action-129">
           Done
         </button>
       </div>
@@ -373,7 +373,7 @@
     <!-- Footer Action Buttons -->
     <div id="sip-footer" class="sip-footer">
       <div class="sip-footer-left">
-        <button type="button" id="sip-prev-btn" class="sip-btn-back sip-btn-back--hidden" onclick="sipPrevStep()" aria-label="Go to previous step">
+        <button type="button" id="sip-prev-btn" class="sip-btn-back sip-btn-back--hidden" data-sf-click="action-130" aria-label="Go to previous step">
           <svg class="sip-btn-back-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
@@ -383,7 +383,7 @@
       </div>
 
       <div class="sip-footer-right">
-        <button type="button" id="sip-next-btn" class="sip-btn-action" onclick="sipNextStep()">
+        <button type="button" id="sip-next-btn" class="sip-btn-action" data-sf-click="action-131">
           <span id="sip-next-text" class="sip-btn-action-text">Continue</span>
           <span id="sip-next-icon-wrap" class="sip-btn-action-icon">
             <svg class="sip-icon-continue" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -403,434 +403,4 @@
   </form>
 </aside>
 
-<script>
-  let sipCurrentStep = 1;
-  let sipMaxVisitedStep = 1;
-  let sipTrackingCode = '';
-  let sipReturnFocusTo = null;
-
-  function openSubmitPanel(defaultCat) {
-    sipReturnFocusTo = document.activeElement;
-    sipCurrentStep = 1;
-    sipMaxVisitedStep = 1;
-    
-    const overlay = document.getElementById('submit-panel-overlay');
-    const panel = document.getElementById('submit-panel');
-    const form = document.getElementById('submit-idea-form');
-    
-    if (overlay) overlay.removeAttribute('hidden');
-    if (panel) panel.removeAttribute('hidden');
-    if (form) form.reset();
-    
-    document.getElementById('sip-success').hidden = true;
-    document.getElementById('sip-footer').classList.remove('sip-footer-hidden');
-    document.body.style.overflow = 'hidden';
-
-    // Clear active card states
-    document.querySelectorAll('.sip-cat-card').forEach(c => c.classList.remove('sip-cat-card--selected'));
-    
-    if (defaultCat) {
-      const radio = document.querySelector(`input[name="sip-category"][value="${defaultCat}"]`);
-      if (radio) {
-        radio.checked = true;
-        onCategorySelected(defaultCat);
-      }
-    }
-
-    // Reset validations
-    handleTitleInput();
-    handleDescInput();
-    handleAnonToggle();
-    updateSipUI();
-
-    // Focus first element or category
-    setTimeout(() => {
-      const firstRadio = defaultCat
-        ? document.querySelector(`input[name="sip-category"][value="${defaultCat}"]`)
-        : document.querySelector('input[name="sip-category"]');
-      if (firstRadio) firstRadio.focus();
-    }, 100);
-  }
-
-  function closeSubmitPanel() {
-    const overlay = document.getElementById('submit-panel-overlay');
-    const panel = document.getElementById('submit-panel');
-    if (overlay) overlay.hidden = true;
-    if (panel) panel.hidden = true;
-    document.body.style.overflow = '';
-    if (sipReturnFocusTo && typeof sipReturnFocusTo.focus === 'function') sipReturnFocusTo.focus();
-  }
-
-  // Keyboard shortcut: Esc closes panel
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      const panel = document.getElementById('submit-panel');
-      if (panel && !panel.hidden) {
-        e.preventDefault();
-        closeSubmitPanel();
-        return;
-      }
-    }
-    if (e.key === 'Tab') {
-      const panel = document.getElementById('submit-panel');
-      if (!panel || panel.hidden) return;
-      const focusable = Array.from(panel.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
-        .filter(el => !el.closest('[hidden]') && el.getClientRects().length);
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && (document.activeElement === first || !focusable.includes(document.activeElement))) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && (document.activeElement === last || !focusable.includes(document.activeElement))) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-  });
-
-  function onCategorySelected(cat) {
-    document.querySelectorAll('.sip-cat-card').forEach(card => card.classList.remove('sip-cat-card--selected'));
-    const activeCard = document.getElementById(`cat-card-${cat.replace(/\s+/g, '-')}`);
-    if (activeCard) activeCard.classList.add('sip-cat-card--selected');
-  }
-
-  function handleTitleInput() {
-    const input = document.getElementById('sip-title');
-    const val = input ? input.value : '';
-    const counter = document.getElementById('sip-title-count');
-    const req = document.getElementById('sip-title-req');
-    
-    if (counter) counter.textContent = `${val.length} / 100`;
-    if (counter) {
-      counter.classList.toggle('is-warn', val.length >= 80 && val.length < 95);
-      counter.classList.toggle('is-danger', val.length >= 95);
-    }
-
-    if (req) {
-      if (val.trim().length >= 8) {
-        req.textContent = 'Ready';
-        req.className = 'sip-validation-badge sip-validation-badge--valid';
-      } else {
-        req.textContent = 'Min 8 chars';
-        req.className = 'sip-validation-badge';
-      }
-    }
-  }
-
-  function handleDescInput() {
-    const textarea = document.getElementById('sip-description');
-    const val = textarea ? textarea.value : '';
-    const counter = document.getElementById('sip-desc-count');
-    const req = document.getElementById('sip-desc-req');
-    
-    if (counter) counter.textContent = `${val.length} / 1500`;
-    if (counter) {
-      counter.classList.toggle('is-warn', val.length >= 1200 && val.length < 1450);
-      counter.classList.toggle('is-danger', val.length >= 1450);
-    }
-
-    if (req) {
-      if (val.trim().length >= 20) {
-        req.textContent = 'Ready';
-        req.className = 'sip-validation-badge sip-validation-badge--valid';
-      } else {
-        req.textContent = 'Min 20 chars';
-        req.className = 'sip-validation-badge';
-      }
-    }
-  }
-
-  function handleAnonToggle() {
-    const isAnon = document.getElementById('sip-anon')?.checked;
-    const badge = document.getElementById('sip-anon-status-pill');
-    if (badge) {
-      if (isAnon) {
-        badge.textContent = 'Identity Hidden';
-        badge.className = 'sip-badge-anon-state sip-badge-anon-state--anon';
-      } else {
-        badge.textContent = 'Public Profile';
-        badge.className = 'sip-badge-anon-state sip-badge-anon-state--public';
-      }
-    }
-  }
-
-  function handleConsentChange() {
-    const consentWrapper = document.getElementById('sip-consent-wrapper');
-    const checked = document.getElementById('sip-consent')?.checked;
-    if (consentWrapper) {
-      consentWrapper.classList.toggle('sip-consent-card--checked', !!checked);
-    }
-  }
-
-  function goToStep(step) {
-    if (step < 1 || step > 3) return;
-    // Allow jumping backwards or to step if already visited
-    if (step <= sipMaxVisitedStep) {
-      sipCurrentStep = step;
-      updateSipUI();
-    }
-  }
-
-  function updateSipUI() {
-    if (sipCurrentStep > sipMaxVisitedStep) {
-      sipMaxVisitedStep = sipCurrentStep;
-    }
-
-    // Panels visibility with animation classes
-    for (let i = 1; i <= 3; i++) {
-      const panel = document.getElementById(`sip-step-${i}`);
-      if (panel) {
-        if (i === sipCurrentStep) {
-          panel.hidden = false;
-          panel.classList.add('sip-step-animate-in');
-        } else {
-          panel.hidden = true;
-          panel.classList.remove('sip-step-animate-in');
-        }
-      }
-    }
-
-    // Stepper buttons & track fills
-    for (let i = 1; i <= 3; i++) {
-      const btn = document.getElementById(`step-btn-${i}`);
-      const dot = document.getElementById(`step-dot-${i}`);
-      
-      if (btn && dot) {
-        btn.classList.remove('sip-step-item--active', 'sip-step-item--done', 'sip-step-item--upcoming');
-        if (i === sipCurrentStep) {
-          btn.classList.add('sip-step-item--active');
-        } else if (i < sipCurrentStep) {
-          btn.classList.add('sip-step-item--done');
-        } else {
-          btn.classList.add('sip-step-item--upcoming');
-        }
-      }
-    }
-
-    // Track line fills
-    const fill1 = document.getElementById('step-track-fill-1');
-    const fill2 = document.getElementById('step-track-fill-2');
-    if (fill1) fill1.style.width = sipCurrentStep >= 2 ? '100%' : '0%';
-    if (fill2) fill2.style.width = sipCurrentStep >= 3 ? '100%' : '0%';
-
-    const prevBtn = document.getElementById('sip-prev-btn');
-    const stepHint = document.getElementById('sip-step-hint');
-    const nextBtn = document.getElementById('sip-next-btn');
-    const nextText = document.getElementById('sip-next-text');
-    const iconContinue = document.querySelector('.sip-icon-continue');
-    const iconSubmit = document.querySelector('.sip-icon-submit');
-    const iconSpinner = document.querySelector('.sip-icon-spinner');
-
-    if (prevBtn) {
-      if (sipCurrentStep > 1) {
-        prevBtn.classList.remove('sip-btn-back--hidden');
-      } else {
-        prevBtn.classList.add('sip-btn-back--hidden');
-      }
-    }
-
-    if (stepHint) {
-      if (sipCurrentStep === 1) stepHint.textContent = 'Step 1 of 3';
-      else if (sipCurrentStep === 2) stepHint.textContent = 'Step 2 of 3';
-      else if (sipCurrentStep === 3) stepHint.textContent = 'Final Step';
-    }
-
-    if (nextBtn && nextText) {
-      if (sipCurrentStep === 3) {
-        nextBtn.classList.add('sip-btn-action--submit');
-        nextText.textContent = 'Submit idea';
-        if (iconContinue) iconContinue.style.display = 'none';
-        if (iconSubmit) iconSubmit.style.display = 'inline-block';
-        if (iconSpinner) iconSpinner.style.display = 'none';
-      } else {
-        nextBtn.classList.remove('sip-btn-action--submit');
-        nextText.textContent = 'Continue';
-        if (iconContinue) iconContinue.style.display = 'inline-block';
-        if (iconSubmit) iconSubmit.style.display = 'none';
-        if (iconSpinner) iconSpinner.style.display = 'none';
-      }
-    }
-  }
-
-  function sipNextStep() {
-    if (sipCurrentStep === 1) {
-      const checked = document.querySelector('input[name="sip-category"]:checked');
-      if (!checked) {
-        if (window.sfToast) sfToast('Please select a category to continue.', 'warning');
-        else alert('Please select a category to continue.');
-        return;
-      }
-      sipCurrentStep = 2;
-      updateSipUI();
-      // Scroll to top of step 2
-      const step2 = document.getElementById('sip-step-2');
-      if (step2) step2.scrollTop = 0;
-    } else if (sipCurrentStep === 2) {
-      const title = document.getElementById('sip-title').value.trim();
-      const desc = document.getElementById('sip-description').value.trim();
-      
-      if (title.length < 8) {
-        const titleInput = document.getElementById('sip-title');
-        titleInput.classList.add('sip-input-error');
-        titleInput.focus();
-        setTimeout(() => titleInput.classList.remove('sip-input-error'), 1200);
-        if (window.sfToast) sfToast('Title must be at least 8 characters.', 'warning');
-        else alert('Title must be at least 8 characters.');
-        return;
-      }
-      if (desc.length < 20) {
-        const descInput = document.getElementById('sip-description');
-        descInput.classList.add('sip-input-error');
-        descInput.focus();
-        setTimeout(() => descInput.classList.remove('sip-input-error'), 1200);
-        if (window.sfToast) sfToast('Description must be at least 20 characters.', 'warning');
-        else alert('Description must be at least 20 characters.');
-        return;
-      }
-
-      // Populate review step
-      const cat = document.querySelector('input[name="sip-category"]:checked').value;
-      const isAnon = document.getElementById('sip-anon').checked;
-
-      document.getElementById('rev-category').textContent = cat;
-      document.getElementById('rev-title').textContent = title;
-      document.getElementById('rev-desc').textContent = desc;
-      document.getElementById('rev-anon-badge').textContent = isAnon ? 'Anonymous Submission' : 'Public Profile';
-
-      sipCurrentStep = 3;
-      updateSipUI();
-      const step3 = document.getElementById('sip-step-3');
-      if (step3) step3.scrollTop = 0;
-    } else if (sipCurrentStep === 3) {
-      const consent = document.getElementById('sip-consent').checked;
-      if (!consent) {
-        const consentWrapper = document.getElementById('sip-consent-wrapper');
-        if (consentWrapper) {
-          consentWrapper.classList.add('sip-consent-card--error');
-          setTimeout(() => consentWrapper.classList.remove('sip-consent-card--error'), 1200);
-        }
-        if (window.sfToast) sfToast('Please accept the community guidelines notice.', 'warning');
-        else alert('Please accept the community guidelines notice.');
-        return;
-      }
-      document.getElementById('submit-idea-form').dispatchEvent(new Event('submit', { cancelable: true }));
-    }
-  }
-
-  function sipPrevStep() {
-    if (sipCurrentStep > 1) {
-      sipCurrentStep--;
-      updateSipUI();
-    }
-  }
-
-  async function handleIdeaSubmit(e) {
-    e.preventDefault();
-    const nextBtn = document.getElementById('sip-next-btn');
-    const nextText = document.getElementById('sip-next-text');
-    const iconSubmit = document.querySelector('.sip-icon-submit');
-    const iconSpinner = document.querySelector('.sip-icon-spinner');
-
-    nextBtn.disabled = true;
-    nextBtn.classList.add('sip-btn-action--loading');
-    if (nextText) nextText.textContent = 'Submitting...';
-    if (iconSubmit) iconSubmit.style.display = 'none';
-    if (iconSpinner) iconSpinner.style.display = 'inline-block';
-
-    const category = document.querySelector('input[name="sip-category"]:checked').value;
-    const title = document.getElementById('sip-title').value.trim();
-    const description = document.getElementById('sip-description').value.trim();
-    const isAnonymous = document.getElementById('sip-anon').checked;
-
-    try {
-      const res = await fetch('/api/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ title, description, category, isAnonymous })
-      });
-      const data = await res.json().catch(() => ({ success: false, error: 'Network response was not valid JSON' }));
-      if (!res.ok || !data.success) throw new Error(data.error || 'Submission failed');
-
-      sipTrackingCode = data.tracking_code;
-      document.getElementById('sip-success-code').textContent = sipTrackingCode;
-
-      // Reset copy button state
-      document.getElementById('sip-copy-label').textContent = 'Copy';
-      document.getElementById('sip-copy-confirm').hidden = true;
-      const copyBtn = document.getElementById('sip-copy-btn');
-      if (copyBtn) copyBtn.classList.remove('sip-copy-btn--copied');
-
-      // Save tracking code in localStorage
-      try {
-        const stored = JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');
-        stored.push(sipTrackingCode);
-        localStorage.setItem('sf_my_tracking_codes', JSON.stringify(stored));
-      } catch (err) {}
-
-      document.getElementById('sip-step-1').hidden = true;
-      document.getElementById('sip-step-2').hidden = true;
-      document.getElementById('sip-step-3').hidden = true;
-      document.getElementById('sip-footer').classList.add('sip-footer-hidden');
-      
-      const successView = document.getElementById('sip-success');
-      successView.hidden = false;
-      successView.classList.add('sip-step-animate-in');
-
-    } catch (err) {
-      if (window.sfToast) sfToast(err.message || 'Submission failed', 'error');
-      else alert(err.message || 'Submission failed');
-    } finally {
-      nextBtn.disabled = false;
-      nextBtn.classList.remove('sip-btn-action--loading');
-      if (nextText) nextText.textContent = 'Submit idea';
-      if (iconSubmit) iconSubmit.style.display = 'inline-block';
-      if (iconSpinner) iconSpinner.style.display = 'none';
-    }
-  }
-
-  function copyTrackingCode() {
-    if (!sipTrackingCode) return;
-    
-    function onCopiedSuccess() {
-      const label = document.getElementById('sip-copy-label');
-      const confirm = document.getElementById('sip-copy-confirm');
-      const btn = document.getElementById('sip-copy-btn');
-      if (label) label.textContent = 'Copied!';
-      if (btn) btn.classList.add('sip-copy-btn--copied');
-      if (confirm) confirm.hidden = false;
-      
-      setTimeout(() => {
-        if (label) label.textContent = 'Copy';
-        if (btn) btn.classList.remove('sip-copy-btn--copied');
-        if (confirm) confirm.hidden = true;
-      }, 2800);
-    }
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(sipTrackingCode).then(onCopiedSuccess).catch(() => {
-        fallbackCopy();
-        onCopiedSuccess();
-      });
-    } else {
-      fallbackCopy();
-      onCopiedSuccess();
-    }
-  }
-
-  function fallbackCopy() {
-    const el = document.getElementById('sip-success-code');
-    if (!el) return;
-    const range = document.createRange();
-    range.selectNode(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    try {
-      document.execCommand('copy');
-    } catch (e) {}
-    window.getSelection().removeAllRanges();
-  }
-</script>
+<script src="/js/submit-panel.js?v=20261010-ts"></script>

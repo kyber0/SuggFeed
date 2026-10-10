@@ -7,7 +7,7 @@
     }
   ],
   "functions": {
-    "api/index.js": {
+    "api/index.ts": {
       "includeFiles": "{views/**,dist/**,public/**}"
     }
   }

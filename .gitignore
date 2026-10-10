@@ -1,9 +1,10 @@
 node_modules/
+dist/
 .next/
 .env.local
 .env*.local
 coverage/
-dist/
+
 
 # Sentry Config File
 .env.sentry-build-plugin

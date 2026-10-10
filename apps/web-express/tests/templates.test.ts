@@ -11,7 +11,15 @@ test('all Eta templates compile, including authenticated staff view', () => {
     for (const name of fs.readdirSync(dir)) {
       const file = path.join(dir, name);
       if (fs.statSync(file).isDirectory()) { check(file); continue; }
-      if (name.endsWith('.eta')) assert.doesNotThrow(() => eta.compile(fs.readFileSync(file, 'utf8')), file);
+      if (name.endsWith('.eta')) {
+        const source = fs.readFileSync(file, 'utf8');
+        assert.doesNotThrow(() => eta.compile(source), file);
+        assert.equal(/<script>/.test(source), false, file + ' still has inline JavaScript');
+        assert.equal(/\bon(?:click|input|change|submit|keydown)=/.test(source), false, file + ' still has an inline event handler');
+        for (const script of source.matchAll(/<script src="(\/js\/[^?"]+)/g)) {
+          assert.equal(fs.existsSync(path.join(__dirname, '../public', script[1])), true, 'Missing generated script ' + script[1]);
+        }
+      }
     }
   }
   check(path.join(__dirname, '../views'));
@@ -25,7 +33,7 @@ test('mobile navigation has no staff entry; responsive styles hide other staff l
 });
 
 test('callback failure shows a retry message and does not navigate', async () => {
-  const source = fs.readFileSync(path.join(__dirname, '../views/auth-callback.eta'), 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
+  const source = fs.readFileSync(path.join(__dirname, '../public/js/auth-callback.js'), 'utf8');
   let onReady;
   let navigated = false;
   const nodes = new Map();
@@ -45,3 +53,5 @@ test('callback failure shows a retry message and does not navigate', async () =>
   assert.equal(node('auth-callback-retry').hidden, false);
   assert.match(node('auth-callback-message').textContent, /expired/);
 });
+
+export {};

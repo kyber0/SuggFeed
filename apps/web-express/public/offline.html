@@ -26,13 +26,14 @@
     .retry:hover { opacity: .9; }
     .note { margin-top: 20px; font-size: 13px; color: #9ab; }
   </style>
+  <script src="/js/events.js?v=20261010-ts"></script>
 </head>
 <body>
   <a class="brand" href="/">sugg<span>feed</span></a>
   <div class="icon">📡</div>
   <h1>You're offline</h1>
   <p>SuggFeed needs an internet connection to load the latest ideas or submit feedback. Suggestions are not saved or sent while you are offline.</p>
-  <button class="retry" onclick="window.location.reload()">Try again</button>
+  <button class="retry" data-sf-click="action-162">Try again</button>
   <p class="note">Reconnect before submitting. If you have unsent text, copy it somewhere safe before leaving this page.</p>
 </body>
 </html>

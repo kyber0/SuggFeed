@@ -13,7 +13,7 @@ function browser({ savedCookie = true, failSync = false, pathname = '/feed' } = 
     signInWithOAuth: async options => { calls.push(['oauth', options]); return { data: { url: 'https://example.supabase.co/auth/v1/authorize' } }; },
     signOut: async options => calls.push(['signout', options])
   };
-  const window = {
+  const window: Record<string, any> = {
     supabase: { createClient(_url, _key, options) { calls.push(['client', options]); return { auth }; } },
     location: { pathname, search: '', hash: '', origin: 'https://www.suggfeed.me', reload: () => calls.push(['reload']), replace: path => calls.push(['replace', path]), assign: url => calls.push(['assign', url]) },
     dispatchEvent() {}
@@ -69,3 +69,5 @@ test('navigation stays on current origin and logout clears both sessions', async
   assert.equal(second.calls.some(call => call[0] === 'signout'), true);
   assert.equal(second.calls.find(call => call[0] === 'replace')[1], '/');
 });
+
+export {};

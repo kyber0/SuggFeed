@@ -1,5 +1,6 @@
+import type { Request, Response, Application } from "express";
 // Vercel Serverless Function entrypoint for Express
-let app;
+let app: Application | undefined;
 
 function getApp() {
   if (!app) {
@@ -11,10 +12,10 @@ function getApp() {
       throw err;
     }
   }
-  return app;
+  return app!;
 }
 
-module.exports = (req, res) => {
+export default (req: Request, res: Response) => {
   try {
     const handler = getApp();
     return handler(req, res);

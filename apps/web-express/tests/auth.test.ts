@@ -55,9 +55,9 @@ before(async () => {
     app.post('/write', sameOriginOnly, (_req, res) => res.json({ success: true }));
     app.get('/identity', (req, res) => res.json({ user: req.session.user }));
     app.use((_err, _req, res, _next) => res.status(500).json({ success: false, error: 'Service unavailable.' }));
-    const server = await new Promise(resolve => { const listening = app.listen(0, '127.0.0.1', () => resolve(listening)); });
+    const server = await new Promise<import("node:http").Server>(resolve => { const listening = app.listen(0, '127.0.0.1', () => resolve(listening)); });
     servers.push(server);
-    origins.push(`http://127.0.0.1:${server.address().port}`);
+    origins.push(`http://127.0.0.1:${(server.address() as import('node:net').AddressInfo).port}`);
   }
 });
 after(async () => {
@@ -75,7 +75,7 @@ async function login() {
   assert.equal(response.status, 200);
   assert.match(response.headers.get('set-cookie'), /HttpOnly/i);
   assert.match(response.headers.get('set-cookie'), /SameSite=Lax/i);
-  assert.equal((await response.json()).success, true);
+  assert.equal((await response.json() as { success: boolean; user: { id: string; role: string } | null }).success, true);
   return response.headers.get('set-cookie').split(';')[0];
 }
 
@@ -86,7 +86,7 @@ test('session survives a different server instance; payload encrypted and cookie
   assert.equal(row.payload.includes('private-refresh-token'), false);
   assert.equal(row.payload.includes('student@example.test'), false);
   const response = await fetch(origins[1] + '/auth/session', { headers: { Cookie: cookie } });
-  assert.equal((await response.json()).user.id, 'test-user');
+  assert.equal((await response.json() as { success: boolean; user: { id: string; role: string } | null }).user.id, 'test-user');
 });
 
 test('cross-site login, logout and writes are rejected; malformed referer does not crash', async () => {
@@ -111,7 +111,7 @@ test('permissions come from DB and revoked staff roles take effect immediately',
   role = 'student';
   try {
     const response = await fetch(origins[1] + '/identity', { headers: { Cookie: cookie } });
-    assert.equal((await response.json()).user.role, 'student');
+    assert.equal((await response.json() as { success: boolean; user: { id: string; role: string } | null }).user.role, 'student');
   } finally { role = 'admin'; }
 });
 
@@ -132,15 +132,15 @@ test('logout deletes shared session so another instance no longer recognizes it'
   assert.match(response.headers.get('set-cookie'), /Expires=Thu, 01 Jan 1970/);
   await response.json();
   const check = await fetch(origins[0] + '/auth/session', { headers: { Cookie: cookie } });
-  assert.equal((await check.json()).user, null);
+  assert.equal((await check.json() as { success: boolean; user: { id: string; role: string } | null }).user, null);
 });
 
 test('expired sessions are removed and altered encrypted payloads are rejected', async () => {
   const store = new SupabaseSessionStore(database, secret);
   const read = id => new Promise((resolve, reject) => store.get(id, (err, data) => err ? reject(err) : resolve(data)));
-  await new Promise((resolve, reject) => store.set('expired-session', { cookie: { expires: new Date(0) }, user: null }, err => err ? reject(err) : resolve()));
+  await new Promise<void>((resolve, reject) => store.set('expired-session', { cookie: { expires: new Date(0) }, user: null }, err => err ? reject(err) : resolve()));
   assert.equal(await read('expired-session'), null);
-  await new Promise((resolve, reject) => store.set('altered-session', { cookie: { expires: new Date(Date.now() + 60000) }, user: null }, err => err ? reject(err) : resolve()));
+  await new Promise<void>((resolve, reject) => store.set('altered-session', { cookie: { expires: new Date(Date.now() + 60000) }, user: null }, err => err ? reject(err) : resolve()));
   // Pick the row inserted for this ID directly rather than relying on other tests.
   const id = require('crypto').createHash('sha256').update('altered-session').digest('hex');
   rows.get(id).payload = 'invalid.invalid.invalid';
@@ -173,3 +173,5 @@ test('student cannot moderate even if their auth metadata says admin', async () 
     assert.equal(moderationArgs, null);
   } finally { role = 'admin'; }
 });
+
+export {};

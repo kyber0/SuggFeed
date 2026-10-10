@@ -42,7 +42,7 @@
       <button
         type="button"
         class="sp-btn-action"
-        onclick="location.reload()"
+        data-sf-click="action-1"
         title="Refresh submissions from database"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -52,7 +52,7 @@
       <button
         type="button"
         class="sp-btn-action"
-        onclick="sfExportAdminCsv()"
+        data-sf-click="action-2"
         title="Export current view to CSV"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -66,7 +66,7 @@
     <!-- All -->
     <div
       class="sp-kpi-card sp-kpi-card--total<%= currentStatus === 'all' ? ' sp-kpi-card--active' : '' %>"
-      onclick="sfFilterStatus('all')"
+      data-sf-click="action-3"
     >
       <div class="sp-kpi-top">
         <span class="sp-kpi-label">Total Ideas</span>
@@ -81,7 +81,7 @@
     <!-- Pending -->
     <div
       class="sp-kpi-card sp-kpi-card--pending<%= currentStatus === 'pending' ? ' sp-kpi-card--active' : '' %>"
-      onclick="sfFilterStatus('pending')"
+      data-sf-click="action-4"
     >
       <div class="sp-kpi-top">
         <span class="sp-kpi-label">Pending Review</span>
@@ -96,7 +96,7 @@
     <!-- Approved -->
     <div
       class="sp-kpi-card sp-kpi-card--approved<%= currentStatus === 'approved' ? ' sp-kpi-card--active' : '' %>"
-      onclick="sfFilterStatus('approved')"
+      data-sf-click="action-5"
     >
       <div class="sp-kpi-top">
         <span class="sp-kpi-label">Approved</span>
@@ -111,7 +111,7 @@
     <!-- In Progress -->
     <div
       class="sp-kpi-card sp-kpi-card--in_progress<%= currentStatus === 'in_progress' ? ' sp-kpi-card--active' : '' %>"
-      onclick="sfFilterStatus('in_progress')"
+      data-sf-click="action-6"
     >
       <div class="sp-kpi-top">
         <span class="sp-kpi-label">In Progress</span>
@@ -126,7 +126,7 @@
     <!-- Resolved -->
     <div
       class="sp-kpi-card sp-kpi-card--resolved<%= currentStatus === 'resolved' ? ' sp-kpi-card--active' : '' %>"
-      onclick="sfFilterStatus('resolved')"
+      data-sf-click="action-7"
     >
       <div class="sp-kpi-top">
         <span class="sp-kpi-label">Resolved</span>
@@ -151,7 +151,7 @@
           class="sp-search-input"
           placeholder="Search by title, description, or tracking code..."
           value="<%= currentSearch %>"
-          oninput="sfFilterQueueCards()"
+          data-sf-input="action-8"
         />
       </div>
 
@@ -160,7 +160,7 @@
         <button
           type="button"
           class="sp-chip<%= currentStatus === 'all' ? ' sp-chip--active' : '' %>"
-          onclick="sfFilterStatus('all')"
+          data-sf-click="action-9"
         >
           <span>All</span>
           <span class="sp-chip-count"><%= totalCount %></span>
@@ -168,7 +168,7 @@
         <button
           type="button"
           class="sp-chip<%= currentStatus === 'pending' ? ' sp-chip--active' : '' %>"
-          onclick="sfFilterStatus('pending')"
+          data-sf-click="action-10"
         >
           <span>Pending</span>
           <span class="sp-chip-count"><%= pendingCount %></span>
@@ -176,7 +176,7 @@
         <button
           type="button"
           class="sp-chip<%= currentStatus === 'approved' ? ' sp-chip--active' : '' %>"
-          onclick="sfFilterStatus('approved')"
+          data-sf-click="action-11"
         >
           <span>Approved</span>
           <span class="sp-chip-count"><%= approvedCount %></span>
@@ -184,7 +184,7 @@
         <button
           type="button"
           class="sp-chip<%= currentStatus === 'in_progress' ? ' sp-chip--active' : '' %>"
-          onclick="sfFilterStatus('in_progress')"
+          data-sf-click="action-12"
         >
           <span>In Progress</span>
           <span class="sp-chip-count"><%= inProgressCount %></span>
@@ -192,7 +192,7 @@
         <button
           type="button"
           class="sp-chip<%= currentStatus === 'resolved' ? ' sp-chip--active' : '' %>"
-          onclick="sfFilterStatus('resolved')"
+          data-sf-click="action-13"
         >
           <span>Resolved</span>
           <span class="sp-chip-count"><%= resolvedCount %></span>
@@ -230,7 +230,7 @@
           data-desc="<%= (item.description || '').toLowerCase() %>"
           data-code="<%= (item.tracking_code || '').toLowerCase() %>"
           data-status="<%= item.status || 'pending' %>"
-          onclick="sfOpenDecisionModal(this.dataset.id, this.querySelector('.sp-card-title').textContent, this.dataset.status)"
+          data-sf-click="action-14"
         >
           <!-- Upvote count -->
           <div class="sp-card-votes" title="Community votes">
@@ -257,12 +257,12 @@
           </div>
 
           <!-- Quick Actions -->
-          <div class="sp-quick-actions" onclick="event.stopPropagation()">
+          <div class="sp-quick-actions" data-sf-click="action-15">
             <button
               type="button"
               class="sp-action-icon-btn sp-action-icon-btn--approve"
               title="Approve &amp; Publish"
-              onclick="sfQuickUpdateStatus('<%= item.id %>', 'approved')"
+              data-sf-click="action-16" data-sf-click-arg-0="<%= item.id %>"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
@@ -270,7 +270,7 @@
               type="button"
               class="sp-action-icon-btn sp-action-icon-btn--reject"
               title="Reject"
-              onclick="sfQuickUpdateStatus('<%= item.id %>', 'rejected')"
+              data-sf-click="action-17" data-sf-click-arg-0="<%= item.id %>"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
@@ -293,7 +293,7 @@
     id="sp-decision-modal"
     class="rm-drawer-overlay"
     hidden
-    onclick="if(event.target===this) sfCloseDecisionModal()"
+    data-sf-click="action-18"
   >
     <div class="rm-drawer" role="dialog" aria-modal="true" aria-label="Moderate Submission">
       <div class="rm-drawer-head">
@@ -301,7 +301,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           Staff Moderation Action
         </div>
-        <button type="button" class="rm-drawer-close" onclick="sfCloseDecisionModal()" aria-label="Close">
+        <button type="button" class="rm-drawer-close" data-sf-click="action-19" aria-label="Close">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -312,16 +312,16 @@
         <div>
           <label class="rm-drawer-field-label sp-modal-label">Change Status To</label>
           <div class="sp-modal-btn-grid">
-            <button type="button" class="btn-primary btn-mod-approve" onclick="sfApplyModalStatus('approved')">
+            <button type="button" class="btn-primary btn-mod-approve" data-sf-click="action-20">
               ✓ Approve (Publish)
             </button>
-            <button type="button" class="btn-primary btn-mod-in-progress" onclick="sfApplyModalStatus('in_progress')">
+            <button type="button" class="btn-primary btn-mod-in-progress" data-sf-click="action-21">
               ⚡ In Progress
             </button>
-            <button type="button" class="btn-primary btn-mod-resolved" onclick="sfApplyModalStatus('resolved')">
+            <button type="button" class="btn-primary btn-mod-resolved" data-sf-click="action-22">
               🎯 Resolved
             </button>
-            <button type="button" class="btn-ghost btn-mod-reject" onclick="sfApplyModalStatus('rejected')">
+            <button type="button" class="btn-ghost btn-mod-reject" data-sf-click="action-23">
               ✕ Reject
             </button>
           </div>
@@ -339,111 +339,13 @@
 
         <div class="sp-quick-responses">
           <span class="sp-quick-responses-label">Quick responses:</span>
-          <button type="button" class="tag tag-clickable" onclick="sfSetModalNote(this.textContent)">Approved — queued for campus operations review.</button>
-          <button type="button" class="tag tag-clickable" onclick="sfSetModalNote(this.textContent)">Under active evaluation by student affairs.</button>
-          <button type="button" class="tag tag-clickable" onclick="sfSetModalNote(this.textContent)">Resolved in recent campus facility upgrades.</button>
+          <button type="button" class="tag tag-clickable" data-sf-click="action-24">Approved — queued for campus operations review.</button>
+          <button type="button" class="tag tag-clickable" data-sf-click="action-25">Under active evaluation by student affairs.</button>
+          <button type="button" class="tag tag-clickable" data-sf-click="action-26">Resolved in recent campus facility upgrades.</button>
         </div>
       </div>
     </div>
   </div>
 </main>
 
-<script>
-  let modalActiveId = null;
-
-  function sfFilterStatus(status) {
-    const url = new URL(window.location.href);
-    if (status === 'all') url.searchParams.delete('status');
-    else url.searchParams.set('status', status);
-    window.location.href = url.toString();
-  }
-
-  function sfFilterQueueCards() {
-    const q = (document.getElementById('sp-search').value || '').toLowerCase().trim();
-    const cards = document.querySelectorAll('.sp-card');
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-      const title = card.getAttribute('data-title') || '';
-      const desc = card.getAttribute('data-desc') || '';
-      const code = card.getAttribute('data-code') || '';
-
-      const match = !q || title.includes(q) || desc.includes(q) || code.includes(q);
-      if (match) {
-        card.removeAttribute('hidden');
-      } else {
-        card.setAttribute('hidden', '');
-      }
-      if (match) visibleCount++;
-    });
-
-    const countSpan = document.getElementById('sp-visible-count');
-    if (countSpan) countSpan.textContent = visibleCount;
-  }
-
-  function sfOpenDecisionModal(id, title, status) {
-    modalActiveId = id;
-    document.getElementById('modal-item-title').textContent = title;
-    document.getElementById('modal-staff-note').value = '';
-    document.getElementById('sp-decision-modal').removeAttribute('hidden');
-  }
-
-  function sfCloseDecisionModal() {
-    modalActiveId = null;
-    document.getElementById('sp-decision-modal').setAttribute('hidden', '');
-  }
-
-  function sfSetModalNote(text) {
-    document.getElementById('modal-staff-note').value = text;
-  }
-
-  async function sfApplyModalStatus(newStatus) {
-    if (!modalActiveId) return;
-    const note = document.getElementById('modal-staff-note').value.trim();
-    await sfUpdateSubmission(modalActiveId, newStatus, note);
-    sfCloseDecisionModal();
-  }
-
-  async function sfQuickUpdateStatus(id, newStatus) {
-    await sfUpdateSubmission(id, newStatus, '');
-  }
-
-  async function sfUpdateSubmission(id, newStatus, note) {
-    try {
-      const res = await fetch(`/api/submissions/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, note })
-      });
-      const data = await res.json();
-      if (!data.success && !data.data) {
-        throw new Error(data.error || 'Failed to update status');
-      }
-      if (window.sfToast) sfToast(`Status updated to ${newStatus}!`, 'success');
-      setTimeout(() => location.reload(), 600);
-    } catch (err) {
-      if (window.sfToast) sfToast(err.message || 'Could not update status.', 'error');
-    }
-  }
-
-  function sfExportAdminCsv() {
-    const cards = document.querySelectorAll('.sp-card');
-    const rows = [['ID', 'Title', 'Status', 'Tracking Code']];
-    cards.forEach(card => {
-      const id = card.getAttribute('data-id');
-      const title = card.querySelector('.sp-card-title')?.textContent?.replace(/"/g, '""') || '';
-      const status = card.getAttribute('data-status');
-      const code = card.getAttribute('data-code');
-      rows.push([id, `"${title}"`, status, code]);
-    });
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', 'suggfeed_moderation_queue.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-</script>
+<script src="/js/admin.js?v=20261010-ts"></script>

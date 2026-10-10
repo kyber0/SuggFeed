@@ -87,7 +87,7 @@ app.use(
           "https://cdn.jsdelivr.net",
           "https://challenges.cloudflare.com",
         ],
-        scriptSrcAttr: ["'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
         styleSrc: [
           "'self'",
           "'unsafe-inline'",

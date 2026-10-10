@@ -85,7 +85,7 @@
             type="button"
             class="panel-action-btn"
             id="share-btn"
-            onclick="sfShareIdea()"
+            data-sf-click="action-82"
             aria-label="Share idea"
             title="Copy link"
           >
@@ -102,7 +102,7 @@
           id="mob-tab-details"
           aria-selected="true"
           class="detail-mobile-tab active"
-          onclick="sfSetMobileDetailTab('details')"
+          data-sf-click="action-83"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Proposal Details</span>
@@ -113,7 +113,7 @@
           id="mob-tab-comments"
           aria-selected="false"
           class="detail-mobile-tab"
-          onclick="sfSetMobileDetailTab('comments')"
+          data-sf-click="action-84"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <span>Comments (<span id="mob-comment-count"><%= commentsCount %></span>)</span>
@@ -195,7 +195,7 @@
               type="button"
               class="detail-support-btn"
               id="detail-vote-btn"
-              onclick="sfVoteDetail('<%= it.submission.id %>')"
+              data-sf-click="action-85" data-sf-click-arg-0="<%= it.submission.id %>"
               aria-label="<%= it.submission.status === 'pending' ? 'Pending staff review' : 'Support this idea' %>"
               <%= it.submission.status === 'pending' ? 'disabled' : '' %>
             >
@@ -234,7 +234,7 @@
             <button
               type="button"
               class="mobile-jump-comments-btn"
-              onclick="sfSetMobileDetailTab('comments')"
+              data-sf-click="action-86"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Join Discussion (<span id="jump-comment-count"><%= commentsCount %></span> comments) →</span>
@@ -255,7 +255,7 @@
             <button
               type="button"
               class="mobile-context-view-btn"
-              onclick="sfSetMobileDetailTab('details')"
+              data-sf-click="action-87"
             >
               View Proposal
             </button>
@@ -305,7 +305,7 @@
                     </div>
                     <div class="comment-body"><%= c.body %></div>
                     <div class="comment-actions">
-                      <button type="button" class="comment-reply-btn" data-reply-id="<%= c.id %>" data-reply-author="<%= cAuthor %>" onclick="sfReplyTo(this.dataset.replyId, this.dataset.replyAuthor)">
+                      <button type="button" class="comment-reply-btn" data-reply-id="<%= c.id %>" data-reply-author="<%= cAuthor %>" data-sf-click="action-88">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
                         Reply
                       </button>
@@ -333,7 +333,7 @@
                           </div>
                           <div class="comment-body"><%= rc.body %></div>
                           <div class="comment-actions">
-                            <button type="button" class="comment-reply-btn" data-reply-id="<%= c.id %>" data-reply-author="<%= rcAuthor %>" onclick="sfReplyTo(this.dataset.replyId, this.dataset.replyAuthor)">
+                            <button type="button" class="comment-reply-btn" data-reply-id="<%= c.id %>" data-reply-author="<%= rcAuthor %>" data-sf-click="action-89">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
                               Reply
                             </button>
@@ -357,7 +357,7 @@
             <form
               id="comment-composer"
               class="comment-composer-form"
-              onsubmit="sfSubmitComment(event, '<%= it.submission.id %>')"
+              data-sf-submit="action-90" data-sf-submit-arg-0="<%= it.submission.id %>"
             >
               <div class="comment-input-card">
                 <!-- Replying Banner -->
@@ -366,7 +366,7 @@
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
                     <span>Replying to <strong id="replying-author">@Student</strong></span>
                   </div>
-                  <button type="button" class="replying-cancel-btn" onclick="sfCancelReply()" aria-label="Cancel reply">
+                  <button type="button" class="replying-cancel-btn" data-sf-click="action-91" aria-label="Cancel reply">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </div>
@@ -378,7 +378,7 @@
                     rows="1"
                     placeholder="Add a constructive thought…"
                     maxlength="500"
-                    oninput="sfCommentInputChanged(this)"
+                    data-sf-input="action-92"
                     onfocus="document.getElementById('comment-composer').classList.add('expanded')"
                     required
                   ></textarea>
@@ -390,7 +390,7 @@
                     <span class="comment-char-tag" id="comment-char-count">0/500</span>
                   </div>
                   <div class="comment-composer-buttons">
-                    <button type="button" class="btn-comment-cancel" onclick="sfCollapseComposer()">Cancel</button>
+                    <button type="button" class="btn-comment-cancel" data-sf-click="action-93">Cancel</button>
                     <button type="submit" class="btn-comment-post" id="comment-submit-btn">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                       <span>Post</span>
@@ -406,248 +406,5 @@
   </div>
 </main>
 
-<script>
-  let activeReplyingToId = null;
-
-  const SF_AVATAR_COLORS = [
-    ['#0b3857','#1e5a8a'],['#0d9488','#0a7a6e'],['#7c3aed','#6026c0'],
-    ['#d97706','#b45309'],['#be185d','#9d174d'],['#0369a1','#0284c7']
-  ];
-  function sfAvatarGrad(name) {
-    const idx = ((name && name.charCodeAt(0)) || 0) % SF_AVATAR_COLORS.length;
-    const [a, b] = SF_AVATAR_COLORS[idx];
-    return `linear-gradient(135deg, ${a} 0%, ${b} 100%)`;
-  }
-  function sfRelTime(dateStr) {
-    const d = new Date(dateStr);
-    const diff = Math.floor((Date.now() - d) / 1000);
-    if (diff < 60) return 'just now';
-    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
-    if (diff < 604800) return `${Math.floor(diff/86400)}d ago`;
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
-    if (votedIds.includes('<%= it.submission.id %>')) {
-      const btn = document.getElementById('detail-vote-btn');
-      if (btn && '<%= it.submission.status %>' !== 'pending') {
-        btn.classList.add('voted');
-        const textEl = document.getElementById('detail-vote-text');
-        if (textEl) textEl.textContent = 'Supported';
-        const iconEl = document.getElementById('detail-vote-icon');
-        if (iconEl) iconEl.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
-      }
-    }
-  });
-
-  function sfSetMobileDetailTab(tab) {
-    const isComments = tab === 'comments';
-    const tabDetails = document.getElementById('mob-tab-details');
-    const tabComments = document.getElementById('mob-tab-comments');
-    const cols = document.getElementById('detail-columns');
-
-    if (tabDetails) {
-      tabDetails.classList.toggle('active', !isComments);
-      tabDetails.setAttribute('aria-selected', String(!isComments));
-    }
-    if (tabComments) {
-      tabComments.classList.toggle('active', isComments);
-      tabComments.setAttribute('aria-selected', String(isComments));
-    }
-    if (cols) {
-      cols.setAttribute('data-mobile-tab', tab);
-    }
-  }
-
-  function sfShareIdea() {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
-    const btn = document.getElementById('share-btn');
-    if (btn) {
-      const orig = btn.innerHTML;
-      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
-      setTimeout(() => { btn.innerHTML = orig; }, 2000);
-    }
-    if (window.sfToast) sfToast('Link copied to clipboard!', 'success');
-  }
-
-  function sfCommentInputChanged(textarea) {
-    const len = textarea.value.length;
-    const countSpan = document.getElementById('comment-char-count');
-    if (countSpan) {
-      countSpan.textContent = `${len}/500${len < 10 ? ' · Min 10 chars' : ''}`;
-    }
-  }
-
-  function sfReplyTo(commentId, author) {
-    activeReplyingToId = commentId;
-    document.getElementById('replying-author').textContent = `@${author}`;
-    document.getElementById('replying-banner').removeAttribute('hidden');
-    const input = document.getElementById('comment-input');
-    input.placeholder = `Reply to @${author}…`;
-    input.focus();
-  }
-
-  function sfCancelReply() {
-    activeReplyingToId = null;
-    const banner = document.getElementById('replying-banner');
-    if (banner) banner.setAttribute('hidden', '');
-    const input = document.getElementById('comment-input');
-    if (input) input.placeholder = 'Add a constructive thought…';
-  }
-
-  function sfCollapseComposer() {
-    const composer = document.getElementById('comment-composer');
-    const input = document.getElementById('comment-input');
-    if (composer) composer.classList.remove('expanded');
-    if (input) { input.value = ''; input.blur(); }
-    sfCancelReply();
-    sfCommentInputChanged(input);
-  }
-
-  async function sfVoteDetail(id) {
-    const btn = document.getElementById('detail-vote-btn');
-    if (btn.classList.contains('voted')) return;
-
-    try {
-      const res = await fetch(`/api/vote/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'up' })
-      });
-      const data = await res.json();
-      if (data.success) {
-        btn.classList.add('voted');
-        document.getElementById('detail-vote-count').textContent = data.vote_count;
-        document.getElementById('detail-vote-summary').textContent = data.vote_count;
-        document.getElementById('detail-vote-text').textContent = 'Supported';
-        document.getElementById('detail-vote-icon').innerHTML = '<polyline points="20 6 9 17 4 12"/>';
-
-        // Persist to local storage
-        const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
-        if (!votedIds.includes(id)) {
-          votedIds.push(id);
-          localStorage.setItem('sf_voted_ideas', JSON.stringify(votedIds));
-        }
-
-        if (window.sfToast) sfToast('Vote recorded! Thank you.', 'success');
-      }
-    } catch (e) {
-      if (window.sfToast) sfToast('Could not record vote.', 'error');
-    }
-  }
-
-  function sfCreateStandaloneCommentCardEl(c, isReply = false) {
-    const card = document.createElement('div');
-    card.className = `comment-card${isReply ? ' comment-reply-card' : ''}`;
-    card.id = `comment-${c.id}`;
-    card.style.cssText = 'animation: commentSlideIn 200ms cubic-bezier(.22,.85,.4,1) both;';
-
-    const author = c.display_name || (c.author && (c.author.display_name || c.author.full_name)) || 'Student';
-    const isStaff = c.author && (c.author.role === 'staff' || c.author.role === 'admin');
-    const grad = isStaff
-      ? 'linear-gradient(135deg, #7c3aed 0%, #6026c0 100%)'
-      : sfAvatarGrad(author);
-
-    card.innerHTML = `
-      <div class="comment-card-header">
-        <div class="comment-avatar" style="background:${grad}">${(author[0] || 'S').toUpperCase()}</div>
-        <strong class="comment-author-name">${author}</strong>
-        ${isStaff ? '<span class="comment-staff-tag">STAFF</span>' : ''}
-        <span class="comment-date">${sfRelTime(c.created_at || new Date().toISOString())}</span>
-      </div>
-      <div class="comment-body">${(c.body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-      <div class="comment-actions">
-        <button type="button" class="comment-reply-btn" onclick="sfReplyTo('${c.id}', '${author.replace(/'/g, "\\'")}')">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
-          Reply
-        </button>
-      </div>
-    `;
-    return card;
-  }
-
-  async function sfSubmitComment(e, submissionId) {
-    e.preventDefault();
-    const input = document.getElementById('comment-input');
-    const body = input.value.trim();
-    if (body.length < 10) {
-      if (window.sfToast) sfToast('Comment must be at least 10 characters.', 'error');
-      return;
-    }
-
-    const btn = document.getElementById('comment-submit-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span>Posting…</span>';
-
-    try {
-      const res = await fetch(`/api/comments/${submissionId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          body,
-          parentId: activeReplyingToId
-        })
-      });
-      const data = await res.json();
-      if (!data.success && !data.data) {
-        throw new Error(data.error || 'Failed to post comment');
-      }
-
-      const empty = document.getElementById('comment-empty');
-      if (empty) empty.remove();
-
-      const newComment = data.data || {
-        id: 'new-' + Date.now(),
-        body,
-        display_name: 'You',
-        created_at: new Date().toISOString(),
-        parent_id: activeReplyingToId
-      };
-
-      const card = sfCreateStandaloneCommentCardEl(newComment, !!activeReplyingToId);
-      const list = document.getElementById('comments-list');
-
-      if (activeReplyingToId) {
-        const parentCard = document.getElementById(`comment-${activeReplyingToId}`);
-        if (parentCard) {
-          let thread = parentCard.nextElementSibling;
-          if (!thread || !thread.classList.contains('comment-replies-thread')) {
-            thread = document.createElement('div');
-            thread.className = 'comment-replies-thread';
-            thread.style.cssText = 'margin-left: 24px; padding-left: 12px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 8px; margin-top: 6px;';
-            parentCard.after(thread);
-          }
-          thread.appendChild(card);
-        } else {
-          list.appendChild(card);
-        }
-      } else {
-        list.appendChild(card);
-      }
-
-      input.value = '';
-      sfCancelReply();
-      sfCommentInputChanged(input);
-
-      // Increment counts
-      const mobCount = document.getElementById('mob-comment-count');
-      const headCount = document.getElementById('comments-header-count');
-      const jumpCount = document.getElementById('jump-comment-count');
-      const nextCount = Number(headCount?.textContent || 0) + 1;
-      if (mobCount) mobCount.textContent = nextCount;
-      if (headCount) headCount.textContent = nextCount;
-      if (jumpCount) jumpCount.textContent = nextCount;
-
-      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      if (window.sfToast) sfToast('Comment posted successfully!', 'success');
-    } catch (err) {
-      if (window.sfToast) sfToast(err.message || 'Could not post comment.', 'error');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span>Post</span>';
-    }
-  }
-</script>
+<div id="sf-idea-config" hidden data-id="<%= it.submission.id %>" data-status="<%= it.submission.status %>"></div>
+<script src="/js/idea.js?v=20261010-ts"></script>

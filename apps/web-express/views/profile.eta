@@ -65,7 +65,7 @@
         <button
           type="button"
           class="btn-primary-sm prof-hero-signin-btn"
-          onclick="openAuthModal('signin')"
+          data-sf-click="action-132"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
           Sign in
@@ -92,7 +92,7 @@
   <div class="prof-content">
     <!-- Left: Settings Panel -->
     <aside class="prof-settings" id="prof-settings-panel">
-      <div class="prof-settings-header" onclick="sfToggleSettings()" id="prof-settings-header">
+      <div class="prof-settings-header" data-sf-click="action-133" id="prof-settings-header">
         <h2 class="prof-section-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Profile Settings
@@ -107,11 +107,11 @@
           <div class="prof-auth-callout">
             <p>Sign in to sync your activity across devices.</p>
             <div class="prof-auth-btns">
-              <button class="btn-primary" type="button" onclick="openAuthModal('signin')">
+              <button class="btn-primary" type="button" data-sf-click="action-134">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
                 Sign in
               </button>
-              <button class="btn-ghost" type="button" onclick="openAuthModal('signup')">
+              <button class="btn-ghost" type="button" data-sf-click="action-135">
                 Create account
               </button>
             </div>
@@ -163,7 +163,7 @@
           type="button"
           id="btn-save-prefs"
           class="btn-primary prof-save-btn"
-          onclick="sfSaveProfilePrefs()"
+          data-sf-click="action-136"
         >
           Save preferences
         </button>
@@ -179,7 +179,7 @@
           id="tab-btn-submissions"
           aria-selected="true"
           class="prof-tab-btn active"
-          onclick="sfSetProfileTab('submissions')"
+          data-sf-click="action-137"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <span>My Ideas</span>
@@ -192,7 +192,7 @@
           id="tab-btn-bookmarks"
           aria-selected="false"
           class="prof-tab-btn"
-          onclick="sfSetProfileTab('bookmarks')"
+          data-sf-click="action-138"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
           <span>Bookmarks</span>
@@ -205,7 +205,7 @@
           id="tab-btn-shared"
           aria-selected="false"
           class="prof-tab-btn"
-          onclick="sfSetProfileTab('shared')"
+          data-sf-click="action-139"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           <span>Shared</span>
@@ -218,7 +218,7 @@
           id="tab-btn-voted"
           aria-selected="false"
           class="prof-tab-btn"
-          onclick="sfSetProfileTab('voted')"
+          data-sf-click="action-140"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
           <span>Supported</span>
@@ -233,7 +233,7 @@
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <h3>No ideas shared yet</h3>
             <p>Propose your first constructive improvement to make our campus better.</p>
-            <button class="btn-primary" onclick="openSubmitPanel()">Share an idea</button>
+            <button class="btn-primary" data-sf-click="action-141">Share an idea</button>
           </div>
         <% } else { %>
           <div class="prof-activity-grid">
@@ -335,87 +335,4 @@
   </div>
 </main>
 
-<script>
-  function sfToggleSettings() {
-    // Only acts as accordion on mobile; on desktop the body is always visible
-    if (window.innerWidth > 768) return;
-    const panel = document.getElementById('prof-settings-panel');
-    const isOpen = panel.classList.contains('open');
-    panel.classList.toggle('open', !isOpen);
-  }
-
-  function sfSetProfileTab(tab) {
-    ['submissions', 'bookmarks', 'shared', 'voted'].forEach(t => {
-      const active = t === tab;
-      const btn = document.getElementById(`tab-btn-${t}`);
-      const pane = document.getElementById(`prof-pane-${t}`);
-      if (btn) {
-        btn.classList.toggle('active', active);
-        btn.setAttribute('aria-selected', String(active));
-      }
-      if (pane) {
-        if (active) pane.removeAttribute('hidden');
-        else pane.setAttribute('hidden', '');
-      }
-    });
-
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set('tab', tab);
-      window.history.replaceState({}, '', url.toString());
-    } catch (e) {}
-  }
-
-  function sfSaveProfilePrefs() {
-    const btn = document.getElementById('btn-save-prefs');
-    const name = document.getElementById('prof-display-name').value.trim();
-    const anon = document.getElementById('prof-anon-toggle').checked;
-    const notifs = document.getElementById('prof-notifs-toggle')?.checked ?? false;
-
-    localStorage.setItem('sf_display_name', name);
-    localStorage.setItem('sf_anon_default', String(anon));
-    localStorage.setItem('sf_email_notifs', String(notifs));
-
-    const orig = btn.textContent;
-    btn.textContent = '✓ Saved!';
-    setTimeout(() => { btn.textContent = orig; }, 2000);
-    if (window.sfToast) sfToast('Preferences saved!', 'success');
-  }
-
-  // Hydrate local storage + URL tab on load
-  document.addEventListener('DOMContentLoaded', function() {
-    try {
-      // Auto-open settings on desktop; collapsed by default on mobile
-      const panel = document.getElementById('prof-settings-panel');
-      if (panel) {
-        if (window.innerWidth > 768) {
-          panel.classList.add('open');
-        }
-      }
-
-      const savedName = localStorage.getItem('sf_display_name');
-      const nameEl = document.getElementById('prof-display-name');
-      if (savedName && nameEl) nameEl.value = savedName;
-
-      const anonEl = document.getElementById('prof-anon-toggle');
-      if (anonEl) anonEl.checked = localStorage.getItem('sf_anon_default') === 'true';
-
-      const notifsEl = document.getElementById('prof-notifs-toggle');
-      if (notifsEl) notifsEl.checked = localStorage.getItem('sf_email_notifs') === 'true';
-
-      // Voted count from local storage
-      const voted = JSON.parse(localStorage.getItem('sf_voted') || '[]');
-      const statVoted = document.getElementById('stat-supported-count');
-      const countVoted = document.getElementById('count-tab-voted');
-      if (statVoted) statVoted.textContent = voted.length;
-      if (countVoted) countVoted.textContent = voted.length;
-
-      // Check tab param in URL
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (tabParam && ['submissions', 'bookmarks', 'shared', 'voted'].includes(tabParam)) {
-        sfSetProfileTab(tabParam);
-      }
-    } catch (e) {}
-  });
-</script>
+<script src="/js/profile.js?v=20261010-ts"></script>

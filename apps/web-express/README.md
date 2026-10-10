@@ -1,7 +1,22 @@
 # Express deployment and authentication
 
-This app runs Express, Eta and TypeScript. Vercel invokes `api/index.js`, which
+This app runs Express, Eta and TypeScript. Vercel invokes `api/index.ts`, which
 loads the compiled `dist/server.js`. Use `apps/web-express` as the project root.
+
+All authored application scripts live in TypeScript: server code in `src/`,
+browser code in `src/client/`, the worker in `src/sw.ts`, Vercel entry in `api/`,
+and tests in `tests/*.test.ts`. `npm run build` compiles the server to `dist/`,
+browser scripts to `public/js/`, and the worker to `public/sw.js`. These JavaScript
+files are generated runtime assets; browsers do not execute TypeScript directly.
+`npm run typecheck` checks the server, browser, worker, Vercel entry and tests.
+
+Eta templates contain markup and server-side template expressions, with page
+data passed through HTML attributes or a non-executable JSON script. UI event
+bindings are in `src/client/events.ts`, including newly loaded feed cards.
+The migrated browser code retains permissive parameter/null settings while DOM,
+Supabase and auth contracts are checked; server and Vercel code use strict checks.
+Before starting development, run `npm run build:client` (or
+`npx tsc -p tsconfig.client.json --watch` in another terminal when editing UI code).
 
 ## Production setup for suggfeed.me
 

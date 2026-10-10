@@ -46,7 +46,7 @@
           aria-selected="true"
           tabindex="0"
           class="sf-segmented-tab sf-segmented-tab--active"
-          onclick="sfSwitchTab('share')"
+          data-sf-click="action-58"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 20h9"/>
@@ -62,7 +62,7 @@
           aria-selected="false"
           tabindex="-1"
           class="sf-segmented-tab"
-          onclick="sfSwitchTab('track')"
+          data-sf-click="action-59"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
@@ -76,7 +76,7 @@
       <div class="sf-action-card">
         <!-- Share Panel (Creation Prompt Trigger) -->
         <div id="panel-share" class="sf-share-panel" role="tabpanel" aria-labelledby="tab-share" tabindex="0">
-          <button type="button" class="sf-prompt-trigger" onclick="openSubmitPanel()" aria-label="Open the feedback form">
+          <button type="button" class="sf-prompt-trigger" data-sf-click="action-60" aria-label="Open the feedback form">
             <span class="sf-prompt-avatar" aria-hidden="true">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
@@ -101,33 +101,33 @@
           <div class="sf-shortcuts-row">
             <span class="sf-shortcuts-label">Quick topics:</span>
             <div class="sf-shortcuts-list">
-              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Facilities')">
+              <button type="button" class="sf-shortcut-chip" data-sf-click="action-61">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="4" y="2" width="16" height="20" rx="2"/>
                   <path d="M9 22v-4h6v4"/>
                 </svg>
                 Facilities
               </button>
-              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Learning')">
+              <button type="button" class="sf-shortcut-chip" data-sf-click="action-62">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
                 </svg>
                 Learning
               </button>
-              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Safety')">
+              <button type="button" class="sf-shortcut-chip" data-sf-click="action-63">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
                 Safety
               </button>
-              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Student life')">
+              <button type="button" class="sf-shortcut-chip" data-sf-click="action-64">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
                 </svg>
                 Student life
               </button>
-              <button type="button" class="sf-shortcut-chip" onclick="openSubmitPanel('Other')">
+              <button type="button" class="sf-shortcut-chip" data-sf-click="action-65">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="12" y1="8" x2="12" y2="12"/>
@@ -139,7 +139,7 @@
         </div>
 
         <!-- Track Panel -->
-        <form id="panel-track" class="sf-track-panel" role="tabpanel" aria-labelledby="tab-track" tabindex="0" onsubmit="sfTrackSubmission(event)" hidden>
+        <form id="panel-track" class="sf-track-panel" role="tabpanel" aria-labelledby="tab-track" tabindex="0" data-sf-submit="action-66" hidden>
           <div class="sf-track-header">
             <h2 class="sf-track-title-head">Check proposal status</h2>
             <p class="sf-track-desc-head">
@@ -162,9 +162,9 @@
                 required
                 class="sf-track-input"
                 aria-label="Tracking code"
-                oninput="this.value = this.value.toUpperCase(); sfTrackInputChanged()"
+                data-sf-input="action-67"
               />
-              <button type="button" id="tracking-clear" class="sf-track-clear-btn" onclick="sfClearTrack()" aria-label="Clear code" hidden>
+              <button type="button" id="tracking-clear" class="sf-track-clear-btn" data-sf-click="action-68" aria-label="Clear code" hidden>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -230,7 +230,7 @@
         <div class="sf-feed-kicker">COMMUNITY IDEAS</div>
         <h2 class="sf-feed-headline">What the campus is talking about</h2>
       </div>
-      <button type="button" class="sf-btn-share-alt" onclick="openSubmitPanel()">
+      <button type="button" class="sf-btn-share-alt" data-sf-click="action-69">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <line x1="12" y1="5" x2="12" y2="19"/>
           <line x1="5" y1="12" x2="19" y2="12"/>
@@ -253,10 +253,10 @@
           id="home-search"
           placeholder="Search ideas by title or keyword…"
           aria-label="Search ideas"
-          oninput="sfFilterFeed()"
+          data-sf-input="action-70"
         />
         <div class="sf-search-kbd-hint" id="search-kbd-hint" title="Press / to search">/</div>
-        <button type="button" id="search-clear-btn" class="sf-search-clear" onclick="sfClearSearch()" aria-label="Clear search" hidden>
+        <button type="button" id="search-clear-btn" class="sf-search-clear" data-sf-click="action-71" aria-label="Clear search" hidden>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
@@ -265,8 +265,8 @@
       </div>
 
       <!-- Sort Dropdown -->
-      <div class="sf-sort-dropdown-wrap" onclick="event.stopPropagation()">
-        <button type="button" class="sf-sort-toggle" id="home-sort-btn" onclick="sfToggleSortMenu()" aria-expanded="false">
+      <div class="sf-sort-dropdown-wrap" data-sf-click="action-72">
+        <button type="button" class="sf-sort-toggle" id="home-sort-btn" data-sf-click="action-73" aria-expanded="false">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="4" y1="21" x2="4" y2="14"/>
             <line x1="4" y1="10" x2="4" y2="3"/>
@@ -281,16 +281,16 @@
           </svg>
         </button>
         <div class="sf-sort-popup" id="home-sort-menu" hidden>
-          <button type="button" class="sf-sort-item sf-sort-item--active" data-sort="popular" onclick="sfSetSortOption('popular', 'Most Supported')">
+          <button type="button" class="sf-sort-item sf-sort-item--active" data-sort="popular" data-sf-click="action-74">
             Most Supported
             <svg class="sf-sort-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </button>
-          <button type="button" class="sf-sort-item" data-sort="newest" onclick="sfSetSortOption('newest', 'Newest First')">
+          <button type="button" class="sf-sort-item" data-sort="newest" data-sf-click="action-75">
             Newest First
           </button>
-          <button type="button" class="sf-sort-item" data-sort="oldest" onclick="sfSetSortOption('oldest', 'Oldest First')">
+          <button type="button" class="sf-sort-item" data-sort="oldest" data-sf-click="action-76">
             Oldest First
           </button>
         </div>
@@ -298,13 +298,13 @@
 
       <!-- Category Filter Pills -->
       <div class="sf-category-pills" role="group" aria-label="Filter by category" id="cat-chips">
-        <button type="button" class="sf-cat-pill sf-cat-pill--active" data-cat="All" aria-pressed="true" onclick="sfSetCategory(this, 'All')">
+        <button type="button" class="sf-cat-pill sf-cat-pill--active" data-cat="All" aria-pressed="true" data-sf-click="action-77">
           All <span class="sf-cat-count"><%= (it.feed ? it.feed.length : 0) %></span>
         </button>
         <% for (const cat of it.categories) { 
              const catCount = (it.feed || []).filter(item => (item.category ?? (item.categories?.name ?? 'Other')) === cat).length;
         %>
-          <button type="button" class="sf-cat-pill" data-cat="<%= cat %>" aria-pressed="false" onclick="sfSetCategory(this, '<%= cat %>')">
+          <button type="button" class="sf-cat-pill" data-cat="<%= cat %>" aria-pressed="false" data-sf-click="action-78" data-sf-click-arg-0="<%= cat %>">
             <%= cat %> <span class="sf-cat-count"><%= catCount %></span>
           </button>
         <% } %>
@@ -328,7 +328,7 @@
             </div>
             <h3 class="sf-empty-head">No suggestions found</h3>
             <p class="sf-empty-msg">Be the first student or faculty member to submit an idea for this category.</p>
-            <button type="button" class="sf-btn-empty-action" onclick="openSubmitPanel()">
+            <button type="button" class="sf-btn-empty-action" data-sf-click="action-79">
               Submit the first idea
             </button>
           </div>
@@ -367,7 +367,7 @@
               <button
                 type="button"
                 class="sf-vote-btn"
-                onclick="event.stopPropagation(); sfVote('<%= item.id %>', this)"
+                data-sf-click="action-80" data-sf-click-arg-0="<%= item.id %>"
                 aria-label="Upvote: <%= item.title %>"
               >
                 <svg class="sf-vote-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -398,7 +398,7 @@
     <div class="sf-filter-empty" id="sf-filter-empty" role="status" hidden>
       <h3>No ideas match those filters</h3>
       <p>Try another search or show all categories.</p>
-      <button type="button" class="sf-filter-reset" onclick="sfResetFilters()">Clear filters</button>
+      <button type="button" class="sf-filter-reset" data-sf-click="action-81">Clear filters</button>
     </div>
 
     <!-- Feed Footer Banner -->
@@ -434,441 +434,4 @@
   </footer>
 </main>
 
-<script>
-  let activeCategory = 'All';
-  let activeSort = 'popular';
-
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
-  const campusPrompts = [
-    'Extend library quiet study hours during finals week…',
-    'Add water refill stations near classrooms…',
-    'Improve bike racks and campus path lighting…'
-  ];
-  let promptTimer;
-  let promptIndex = 0;
-  let promptLength = 0;
-  let promptDeleting = false;
-
-  function syncPromptMotion() {
-    clearTimeout(promptTimer);
-    const text = document.getElementById('sf-prompt-dynamic-text');
-    if (!text) return;
-    if (reducedMotion.matches) {
-      text.textContent = 'What would you like to improve on campus?';
-      return;
-    }
-    if (document.hidden || document.querySelector('.sf-prompt-trigger:focus-within, .sf-prompt-trigger:hover')) return;
-    promptTimer = setTimeout(typePrompt, 1800);
-  }
-
-  function typePrompt() {
-    if (reducedMotion.matches || document.hidden) return;
-    const text = document.getElementById('sf-prompt-dynamic-text');
-    if (!text) return;
-    const prompt = campusPrompts[promptIndex];
-    promptLength += promptDeleting ? -1 : 1;
-    text.textContent = prompt.slice(0, promptLength);
-    let delay = promptDeleting ? 35 : 70;
-    if (promptLength === prompt.length) {
-      promptDeleting = true;
-      delay = 4500;
-    } else if (promptLength === 0) {
-      promptDeleting = false;
-      promptIndex = (promptIndex + 1) % campusPrompts.length;
-      delay = 400;
-    }
-    promptTimer = setTimeout(typePrompt, delay);
-  }
-
-  function sfHandleCardMove(event, card) {
-    if (reducedMotion.matches || !finePointer.matches) return;
-    const rect = card.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    card.style.setProperty('--card-mouse-x', `${x}px`);
-    card.style.setProperty('--card-mouse-y', `${y}px`);
-    card.style.setProperty('--card-rotate-x', `${(0.5 - y / rect.height) * 3}deg`);
-    card.style.setProperty('--card-rotate-y', `${(x / rect.width - 0.5) * 3}deg`);
-  }
-
-  function sfHandleCardLeave(card) {
-    ['--card-mouse-x', '--card-mouse-y', '--card-rotate-x', '--card-rotate-y'].forEach(name => card.style.removeProperty(name));
-  }
-
-  function spawnVoteParticles(button) {
-    if (reducedMotion.matches) return;
-    const pop = document.createElement('span');
-    pop.className = 'sf-vote-pop';
-    pop.textContent = '+1';
-    pop.setAttribute('aria-hidden', 'true');
-    button.appendChild(pop);
-    setTimeout(() => pop.remove(), 750);
-    ['#10b981', '#3b82f6', '#f59e0b', '#06b6d4', '#6366f1'].forEach((color, index) => {
-      const particle = document.createElement('span');
-      particle.className = 'sf-particle';
-      particle.setAttribute('aria-hidden', 'true');
-      const angle = index * Math.PI * 2 / 5;
-      particle.style.setProperty('--tx', `${Math.cos(angle) * 24}px`);
-      particle.style.setProperty('--ty', `${Math.sin(angle) * 24}px`);
-      particle.style.background = color;
-      particle.style.left = '50%';
-      particle.style.top = '50%';
-      button.appendChild(particle);
-      setTimeout(() => particle.remove(), 600);
-    });
-  }
-
-  // Smooth Tab Glider
-  function updateGlider() {
-    const glider = document.getElementById('sf-tab-glider');
-    const activeTab = document.querySelector('.sf-segmented-tab--active');
-    if (glider && activeTab) {
-      glider.style.width = `${activeTab.offsetWidth}px`;
-      glider.style.transform = `translateX(${activeTab.offsetLeft - 4}px)`;
-    }
-  }
-
-  // Init on DOM ready
-  document.addEventListener('DOMContentLoaded', () => {
-    loadRecentTrackingCodes();
-    updateGlider();
-
-    syncPromptMotion();
-    reducedMotion.addEventListener('change', () => {
-      syncPromptMotion();
-      document.querySelectorAll('.sf-idea-card').forEach(sfHandleCardLeave);
-    });
-    document.addEventListener('visibilitychange', syncPromptMotion);
-    const prompt = document.querySelector('.sf-prompt-trigger');
-    ['mouseenter', 'focusin'].forEach(name => prompt?.addEventListener(name, () => clearTimeout(promptTimer)));
-    ['mouseleave', 'focusout'].forEach(name => prompt?.addEventListener(name, () => setTimeout(syncPromptMotion, 0)));
-    const hero = document.getElementById('top');
-    hero?.addEventListener('pointermove', event => {
-      if (reducedMotion.matches || !finePointer.matches) return;
-      const rect = hero.getBoundingClientRect();
-      hero.style.setProperty('--hero-mouse-x', `${event.clientX - rect.left}px`);
-      hero.style.setProperty('--hero-mouse-y', `${event.clientY - rect.top}px`);
-    });
-    document.querySelectorAll('.sf-idea-card').forEach(card => {
-      card.addEventListener('pointermove', event => sfHandleCardMove(event, card));
-      card.addEventListener('pointerleave', () => sfHandleCardLeave(card));
-    });
-
-    window.addEventListener('resize', () => {
-      updateGlider();
-    });
-  });
-
-  // Keyboard Shortcuts
-  document.addEventListener('keydown', (e) => {
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
-      if (e.key === 'Escape') {
-        document.activeElement.blur();
-      }
-      return;
-    }
-    if (e.key === '/') {
-      e.preventDefault();
-      const search = document.getElementById('home-search');
-      if (search) {
-        search.focus();
-        search.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  });
-
-  document.getElementById('sf-segmented-tabs')?.addEventListener('keydown', (event) => {
-    const tabs = [document.getElementById('tab-share'), document.getElementById('tab-track')];
-    const current = tabs.indexOf(document.activeElement);
-    let next = current;
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (current + 1) % tabs.length;
-    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (current - 1 + tabs.length) % tabs.length;
-    else if (event.key === 'Home') next = 0;
-    else if (event.key === 'End') next = tabs.length - 1;
-    else return;
-    event.preventDefault();
-    tabs[next].focus();
-    sfSwitchTab(next === 0 ? 'share' : 'track');
-  });
-
-  function loadRecentTrackingCodes() {
-    try {
-      const stored = JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');
-      const container = document.getElementById('sf-recent-codes-wrap');
-      const list = document.getElementById('sf-recent-codes-list');
-      if (stored && stored.length > 0 && container && list) {
-        list.innerHTML = '';
-        stored.slice(-3).reverse().forEach(code => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'sf-recent-code-pill';
-          btn.textContent = code;
-          btn.onclick = () => {
-            const input = document.getElementById('tracking-input');
-            if (input) {
-              input.value = code;
-              sfTrackInputChanged();
-              document.getElementById('track-submit-btn')?.click();
-            }
-          };
-          list.appendChild(btn);
-        });
-        container.hidden = false;
-      }
-    } catch (e) {}
-  }
-
-  function sfToggleSortMenu() {
-    const menu = document.getElementById('home-sort-menu');
-    const chevron = document.getElementById('home-sort-chevron');
-    const btn = document.getElementById('home-sort-btn');
-    if (!menu) return;
-    const isHidden = menu.hidden;
-    menu.hidden = !isHidden;
-    btn.setAttribute('aria-expanded', String(isHidden));
-    if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'none';
-  }
-
-  document.addEventListener('click', function(e) {
-    const wrap = document.querySelector('.sf-sort-dropdown-wrap');
-    if (wrap && !wrap.contains(e.target)) {
-      const menu = document.getElementById('home-sort-menu');
-      const chevron = document.getElementById('home-sort-chevron');
-      if (menu) menu.hidden = true;
-      if (chevron) chevron.style.transform = 'none';
-    }
-  });
-
-  function sfSetSortOption(val, label) {
-    activeSort = val;
-    document.getElementById('home-sort-label').textContent = label;
-    document.querySelectorAll('.sf-sort-item').forEach(opt => {
-      const isThis = opt.getAttribute('data-sort') === val;
-      opt.classList.toggle('sf-sort-item--active', isThis);
-      let check = opt.querySelector('.sf-sort-check');
-      if (isThis && !check) {
-        opt.insertAdjacentHTML('beforeend', '<svg class="sf-sort-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>');
-      } else if (!isThis && check) {
-        check.remove();
-      }
-    });
-    sfToggleSortMenu();
-    sfSortGrid();
-  }
-
-  function sfSortGrid() {
-    const grid = document.getElementById('ideas-grid');
-    if (!grid) return;
-    const cards = Array.from(grid.querySelectorAll('.sf-idea-card'));
-    cards.sort((a, b) => {
-      const vA = Number(a.getAttribute('data-votes') || 0);
-      const vB = Number(b.getAttribute('data-votes') || 0);
-      const dA = Number(a.getAttribute('data-date') || 0);
-      const dB = Number(b.getAttribute('data-date') || 0);
-
-      if (activeSort === 'popular') return vB - vA;
-      if (activeSort === 'newest') return dB - dA;
-      if (activeSort === 'oldest') return dA - dB;
-      return 0;
-    });
-    cards.forEach((c, idx) => {
-      c.style.animationDelay = `${idx * 25}ms`;
-      c.classList.remove('sf-card-enter');
-      void c.offsetWidth;
-      c.classList.add('sf-card-enter');
-      grid.appendChild(c);
-    });
-  }
-
-  function sfSwitchTab(mode) {
-    const isShare = mode === 'share';
-    const tabShare = document.getElementById('tab-share');
-    const tabTrack = document.getElementById('tab-track');
-    const panelShare = document.getElementById('panel-share');
-    const panelTrack = document.getElementById('panel-track');
-
-    if (tabShare) {
-      tabShare.setAttribute('aria-selected', String(isShare));
-      tabShare.classList.toggle('sf-segmented-tab--active', isShare);
-    }
-    if (tabTrack) {
-      tabTrack.setAttribute('aria-selected', String(!isShare));
-      tabTrack.tabIndex = isShare ? -1 : 0;
-      tabTrack.classList.toggle('sf-segmented-tab--active', !isShare);
-    }
-    if (tabShare) tabShare.tabIndex = isShare ? 0 : -1;
-    if (panelShare) panelShare.hidden = !isShare;
-    if (panelTrack) panelTrack.hidden = isShare;
-    updateGlider();
-  }
-
-  function sfTrackInputChanged() {
-    const input = document.getElementById('tracking-input');
-    const clearBtn = document.getElementById('tracking-clear');
-    const val = input ? input.value.trim() : '';
-    if (clearBtn) clearBtn.hidden = !val;
-  }
-
-  function sfClearTrack() {
-    const input = document.getElementById('tracking-input');
-    if (input) input.value = '';
-    const clearBtn = document.getElementById('tracking-clear');
-    if (clearBtn) clearBtn.hidden = true;
-    document.getElementById('track-error').hidden = true;
-    document.getElementById('track-result').hidden = true;
-    if (input) input.focus();
-  }
-
-  async function sfTrackSubmission(e) {
-    e.preventDefault();
-    const code = document.getElementById('tracking-input')?.value.trim();
-    if (!code) return;
-
-    const btn = document.getElementById('track-submit-btn');
-    btn.disabled = true;
-    btn.setAttribute('aria-busy', 'true');
-    btn.innerHTML = 'Looking up…';
-    document.getElementById('track-error').hidden = true;
-    document.getElementById('track-result').hidden = true;
-
-    try {
-      const res = await fetch(`/api/track/${encodeURIComponent(code)}`);
-      const data = await res.json();
-      if (!data.success || !data.data) {
-        throw new Error(data.error || 'Tracking code not found');
-      }
-
-      const item = data.data;
-      document.getElementById('tr-category').textContent = item.category || 'Feedback';
-      const statusEl = document.getElementById('tr-status');
-      statusEl.textContent = (item.status || 'pending').replace('_', ' ');
-      statusEl.className = `status-badge ${(item.status || 'pending').replace('_', '-')}`;
-      document.getElementById('tr-date').textContent = new Date(item.created_at).toLocaleDateString();
-      document.getElementById('tr-title').textContent = item.title;
-      document.getElementById('tr-desc').textContent = item.description || '';
-
-      if (item.staff_note) {
-        document.getElementById('tr-note').textContent = item.staff_note;
-        document.getElementById('tr-note-wrap').hidden = false;
-      } else {
-        document.getElementById('tr-note-wrap').hidden = true;
-      }
-
-      document.getElementById('track-result').hidden = false;
-    } catch (err) {
-      document.getElementById('track-error-msg').textContent = err.message || 'Tracking code not found.';
-      document.getElementById('track-error').hidden = false;
-    } finally {
-      btn.disabled = false;
-      btn.removeAttribute('aria-busy');
-      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Check status';
-    }
-  }
-
-  function sfSetCategory(btn, cat) {
-    activeCategory = cat;
-    document.querySelectorAll('#cat-chips .sf-cat-pill').forEach(b => {
-      const selected = b === btn;
-      b.classList.toggle('sf-cat-pill--active', selected);
-      b.setAttribute('aria-pressed', String(selected));
-    });
-    sfFilterFeed();
-  }
-
-  function sfClearSearch() {
-    const input = document.getElementById('home-search');
-    if (input) input.value = '';
-    const clearBtn = document.getElementById('search-clear-btn');
-    if (clearBtn) clearBtn.hidden = true;
-    const kbdHint = document.getElementById('search-kbd-hint');
-    if (kbdHint) kbdHint.style.opacity = '1';
-    sfFilterFeed();
-    if (input) input.focus();
-  }
-
-  function sfFilterFeed() {
-    const input = document.getElementById('home-search');
-    const clearBtn = document.getElementById('search-clear-btn');
-    const kbdHint = document.getElementById('search-kbd-hint');
-    const q = (input?.value || '').toLowerCase().trim();
-    if (clearBtn) clearBtn.hidden = !q;
-    if (kbdHint) kbdHint.style.opacity = q ? '0' : '1';
-
-    const cards = document.querySelectorAll('#ideas-grid .sf-idea-card');
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-      const cat = card.getAttribute('data-category');
-      const title = card.getAttribute('data-title') || '';
-      const desc = card.getAttribute('data-desc') || '';
-
-      const matchCat = activeCategory === 'All' || cat === activeCategory;
-      const matchSearch = !q || title.includes(q) || desc.includes(q);
-
-      if (matchCat && matchSearch) {
-        card.style.display = '';
-        card.classList.remove('sf-card-enter');
-        void card.offsetWidth;
-        card.style.animationDelay = `${visibleCount * 25}ms`;
-        card.classList.add('sf-card-enter');
-        visibleCount++;
-      } else {
-        card.style.display = 'none';
-      }
-    });
-
-    const countEl = document.getElementById('sf-visible-count');
-    if (countEl) countEl.textContent = `${visibleCount} ${visibleCount === 1 ? 'idea' : 'ideas'} shown`;
-    const emptyState = document.getElementById('sf-filter-empty');
-    if (emptyState) emptyState.hidden = cards.length === 0 || visibleCount > 0;
-  }
-
-  function sfResetFilters() {
-    activeCategory = 'All';
-    document.querySelectorAll('#cat-chips .sf-cat-pill').forEach((button) => {
-      const selected = button.dataset.cat === 'All';
-      button.classList.toggle('sf-cat-pill--active', selected);
-      button.setAttribute('aria-pressed', String(selected));
-    });
-    const search = document.getElementById('home-search');
-    if (search) search.value = '';
-    sfFilterFeed();
-    search?.focus();
-  }
-
-  async function sfVote(id, btn) {
-    if (btn.classList.contains('sf-vote-btn--voted')) return;
-    
-    // Optimistic UI update
-    btn.classList.add('sf-vote-btn--voted');
-    const numSpan = btn.querySelector('.sf-vote-num');
-    const prevCount = Number(numSpan?.textContent || 0);
-    if (numSpan) numSpan.textContent = prevCount + 1;
-
-    try {
-      const res = await fetch(`/api/vote/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'up' })
-      });
-      const data = await res.json();
-      if (data.success) {
-        spawnVoteParticles(btn);
-        if (numSpan && data.vote_count !== undefined) {
-          numSpan.textContent = data.vote_count;
-        }
-        if (window.sfToast) sfToast('Vote recorded! Thank you for supporting this idea.', 'success');
-      } else {
-        // Revert
-        btn.classList.remove('sf-vote-btn--voted');
-        if (numSpan) numSpan.textContent = prevCount;
-        if (window.sfToast) sfToast(data.error || 'Could not record vote.', 'error');
-      }
-    } catch (err) {
-      btn.classList.remove('sf-vote-btn--voted');
-      if (numSpan) numSpan.textContent = prevCount;
-      if (window.sfToast) sfToast('Could not record vote.', 'error');
-    }
-  }
-</script>
+<script src="/js/home.js?v=20261010-ts"></script>

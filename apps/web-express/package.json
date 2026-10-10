@@ -7,11 +7,15 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "node -r ts-node/register --test tests/*.test.cjs",
+    "test": "npm run build:client && tsc -p tsconfig.tests.json && node -r ts-node/register/transpile-only --test tests/*.test.ts",
+    "predev": "npm run build:client",
+    "dev:client": "tsc -p tsconfig.client.json --watch",
     "dev": "nodemon --exec \"node --use-system-ca -r ts-node/register\" src/server.ts",
     "build:server": "tsc -p tsconfig.json",
     "build:sw": "tsc -p tsconfig.sw.json",
-    "build": "npm run build:server && npm run build:sw",
+    "build:client": "tsc -p tsconfig.client.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.sw.json --noEmit && tsc -p tsconfig.client.json --noEmit && tsc -p tsconfig.api.json && tsc -p tsconfig.tests.json",
+    "build": "npm run build:server && npm run build:sw && npm run build:client && tsc -p tsconfig.api.json",
     "start": "node --use-system-ca dist/server.js"
   },
   "dependencies": {
