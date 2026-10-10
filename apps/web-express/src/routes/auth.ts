@@ -22,7 +22,9 @@ function sameOriginOnly(req: Request, res: Response, next: NextFunction) {
 
   // In production, enforce strict origin matching.
   // In development, localhost is always allowed.
-  const allowedOrigin = process.env.APP_ORIGIN ?? `http://localhost:${process.env.PORT ?? 3001}`;
+  // APP_ORIGIN is preferred, but infer the current host when it is not set so
+  // deployments on a custom domain do not reject their own browser session sync.
+  const allowedOrigin = process.env.APP_ORIGIN ?? `${req.protocol}://${req.get("host")}`;
   const requestOrigin = origin || (referer ? new URL(referer).origin : null);
 
   if (process.env.NODE_ENV === "production" && requestOrigin !== allowedOrigin) {

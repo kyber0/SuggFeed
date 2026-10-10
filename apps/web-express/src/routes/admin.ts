@@ -17,8 +17,9 @@ function asyncHandler(
 // Express sessions previously checked for "staff" which is not a real DB role.
 function requireStaff(req: Request, res: Response, next: () => void) {
   const user = req.session.user;
-  if (!user || (user.role !== "admin" && user.role !== "moderator" && user.role !== "staff")) {
-    return res.status(403).render("404", { title: "Access Denied" });
+  if (!user) return res.status(200).render("staff-login", { title: "Staff Portal Sign In — SuggFeed" });
+  if (user.role !== "admin" && user.role !== "moderator" && user.role !== "staff") {
+    return res.status(403).render("403", { title: "Staff Access Required — SuggFeed" });
   }
   next();
 }

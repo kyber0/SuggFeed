@@ -15,6 +15,13 @@
   padding: 40px 20px;
 }
 
+.staff-login-card { width: 100%; }
+.staff-login-copy { margin: 0 0 20px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.staff-login-message { min-height: 1.5em; margin: 14px 0; color: var(--muted); font-size: 13px; }
+.staff-login-message.is-error { color: var(--error, #b42318); }
+.staff-login-submit:disabled { opacity: .65; cursor: wait; }
+.staff-login-back { margin: 20px 0 0; text-align: center; font-size: 13px; }
+
 /* Ã¢â€â‚¬Ã¢â€â‚¬ Header & Command Bar Ã¢â€â‚¬Ã¢â€â‚¬ */
 .sp-header {
   display: flex;

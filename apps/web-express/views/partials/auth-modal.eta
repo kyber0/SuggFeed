@@ -175,6 +175,10 @@
     // onAuthStateChange will handle the rest
   });
 
+  window.addEventListener('sf:auth-sync-error', function() {
+    sfToast('Signed in, but we could not connect your session to this site. Please check the site configuration and try again.', 'error');
+  });
+
   var formSignup = document.getElementById('form-signup');
   if (formSignup) formSignup.addEventListener('submit', async function(e) {
     e.preventDefault();

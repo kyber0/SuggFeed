@@ -7,7 +7,7 @@
   const displayName = it.profile?.display_name || user?.full_name || (user?.email ? user.email.split('@')[0] : 'Community Member');
   const email = user?.email || 'Anonymous Student';
   const initial = (displayName || 'U')[0].toUpperCase();
-  const isStaff = user?.role === 'staff' || user?.role === 'admin';
+  const isStaff = user?.role === 'staff' || user?.role === 'admin' || user?.role === 'moderator';
 
   function statusClass(status) {
     const s = (status || 'pending').toLowerCase().replace(' ', '_');

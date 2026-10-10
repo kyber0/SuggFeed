@@ -4,9 +4,7 @@
     <a href="/" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>">Home</a>
     <a href="/feed" class="nav-link-hide-mobile<%= it.currentPath === '/feed' ? ' active' : '' %>">Community ideas</a>
     <a href="/roadmap" class="nav-link-hide-mobile<%= it.currentPath === '/roadmap' ? ' active' : '' %>">Roadmap</a>
-    <% if (it.user?.role === 'admin' || it.user?.role === 'staff') { %>
-      <a href="/admin" class="nav-link-hide-mobile<%= it.currentPath === '/admin' ? ' active' : '' %>">Staff portal</a>
-    <% } %>
+    <a href="/admin" class="nav-link-hide-mobile<%= it.currentPath.startsWith('/admin') ? ' active' : '' %>">Staff portal</a>
 
     <% if (it.user) { %>
       <!-- Authenticated: avatar chip with dropdown -->
@@ -31,12 +29,10 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             My Profile &amp; Ideas
           </a>
-          <% if (it.user.role === 'admin' || it.user.role === 'staff') { %>
-            <a href="/admin" class="dropdown-link dropdown-link--staff">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Staff Portal
-            </a>
-          <% } %>
+          <a href="/admin" class="dropdown-link dropdown-link--staff">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Staff Portal
+          </a>
           <div class="divider"></div>
           <form action="/auth/signout" method="POST" class="dropdown-form">
             <button type="submit" class="danger dropdown-signout-btn">
