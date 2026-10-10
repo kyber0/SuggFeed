@@ -5,7 +5,14 @@ import path from 'node:path';
 import vm from 'node:vm';
 
 class TestElement {
-  constructor(public dataset: Record<string, string>, public parentElement: TestElement | null = null) {}
+  classList = new Set<string>();
+  constructor(public dataset: Record<string, string>, public parentElement: TestElement | null = null, public tagName = 'DIV') {}
+  closest(selector: string): TestElement | null {
+    for (let node: TestElement | null = this; node; node = node.parentElement) {
+      if (selector === 'form' && node.tagName === 'FORM') return node;
+    }
+    return null;
+  }
   getAttribute(name: string): string | null {
     return this.dataset[name.replace(/^data-/, '').replace(/-([a-z])/g, (_match, char: string) => char.toUpperCase())] ?? null;
   }
@@ -56,12 +63,30 @@ test('keyboard binding opens dynamically loaded idea cards', () => {
   assert.equal(calls[0][1][0], 'idea-2');
 });
 
+test('focusing either comment input reveals its own composer without inline JavaScript', () => {
+  const { dispatch } = runtime();
+  for (const id of ['comment-input', 'drawer-comment-input']) {
+    const form = new TestElement({}, null, 'FORM');
+    const wrapper = new TestElement({}, form);
+    const input = new TestElement({ sfFocusin: 'expand-comment', id }, wrapper, 'TEXTAREA');
+    const event = dispatch('focusin', input);
+    assert.equal(form.classList.has('expanded'), true, id);
+    assert.equal(event.defaultPrevented, false, 'Native focus and keyboard navigation remain intact');
+    form.classList.delete('expanded');
+    dispatch('focusin', input);
+    assert.equal(form.classList.has('expanded'), true, 'Composer can reopen after Cancel');
+  }
+  assert.doesNotThrow(() => dispatch('focusin', new TestElement({ sfFocusin: 'expand-comment' })));
+});
+
 test('modified clicks preserve native browser navigation', () => {
   const { calls } = runtime();
   const listeners = new Map<string, (event: unknown) => void>();
   const context = { Element: TestElement, window: {}, document: { addEventListener: (type: string, fn: (event: unknown) => void) => listeners.set(type, fn) }, sfOpenIdeaDetail: () => calls.push(['open', []]) };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/events.js'), 'utf8'), context);
-  const event = { target: new TestElement({ sfClick: 'open-detail', ideaId: 'idea-3' }), ctrlKey: true, metaKey: false, cancelBubble: false, preventDefault() { assert.fail('Modified click must keep native navigation'); } };
-  listeners.get('click')!(event);
+  for (const modifier of [{ctrlKey: true}, {metaKey: true}, {shiftKey: true}, {altKey: true}, {button: 1}]) {
+    const event = { target: new TestElement({ sfClick: 'open-detail', ideaId: 'idea-3' }), ctrlKey: false, metaKey: false, shiftKey: false, altKey: false, button: 0, ...modifier, cancelBubble: false, preventDefault() { assert.fail('Modified click must keep native navigation'); } };
+    listeners.get('click')!(event);
+  }
   assert.equal(calls.length, 0);
 });

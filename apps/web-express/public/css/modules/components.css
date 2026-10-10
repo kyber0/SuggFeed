@@ -934,6 +934,12 @@ textarea { height: 130px; resize: vertical; }
 .mobile-tab-bar {
   display: none; /* hidden on desktop */
 }
+.mobile-tab-bar button.mobile-tab {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
 
 @media (max-width: 640px) {
   .mobile-tab-bar {

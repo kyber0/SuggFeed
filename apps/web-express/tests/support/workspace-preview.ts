@@ -18,7 +18,45 @@ export function createWorkspacePreview() {
   assignee_id:index===2?staffId:'',assignee_name:index===2?'Alex Reyes':'',priority:index===2?'high':'normal',target_date:index===2?'2026-10-09':''
  }));
  for(let index=6;index<36;index++) items.push({...items[index%6],id:'00000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),title:titles[index%6]+' · Campus zone '+(index+1),status:['approved','in_progress','resolved'][index%3]});
+ // Match the production inline-handler restriction for browser regression checks.
+ app.use((_req,res,next)=>{res.setHeader('Content-Security-Policy',"script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; script-src-attr 'none'");next();});
  app.use(express.json());app.use(express.static(path.join(root,'public')));
+ const comments:Array<{id:string;submission_id:string;body:string;display_name:string;created_at:string;parent_id:string|null}>=[];
+ const feedPage=(query:Record<string,unknown>)=>{
+  const page=Math.max(1,Number(query.page)||1);
+  const sortBy=String(query.sort||'all'),category=String(query.category||'All'),search=String(query.search||'').trim();
+  const matched=query.empty?[]:items.filter(i=>['approved','in_progress','resolved'].includes(i.status) && (category==='All'||i.category===category) && (!search||(i.title+' '+i.description).toLowerCase().includes(search.toLowerCase())));
+  if(['top','popular'].includes(sortBy))matched.sort((a,b)=>b.vote_count-a.vote_count);
+  return {feed:matched.slice((page-1)*15,page*15),totalCount:matched.length,hasMore:page*15<matched.length,page,sortBy,category,search};
+ };
+ app.get('/feed',(req,res)=>{
+  res.send(eta.render('feed',{currentPath:'/feed',user:null,...feedPage(req.query),categories:['Facilities','Learning','Safety','Student life','Other']}));
+ });
+ app.get('/api/feed',(req,res)=>{
+  res.json({success:true,...feedPage(req.query)});
+ });
+ const voted=new Set<string>();let voteAttempts=0;
+ app.post('/api/vote/:id',(req,res)=>{
+  const item=items.find(i=>i.id===req.params.id);if(!item)return res.sendStatus(404);
+  if(voteAttempts++===0)return res.status(503).json({success:false});
+  const already_voted=voted.has(item.id);if(!already_voted){voted.add(item.id);item.vote_count++;}
+  res.json({success:true,vote_count:item.vote_count,already_voted});
+ });
+ app.get('/idea/:id',(req,res)=>{
+  const submission=items.find(i=>i.id===req.params.id);if(!submission)return res.sendStatus(404);
+  res.send(eta.render('idea',{currentPath:'/feed',user:null,submission,comments:comments.filter(c=>c.submission_id===submission.id)}));
+ });
+ app.get('/api/idea/:id',(req,res)=>{
+  const submission=items.find(i=>i.id===req.params.id);if(!submission)return res.sendStatus(404);
+  res.json({success:true,submission,comments:comments.filter(c=>c.submission_id===submission.id)});
+ });
+ app.post('/api/comments/:id',(req,res)=>{
+  const submission=items.find(i=>i.id===req.params.id);if(!submission)return res.sendStatus(404);
+  if(!['approved','in_progress','resolved'].includes(submission.status))return res.status(403).json({success:false,error:'Comments are not open for this submission.'});
+  if(typeof req.body.body!=='string' || req.body.body.trim().length<10 || req.body.body.trim().length>500)return res.status(400).json({success:false,error:'Comment must contain 10–500 characters.'});
+  const data={id:String(comments.length+1),submission_id:submission.id,body:req.body.body.trim(),display_name:'Preview Student',created_at:new Date().toISOString(),parent_id:req.body.parentId || null};
+  comments.push(data);submission.comment_count++;res.json({success:true,data});
+ });
  const notes:Array<{id:string;submission_id:string;body:string;created_at:string;actor:{display_name:string}}>=[];
  const history:Array<any>=[];
  const views:Array<any>=[];

@@ -379,7 +379,7 @@
                     placeholder="Add a constructive thought…"
                     maxlength="500"
                     data-sf-input="action-92"
-                    onfocus="document.getElementById('comment-composer').classList.add('expanded')"
+                    data-sf-focusin="expand-comment"
                     required
                   ></textarea>
                 </div>

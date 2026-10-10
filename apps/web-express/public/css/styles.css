@@ -19,12 +19,12 @@
 @import url('./modules/reset.css');
 
 /* ── 2. Core UI Components & Global Shell ── */
-@import url('./modules/components.css?v=20261010-workspace');
+@import url('./modules/components.css?v=20261011-feed');
 @import url('./modules/auth.css');
 @import url('./modules/submit.css');
 
 /* ── 3. Page & Feature Modules ── */
-@import url('./modules/feed.css');
+@import url('./modules/feed.css?v=20261011-feed');
 @import url('./modules/idea.css');
 @import url('./modules/workspace.css?v=20261011-workspace');
 @import url('./modules/roadmap.css?v=20261011-workspace');

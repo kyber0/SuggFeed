@@ -19,8 +19,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/styles.css?v=20261011-sticky-sidebar" />
-  <script src="/js/events.js?v=20261010-workspace"></script>
+  <link rel="stylesheet" href="/css/styles.css?v=20261011-feed" />
+  <script src="/js/events.js?v=20261011-feed"></script>
 
   <!-- Theme init (before render to prevent flash) -->
   <script src="/js/theme-init.js?v=20261010-ts"></script>

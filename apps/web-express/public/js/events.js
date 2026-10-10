@@ -6,6 +6,7 @@
     }
     Object.assign(window, { sfEscapeAttribute });
     const actions = {
+        'expand-comment': (_event, element) => { element.closest('form')?.classList.add('expanded'); },
         'action-27': (event, element) => { const actionEvent = event; sfSetLeftTopic('All'); },
         'action-28': (event, element) => { const actionEvent = event; sfSetLeftTopic(element.getAttribute('data-sf-click-arg-0')); },
         'action-29': (event, element) => { const actionEvent = event; openSubmitPanel(); },
@@ -127,10 +128,15 @@
         'action-140': (event, element) => { const actionEvent = event; sfSetProfileTab('voted'); },
         'action-141': (event, element) => { const actionEvent = event; openSubmitPanel(); },
         'action-162': (event, element) => { const actionEvent = event; window.location.reload(); },
-        'open-detail': (event, element) => { const actionEvent = event; if (!actionEvent.ctrlKey && !actionEvent.metaKey) {
+        'open-detail': (event, element) => {
+            const click = event;
+            if (click.ctrlKey || click.metaKey || click.shiftKey || click.altKey || (typeof click.button === 'number' && click.button !== 0))
+                return;
+            if (typeof sfOpenIdeaDetail !== 'function')
+                return;
             event.preventDefault();
             sfOpenIdeaDetail(element.dataset.ideaId, element.dataset.tab || 'details');
-        } ; },
+        },
         'open-detail-key': (event, element) => { const actionEvent = event; if (actionEvent.key === 'Enter')
             sfOpenIdeaDetail(element.dataset.ideaId); },
         'stop': (event, element) => { const actionEvent = event; event.stopPropagation(); },
@@ -141,7 +147,7 @@
         'reply-idea': (event, element) => { const actionEvent = event; sfReplyTo(element.dataset.replyId, element.dataset.replyAuthor); },
         'reply-drawer': (event, element) => { const actionEvent = event; sfDrawerReplyTo(element.dataset.replyId, element.dataset.replyAuthor); }
     };
-    ['click', 'input', 'change', 'submit', 'keydown'].forEach(type => {
+    ['click', 'input', 'change', 'submit', 'keydown', 'focusin'].forEach(type => {
         document.addEventListener(type, event => {
             let element = event.target instanceof Element ? event.target : null;
             while (element) {

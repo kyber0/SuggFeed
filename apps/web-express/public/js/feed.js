@@ -1,448 +1,387 @@
 "use strict";
-// Browser source extracted from views/feed.eta.
+// Search, filtering, support, saved ideas, and deliberate pagination for the feed.
 (function () {
-    let _currentSort = document.getElementById('sf-feed-config').dataset.sort || 'all';
-    let _currentCat = document.getElementById('sf-feed-config').dataset.category || 'All';
+    const config = document.getElementById('sf-feed-config');
+    if (!config)
+        return;
+    let _currentSort = config.dataset.sort || 'all';
+    let _currentCat = config.dataset.category || 'All';
+    let _appliedSearch = config.dataset.search ?? new URLSearchParams(window.location.search).get('search') ?? '';
+    const searchInput = document.getElementById('feed-search');
+    function updateFilterStates() {
+        document.querySelectorAll('[data-feed-sort]').forEach(button => {
+            const selected = button.dataset.feedSort === _currentSort ||
+                (['all', 'latest'].includes(button.dataset.feedSort) && ['all', 'latest'].includes(_currentSort)) ||
+                (['top', 'popular'].includes(button.dataset.feedSort) && ['top', 'popular'].includes(_currentSort));
+            button.classList.toggle('active', selected);
+            button.setAttribute('aria-pressed', String(selected));
+        });
+        document.querySelectorAll('[data-feed-category]').forEach(button => {
+            const selected = button.dataset.feedCategory === _currentCat;
+            button.classList.toggle('active', selected);
+            button.classList.toggle('selected', selected);
+            button.setAttribute('aria-pressed', String(selected));
+        });
+    }
     function sfSetSort(sort) {
         _currentSort = sort;
-        document.querySelectorAll('.sort-tab').forEach(b => b.classList.remove('active'));
-        const idx = (sort === 'latest' || sort === 'all') ? 0 : (sort === 'popular' || sort === 'top') ? 1 : 2;
-        document.querySelectorAll('.sort-tab')[idx]?.classList.add('active');
+        updateFilterStates();
         sfNavigate();
     }
-    function sfSetTopic(cat) {
-        _currentCat = cat;
-        document.querySelectorAll('.topic-chip').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.topic-item-btn').forEach(b => b.classList.remove('selected'));
-        document.querySelectorAll('.sheet-pills .sheet-pill').forEach(b => {
-            if (b.textContent.trim() === cat || (cat === 'All' && b.textContent.trim() === 'All'))
-                b.classList.add('active');
-        });
-        const label = document.getElementById('topics-tab-label');
-        if (label)
-            label.textContent = cat === 'All' ? 'Topics' : cat;
+    function sfSetTopic(category) {
+        _currentCat = category || 'All';
+        updateFilterStates();
         sfNavigate();
     }
-    function sfSetLeftTopic(cat) {
-        sfSetTopic(cat);
-    }
+    function sfSetLeftTopic(category) { sfSetTopic(category); }
+    // Kept for older delegated bindings; category filters are now always available.
     function sfToggleTopicsChips() {
         const panel = document.getElementById('topic-chips-panel');
-        if (panel) {
-            panel.hidden = !panel.hidden;
-            document.getElementById('topics-sort-tab')?.classList.toggle('active', !panel.hidden);
+        if (panel)
+            panel.hidden = false;
+    }
+    function sfCloseMobileFilter() { }
+    function sfFeedSearch(value) {
+        const clearButton = document.getElementById('feed-search-clear');
+        if (clearButton) {
+            clearButton.hidden = !value.trim();
+            clearButton.style.display = value.trim() ? '' : 'none';
         }
     }
-    let _searchDebounce;
-    function sfFeedSearch(val) {
-        const clearBtn = document.getElementById('feed-search-clear');
-        if (clearBtn)
-            clearBtn.style.display = val && val.trim() ? 'block' : 'none';
-        clearTimeout(_searchDebounce);
-        _searchDebounce = setTimeout(() => sfNavigate(), 350);
-    }
     function sfClearSearch() {
-        const input = document.getElementById('feed-search');
-        if (input) {
-            input.value = '';
-            const clearBtn = document.getElementById('feed-search-clear');
-            if (clearBtn)
-                clearBtn.style.display = 'none';
+        if (searchInput)
+            searchInput.value = '';
+        sfFeedSearch('');
+        if (_appliedSearch) {
+            _appliedSearch = '';
             sfNavigate();
+        }
+        else {
+            searchInput?.focus();
         }
     }
     function sfNavigate() {
-        const q = document.getElementById('feed-search')?.value ?? '';
         const url = new URL('/feed', window.location.origin);
         url.searchParams.set('sort', _currentSort);
-        if (_currentCat && _currentCat !== 'All')
+        if (_currentCat !== 'All')
             url.searchParams.set('category', _currentCat);
-        if (q.trim())
-            url.searchParams.set('search', q.trim());
+        if (_appliedSearch.trim())
+            url.searchParams.set('search', _appliedSearch.trim());
         window.location.href = url.toString();
     }
-    // Keyboard shortcut: Press / to focus search
-    document.addEventListener('keydown', function (e) {
-        if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
-            e.preventDefault();
-            const input = document.getElementById('feed-search');
-            if (input) {
-                input.focus();
-                input.select();
-            }
+    document.getElementById('feed-search-form')?.addEventListener('submit', event => {
+        event.preventDefault();
+        _appliedSearch = searchInput?.value.trim() || '';
+        sfNavigate();
+    });
+    searchInput?.addEventListener('input', () => sfFeedSearch(searchInput.value));
+    document.addEventListener('keydown', event => {
+        const active = document.activeElement;
+        const editing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName) || active?.isContentEditable;
+        if (event.key === '/' && !editing && !event.ctrlKey && !event.metaKey && !event.altKey) {
+            event.preventDefault();
+            searchInput?.focus();
+            searchInput?.select();
         }
-        else if (e.key === 'Escape' && document.activeElement?.id === 'feed-search') {
-            const input = document.getElementById('feed-search');
-            if (input && input.value) {
-                sfClearSearch();
+        else if (event.key === 'Escape' && active === searchInput) {
+            if (searchInput.value !== _appliedSearch) {
+                searchInput.value = _appliedSearch;
+                sfFeedSearch(_appliedSearch);
             }
             else {
-                input?.blur();
+                searchInput.blur();
             }
         }
     });
-    // Local vote persistence
-    function sfGetVotedSet() {
+    let rememberedVotes = new Set();
+    function readLocalSet(key) {
         try {
-            return new Set(JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]'));
+            const values = JSON.parse(localStorage.getItem(key) || '[]');
+            return new Set(Array.isArray(values) ? values.filter((value) => typeof value === 'string') : []);
         }
         catch {
             return new Set();
         }
+    }
+    function sfGetVotedSet() {
+        return new Set([...readLocalSet('sf_voted_ideas'), ...rememberedVotes]);
     }
     function sfSaveVotedId(id) {
+        rememberedVotes.add(id);
         try {
-            const set = sfGetVotedSet();
-            set.add(id);
-            localStorage.setItem('sf_voted_ideas', JSON.stringify([...set]));
+            localStorage.setItem('sf_voted_ideas', JSON.stringify([...sfGetVotedSet()]));
         }
         catch { }
     }
-    // Local bookmark persistence
-    function sfGetSavedSet() {
+    function sfGetSavedSet() { return readLocalSet('sf_saved_ideas'); }
+    function setSavedState(button, saved) {
+        button.classList.toggle('active', saved);
+        button.setAttribute('aria-pressed', String(saved));
+        button.setAttribute('title', saved ? 'Remove from saved ideas on this device' : 'Save this idea on this device');
+        button.setAttribute('aria-label', saved ? 'Remove saved idea from this device' : 'Save idea on this device');
+        const label = button.querySelector('.action-label');
+        if (label)
+            label.textContent = saved ? 'Saved' : 'Save';
+    }
+    function setSupportedState(button, supported) {
+        button.classList.toggle('active', supported);
+        button.setAttribute('aria-pressed', String(supported));
+        button.setAttribute('title', supported ? 'You supported this idea' : 'Support this idea');
+        const label = button.querySelector('.action-label');
+        if (label)
+            label.textContent = supported ? 'Supported' : 'Support';
+    }
+    function sfBookmarkPost(id, button, event) {
+        event?.stopPropagation();
+        const saved = sfGetSavedSet();
+        const willSave = !saved.has(id);
+        if (willSave)
+            saved.add(id);
+        else
+            saved.delete(id);
         try {
-            return new Set(JSON.parse(localStorage.getItem('sf_saved_ideas') || '[]'));
+            localStorage.setItem('sf_saved_ideas', JSON.stringify([...saved]));
+            document.querySelectorAll('.action-bookmark[data-id]').forEach(other => {
+                if (other.dataset.id === id)
+                    setSavedState(other, willSave);
+            });
+            if (window.sfToast)
+                sfToast(willSave ? 'Idea saved on this device.' : 'Idea removed from saved ideas on this device.', willSave ? 'success' : 'info');
         }
         catch {
-            return new Set();
+            if (window.sfToast)
+                sfToast('Your browser could not save this idea. Check its storage settings and try again.', 'error');
         }
-    }
-    function sfBookmarkPost(id, btn, e) {
-        if (e)
-            e.stopPropagation();
-        try {
-            const set = sfGetSavedSet();
-            const isSaved = set.has(id);
-            if (isSaved) {
-                set.delete(id);
-                btn.classList.remove('active');
-                if (window.sfToast)
-                    sfToast('Proposal removed from bookmarks.', 'info');
-            }
-            else {
-                set.add(id);
-                btn.classList.add('active');
-                if (window.sfToast)
-                    sfToast('Proposal saved to bookmarks!', 'success');
-            }
-            localStorage.setItem('sf_saved_ideas', JSON.stringify([...set]));
-        }
-        catch { }
     }
     function sfInitLocalStates() {
-        const votedSet = sfGetVotedSet();
-        const savedSet = sfGetSavedSet();
-        document.querySelectorAll('.action-like[data-id]').forEach(btn => {
-            const id = btn.getAttribute('data-id');
-            if (id && votedSet.has(id))
-                btn.classList.add('active');
-        });
-        document.querySelectorAll('.action-bookmark[data-id]').forEach(btn => {
-            const id = btn.getAttribute('data-id');
-            if (id && savedSet.has(id))
-                btn.classList.add('active');
-        });
+        const votes = sfGetVotedSet();
+        const saved = sfGetSavedSet();
+        document.querySelectorAll('.action-like[data-id]').forEach(button => setSupportedState(button, votes.has(button.dataset.id)));
+        document.querySelectorAll('.action-bookmark[data-id]').forEach(button => setSavedState(button, saved.has(button.dataset.id)));
     }
-    async function sfVoteFeed(id, btn) {
-        const votedSet = sfGetVotedSet();
-        const countEl = btn.querySelector('.action-count');
-        const prevCount = parseInt(countEl?.textContent || '0', 10);
-        // Optimistic toggle
-        btn.classList.add('active');
-        sfSaveVotedId(id);
+    const pendingVotes = new Set();
+    async function sfVoteFeed(id, button) {
+        if (!id || pendingVotes.has(id))
+            return;
+        pendingVotes.add(id);
+        const matchingButtons = Array.from(document.querySelectorAll('.action-like[data-id]')).filter(other => other.dataset.id === id);
+        if (!matchingButtons.includes(button))
+            matchingButtons.push(button);
+        matchingButtons.forEach(other => { other.disabled = true; other.setAttribute('aria-busy', 'true'); });
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 15000);
         try {
-            const res = await fetch(`/api/vote/${id}`, {
+            const response = await fetch('/api/vote/' + encodeURIComponent(id), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'up' })
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ action: 'up' }),
+                signal: controller.signal
             });
-            const data = await res.json();
-            if (data.success) {
-                if (countEl)
-                    countEl.textContent = data.vote_count;
-                if (data.already_voted) {
-                    if (window.sfToast)
-                        sfToast('You already supported this idea!', 'info');
-                }
-                else {
-                    if (window.sfToast)
-                        sfToast('Support recorded! Thank you for voting.', 'success');
-                }
+            if (!response.ok)
+                throw new Error(response.status === 429 ? 'rate-limit' : 'request-failed');
+            const data = await response.json();
+            if (!data.success || !Number.isFinite(Number(data.vote_count)))
+                throw new Error('invalid-response');
+            sfSaveVotedId(id);
+            matchingButtons.forEach(other => {
+                setSupportedState(other, true);
+                const count = other.querySelector('.action-count');
+                if (count)
+                    count.textContent = String(Math.max(0, Number(data.vote_count)));
+            });
+            if (window.sfToast)
+                sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
+        }
+        catch (error) {
+            const message = error?.message === 'rate-limit'
+                ? 'Too many requests. Wait a moment, then try supporting this idea again.'
+                : controller.signal.aborted
+                    ? 'The request timed out. Try again to confirm your support.'
+                    : 'Could not confirm your support. Please try again.';
+            if (window.sfToast)
+                sfToast(message, 'error');
+        }
+        finally {
+            window.clearTimeout(timeout);
+            pendingVotes.delete(id);
+            matchingButtons.forEach(other => { other.disabled = false; other.removeAttribute('aria-busy'); });
+        }
+    }
+    async function sfSharePost(id, event, button) {
+        event?.stopPropagation();
+        const url = window.location.origin + '/idea/' + encodeURIComponent(id);
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: 'SuggFeed idea', url });
             }
             else {
-                if (window.sfToast)
-                    sfToast(data.error || 'Could not record vote.', 'error');
-            }
-        }
-        catch {
-            if (countEl)
-                countEl.textContent = String(prevCount);
-            if (window.sfToast)
-                sfToast('Network error while voting.', 'error');
-        }
-    }
-    function sfSharePost(id, e, btn) {
-        if (e)
-            e.stopPropagation();
-        const url = window.location.origin + '/idea/' + id;
-        if (navigator.share) {
-            navigator.share({ title: 'SuggFeed Proposal', url }).catch(() => { });
-        }
-        else {
-            navigator.clipboard.writeText(url).then(() => {
-                if (btn) {
-                    const label = btn.querySelector('.action-label');
-                    if (label) {
-                        const original = label.textContent;
-                        label.textContent = 'Copied!';
-                        setTimeout(() => { label.textContent = original; }, 2000);
-                    }
+                await navigator.clipboard.writeText(url);
+                const label = button?.querySelector('.action-label');
+                if (label) {
+                    label.textContent = 'Copied!';
+                    window.setTimeout(() => { label.textContent = 'Share'; }, 2000);
                 }
                 if (window.sfToast)
-                    sfToast('Proposal link copied to clipboard!', 'success');
-            });
+                    sfToast('Idea link copied.', 'success');
+            }
+        }
+        catch (error) {
+            if (error?.name !== 'AbortError' && window.sfToast)
+                sfToast('Could not share this idea. Open it to copy the page address.', 'error');
         }
     }
-    // Mobile filter dialog
-    document.getElementById('mobile-filter-btn')?.addEventListener('click', function () {
-        document.getElementById('mobile-filter-backdrop').hidden = false;
-    });
-    function sfCloseMobileFilter() {
-        document.getElementById('mobile-filter-backdrop').hidden = true;
-    }
-    // Delegated click fallback for post cards
-    document.addEventListener('click', function (e) {
-        const target = e.target;
-        if (!(target instanceof Element))
-            return;
-        const card = target.closest('.post-card');
-        if (!card)
-            return;
-        if (target.closest('.post-footer') || target.closest('.post-media-container') || target.closest('button') || target.closest('a')) {
-            return;
-        }
-        const ideaId = card.getAttribute('data-idea-id');
-        if (ideaId && typeof sfOpenIdeaDetail === 'function') {
-            e.preventDefault();
-            sfOpenIdeaDetail(ideaId);
-        }
-    });
-    // ── Lazy Loading / Infinite Scroll ──
-    let _currentPage = Number(document.getElementById('sf-feed-config').dataset.page || 1);
-    let _hasMore = document.getElementById('sf-feed-config').dataset.hasMore === 'true';
+    let _currentPage = Math.max(1, Number(config.dataset.page) || 1);
+    let _hasMore = config.dataset.hasMore === 'true';
     let _isLoading = false;
     const _feedContainer = document.getElementById('feed-posts-container');
     const _feedLoader = document.getElementById('feed-loader');
     const _feedEndMessage = document.getElementById('feed-end-message');
-    function sfEscapeHtml(str) {
-        if (!str)
-            return '';
-        return str.replace(/[&<>"']/g, function (m) {
-            switch (m) {
-                case '&': return '&amp;';
-                case '<': return '&lt;';
-                case '>': return '&gt;';
-                case '"': return '&quot;';
-                case "'": return '&#039;';
-                default: return m;
-            }
-        });
+    const _feedLoadStatus = document.getElementById('feed-load-status');
+    const _resultSummary = document.getElementById('feed-result-summary');
+    function sfEscapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
     }
     function sfCreatePostCardHtml(item) {
-        const catName = item.category || (item.categories && item.categories.name) || 'Other';
-        const catColors = {
-            Facilities: { bg: 'rgba(59,130,246,0.12)', text: '#2563EB', border: 'rgba(59,130,246,0.25)', dot: '#3B82F6' },
-            Learning: { bg: 'rgba(16,185,129,0.12)', text: '#059669', border: 'rgba(16,185,129,0.25)', dot: '#10B981' },
-            Safety: { bg: 'rgba(239,68,68,0.12)', text: '#DC2626', border: 'rgba(239,68,68,0.25)', dot: '#EF4444' },
-            'Student life': { bg: 'rgba(245,158,11,0.12)', text: '#D97706', border: 'rgba(245,158,11,0.25)', dot: '#F59E0B' },
-            Other: { bg: 'rgba(100,116,139,0.12)', text: '#64748B', border: 'rgba(100,116,139,0.25)', dot: '#94A3B8' }
-        };
-        const cat = catColors[catName] || catColors.Other;
-        const statusConfig = {
-            pending: { color: '#F59E0B', label: 'Pending Review', dot: '#F59E0B' },
-            approved: { color: '#10B981', label: 'Approved', dot: '#10B981' },
-            in_progress: { color: '#3B82F6', label: 'In Progress', dot: '#3B82F6' },
-            resolved: { color: '#0D9488', label: 'Resolved', dot: '#0D9488' }
-        };
-        const statusInfo = statusConfig[item.status] || statusConfig.pending;
-        const isAnon = !item.author || !item.author.display_name;
-        const authorName = isAnon ? 'Anonymous' : item.author.display_name;
-        const authorHandle = isAnon ? '@anon' : '@' + item.author.display_name.toLowerCase().replace(/\s+/g, '');
-        const voteCount = item.vote_count || 0;
-        const commentCount = item.comment_count || 0;
-        let timeStr = 'just now';
-        if (item.created_at) {
-            const d = new Date(item.created_at);
-            const diff = Math.floor((Date.now() - d.getTime()) / 1000);
-            if (diff < 60)
-                timeStr = 'just now';
-            else if (diff < 3600)
-                timeStr = Math.floor(diff / 60) + 'm';
-            else if (diff < 86400)
-                timeStr = Math.floor(diff / 3600) + 'h';
-            else if (diff < 604800)
-                timeStr = Math.floor(diff / 86400) + 'd';
-            else
-                timeStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        }
-        const safeTitle = sfEscapeHtml(item.title);
-        const safeDesc = sfEscapeHtml(item.description || '');
-        const trendingBadge = voteCount >= 50 ? `
-      <span class="post-trending-badge" title="High campus engagement">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-        Trending
-      </span>` : '';
-        const attachmentsHtml = (item.attachments && item.attachments.length > 0) ? `
-      <div class="post-media-container" data-sf-click="stop">
-        <div class="post-attachment-pill" data-sf-click="open-detail" data-idea-id="${item.id}">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-          <span>${item.attachments.length} attachment${item.attachments.length > 1 ? 's' : ''}</span>
-          <span class="attachment-cta">View files →</span>
-        </div>
-      </div>` : '';
-        const isVoted = sfGetVotedSet().has(item.id) ? ' active' : '';
-        const isSaved = sfGetSavedSet().has(item.id) ? ' active' : '';
+        const category = String(item.category || item.categories?.name || 'Other');
+        const categoryClass = category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const statuses = { approved: 'Planned', in_progress: 'In progress', resolved: 'Completed' };
+        const status = ['approved', 'in_progress', 'resolved'].includes(item.status) ? item.status : 'approved';
+        const anonymous = item.is_anonymous || !item.author?.display_name;
+        const author = anonymous ? 'Anonymous student' : String(item.author.display_name);
+        const votes = Math.max(0, Number(item.vote_count) || 0);
+        const comments = Math.max(0, Number(item.comment_count) || 0);
+        const id = sfEscapeHtml(item.id);
+        const href = '/idea/' + encodeURIComponent(String(item.id));
+        const created = new Date(item.created_at);
+        const validDate = Number.isFinite(created.getTime());
+        const secondsAgo = validDate ? Math.max(0, Math.floor((Date.now() - created.getTime()) / 1000)) : 0;
+        const relativeTime = !validDate ? '' : secondsAgo < 60 ? 'Just now' : secondsAgo < 3600 ? Math.floor(secondsAgo / 60) + 'm ago' : secondsAgo < 86400 ? Math.floor(secondsAgo / 3600) + 'h ago' : secondsAgo < 604800 ? Math.floor(secondsAgo / 86400) + 'd ago' : created.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+        const title = sfEscapeHtml(item.title);
+        const description = sfEscapeHtml(item.description);
+        const supported = sfGetVotedSet().has(String(item.id));
+        const saved = sfGetSavedSet().has(String(item.id));
+        const attachmentCount = Array.isArray(item.attachments) ? item.attachments.length : 0;
         return `
-      <article
-        class="post-card"
-        data-idea-id="${item.id}"
-        data-sf-click="open-detail"
-        role="article"
-        aria-label="Proposal: ${safeTitle}"
-        tabindex="0"
-        data-sf-keydown="open-detail-key"
-      >
+      <article class="post-card" data-idea-id="${id}" aria-label="Idea: ${title}">
         <div class="post-header">
-          <div class="post-avatar" style="background:${isAnon ? 'linear-gradient(135deg,#64748B 0%,#475569 100%)' : 'linear-gradient(135deg,#0B3857 0%,#2563EB 100%)'}">
-            ${isAnon ? '?' : authorName[0].toUpperCase()}
-          </div>
-          <div class="post-author-meta">
-            <div class="post-author-row">
-              <span class="post-author-name">${sfEscapeHtml(authorName)}</span>
-              <span class="post-author-handle">${sfEscapeHtml(authorHandle)}</span>
-              <span class="post-dot">&middot;</span>
-              <time class="post-timestamp">${timeStr}</time>
-              ${trendingBadge}
-            </div>
-            <div class="post-badges-row">
-              <span class="post-badge-category cat-${catName.toLowerCase().replace(/\s+/g, '-')}" style="background-color:${cat.bg};color:${cat.text};border-color:${cat.border}">
-                <span class="badge-dot" style="background-color:${cat.dot}"></span>
-                ${catName}
-              </span>
-              <span class="post-badge-status status-${item.status}" style="background-color:${statusInfo.color}15;color:${statusInfo.color};border-color:${statusInfo.color}35">
-                <span class="badge-dot" style="background-color:${statusInfo.dot}"></span>
-                ${statusInfo.label}
-              </span>
-            </div>
-          </div>
+          <div class="post-avatar${anonymous ? ' is-anon' : ''}" aria-hidden="true">${anonymous ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>' : sfEscapeHtml(author.charAt(0).toUpperCase())}</div>
+          <div class="post-author-meta"><div class="post-author-row">
+            <span class="post-author-name">${sfEscapeHtml(author)}</span>
+            ${validDate ? `<span class="post-dot" aria-hidden="true">·</span><time class="post-timestamp" datetime="${created.toISOString()}" title="${sfEscapeHtml(created.toLocaleString('en-PH'))}">${relativeTime}</time>` : ''}
+          </div></div>
+          <span class="post-badge-status status-${status}"><span class="badge-dot" aria-hidden="true"></span>${statuses[status]}</span>
         </div>
         <div class="post-content">
-          <h3 class="post-title">${safeTitle}</h3>
-          <p class="post-body">${safeDesc}</p>
+          <span class="post-badge-category cat-${categoryClass}"><span class="badge-dot" aria-hidden="true"></span>${sfEscapeHtml(category)}</span>
+          <h2 class="post-title"><a class="post-title-link" href="${href}" data-sf-click="open-detail" data-idea-id="${id}">${title}</a></h2>
+          <p class="post-body">${description}</p>
         </div>
-        ${attachmentsHtml}
+        ${attachmentCount ? `<div class="post-media-container"><a class="post-attachment-pill" href="${href}" data-sf-click="open-detail" data-idea-id="${id}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg><span>${attachmentCount} attachment${attachmentCount === 1 ? '' : 's'}</span><span class="attachment-cta">View files →</span>
+        </a></div>` : ''}
         <div class="post-footer" data-sf-click="stop">
-          <button type="button" class="action-btn action-like${isVoted}" data-id="${item.id}" data-sf-click="vote-feed" aria-label="Support proposal" title="Support this proposal">
-            <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <span class="action-count">${voteCount}</span>
-            <span class="action-label">Support</span>
+          <button type="button" class="action-btn action-like${supported ? ' active' : ''}" data-id="${id}" data-sf-click="vote-feed" aria-pressed="${supported}" title="${supported ? 'You supported this idea' : 'Support this idea'}">
+            <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="action-count">${votes}</span><span class="action-label">${supported ? 'Supported' : 'Support'}</span>
           </button>
-          <button type="button" class="action-btn action-comment" data-sf-click="comment-feed" data-idea-id="${item.id}" aria-label="View ${commentCount} comments" title="Open discussion">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span class="action-count">${commentCount}</span>
-            <span class="action-label">Comments</span>
+          <button type="button" class="action-btn action-comment" data-sf-click="comment-feed" data-idea-id="${id}" aria-label="Open discussion, ${comments} comments" title="Open discussion">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="action-count">${comments}</span><span class="action-label">Comments</span>
           </button>
-          <button type="button" class="action-btn action-bookmark${isSaved}" data-id="${item.id}" data-sf-click="bookmark-feed" aria-label="Bookmark proposal" title="Save to bookmarks">
-            <svg class="bookmark-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-            <span class="action-label">Save</span>
+          <button type="button" class="action-btn action-bookmark${saved ? ' active' : ''}" data-id="${id}" data-sf-click="bookmark-feed" aria-pressed="${saved}" aria-label="${saved ? 'Remove saved idea from this device' : 'Save idea on this device'}" title="${saved ? 'Remove from saved ideas on this device' : 'Save this idea on this device'}">
+            <svg class="bookmark-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg><span class="action-label">${saved ? 'Saved' : 'Save'}</span>
           </button>
-          <button type="button" class="action-btn action-share" data-sf-click="share-feed" data-id="${item.id}" aria-label="Share proposal" title="Copy shareable link">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            <span class="action-label">Share</span>
+          <button type="button" class="action-btn action-share" data-sf-click="share-feed" data-id="${id}" aria-label="Share idea" title="Share idea link">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="action-label">Share</span>
           </button>
         </div>
       </article>`;
     }
+    function updateResultSummary(total) {
+        if (!_resultSummary || !_feedContainer)
+            return;
+        const shown = _feedContainer.querySelectorAll('.post-card[data-idea-id]').length;
+        if (typeof total === 'number' && Number.isFinite(total))
+            _resultSummary.dataset.total = String(total);
+        const count = Math.max(shown, Number(_resultSummary.dataset.total) || shown);
+        _resultSummary.textContent = 'Showing ' + shown.toLocaleString() + ' of ' + count.toLocaleString() + (_appliedSearch || _currentCat !== 'All' ? ' matching idea' : ' idea') + (count === 1 ? '' : 's');
+    }
     async function sfLoadMoreFeed() {
-        if (_isLoading || !_hasMore)
+        if (_isLoading || !_hasMore || !_feedContainer)
             return;
         _isLoading = true;
+        const label = _feedLoader?.querySelector('.feed-loading-text');
         if (_feedLoader) {
             _feedLoader.disabled = true;
             _feedLoader.setAttribute('aria-busy', 'true');
-            _feedLoader.style.display = 'flex';
-            _feedLoader.querySelector('.feed-loading-text').textContent = 'Loading more ideas…';
         }
+        if (label)
+            label.textContent = 'Loading more ideas…';
+        if (_feedLoadStatus)
+            _feedLoadStatus.textContent = '';
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 15000);
         try {
             const nextPage = _currentPage + 1;
-            const q = (document.getElementById('feed-search')?.value || '').trim();
-            const params = new URLSearchParams({
-                page: String(nextPage),
-                sort: _currentSort,
-                category: _currentCat,
-                search: q,
+            const params = new URLSearchParams({ page: String(nextPage), sort: _currentSort, category: _currentCat, search: _appliedSearch });
+            const response = await fetch('/api/feed?' + params.toString(), { headers: { Accept: 'application/json' }, signal: controller.signal });
+            if (!response.ok)
+                throw new Error('request-failed');
+            const data = await response.json();
+            const items = data?.feed ?? data?.data;
+            if (data?.success === false || !Array.isArray(items))
+                throw new Error('invalid-response');
+            const loadedIds = new Set(Array.from(_feedContainer.querySelectorAll('.post-card[data-idea-id]')).map(card => card.dataset.ideaId));
+            const fresh = items.filter(item => {
+                if (!item || typeof item.id !== 'string' || loadedIds.has(item.id))
+                    return false;
+                loadedIds.add(item.id);
+                return true;
             });
-            const res = await fetch('/api/feed?' + params.toString());
-            if (!res.ok)
-                throw new Error('Failed to load feed');
-            const data = await res.json();
-            const items = (data && (data.feed || data.data)) || [];
-            if (items.length > 0) {
-                _currentPage = nextPage;
-                _hasMore = typeof data.hasMore === 'boolean' ? data.hasMore : (items.length >= 15);
-                if (_feedContainer) {
-                    const fragment = document.createDocumentFragment();
-                    items.forEach(item => {
-                        const temp = document.createElement('div');
-                        temp.innerHTML = sfCreatePostCardHtml(item);
-                        if (temp.firstElementChild) {
-                            fragment.appendChild(temp.firstElementChild);
-                        }
-                    });
-                    _feedContainer.appendChild(fragment);
-                }
+            const previousCount = _feedContainer.children.length;
+            const fragment = document.createDocumentFragment();
+            fresh.forEach(item => {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = sfCreatePostCardHtml(item);
+                if (wrapper.firstElementChild)
+                    fragment.appendChild(wrapper.firstElementChild);
+            });
+            _feedContainer.appendChild(fragment);
+            // Keep keyboard users at the start of the newly added results.
+            _feedContainer.children[previousCount]?.querySelector('.post-title-link')?.focus({ preventScroll: true });
+            _currentPage = nextPage;
+            _hasMore = items.length > 0 && (typeof data.hasMore === 'boolean' ? data.hasMore : items.length >= 15);
+            updateResultSummary(typeof data.totalCount === 'number' ? data.totalCount : data.count);
+            sfInitLocalStates();
+            if (_feedLoadStatus)
+                _feedLoadStatus.textContent = fresh.length ? fresh.length + ' more idea' + (fresh.length === 1 ? '' : 's') + ' loaded.' : _hasMore ? 'This page contained ideas already shown. Load more to continue.' : 'You have reached the end of these ideas.';
+            if (_feedLoader) {
+                _feedLoader.hidden = !_hasMore;
+                _feedLoader.style.display = _hasMore ? '' : 'none';
             }
-            else {
-                _hasMore = false;
+            if (_feedEndMessage) {
+                _feedEndMessage.hidden = _hasMore;
+                _feedEndMessage.style.display = _hasMore ? 'none' : '';
             }
-            if (!_hasMore) {
-                if (_feedLoader)
-                    _feedLoader.style.display = 'none';
-                if (_feedEndMessage)
-                    _feedEndMessage.style.display = 'flex';
-            }
+            if (label)
+                label.textContent = 'Load more ideas';
         }
-        catch (err) {
-            console.error('Error loading more ideas:', err);
-            if (_feedLoader)
-                _feedLoader.querySelector('.feed-loading-text').textContent = 'Could not load ideas. Select to retry.';
+        catch {
+            if (label)
+                label.textContent = 'Try loading again';
+            if (_feedLoadStatus)
+                _feedLoadStatus.textContent = controller.signal.aborted ? 'Loading took too long. Your current ideas are still here. Try again.' : 'Could not load more ideas. Your current ideas are still here. Try again.';
         }
         finally {
+            window.clearTimeout(timeout);
             _isLoading = false;
             if (_feedLoader) {
                 _feedLoader.disabled = false;
                 _feedLoader.removeAttribute('aria-busy');
-                if (_hasMore && _feedLoader.querySelector('.feed-loading-text').textContent === 'Loading more ideas…') {
-                    _feedLoader.querySelector('.feed-loading-text').textContent = 'Load more ideas';
-                }
-            }
-            if (!_hasMore && _feedLoader) {
-                _feedLoader.style.display = 'none';
             }
         }
     }
-    if ('IntersectionObserver' in window && _feedLoader) {
-        const _feedObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && !_isLoading && _hasMore) {
-                    sfLoadMoreFeed();
-                }
-            });
-        }, { rootMargin: '200px 0px' });
-        _feedObserver.observe(_feedLoader);
-    }
-    // Restore states
-    document.addEventListener('DOMContentLoaded', sfInitLocalStates);
+    updateFilterStates();
+    sfFeedSearch(searchInput?.value || '');
+    updateResultSummary();
     sfInitLocalStates();
     Object.assign(window, { sfSetSort, sfSetTopic, sfSetLeftTopic, sfToggleTopicsChips, sfFeedSearch, sfClearSearch, sfNavigate, sfGetVotedSet, sfSaveVotedId, sfGetSavedSet, sfBookmarkPost, sfInitLocalStates, sfVoteFeed, sfSharePost, sfCloseMobileFilter, sfEscapeHtml, sfCreatePostCardHtml, sfLoadMoreFeed });
 })();

@@ -6,6 +6,7 @@
   Object.assign(window, { sfEscapeAttribute });
   type Action = (event: Event, element: HTMLElement) => void;
   const actions: Record<string, Action> = {
+'expand-comment': (_event, element) => { element.closest('form')?.classList.add('expanded'); },
 'action-27': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; sfSetLeftTopic('All'); },
 'action-28': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; sfSetLeftTopic(element.getAttribute('data-sf-click-arg-0')); },
 'action-29': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; openSubmitPanel(); },
@@ -122,7 +123,13 @@
 'action-140': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; sfSetProfileTab('voted'); },
 'action-141': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; openSubmitPanel(); },
 'action-162': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; window.location.reload(); },
-'open-detail': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent;  if (!actionEvent.ctrlKey && !actionEvent.metaKey) { event.preventDefault(); sfOpenIdeaDetail(element.dataset.ideaId, element.dataset.tab || 'details'); }; },
+'open-detail': (event, element) => {
+  const click = event as MouseEvent;
+  if (click.ctrlKey || click.metaKey || click.shiftKey || click.altKey || (typeof click.button === 'number' && click.button !== 0)) return;
+  if (typeof sfOpenIdeaDetail !== 'function') return;
+  event.preventDefault();
+  sfOpenIdeaDetail(element.dataset.ideaId, element.dataset.tab || 'details');
+},
 'open-detail-key': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent;  if (actionEvent.key === 'Enter') sfOpenIdeaDetail(element.dataset.ideaId); },
 'stop': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent;  event.stopPropagation(); },
 'vote-feed': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent;  sfVoteFeed(element.dataset.id, element); },
@@ -132,7 +139,7 @@
 'reply-idea': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent;  sfReplyTo(element.dataset.replyId, element.dataset.replyAuthor); },
 'reply-drawer': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent;  sfDrawerReplyTo(element.dataset.replyId, element.dataset.replyAuthor); }
   };
-  ['click', 'input', 'change', 'submit', 'keydown'].forEach(type => {
+  ['click', 'input', 'change', 'submit', 'keydown', 'focusin'].forEach(type => {
     document.addEventListener(type, event => {
       let element = event.target instanceof Element ? event.target : null;
       while (element) {

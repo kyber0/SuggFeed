@@ -15,7 +15,7 @@ test('all Eta templates compile, including authenticated staff view', () => {
         const source = fs.readFileSync(file, 'utf8');
         assert.doesNotThrow(() => eta.compile(source), file);
         assert.equal(/<script>/.test(source), false, file + ' still has inline JavaScript');
-        assert.equal(/\bon(?:click|input|change|submit|keydown)=/.test(source), false, file + ' still has an inline event handler');
+        assert.equal(/\bon[a-z]+\s*=/i.test(source), false, file + ' still has an inline event handler');
         for (const script of source.matchAll(/<script src="(\/js\/[^?"]+)/g)) {
           assert.equal(fs.existsSync(path.join(__dirname, '../public', script[1])), true, 'Missing generated script ' + script[1]);
         }
@@ -23,6 +23,9 @@ test('all Eta templates compile, including authenticated staff view', () => {
     }
   }
   check(path.join(__dirname, '../views'));
+  for (const file of ['idea.eta', 'partials/idea-detail-drawer.eta']) {
+    assert.match(fs.readFileSync(path.join(__dirname, '../views', file), 'utf8'), /data-sf-focusin="expand-comment"/, file + ' must reveal Post through the delegated focus handler');
+  }
 });
 
 test('mobile navigation has no staff entry; responsive styles hide other staff links', () => {
