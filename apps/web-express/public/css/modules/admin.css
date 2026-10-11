@@ -113,6 +113,44 @@
 .staff-activity-list strong { display:block; color:var(--ink); }.staff-activity-list time { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
 .staff-activity-list p { white-space:pre-wrap; overflow-wrap:anywhere; background:var(--bg); padding:12px; border:1px solid var(--line); border-radius:8px; margin-top:10px; line-height:1.7; }
 .staff-save-view-dialog { position:fixed; inset:0; margin:auto; width:min(460px,90vw); padding:26px; border:1px solid var(--line); border-radius:16px; background:var(--surface); color:var(--ink); box-shadow:var(--shadow-lg); }
+/* Progress publishing stays separate from review decisions and private notes. */
+.staff-progress-state { margin:16px 0; font-size:13px; color:var(--ink-2); line-height:1.6; }.staff-progress-state:empty { display:none; }
+.staff-progress-summary { border:1px solid var(--line); border-radius:9px; background:var(--sky); padding:12px 14px; margin:18px 0; font-size:13px; font-weight:600; color:var(--ink); }
+.staff-progress-form fieldset { border:0; margin:0; padding:0; min-width:0; }
+.staff-review-panel .staff-progress-legend { padding:16px 0; font-size:15px; }
+.staff-progress-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0; }
+.staff-progress-grid > label { color:var(--ink); font-size:13px; font-weight:600; }
+.staff-progress-grid .workspace-input { margin-top:7px; }.staff-progress-grid .workspace-field-hint { display:block; margin-top:7px; font-weight:400; line-height:1.6; }
+.staff-progress-form .staff-privacy-hint { padding:10px 12px; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--ink-2); line-height:1.6; }
+.staff-progress-advanced { border-block:1px solid var(--line); padding:13px 0; margin:18px 0; }
+.staff-progress-advanced > summary { cursor:pointer; font-size:13px; font-weight:600; color:var(--ink); padding:5px 0; }
+.staff-progress-advanced > summary span { font-weight:400; color:var(--muted); padding-left:8px; font-size:12px; }
+.staff-progress-advanced[open] > summary { margin-bottom:10px; }
+.staff-progress-advanced .workspace-input[type="date"] { max-width:240px; }
+.staff-progress-preview { background:var(--sky); border:1px solid var(--line); border-left:3px solid var(--navy); border-radius:10px; padding:16px; margin:18px 0 12px; }
+.staff-progress-preview[data-visibility="staff"] { background:var(--bg); border-left-color:var(--muted); }
+.staff-progress-preview-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.staff-progress-preview h4 { color:var(--ink); font-size:13px; font-weight:700; }
+.staff-progress-preview p { color:var(--ink-2); font-size:13px; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.7; }
+.staff-progress-preview p + p { margin-top:10px; }.staff-progress-preview small { display:block; color:var(--muted); font-size:11px; margin-top:12px; line-height:1.6; }
+.staff-progress-immutable { font-size:12px; color:var(--muted); line-height:1.6; margin:10px 0 16px; }
+.staff-progress-actions { display:flex; justify-content:flex-end; gap:10px; }
+.staff-progress-notify { display:flex; align-items:flex-start; gap:9px; margin:16px 0 20px; font-size:12px; color:var(--ink); font-weight:600; cursor:pointer; }
+.staff-progress-notify input { width:16px; height:16px; flex-shrink:0; margin-top:2px; accent-color:var(--navy); }.staff-progress-notify small { display:block; color:var(--muted); font-size:11px; font-weight:400; margin-top:3px; line-height:1.6; }
+.staff-progress-form > .workspace-message { margin-top:14px; }.staff-progress-form > .workspace-message:empty { display:none; }
+.staff-progress-history { border-top:1px solid var(--line); margin-top:28px; padding-top:22px; }.staff-progress-history h3 { font-size:16px; color:var(--ink); margin-bottom:6px; }
+.staff-progress-events { margin-top:18px; display:grid; gap:14px; }
+.staff-progress-event { border:1px solid var(--line); border-radius:10px; padding:15px; background:var(--surface); }
+.staff-progress-event[data-visibility="staff"] { background:var(--bg); }
+.staff-progress-event-heading { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.staff-progress-event strong { color:var(--ink); font-size:13px; }.staff-progress-event .workspace-tag { font-size:10px; }
+.staff-progress-event-body { color:var(--ink-2); font-size:13px; line-height:1.7; white-space:pre-wrap; overflow-wrap:anywhere; margin:10px 0; }
+.staff-progress-event time,.staff-progress-event small { display:block; color:var(--muted); font-size:11px; line-height:1.6; }
+.staff-progress-event-details { color:var(--ink-2); font-size:12px; line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; margin:9px 0; }
+.staff-progress-correct { display:inline-flex; min-height:34px; align-items:center; margin-top:8px; font-size:12px; }
+.staff-progress-empty { background:var(--bg); border:1px dashed var(--line); border-radius:10px; padding:20px; color:var(--muted); font-size:13px; line-height:1.7; }
+.staff-progress-form :is(input,select,textarea,summary,button):focus-visible,.staff-progress-correct:focus-visible { outline:3px solid var(--navy); outline-offset:3px; }
+@media(max-width:960px) { .staff-review-tabs { gap:15px; }.staff-review-tabs button { font-size:12px; }.staff-progress-grid { gap:12px; } }
 .staff-save-view-dialog::backdrop { background:rgba(6,26,43,.5); backdrop-filter:blur(3px); }
 .staff-save-view-dialog header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }.staff-save-view-dialog h2 { font-size:22px; }
 .staff-save-view-dialog p { font-size:13px; color:var(--ink-2); }

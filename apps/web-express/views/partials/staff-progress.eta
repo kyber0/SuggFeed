@@ -1,0 +1,37 @@
+<div class="staff-panel-heading">
+  <div><h3 class="staff-panel-title">Keep everyone informed</h3><p class="staff-panel-copy">Share a clear update when work moves forward or needs more time.</p></div>
+  <button class="workspace-button" type="button" id="staff-progress-refresh">Refresh</button>
+</div>
+<p id="staff-progress-state" class="staff-progress-state" role="status" aria-live="polite"></p>
+<div id="staff-progress-summary" class="staff-progress-summary" hidden></div>
+<form id="staff-progress-form" class="staff-progress-form" novalidate>
+  <fieldset id="staff-progress-fields" disabled>
+    <legend class="staff-progress-legend">New progress update</legend>
+    <div class="staff-progress-grid">
+      <label for="staff-progress-kind">Update type<select id="staff-progress-kind" class="workspace-input" aria-describedby="staff-progress-kind-hint"><option value="update">Progress update</option><option value="started">Work started</option><option value="milestone">Milestone reached</option><option value="blocked">Work is blocked</option><option value="completed">Work completed</option><option value="correction">Correction</option></select></label>
+      <label for="staff-progress-visibility">Audience<select id="staff-progress-visibility" class="workspace-input" aria-describedby="staff-progress-audience-hint"><option value="public">Public · campus community</option><option value="staff">Staff only · private</option></select></label>
+    </div>
+    <p id="staff-progress-kind-hint" class="workspace-field-hint"></p>
+    <p id="staff-progress-audience-hint" class="staff-privacy-hint"></p>
+    <label class="workspace-field-label" for="staff-progress-body">What changed?</label>
+    <textarea id="staff-progress-body" class="workspace-input" rows="4" required maxlength="600" placeholder="Describe what has happened and what the community can expect next." aria-describedby="staff-progress-body-hint"></textarea>
+    <div class="staff-note-footer"><span id="staff-progress-body-hint">Keep names and personal information out.</span><span id="staff-progress-count">0 / 600</span></div>
+    <div class="staff-progress-grid">
+      <label for="staff-progress-percent">Progress · optional<select id="staff-progress-percent" class="workspace-input" aria-describedby="staff-progress-percent-hint"><option value="">Keep current progress</option><% for(let percent=0;percent<=100;percent+=5) { %><option value="<%= percent %>"><%= percent %>%</option><% } %></select><span id="staff-progress-percent-hint" class="workspace-field-hint">Choose only when the estimate has changed.</span></label>
+      <label for="staff-progress-blocked-reason" id="staff-progress-blocked-field" hidden>What is blocking the work?<select id="staff-progress-blocked-reason" class="workspace-input"><option value="">Choose a reason</option><option value="budget">Budget</option><option value="parts">Parts or supplies</option><option value="approval">Approval</option><option value="scheduling">Scheduling</option><option value="other">Other</option></select></label>
+    </div>
+    <details class="staff-progress-advanced" id="staff-progress-advanced"><summary>More details <span>Next step and event date</span></summary>
+      <label class="workspace-field-label" for="staff-progress-next-step">Next step · optional</label><input type="text" id="staff-progress-next-step" class="workspace-input" maxlength="200" placeholder="e.g. Install the first benches next week"/>
+      <label class="workspace-field-label" for="staff-progress-date">When did this happen?</label><input type="date" id="staff-progress-date" class="workspace-input" required aria-describedby="staff-progress-date-hint"/><p id="staff-progress-date-hint" class="workspace-field-hint">Today by default. You may backdate up to 14 days; the posting date remains visible.</p>
+    </details>
+    <section class="staff-progress-preview" id="staff-progress-preview" aria-labelledby="staff-progress-preview-title">
+      <div class="staff-progress-preview-heading"><h4 id="staff-progress-preview-title">Public preview</h4><span class="workspace-tag" id="staff-progress-preview-kind">Progress update</span></div>
+      <p id="staff-progress-preview-body">Your update will appear here before you publish it.</p><p id="staff-progress-preview-next" hidden></p><small id="staff-progress-preview-meta"></small>
+    </section>
+    <p class="staff-progress-immutable">Posted updates stay in the record. To clarify a public update, publish a correction.</p>
+    <label class="staff-progress-notify" id="staff-progress-notify-field"><input type="checkbox" id="staff-progress-notify"/><span>Notify followers about this update<small>Best for milestones, delays, and completion. Ordinary updates can stay quiet.</small></span></label>
+    <div class="staff-progress-actions"><button type="button" class="workspace-button" id="staff-progress-clear">Clear draft</button><button type="submit" class="workspace-button workspace-button--primary" id="staff-progress-post">Publish update</button></div>
+  </fieldset>
+  <p id="staff-progress-message" class="workspace-message" role="status" aria-live="polite" tabindex="-1"></p>
+</form>
+<section class="staff-progress-history" aria-labelledby="staff-progress-history-title"><h3 id="staff-progress-history-title">Progress history</h3><p class="staff-panel-copy">Public updates and staff-only records, newest first.</p><div id="staff-progress-history" class="staff-progress-events"></div><p id="staff-progress-history-limit" class="staff-footnote" hidden>Showing the latest 100 updates.</p></section>

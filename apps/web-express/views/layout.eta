@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/styles.css?v=20261011-feed" />
+  <link rel="stylesheet" href="/css/styles.css?v=20261011-progress" />
   <script src="/js/events.js?v=20261011-feed"></script>
 
   <!-- Theme init (before render to prevent flash) -->
@@ -47,6 +47,7 @@
 
 <!-- Theme toggle logic -->
 <script src="/js/theme.js?v=20261010-ts"></script>
+<script src="/js/engagement.js?v=20261011-progress"></script>
 
 </body>
 </html>

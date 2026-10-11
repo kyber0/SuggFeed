@@ -39,6 +39,8 @@ import adminRouter from "./routes/admin";
 import authRouter from "./routes/auth";
 import apiRouter from "./routes/api";
 import staffWorkspaceRouter from './routes/staff-workspace';
+import progressRouter from './routes/progress';
+import notificationsRouter from './routes/notifications';
 import legalRouter from "./routes/legal";
 
 const app = express();
@@ -222,9 +224,12 @@ app.use("/feed", feedRouter);
 app.use("/idea", ideaRouter);
 app.use("/roadmap", roadmapRouter);
 app.use("/profile", profileRouter);
+app.use('/notifications', notificationsRouter);
 app.use("/admin", adminRouter);
 app.use("/auth", authRouter);
 app.use("/api", apiRouter);
+app.use('/api/staff', progressRouter);
+app.use('/staff/workspace', generalApiLimiter, progressRouter);
 app.use('/api/staff', staffWorkspaceRouter);
 app.use("/", legalRouter);
 

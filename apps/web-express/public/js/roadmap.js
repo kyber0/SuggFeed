@@ -16,59 +16,20 @@
     function normalizeView(view) {
         if (view === 'tree' || view === 'list')
             return 'tree';
-        if (view === 'timeline')
-            return 'timeline';
+        if (view === 'done' || view === 'timeline')
+            return 'done';
         return 'board';
     }
-    function setView(view, updateUrl = true) {
-        const normalized = normalizeView(view);
-        board.dataset.view = normalized;
-        const viewInput = document.getElementById('roadmap-view-input');
-        if (viewInput)
-            viewInput.value = normalized;
-        document.querySelectorAll('[data-roadmap-view]').forEach(b => {
-            const bView = normalizeView(b.dataset.roadmapView);
-            b.setAttribute('aria-pressed', String(bView === normalized));
-        });
-        document.querySelectorAll('[data-roadmap-state-link]').forEach(link => {
-            try {
-                const url = new URL(link.href, window.location.origin);
-                url.searchParams.set('view', normalized);
-                link.href = url.toString();
-            }
-            catch { }
-        });
-        if (updateUrl) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('view', normalized);
-            window.history.replaceState(null, '', url);
-        }
-    }
-    document.querySelectorAll('[data-roadmap-view]').forEach(button => {
-        button.addEventListener('click', () => setView(button.dataset.roadmapView));
-    });
-    // Tree category branch folding
-    function toggleBranch(header) {
-        const isExpanded = header.getAttribute('aria-expanded') !== 'false';
-        const nextState = isExpanded ? 'false' : 'true';
-        header.setAttribute('aria-expanded', nextState);
-        const branch = header.closest('.roadmap-tree-branch');
-        if (branch) {
-            branch.classList.toggle('is-collapsed', !isExpanded);
-        }
-    }
+    // Layout links navigate normally: each view has a different server-side dataset.
+    // A real button supplies native Enter/Space behavior without duplicate key handlers.
     document.querySelectorAll('.roadmap-tree-header').forEach(header => {
-        header.addEventListener('click', (e) => {
-            // Don't toggle if clicking an inner link
-            if (e.target.tagName === 'A')
+        header.addEventListener('click', () => {
+            const panel = document.getElementById(header.getAttribute('aria-controls') || '');
+            if (!panel)
                 return;
-            toggleBranch(header);
-        });
-        header.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                toggleBranch(header);
-            }
+            const expanded = header.getAttribute('aria-expanded') !== 'false';
+            header.setAttribute('aria-expanded', String(!expanded));
+            panel.hidden = expanded;
         });
     });
     function formatManilaDate(dateStr) {
@@ -89,18 +50,62 @@
         badge.dataset.status = item.status;
         document.getElementById('roadmap-detail-title').textContent = item.title;
         document.getElementById('roadmap-detail-description').textContent = item.description;
-        const datePrefix = item.status === 'resolved' ? 'Completed ' : 'Updated ';
-        const dateValue = item.status === 'resolved' ? (item.resolved_at || item.updated_at) : item.updated_at;
-        document.getElementById('roadmap-detail-meta').textContent = `${item.category} · ${item.votes} votes · ${datePrefix}${formatManilaDate(dateValue)}`;
+        const dateLabel = item.status === 'resolved'
+            ? item.resolved_at ? `Completed ${item.resolved_at_estimated ? 'around ' : ''}${formatManilaDate(item.resolved_at)}` : 'Completion date not recorded'
+            : `Updated ${formatManilaDate(item.updated_at)}`;
+        document.getElementById('roadmap-detail-meta').textContent = `${item.category} · ${item.votes} votes · ${dateLabel}`;
         document.getElementById('roadmap-detail-response').textContent = item.response || 'The school has not posted a public response yet.';
         document.getElementById('roadmap-detail-hint').textContent = hints[item.status] || '';
+        document.getElementById('roadmap-detail-estimate').textContent = [
+            typeof item.progress_percent === 'number' ? `${item.progress_percent}% complete — school estimate` : '',
+            item.is_blocked ? 'Work is currently blocked; see the school update below.' : '',
+        ].filter(Boolean).join(' · ');
         document.getElementById('roadmap-detail-link').href = '/idea/' + encodeURIComponent(item.id);
+        const follow = document.getElementById('roadmap-follow');
+        follow.dataset.followIdea = item.id;
+        document.dispatchEvent(new CustomEvent('sf:follow-context', { detail: follow }));
         document.querySelectorAll('[data-progress-stage]').forEach(step => {
             if (step.dataset.progressStage === item.status)
                 step.setAttribute('aria-current', 'step');
             else
                 step.removeAttribute('aria-current');
         });
+    }
+    function showUpdates(updates) {
+        const list = document.getElementById('roadmap-history-list');
+        list.replaceChildren();
+        const names = { started: 'Work started', update: 'Progress update', milestone: 'Milestone', blocked: 'Work blocked', completed: 'Completed', correction: 'Correction' };
+        for (const update of updates) {
+            const entry = document.createElement('li');
+            const title = document.createElement('h4');
+            title.textContent = names[update.kind] || 'School update';
+            const meta = document.createElement('p');
+            meta.className = 'workspace-detail-meta';
+            meta.textContent = `${update.office_label} · ${formatManilaDate(update.occurred_on + 'T00:00:00+08:00')}`;
+            const body = document.createElement('p');
+            body.textContent = update.body;
+            entry.append(title, meta, body);
+            if (update.percent !== null) {
+                const estimate = document.createElement('p');
+                estimate.className = 'workspace-detail-meta';
+                estimate.textContent = `${update.percent}% complete — school estimate`;
+                entry.append(estimate);
+            }
+            if (update.blocked_reason) {
+                const reason = document.createElement('p');
+                reason.textContent = 'Waiting on: ' + update.blocked_reason;
+                entry.append(reason);
+            }
+            if (update.next_step) {
+                const nextStep = document.createElement('p');
+                nextStep.textContent = 'Next step: ' + update.next_step;
+                entry.append(nextStep);
+            }
+            list.append(entry);
+        }
+        document.getElementById('roadmap-history-status').textContent = updates.length
+            ? updates.length === 50 ? 'Showing the latest 50 school updates.' : ''
+            : 'The school has not posted a progress update yet.';
     }
     async function open(id, push = true) {
         detailRequest?.abort();
@@ -117,13 +122,16 @@
         const item = items.find(i => i.id === id);
         if (item) {
             show(item);
-            return;
         }
-        document.getElementById('roadmap-detail-title').textContent = 'Loading idea…';
-        document.getElementById('roadmap-detail-content').hidden = true;
-        document.getElementById('roadmap-detail-status').textContent = '';
-        document.getElementById('roadmap-detail-meta').textContent = '';
-        document.getElementById('roadmap-detail-error').textContent = '';
+        else {
+            document.getElementById('roadmap-detail-title').textContent = 'Loading idea…';
+            document.getElementById('roadmap-detail-content').hidden = true;
+            document.getElementById('roadmap-detail-status').textContent = '';
+            document.getElementById('roadmap-detail-meta').textContent = '';
+            document.getElementById('roadmap-detail-error').textContent = '';
+        }
+        document.getElementById('roadmap-history-list').replaceChildren();
+        document.getElementById('roadmap-history-status').textContent = 'Loading school updates…';
         if (!uuid.test(id)) {
             document.getElementById('roadmap-detail-title').textContent = 'Idea unavailable';
             document.getElementById('roadmap-detail-error').textContent = 'This link does not contain a valid idea ID.';
@@ -138,12 +146,15 @@
             if (!response.ok || !body.success) {
                 throw new Error(response.status === 404 ? 'This idea is no longer on the public roadmap.' : 'This idea could not load. Close the panel and reopen it to retry.');
             }
-            if (dialog.open && detailRequest === controller)
+            if (dialog.open && detailRequest === controller) {
                 show(body.item);
+                showUpdates(Array.isArray(body.updates) ? body.updates : []);
+            }
         }
         catch (error) {
             if (dialog.open && detailRequest === controller) {
                 document.getElementById('roadmap-detail-title').textContent = 'Idea unavailable';
+                document.getElementById('roadmap-detail-content').hidden = true;
                 document.getElementById('roadmap-detail-error').textContent = error instanceof Error && error.name !== 'AbortError' ? error.message : 'Loading timed out. Close the panel and reopen it to retry.';
             }
         }
@@ -175,7 +186,10 @@
     });
     window.addEventListener('popstate', () => {
         const url = new URL(window.location.href);
-        setView(url.searchParams.get('view'), false);
+        if (normalizeView(url.searchParams.get('view')) !== board.dataset.view) {
+            window.location.reload();
+            return;
+        }
         const id = url.searchParams.get('item');
         if (id)
             void open(id, false);
@@ -184,7 +198,6 @@
             dialog.close();
         }
     });
-    setView(new URL(window.location.href).searchParams.get('view'), false);
     const initial = new URL(window.location.href).searchParams.get('item');
     if (initial)
         void open(initial, false);

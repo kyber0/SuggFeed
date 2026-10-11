@@ -41,6 +41,8 @@
                 button.focus();
         });
         dialog.querySelectorAll('[role="tabpanel"]').forEach(panel => { panel.hidden = panel.id !== 'review-panel-' + key; });
+        save.hidden = saved || key === 'progress';
+        saveNext.hidden = saved || key === 'progress';
     }
     const tabs = Array.from(dialog.querySelectorAll('[data-review-tab]'));
     tabs.forEach((button, index) => {
@@ -53,14 +55,13 @@
             }
         });
     });
-    function hasUnsavedChanges() {
-        return Boolean(internalNote.value.trim() || (active && !saved && (status.value !== active.status || note.value !== active.staff_note || assignee.value !== active.assignee_id || priority.value !== active.priority || targetDate.value !== active.target_date)));
-    }
+    function hasReviewDraft() { return Boolean(active && !saved && (status.value !== active.status || note.value !== active.staff_note || assignee.value !== active.assignee_id || priority.value !== active.priority || targetDate.value !== active.target_date)); }
+    function hasUnsavedChanges() { return Boolean(internalNote.value.trim() || hasReviewDraft() || window.sfStaffProgress?.hasDraft()); }
     function updateDraft() { document.getElementById('review-draft-state').textContent = hasUnsavedChanges() ? 'Unsaved changes' : saved ? 'Changes saved' : 'No unsaved changes'; }
     function updateHint() { document.getElementById('review-status-hint').textContent = hints[status.value] || ''; }
     function updateCount() { document.getElementById('review-note-count').textContent = note.value.length.toLocaleString() + ' / 2,000'; updateDraft(); }
     function close(discard = false) {
-        if (busy || noteBusy)
+        if (busy || noteBusy || window.sfStaffProgress?.isBusy())
             return;
         if (!discard && hasUnsavedChanges()) {
             discardWarning.hidden = false;
@@ -117,6 +118,7 @@
             tabs[0].focus();
         dialog.querySelector('.staff-review-scroll').scrollTop = 0;
         void loadActivity();
+        window.sfStaffProgress?.open(item);
     }
     document.querySelector('.staff-rows').addEventListener('click', event => {
         const button = event.target.closest('[data-review]');
@@ -124,16 +126,23 @@
             openReview(button.dataset.review, button);
     });
     document.querySelectorAll('[data-close-review]').forEach(button => button.addEventListener('click', () => close()));
-    document.getElementById('review-keep-editing').addEventListener('click', () => { discardWarning.hidden = true; selectTab(internalNote.value.trim() ? 'notes' : 'decision'); (internalNote.value.trim() ? internalNote : note).focus(); });
+    document.getElementById('review-keep-editing').addEventListener('click', () => { discardWarning.hidden = true; if (window.sfStaffProgress?.hasDraft()) {
+        selectTab('progress');
+        window.sfStaffProgress.focusDraft();
+    }
+    else {
+        selectTab(internalNote.value.trim() ? 'notes' : 'decision');
+        (internalNote.value.trim() ? internalNote : note).focus();
+    } });
     document.getElementById('review-discard-confirm').addEventListener('click', () => close(true));
     dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
     dialog.addEventListener('click', event => { if (event.target === dialog && event.clientX < dialog.getBoundingClientRect().left)
         close(); });
-    dialog.addEventListener('close', () => { activityRequest?.abort(); if (returnFocus?.isConnected)
+    dialog.addEventListener('close', () => { activityRequest?.abort(); window.sfStaffProgress?.close(); if (returnFocus?.isConnected)
         returnFocus.focus();
     else
         document.getElementById('staff-queue-title').focus(); });
-    window.addEventListener('beforeunload', event => { if (dialog.open && (busy || noteBusy || hasUnsavedChanges())) {
+    window.addEventListener('beforeunload', event => { if (dialog.open && (busy || noteBusy || window.sfStaffProgress?.isBusy() || hasUnsavedChanges())) {
         event.preventDefault();
         event.returnValue = '';
     } });
@@ -190,9 +199,15 @@
     }
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (!active || busy || noteBusy || saved)
+        if (!active || busy || noteBusy || saved || window.sfStaffProgress?.isBusy())
             return;
         const moveNext = event.submitter === saveNext;
+        if (moveNext && window.sfStaffProgress?.hasDraft()) {
+            selectTab('progress');
+            message.textContent = 'Post or clear your progress draft before moving to the next suggestion.';
+            window.sfStaffProgress.focusDraft();
+            return;
+        }
         if (moveNext && internalNote.value.trim()) {
             selectTab('notes');
             internalMessage.textContent = 'Save or clear your private-note draft before moving to the next suggestion.';
@@ -261,8 +276,11 @@
             dialog.querySelectorAll('[data-close-review]').forEach(b => { b.disabled = false; });
             if (nextId)
                 openReview(nextId);
-            else
+            else {
+                if (saved)
+                    void window.sfStaffProgress?.refresh();
                 message.focus();
+            }
         }
     });
     async function request(url, method, payload) {
@@ -359,7 +377,7 @@
     document.getElementById('review-retry-activity').addEventListener('click', () => void loadActivity());
     internalForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (!active || busy || noteBusy || !internalForm.reportValidity())
+        if (!active || busy || noteBusy || window.sfStaffProgress?.isBusy() || !internalForm.reportValidity())
             return;
         noteBusy = true;
         const button = document.getElementById('review-add-note');
@@ -380,6 +398,55 @@
             noteBusy = false;
             button.disabled = false;
             internalNote.disabled = false;
+        }
+    });
+    window.sfStaffProgress?.bind({
+        canPost: () => !busy && !noteBusy && !hasReviewDraft(),
+        applySnapshot(submission) {
+            if (!active || active.id !== submission.id || busy)
+                return false;
+            if (hasReviewDraft())
+                return active.updated_at === submission.updated_at;
+            const normalized = { ...submission, staff_note: submission.staff_note || '', assignee_id: submission.assignee_id || '', priority: submission.priority || 'normal', target_date: submission.target_date || '' };
+            Object.assign(active, normalized);
+            const queued = items.find(item => item.id === submission.id);
+            if (queued)
+                Object.assign(queued, normalized);
+            status.value = active.status;
+            note.value = active.staff_note;
+            priority.value = active.priority;
+            targetDate.value = active.target_date;
+            if (active.assignee_id && !Array.from(assignee.options).some(option => option.value === active.assignee_id)) {
+                const option = new Option('Former staff — choose an active assignee', active.assignee_id);
+                option.dataset.formerStaff = 'true';
+                assignee.add(option);
+            }
+            assignee.value = active.assignee_id;
+            const badge = document.getElementById('review-current-status');
+            badge.textContent = labels[active.status] || active.status;
+            badge.dataset.status = active.status;
+            saved = false;
+            const posting = window.sfStaffProgress?.isBusy() || false;
+            fields.disabled = posting;
+            save.disabled = posting;
+            saveNext.disabled = posting;
+            const onProgress = dialog.querySelector('[data-review-tab="progress"]')?.getAttribute('aria-selected') === 'true';
+            save.hidden = onProgress;
+            saveNext.hidden = onProgress;
+            document.getElementById('review-dismiss').textContent = 'Cancel';
+            updateHint();
+            updateCount();
+            return true;
+        },
+        async afterPost() { await refreshQueue(); void loadActivity(); },
+        changed: updateDraft,
+        posting(value) {
+            fields.disabled = value || saved;
+            save.disabled = value || saved;
+            saveNext.disabled = value || saved;
+            document.getElementById('review-add-note').disabled = value;
+            dialog.querySelectorAll('[data-close-review]').forEach(button => { button.disabled = value; });
+            updateDraft();
         }
     });
     const viewDialog = document.getElementById('staff-save-view-dialog');

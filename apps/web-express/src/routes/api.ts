@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import { Router, Request, Response, NextFunction } from "express";
 import { supabase, supabaseService } from "../lib/supabase";
+import engagementRouter from './engagement';
+import { ENGAGEMENT_UUID } from '../lib/engagement';
 import {
   lookupTrackingCode,
   loadPublishedSubmissions,
@@ -12,6 +14,7 @@ import {
 } from "../lib/data";
 
 const router = Router();
+router.use(engagementRouter);
 
 /** Wraps async route handlers so thrown errors reach the Express error middleware. */
 function asyncHandler(
@@ -36,48 +39,13 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const id = req.params["id"] as string;
 
-    // Validate the submission exists and is public
-    const { data: sub, error: findErr } = await supabaseService
-      .from("submissions")
-      .select("id, vote_count, status")
-      .eq("id", id)
-      .in("status", ["approved", "in_progress", "resolved"])
-      .maybeSingle();
-
-    if (findErr || !sub) {
-      return res.status(404).json({ success: false, error: "Submission not found or not public." });
-    }
-
+    if (!ENGAGEMENT_UUID.test(id)) return res.status(400).json({ success: false, error: 'Invalid idea ID.' });
     const user = req.session.user;
-    let alreadyVoted = false;
-
-    if (user?.id) {
-      // Authenticated user — dedup by user_id
-      const { data: existing } = await supabaseService
-        .from("votes")
-        .select("submission_id")
-        .eq("submission_id", id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (existing) {
-        return res.json({ success: true, vote_count: sub.vote_count, already_voted: true });
-      }
-
-      const { error: insertErr } = await supabaseService
-        .from("votes")
-        .insert({ submission_id: id, user_id: user.id });
-
-      if (insertErr) throw insertErr;
-    } else {
-      // Anonymous user — dedup by session-scoped voted set
-      const sessionVoted: string[] = (req.session as any).votedIds ?? [];
-      if (sessionVoted.includes(id)) {
-        return res.json({ success: true, vote_count: sub.vote_count, already_voted: true });
-      }
-
-      const anonToken = (req.cookies as Record<string, string>)["sf_anon_token"] || crypto.randomUUID();
-      if (!(req.cookies as Record<string, string>)["sf_anon_token"]) {
+    let anonToken: string | null = null;
+    if (!user?.id) {
+      const cookieToken = req.cookies?.['sf_anon_token'];
+      anonToken = typeof cookieToken === 'string' && ENGAGEMENT_UUID.test(cookieToken) ? cookieToken : crypto.randomUUID();
+      if (cookieToken !== anonToken) {
         res.cookie("sf_anon_token", anonToken, {
           maxAge: 365 * 24 * 60 * 60 * 1000,
           httpOnly: true,
@@ -86,32 +54,15 @@ router.post(
         });
       }
 
-      const { error: insertErr } = await supabaseService
-        .from("votes")
-        .insert({ submission_id: id, anon_token: anonToken });
-
-      if (insertErr) {
-        // Unique constraint violation — already voted
-        if ((insertErr as any).code === "23505") {
-          return res.json({ success: true, vote_count: sub.vote_count, already_voted: true });
-        }
-        throw insertErr;
-      }
-
-      // Track in session to avoid repeated DB hits
-      (req.session as any).votedIds = [...sessionVoted, id];
     }
-
-    // Increment vote_count atomically
-    const newCount = (sub.vote_count ?? 0) + 1;
-    await supabaseService
-      .from("submissions")
-      .update({ vote_count: newCount })
-      .eq("id", id);
-
+    const { data, error } = await supabaseService.rpc('cast_idea_vote', {
+      p_submission_id: id, p_user_id: user?.id || null, p_anon_token: anonToken,
+    });
+    if (error?.code === 'P0002') return res.status(404).json({ success: false, error: 'Submission not found or not public.' });
+    if (error) throw error;
     invalidateCache(`submission_${id}`);
     invalidateCache("feed_");
-    return res.json({ success: true, vote_count: newCount });
+    return res.json({ success: true, vote_count: data.vote_count, already_voted: data.already_voted });
   })
 );
 

@@ -170,14 +170,12 @@ Deno.serve(async (request) => {
       }
     }
 
-    // Update vote_count incrementally on the submission
-    const currentVotes = typeof submission.vote_count === "number" ? submission.vote_count : 0;
-    const voteCount = Math.max(0, currentVotes + (didVote ? 1 : -1));
-
-    await client
-      .from("submissions")
-      .update({ vote_count: voteCount })
-      .eq("id", input.submissionId);
+    // The votes insert/delete trigger maintains the authoritative count. Never
+    // overwrite it with a stale pre-write snapshot (concurrent votes would vanish).
+    const { data: updatedSubmission, error: countError } = await client
+      .from("submissions").select("vote_count").eq("id", input.submissionId).single();
+    if (countError) throw countError;
+    const voteCount = updatedSubmission.vote_count;
 
     return json({ voteCount, voted: didVote }, 200, request);
   } catch (error) {

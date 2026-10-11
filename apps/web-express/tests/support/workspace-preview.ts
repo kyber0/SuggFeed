@@ -61,18 +61,19 @@ export function createWorkspacePreview() {
  const notes:Array<{id:string;submission_id:string;body:string;created_at:string;actor:{display_name:string}}>=[];
  const history:Array<any>=[];
  const views:Array<any>=[];
- const publicItem=(item:typeof items[number])=>({id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,votes:item.vote_count,comments:item.comment_count,created_at:item.created_at,updated_at:item.updated_at,resolved_at:(item as any).resolved_at || null,response:item.staff_note});
+ const publicItem=(item:typeof items[number])=>({id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,votes:item.vote_count,comments:item.comment_count,created_at:item.created_at,updated_at:item.updated_at,resolved_at:(item as any).resolved_at || null,resolved_at_estimated:false,progress_percent:null,started_at:null,is_blocked:false,response:item.staff_note});
  app.get('/roadmap',(req,res)=>{
   const filters=roadmapFilters(req.query);
   const matched=req.query.empty?[]:items.filter(i=>['approved','in_progress','resolved'].includes(i.status) && (filters.category==='all' || filters.category===i.category) && (!filters.search || (i.title+' '+i.description).toLowerCase().includes(filters.search.toLowerCase())));
   const counts=Object.fromEntries(['approved','in_progress','resolved'].map(s=>[s,matched.filter(i=>i.status===s).length]));
-  const pageItems=['approved','in_progress','resolved'].filter(s=>filters.stage==='all' || filters.stage===s).flatMap(s=>matched.filter(i=>i.status===s).slice((filters.page-1)*8,filters.page*8));
+  const selected=matched.filter(i=>filters.stage==='all' || filters.stage===i.status);
+  const pageItems=filters.view==='done'?selected.slice((filters.page-1)*20,filters.page*20):filters.view==='tree'?selected: ['approved','in_progress','resolved'].filter(s=>filters.stage==='all' || filters.stage===s).flatMap(s=>matched.filter(i=>i.status===s).slice((filters.page-1)*8,filters.page*8));
   const mappedItems=pageItems.map(publicItem);
   const recentlyCompleted=items.filter(i=>i.status==='resolved').map(publicItem).slice(0,3);
   const categories=['Facilities','Learning'];
-  const treeData=groupTreeByCategory(mappedItems,categories);
+  const treeData=groupTreeByCategory(selected.map(publicItem),categories).map(branch=>({...branch,leaves:branch.leaves.slice(filters.category==='all'?0:(filters.page-1)*8,filters.category==='all'?8:filters.page*8)}));
   const timelineData=groupTimelineByMonth(mappedItems);
-  res.send(eta.render('roadmap',{currentPath:'/roadmap',user:null,items:mappedItems,counts,totalCount:items.filter(i=>['approved','in_progress','resolved'].includes(i.status)).length,matchingCount:matched.length,pageCount:Math.max(1,...Object.entries(counts).filter(([s])=>filters.stage==='all' || filters.stage===s).map(([,count])=>Math.ceil(count/8))),perStage:8,filters,categories,recentlyCompleted,treeData,timelineData,formatManilaDate}));
+  res.send(eta.render('roadmap',{currentPath:'/roadmap',user:null,items:filters.view==='tree'?treeData.flatMap(branch=>branch.leaves):mappedItems,counts,totalCount:items.filter(i=>['approved','in_progress','resolved'].includes(i.status)).length,matchingCount:selected.length,pageCount:filters.view==='done'?Math.max(1,Math.ceil(selected.length/20)):filters.view==='tree'?(filters.category==='all'?1:Math.max(1,Math.ceil(selected.length/8))):Math.max(1,...Object.entries(counts).filter(([s])=>filters.stage==='all' || filters.stage===s).map(([,count])=>Math.ceil(count/8))),perStage:8,filters,categories,recentlyCompleted,treeData,timelineData,formatManilaDate}));
  });
  app.get('/roadmap/idea/:id',(req,res)=>{const item=items.find(i=>i.id===req.params.id && ['approved','in_progress','resolved'].includes(i.status));res.status(item?200:404).json(item?{success:true,item:publicItem(item)}:{success:false});});
  app.get('/admin',(req,res)=>{

@@ -1,0 +1,18 @@
+<% layout('layout') %>
+<main class="campus-roadmap notifications-page">
+ <header class="workspace-heading">
+  <div><p class="workspace-kicker">STAY IN THE LOOP</p><h1>Your school updates</h1><p class="roadmap-subtitle">Milestones, blockers and completed improvements from ideas you follow.</p></div>
+  <a class="workspace-button" href="/roadmap">Explore the roadmap →</a>
+ </header>
+ <% if (!it.signedIn) { %>
+  <section class="roadmap-lane-empty"><h2>Sign in to follow campus ideas</h2><p>Choose Follow on an idea to receive updates here. Email and push alerts are not enabled by following.</p><button type="button" class="workspace-button workspace-button--primary" data-sf-click="action-94">Sign in</button></section>
+ <% } else { %>
+  <section aria-label="Your notifications">
+   <p id="notification-summary" role="status">Loading your updates…</p>
+   <p id="notification-error" class="workspace-message" role="alert" hidden></p>
+   <ol class="notification-list" id="notification-list"></ol>
+   <div class="notification-actions"><button type="button" class="workspace-button" id="notification-retry" hidden>Try again</button><button type="button" class="workspace-button" id="notification-more" hidden>Load older updates</button></div>
+  </section>
+  <script src="/js/notifications.js?v=20261011-progress"></script>
+ <% } %>
+</main>

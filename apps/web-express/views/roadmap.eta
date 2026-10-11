@@ -17,156 +17,99 @@
  const treeData = it.treeData || [];
  const timelineData = it.timelineData || [];
  const formatManilaDate = it.formatManilaDate || ((d) => d ? new Date(d).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric' }) : '');
+ const completionLabel = item => item.resolved_at ? 'Completed ' + (item.resolved_at_estimated ? 'around ' : '') + formatManilaDate(item.resolved_at) : 'Completion date not recorded';
 %>
 <main class="campus-roadmap">
  <header class="workspace-heading roadmap-heading">
-  <div class="roadmap-heading-copy">
-   <div class="roadmap-kicker-row">
-    <span class="roadmap-kicker-badge"><span class="roadmap-kicker-dot" aria-hidden="true"></span>YOUR VOICE, IN ACTION</span>
-   </div>
-   <h1>A better campus,<br/>one idea at a time<span class="workspace-title-dot">.</span></h1>
-   <p>See what’s planned, what’s changing, and what’s already improved.</p>
+  <div>
+   <span class="workspace-kicker">Campus Roadmap</span>
+   <h1>Roadmap<span class="workspace-title-dot">.</span></h1>
+   <p class="roadmap-subtitle">Track community suggestions from planned to completion.</p>
   </div>
-  <div class="roadmap-heading-aside">
-   <div class="roadmap-hero-stages" role="region" aria-label="Roadmap stages summary">
-    <div class="roadmap-stage-track" aria-hidden="true">
-     <div class="roadmap-stage-track-line"></div>
-     <div class="roadmap-stage-track-dot"></div>
-    </div>
-    <div class="roadmap-hero-tiles">
-     <% for (const stage of stages) { %>
-      <a href="<%= urlFor({ stage: filters.stage === stage.key ? 'all' : stage.key, page: '1' }) %>"
-         class="roadmap-hero-tile <%= filters.stage === stage.key ? 'is-active' : '' %>"
-         data-status="<%= stage.key %>"
-         data-roadmap-state-link
-         aria-pressed="<%= filters.stage === stage.key %>">
-       <div class="roadmap-hero-tile-top">
-        <span class="roadmap-stage-dot <%= stage.key === 'in_progress' ? 'roadmap-pulse-dot' : '' %>" data-status="<%= stage.key %>" aria-hidden="true"></span>
-        <span class="roadmap-hero-tile-label"><%= stage.label %></span>
-       </div>
-       <strong class="roadmap-hero-tile-count"><%= counts[stage.key] || 0 %></strong>
-      </a>
-     <% } %>
-    </div>
-   </div>
-   <div class="roadmap-heading-meta">
-    <span><strong><%= totalCount %></strong> published ideas</span>
-    <span class="roadmap-meta-sep" aria-hidden="true">·</span>
-    <a class="workspace-text-link" href="/feed">Explore community feed →</a>
-   </div>
+  <div class="roadmap-summary-pills" role="region" aria-label="Roadmap stages">
+   <% for (const stage of stages) { %>
+    <a href="<%= urlFor({ stage: filters.stage === stage.key ? 'all' : stage.key, view: filters.view === 'done' ? 'board' : filters.view, page: '1' }) %>"
+       class="roadmap-pill <%= filters.stage === stage.key ? 'is-active' : '' %>"
+       data-status="<%= stage.key %>"
+       data-roadmap-state-link
+       aria-current="<%= filters.stage === stage.key ? 'page' : 'false' %>">
+     <span class="roadmap-stage-dot <%= stage.key === 'in_progress' ? 'roadmap-pulse-dot' : '' %>" data-status="<%= stage.key %>" aria-hidden="true"></span>
+     <span class="roadmap-pill-label"><%= stage.label %></span>
+     <strong class="roadmap-pill-count"><%= counts[stage.key] || 0 %></strong>
+    </a>
+   <% } %>
   </div>
  </header>
-
- <% if (recentlyCompleted.length > 0 && filters.stage !== 'approved' && filters.stage !== 'in_progress') { %>
-  <aside class="roadmap-recent-strip" aria-label="Recently completed improvements">
-   <div class="roadmap-recent-header">
-    <span class="roadmap-recent-badge"><span class="roadmap-recent-sparkle" aria-hidden="true">✨</span> RECENT WINS</span>
-    <h3>Community feedback put into action</h3>
-   </div>
-   <div class="roadmap-recent-cards">
-    <% for (const recent of recentlyCompleted) { %>
-     <article class="roadmap-recent-card" data-roadmap-id="<%= recent.id %>">
-      <div class="roadmap-recent-top">
-       <span class="workspace-tag"><%= recent.category %></span>
-       <span class="workspace-status" data-status="resolved">Completed</span>
-      </div>
-      <h4><button type="button" data-roadmap-open="<%= recent.id %>" aria-haspopup="dialog"><%= recent.title %></button></h4>
-      <div class="roadmap-recent-footer">
-       <time datetime="<%= recent.resolved_at || recent.updated_at %>">Completed <%= formatManilaDate(recent.resolved_at || recent.updated_at) %></time>
-       <span class="roadmap-recent-votes">↑ <%= recent.votes %></span>
-      </div>
-     </article>
-    <% } %>
-   </div>
-  </aside>
- <% } %>
 
  <section class="roadmap-workspace" aria-label="Campus improvement board">
   <form class="roadmap-controls" action="/roadmap" method="get" role="search">
    <input type="hidden" name="stage" value="<%= filters.stage %>"/>
    <input type="hidden" name="view" id="roadmap-view-input" value="<%= filters.view %>"/>
-   <input type="hidden" name="category" id="roadmap-category-input" value="<%= filters.category %>"/>
    <label class="workspace-search">
     <%~ icon('search') %>
-    <input class="workspace-search-input" id="roadmap-search" name="search" type="search" maxlength="120" value="<%= filters.search %>" placeholder="Search all published ideas…" aria-label="Search roadmap titles and descriptions"/>
+    <input class="workspace-search-input" id="roadmap-search" name="search" type="search" maxlength="120" value="<%= filters.search %>" placeholder="Search ideas…" aria-label="Search roadmap titles and descriptions"/>
    </label>
-   <button type="submit" class="workspace-button">Search</button>
+   <label class="roadmap-category-label">
+    <span class="sr-only">Category</span>
+    <select class="workspace-input" id="roadmap-category" name="category">
+     <option value="all">All categories</option>
+     <% for (const category of (it.categories || [])) { %>
+      <option value="<%= category %>" <%= filters.category === category ? 'selected' : '' %>><%= category %></option>
+     <% } %>
+    </select>
+   </label>
+   <button type="submit" class="workspace-button">Filter</button>
 
-   <div class="roadmap-view-switch" role="group" aria-label="Roadmap layout">
-    <button type="button" data-roadmap-view="board" aria-pressed="<%= filters.view === 'board' %>"><%~ icon('board') %> Board</button>
-    <button type="button" data-roadmap-view="tree" aria-pressed="<%= filters.view === 'tree' %>"><%~ icon('list') %> Tree</button>
-    <button type="button" data-roadmap-view="timeline" aria-pressed="<%= filters.view === 'timeline' %>"><%~ icon('arrow') %> Timeline</button>
-   </div>
+   <nav class="roadmap-view-switch" aria-label="Roadmap layout">
+    <% for (const [view, name, glyph] of [['board', 'Board', 'board'], ['tree', 'By category', 'list'], ['done', 'Completed', 'arrow']]) { %>
+     <a href="<%= urlFor({ view, stage: view === 'done' ? 'resolved' : filters.view === 'done' ? 'all' : filters.stage, page: '1' }) %>" data-roadmap-view="<%= view %>" aria-current="<%= filters.view === view ? 'page' : 'false' %>"><%~ icon(glyph) %> <%= name %></a>
+    <% } %>
+   </nav>
   </form>
-
-  <nav class="roadmap-category-chips" aria-label="Filter by category">
-   <a href="<%= urlFor({ category: 'all', page: '1' }) %>"
-      class="roadmap-chip <%= filters.category === 'all' ? 'is-active' : '' %>"
-      data-roadmap-state-link
-      aria-pressed="<%= filters.category === 'all' %>">All categories</a>
-   <% for (const category of (it.categories || [])) { %>
-    <a href="<%= urlFor({ category: category, page: '1' }) %>"
-       class="roadmap-chip <%= filters.category === category ? 'is-active' : '' %>"
-       data-roadmap-state-link
-       aria-pressed="<%= filters.category === category %>"><%= category %></a>
-   <% } %>
-  </nav>
-
-  <nav class="roadmap-stage-switch" aria-label="Filter roadmap stage">
-   <% for (const [key, name] of [['all', 'All stages'], ...stages.map(s => [s.key, s.label])]) { %>
-    <a href="<%= urlFor({ stage: key, page: '1' }) %>"
-       data-roadmap-state-link
-       class="<%= filters.stage === key ? 'is-active' : '' %>"
-       aria-current="<%= filters.stage === key ? 'page' : 'false' %>">
-     <%= name %><% if (key !== 'all') { %><span><%= counts[key] || 0 %></span><% } %>
-    </a>
-   <% } %>
-  </nav>
 
   <div class="roadmap-results">
    <p role="status"><%= (it.items || []).length %> shown · <%= filters.stage === 'all' ? matchingCount : (counts[filters.stage] || 0) %> matching ideas<%= filtered ? ' across all pages' : '' %></p>
    <% if (filtered) { %>
     <a class="workspace-text-link" id="roadmap-clear" data-roadmap-state-link href="<%= urlFor({ search: '', category: 'all', page: '1' }) %>">Clear filters</a>
    <% } %>
-   <span>Planned ideas may change as the school reviews priorities.</span>
+   <% if (filters.stage !== 'all' && filters.view !== 'done') { %>
+    <a class="workspace-text-link" href="<%= urlFor({ stage: 'all', page: '1' }) %>">Show all stages</a>
+   <% } %>
   </div>
 
   <div class="roadmap-board" id="campus-roadmap-board" data-view="<%= filters.view %>" data-stage="<%= filters.stage %>">
    <!-- Board Layout -->
+   <% if (filters.view === 'board') { %>
    <% for (const stage of stages.filter(s => filters.stage === 'all' || filters.stage === s.key)) { const laneItems = (it.items || []).filter(i => i.status === stage.key); %>
     <section class="roadmap-lane" data-lane="<%= stage.key %>" aria-labelledby="lane-<%= stage.key %>">
      <header class="roadmap-lane-heading">
-      <div>
+      <div class="roadmap-lane-title-group">
        <h2 id="lane-<%= stage.key %>"><span class="roadmap-stage-dot <%= stage.key === 'in_progress' ? 'roadmap-pulse-dot' : '' %>" data-status="<%= stage.key %>" aria-hidden="true"></span><%= stage.label %></h2>
        <span class="roadmap-lane-count"><%= counts[stage.key] || 0 %></span>
       </div>
-      <p><%= stage.caption %></p>
      </header>
      <div class="roadmap-lane-cards">
       <% for (const item of laneItems) { %>
        <article class="roadmap-idea" data-roadmap-id="<%= item.id %>">
-        <div class="roadmap-idea-top">
+        <div class="roadmap-card-top">
          <span class="workspace-tag"><%= item.category %></span>
-         <span class="roadmap-idea-stage-pill" data-status="<%= stage.key %>"><%= stage.label %></span>
+         <% if (stage.key === 'resolved') { %>
+          <span class="roadmap-card-date roadmap-card-date--completed"><%= completionLabel(item) %></span>
+         <% } else { %>
+          <time class="roadmap-card-date" datetime="<%= item.updated_at %>"><%= formatManilaDate(item.updated_at) %></time>
+         <% } %>
         </div>
-        <div class="roadmap-card-copy">
-         <h3><button type="button" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button></h3>
-         <p><%= item.description %></p>
-        </div>
-        <% if (stage.key === 'resolved') { %>
-         <time class="roadmap-card-date roadmap-card-date--completed" datetime="<%= item.resolved_at || item.updated_at %>">✓ Completed <%= formatManilaDate(item.resolved_at || item.updated_at) %></time>
-        <% } else { %>
-         <time class="roadmap-card-date" datetime="<%= item.updated_at %>">Updated <%= formatManilaDate(item.updated_at) %></time>
-        <% } %>
-        <footer>
-         <span class="roadmap-vote-badge">↑ <%= item.votes %> votes<span class="roadmap-comment-count"> · <%= item.comments %> comments</span></span>
-         <span class="roadmap-card-arrow" aria-hidden="true"><%~ icon('arrow') %></span>
+        <h3 class="roadmap-card-title"><button type="button" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button></h3>
+        <p class="roadmap-card-desc"><%= item.description %></p>
+        <footer class="roadmap-card-footer">
+         <span class="roadmap-card-metric">↑ <%= item.votes %> votes</span>
+         <% if (item.comments) { %><span class="roadmap-card-comments"> · <%= item.comments %> comments</span><% } %>
         </footer>
        </article>
       <% } %>
       <% if (!laneItems.length) { %>
        <div class="roadmap-lane-empty">
-        <span aria-hidden="true" class="roadmap-lane-empty-icon">◌</span>
+        <span aria-hidden="true">◌</span>
         <h3><%= (counts[stage.key] || 0) > 0 ? 'No more ideas in this stage on this page' : filtered ? 'No matching ideas' : 'Nothing here yet' %></h3>
         <p><%= (counts[stage.key] || 0) > 0 ? 'Explore this stage from the first page.' : filtered ? 'Try a different category or search phrase.' : stage.empty %></p>
         <% if ((counts[stage.key] || 0) > 0) { %>
@@ -177,40 +120,38 @@
      </div>
     </section>
    <% } %>
+   <% } %>
 
    <!-- Tree Layout (Category branches & progress) -->
+   <% if (filters.view === 'tree') { %>
    <div class="roadmap-view-tree-container" aria-label="Category branches">
     <% if (!treeData.length) { %>
      <div class="roadmap-lane-empty">
-      <span aria-hidden="true" class="roadmap-lane-empty-icon">◌</span>
+      <span aria-hidden="true">◌</span>
       <h3><%= filtered ? 'No matching ideas' : 'Nothing here yet' %></h3>
       <p><%= filtered ? 'Try a different category or search phrase.' : 'Newly approved ideas will appear here.' %></p>
      </div>
     <% } else { %>
-     <% for (const branch of treeData) { %>
+     <% for (const [branchIndex, branch] of treeData.entries()) { %>
       <section class="roadmap-tree-branch" data-branch="<%= branch.name %>">
-       <header class="roadmap-tree-header" aria-expanded="true" role="button" tabindex="0">
-        <div class="roadmap-tree-header-info">
-         <div class="roadmap-tree-title-row">
-          <span class="roadmap-tree-folder-icon" aria-hidden="true">📁</span>
-          <h3><%= branch.name %></h3>
-         </div>
-         <span class="roadmap-tree-counts"><%= branch.total %> ideas · <%= branch.completed %> completed</span>
-        </div>
-        <div class="roadmap-tree-progress-wrap">
-         <div class="roadmap-tree-bar" role="progressbar" aria-label="<%= branch.name %> progress" aria-valuenow="<%= branch.pctCompleted %>" aria-valuemin="0" aria-valuemax="100">
+       <button type="button" class="roadmap-tree-header" aria-expanded="true" aria-controls="roadmap-branch-<%= branchIndex %>" aria-labelledby="roadmap-branch-title-<%= branchIndex %> roadmap-branch-count-<%= branchIndex %>">
+        <span class="roadmap-tree-header-info">
+         <span class="roadmap-tree-title" id="roadmap-branch-title-<%= branchIndex %>"><%= branch.name %></span>
+         <span class="roadmap-tree-counts" id="roadmap-branch-count-<%= branchIndex %>"><%= branch.completed %> of <%= branch.total %> ideas completed</span>
+        </span>
+        <span class="roadmap-tree-progress-wrap" aria-hidden="true">
+         <span class="roadmap-tree-bar">
           <span class="roadmap-tree-bar-resolved" style="width:<%= branch.pctCompleted %>%" title="Completed: <%= branch.pctCompleted %>%"></span>
           <span class="roadmap-tree-bar-in-progress" style="width:<%= branch.pctInProgress %>%" title="In progress: <%= branch.pctInProgress %>%"></span>
           <span class="roadmap-tree-bar-approved" style="width:<%= branch.pctPlanned %>%" title="Planned: <%= branch.pctPlanned %>%"></span>
-         </div>
-         <span class="roadmap-tree-pct"><%= branch.pctCompleted %>% done</span>
-        </div>
-        <button type="button" class="roadmap-tree-toggle" aria-label="Toggle <%= branch.name %> category">
+         </span>
+         <span class="roadmap-tree-pct"><%= branch.pctCompleted %>%</span>
+        </span>
+        <span class="roadmap-tree-toggle">
          <span class="roadmap-tree-chevron" aria-hidden="true">▼</span>
-        </button>
-       </header>
-       <div class="roadmap-tree-leaves">
-        <div class="roadmap-tree-leaves-stem" aria-hidden="true"></div>
+        </span>
+       </button>
+       <div class="roadmap-tree-leaves" id="roadmap-branch-<%= branchIndex %>">
         <% for (const leaf of branch.leaves) { %>
          <article class="roadmap-tree-leaf" data-roadmap-id="<%= leaf.id %>">
           <span class="roadmap-stage-dot <%= leaf.status === 'in_progress' ? 'roadmap-pulse-dot' : '' %>" data-status="<%= leaf.status %>" aria-hidden="true"></span>
@@ -219,9 +160,7 @@
           </div>
           <span class="workspace-status" data-status="<%= leaf.status %>"><%= leaf.status === 'resolved' ? 'Completed' : leaf.status === 'in_progress' ? 'In progress' : 'Planned' %></span>
           <span class="roadmap-tree-leaf-votes">↑ <%= leaf.votes %></span>
-          <time class="roadmap-tree-leaf-date" datetime="<%= leaf.resolved_at || leaf.updated_at %>">
-           <%= leaf.status === 'resolved' ? 'Completed ' + formatManilaDate(leaf.resolved_at || leaf.updated_at) : 'Updated ' + formatManilaDate(leaf.updated_at) %>
-          </time>
+          <span class="roadmap-tree-leaf-date"><%= leaf.status === 'resolved' ? completionLabel(leaf) : 'Updated ' + formatManilaDate(leaf.updated_at) %></span>
          </article>
         <% } %>
         <footer class="roadmap-tree-branch-footer">
@@ -232,12 +171,14 @@
      <% } %>
     <% } %>
    </div>
+   <% } %>
 
-   <!-- Timeline Layout (You said, we did) -->
-   <div class="roadmap-view-timeline-container" aria-label="You said, we did timeline">
+   <!-- Completed outcomes, not an estimated work schedule -->
+   <% if (filters.view === 'done') { %>
+   <div class="roadmap-view-timeline-container" aria-label="Completed campus improvements">
     <% if (!timelineData.length) { %>
      <div class="roadmap-lane-empty">
-      <span aria-hidden="true" class="roadmap-lane-empty-icon">◌</span>
+      <span aria-hidden="true">◌</span>
       <h3><%= filtered ? 'No completed ideas match your filters' : 'Nothing here yet' %></h3>
       <p><%= filtered ? 'Try clearing your filters to see past improvements.' : 'Completed community improvements will appear here.' %></p>
      </div>
@@ -247,33 +188,29 @@
        <div class="roadmap-timeline-month-header">
         <span class="roadmap-timeline-month-dot" aria-hidden="true"></span>
         <h3 id="month-<%= monthGroup.monthKey %>" class="roadmap-timeline-month-title"><%= monthGroup.label %></h3>
-        <span class="roadmap-timeline-month-count"><%= monthGroup.items.length %> <%= monthGroup.items.length === 1 ? 'improvement' : 'improvements' %></span>
+        <span class="roadmap-timeline-month-count"><%= monthGroup.items.length %> shown on this page</span>
        </div>
        <div class="roadmap-timeline-cards">
         <% for (const item of monthGroup.items) { %>
          <article class="roadmap-timeline-card" data-roadmap-id="<%= item.id %>">
           <div class="roadmap-timeline-you-said">
            <div class="roadmap-timeline-tag-row">
-            <span class="roadmap-timeline-side-label"><span class="roadmap-timeline-icon" aria-hidden="true">💬</span> YOU SAID</span>
+            <span class="roadmap-timeline-side-label">You said</span>
             <span class="workspace-tag"><%= item.category %></span>
            </div>
            <h4><button type="button" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button></h4>
            <p><%= item.description %></p>
            <div class="roadmap-timeline-meta">
-            <span class="roadmap-timeline-votes">↑ <%= item.votes %> votes</span> · <time datetime="<%= item.created_at %>">Suggested <%= formatManilaDate(item.created_at) %></time>
+            <span>↑ <%= item.votes %> votes</span> · <time datetime="<%= item.created_at %>">Suggested <%= formatManilaDate(item.created_at) %></time>
            </div>
-          </div>
-          <div class="roadmap-timeline-divider" aria-hidden="true">
-           <span class="roadmap-timeline-divider-line"></span>
-           <span class="roadmap-timeline-divider-arrow">→</span>
           </div>
           <div class="roadmap-timeline-we-did">
            <div class="roadmap-timeline-tag-row">
-            <span class="roadmap-timeline-side-label roadmap-timeline-side-label--school"><span class="roadmap-timeline-icon" aria-hidden="true">🏛️</span> WE DID</span>
+            <span class="roadmap-timeline-side-label roadmap-timeline-side-label--school">We did</span>
             <span class="workspace-status" data-status="resolved">Completed</span>
            </div>
-           <p class="roadmap-timeline-response"><%= item.response || 'The school completed this improvement in response to student feedback.' %></p>
-           <time class="roadmap-timeline-completed-date" datetime="<%= item.resolved_at || item.updated_at %>">✓ Completed <%= formatManilaDate(item.resolved_at || item.updated_at) %></time>
+           <p class="roadmap-timeline-response"><%= item.response || 'Marked completed; an outcome summary has not been posted.' %></p>
+           <span class="roadmap-timeline-completed-date"><%= completionLabel(item) %></span>
           </div>
          </article>
         <% } %>
@@ -282,10 +219,11 @@
      <% } %>
     <% } %>
    </div>
+   <% } %>
   </div>
 
   <nav class="roadmap-pagination" aria-label="Roadmap pages">
-   <span>Page <%= filters.page %> of <%= pageCount %><span class="roadmap-page-hint"> · Up to <%= it.perStage || 8 %> ideas per stage</span></span>
+   <span>Page <%= filters.page %> of <%= pageCount %><span class="roadmap-page-hint"> · <%= filters.view === 'done' ? 'Up to 20 completed ideas per page' : filters.view === 'tree' ? 'Up to 8 ideas per category' : 'Up to 8 ideas per stage' %></span></span>
    <div>
     <% if (filters.page > 1) { %>
      <a class="workspace-button" data-roadmap-state-link href="<%= urlFor({ page: String(filters.page - 1) }) %>">← Previous</a>
@@ -298,7 +236,7 @@
  </section>
 
  <footer class="roadmap-footer">
-  <div class="roadmap-footer-copy">
+  <div>
    <strong>Your next idea could start here.</strong>
    <p>See a way to improve campus life? Share it with your community.</p>
   </div>
@@ -330,11 +268,19 @@
       <% } %>
      </ol>
      <p id="roadmap-detail-hint"></p>
+     <p id="roadmap-detail-estimate" class="workspace-detail-meta"></p>
     </div>
+    <section class="roadmap-public-history" aria-labelledby="roadmap-history-title">
+     <h3 id="roadmap-history-title">School progress updates</h3>
+     <p id="roadmap-history-status" role="status"></p>
+     <ol id="roadmap-history-list" class="roadmap-history-list"></ol>
+    </section>
     <a class="workspace-button workspace-button--primary" id="roadmap-detail-link" href="/feed">Open idea &amp; discussion →</a>
+    <button type="button" class="workspace-button" id="roadmap-follow" data-follow-idea="" aria-pressed="false">Follow this idea</button>
+    <p class="workspace-detail-meta">Following sends school updates to <a href="/notifications">your notifications</a>. Email and push alerts are not enabled.</p>
    </div>
   </div>
  </dialog>
 </main>
 <script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items || []).replace(/</g, '\\u003c') %></script>
-<script src="/js/roadmap.js?v=20261011-workspace"></script>
+<script src="/js/roadmap.js?v=20261011-progress"></script>

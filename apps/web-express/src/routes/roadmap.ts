@@ -1,12 +1,11 @@
 import { Router } from 'express';
+import { listPublicProgress } from '../lib/progress';
 import {
   roadmapFilters,
   loadRoadmapPage,
   loadRoadmapCategories,
   loadPublicRoadmapIdea,
   loadRecentlyCompleted,
-  groupTreeByCategory,
-  groupTimelineByMonth,
   formatManilaDate,
 } from '../lib/roadmap';
 
@@ -17,7 +16,8 @@ router.get('/idea/:id', async (req, res, next) => {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return res.status(400).json({ success: false, error: 'Invalid idea ID.' });
     const item = await loadPublicRoadmapIdea(id);
     if (!item) return res.status(404).json({ success: false, error: 'This idea is no longer on the public roadmap.' });
-    return res.json({ success: true, item });
+    const updates = await listPublicProgress(id);
+    return res.json({ success: true, item, updates });
   } catch (error) { next(error); }
 });
 router.get('/', async (req, res, next) => {
@@ -26,11 +26,9 @@ router.get('/', async (req, res, next) => {
     const [result, categories, recentlyCompleted] = await Promise.all([
       loadRoadmapPage(filters),
       loadRoadmapCategories(),
-      loadRecentlyCompleted(),
+      filters.view !== 'done' && !filters.search && filters.category === 'all' ? loadRecentlyCompleted() : Promise.resolve([]),
     ]);
     if (filters.page > result.pageCount) return res.redirect('/roadmap?' + new URLSearchParams({ ...filters, page: String(result.pageCount) }).toString());
-    const treeData = groupTreeByCategory(result.items, categories);
-    const timelineData = groupTimelineByMonth(result.items);
     res.render('roadmap', {
       title: 'Campus roadmap — SuggFeed',
       description: 'See which community ideas are planned, in progress, and completed.',
@@ -38,8 +36,6 @@ router.get('/', async (req, res, next) => {
       filters,
       categories,
       recentlyCompleted,
-      treeData,
-      timelineData,
       formatManilaDate,
     });
   } catch (error) { next(error); }

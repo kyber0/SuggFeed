@@ -39,6 +39,7 @@
       if(selected && focus) button.focus();
     });
     dialog.querySelectorAll<HTMLElement>('[role="tabpanel"]').forEach(panel=>{panel.hidden=panel.id!=='review-panel-'+key;});
+    save.hidden=saved || key==='progress';saveNext.hidden=saved || key==='progress';
   }
   const tabs=Array.from(dialog.querySelectorAll<HTMLButtonElement>('[data-review-tab]'));
   tabs.forEach((button,index)=>{
@@ -48,14 +49,13 @@
       if(next>=0){event.preventDefault();selectTab(tabs[next].dataset.reviewTab!,true);}
     });
   });
-  function hasUnsavedChanges() {
-    return Boolean(internalNote.value.trim() || (active && !saved && (status.value!==active.status || note.value!==active.staff_note || assignee.value!==active.assignee_id || priority.value!==active.priority || targetDate.value!==active.target_date)));
-  }
+  function hasReviewDraft() {return Boolean(active && !saved && (status.value!==active.status || note.value!==active.staff_note || assignee.value!==active.assignee_id || priority.value!==active.priority || targetDate.value!==active.target_date));}
+  function hasUnsavedChanges() {return Boolean(internalNote.value.trim() || hasReviewDraft() || window.sfStaffProgress?.hasDraft());}
   function updateDraft() {document.getElementById('review-draft-state')!.textContent=hasUnsavedChanges()?'Unsaved changes':saved?'Changes saved':'No unsaved changes';}
   function updateHint(){document.getElementById('review-status-hint')!.textContent=hints[status.value] || '';}
   function updateCount(){document.getElementById('review-note-count')!.textContent=note.value.length.toLocaleString()+' / 2,000';updateDraft();}
   function close(discard=false){
-    if(busy || noteBusy) return;
+    if(busy || noteBusy || window.sfStaffProgress?.isBusy()) return;
     if(!discard && hasUnsavedChanges()){discardWarning.hidden=false;document.getElementById('review-keep-editing')!.focus();return;}
     dialog.close();
   }
@@ -81,18 +81,19 @@
     if(!dialog.open)dialog.showModal();else tabs[0].focus();
     dialog.querySelector('.staff-review-scroll')!.scrollTop=0;
     void loadActivity();
+    window.sfStaffProgress?.open(item);
   }
   document.querySelector('.staff-rows')!.addEventListener('click',event=>{
     const button=(event.target as Element).closest<HTMLButtonElement>('[data-review]');
     if(button)openReview(button.dataset.review!,button);
   });
   document.querySelectorAll('[data-close-review]').forEach(button=>button.addEventListener('click',()=>close()));
-  document.getElementById('review-keep-editing')!.addEventListener('click',()=>{discardWarning.hidden=true;selectTab(internalNote.value.trim()?'notes':'decision');(internalNote.value.trim()?internalNote:note).focus();});
+  document.getElementById('review-keep-editing')!.addEventListener('click',()=>{discardWarning.hidden=true;if(window.sfStaffProgress?.hasDraft()){selectTab('progress');window.sfStaffProgress.focusDraft();}else{selectTab(internalNote.value.trim()?'notes':'decision');(internalNote.value.trim()?internalNote:note).focus();}});
   document.getElementById('review-discard-confirm')!.addEventListener('click',()=>close(true));
   dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
   dialog.addEventListener('click',event=>{if(event.target===dialog && event.clientX<dialog.getBoundingClientRect().left)close();});
-  dialog.addEventListener('close',()=>{activityRequest?.abort();if(returnFocus?.isConnected)returnFocus.focus();else document.getElementById('staff-queue-title')!.focus();});
-  window.addEventListener('beforeunload',event=>{if(dialog.open && (busy || noteBusy || hasUnsavedChanges())){event.preventDefault();event.returnValue='';}});
+  dialog.addEventListener('close',()=>{activityRequest?.abort();window.sfStaffProgress?.close();if(returnFocus?.isConnected)returnFocus.focus();else document.getElementById('staff-queue-title')!.focus();});
+  window.addEventListener('beforeunload',event=>{if(dialog.open && (busy || noteBusy || window.sfStaffProgress?.isBusy() || hasUnsavedChanges())){event.preventDefault();event.returnValue='';}});
   status.addEventListener('change',()=>{updateHint();updateDraft();});note.addEventListener('input',updateCount);
   [assignee,priority,targetDate,internalNote].forEach(input=>input.addEventListener('input',updateDraft));
   targetDate.addEventListener('input',()=>{targetDate.removeAttribute('aria-invalid');document.getElementById('review-date-error')!.textContent='';});
@@ -123,8 +124,9 @@
     } finally {clearTimeout(timer);refreshing=false;refreshButton.disabled=false;queue.removeAttribute('aria-busy');}
   }
   form.addEventListener('submit',async event=>{
-    event.preventDefault();if(!active || busy || noteBusy || saved)return;
+    event.preventDefault();if(!active || busy || noteBusy || saved || window.sfStaffProgress?.isBusy())return;
     const moveNext=(event as SubmitEvent).submitter===saveNext;
+    if(moveNext && window.sfStaffProgress?.hasDraft()){selectTab('progress');message.textContent='Post or clear your progress draft before moving to the next suggestion.';window.sfStaffProgress.focusDraft();return;}
     if(moveNext && internalNote.value.trim()){selectTab('notes');internalMessage.textContent='Save or clear your private-note draft before moving to the next suggestion.';internalNote.focus();return;}
     selectTab('decision');
     if(!targetDate.validity.valid){targetDate.setAttribute('aria-invalid','true');document.getElementById('review-date-error')!.textContent='Choose a valid date between 2000 and 2100.';}
@@ -154,7 +156,7 @@
     } finally {
       clearTimeout(timer);busy=false;fields.disabled=saved;save.disabled=saved;saveNext.disabled=saved;save.textContent='Save update';
       form.removeAttribute('aria-busy');dialog.querySelectorAll<HTMLButtonElement>('[data-close-review]').forEach(b=>{b.disabled=false;});
-      if(nextId)openReview(nextId);else message.focus();
+      if(nextId)openReview(nextId);else{if(saved)void window.sfStaffProgress?.refresh();message.focus();}
     }
   });
   async function request(url: string, method: string, payload?: unknown) {
@@ -222,7 +224,7 @@
   document.getElementById('review-retry-activity')!.addEventListener('click', () => void loadActivity());
   internalForm.addEventListener('submit', async event => {
     event.preventDefault();
-    if (!active || busy || noteBusy || !internalForm.reportValidity()) return;
+    if (!active || busy || noteBusy || window.sfStaffProgress?.isBusy() || !internalForm.reportValidity()) return;
     noteBusy = true;
     const button = document.getElementById('review-add-note') as HTMLButtonElement;
     button.disabled = true; internalNote.disabled = true; internalMessage.textContent = 'Saving private note…';
@@ -231,6 +233,35 @@
       internalNote.value = ''; internalMessage.textContent = 'Private note saved.'; updateDraft(); void loadActivity();
     } catch { internalMessage.textContent = 'Could not confirm the note was saved. Refresh notes before retrying to avoid a duplicate. Your draft is still here.'; }
     finally { noteBusy = false; button.disabled = false; internalNote.disabled = false; }
+  });
+  window.sfStaffProgress?.bind({
+    canPost:()=>!busy && !noteBusy && !hasReviewDraft(),
+    applySnapshot(submission){
+      if(!active || active.id!==submission.id || busy)return false;
+      if(hasReviewDraft())return active.updated_at===submission.updated_at;
+      const normalized={...submission,staff_note:submission.staff_note || '',assignee_id:submission.assignee_id || '',priority:submission.priority || 'normal',target_date:submission.target_date || ''};
+      Object.assign(active,normalized);
+      const queued=items.find(item=>item.id===submission.id);if(queued)Object.assign(queued,normalized);
+      status.value=active.status;note.value=active.staff_note;priority.value=active.priority;targetDate.value=active.target_date;
+      if(active.assignee_id && !Array.from(assignee.options).some(option=>option.value===active!.assignee_id)){
+        const option=new Option('Former staff — choose an active assignee',active.assignee_id);option.dataset.formerStaff='true';assignee.add(option);
+      }
+      assignee.value=active.assignee_id;
+      const badge=document.getElementById('review-current-status')!;badge.textContent=labels[active.status] || active.status;badge.dataset.status=active.status;
+      saved=false;const posting=window.sfStaffProgress?.isBusy() || false;fields.disabled=posting;save.disabled=posting;saveNext.disabled=posting;
+      const onProgress=dialog.querySelector('[data-review-tab="progress"]')?.getAttribute('aria-selected')==='true';
+      save.hidden=onProgress;saveNext.hidden=onProgress;document.getElementById('review-dismiss')!.textContent='Cancel';
+      updateHint();updateCount();return true;
+    },
+    async afterPost(){await refreshQueue();void loadActivity();},
+    changed:updateDraft,
+    posting(value){
+      fields.disabled=value || saved;
+      save.disabled=value || saved;saveNext.disabled=value || saved;
+      (document.getElementById('review-add-note') as HTMLButtonElement).disabled=value;
+      dialog.querySelectorAll<HTMLButtonElement>('[data-close-review]').forEach(button=>{button.disabled=value;});
+      updateDraft();
+    }
   });
   const viewDialog=document.getElementById('staff-save-view-dialog') as HTMLDialogElement;
   const viewMessage=document.getElementById('staff-view-message')!;

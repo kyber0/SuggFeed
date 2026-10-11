@@ -18,16 +18,18 @@ Deno.serve(async (request) => {
     const { data: existing, error: findError } = await client.from("submissions").select("id,title,user_id,status").eq("id", input.submissionId).single();
     if (findError || !existing) return json({ error: "Submission not found" }, 404);
     if (!transitions[existing.status]?.includes(input.status)) return json({ error: "That status change is not allowed" }, 409);
-    const { error: updateError } = await client.from("submissions").update({ status: input.status, reviewed_by: user.id, reviewed_at: new Date().toISOString() }).eq("id", existing.id);
+    const { error: updateError } = await client.rpc("review_submission_transition", {
+      p_submission_id: existing.id, p_staff_id: user.id, p_expected_status: existing.status,
+      p_status: input.status, p_note: input.note || null,
+    });
+    if (updateError?.code === "40001") return json({ error: "This submission changed. Reload it before reviewing." }, 409);
+    if (updateError?.code === "P0002") return json({ error: "Submission not found" }, 404);
+    if (updateError?.code === "42501") return json({ error: "Moderator access required" }, 403);
     if (updateError) throw updateError;
-    const { error: historyError } = await client.from("status_history").insert({ submission_id: existing.id, old_status: existing.status, new_status: input.status, changed_by: user.id, note: input.note || null });
-    if (historyError) throw historyError;
-    const { error: auditError } = await client.from("audit_log").insert({ actor_id: user.id, action: "review_submission", target_table: "submissions", target_id: existing.id, metadata: { old_status: existing.status, new_status: input.status } });
-    if (auditError) throw auditError;
     await notifyReview(client, existing, input.status, input.note);
     return json({ ok: true });
   } catch (error) {
-    console.error("review-submission failed", error);
-    return json({ error: error instanceof z.ZodError ? "Invalid review request" : error instanceof Error ? error.message : "Unable to review submission" }, 400);
+    console.error("review-submission failed", error instanceof z.ZodError ? "validation" : "operation");
+    return json({ error: error instanceof z.ZodError ? "Invalid review request" : "Unable to review submission" }, error instanceof z.ZodError ? 400 : 500);
   }
 });
