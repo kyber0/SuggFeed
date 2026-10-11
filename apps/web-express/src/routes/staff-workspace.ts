@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { supabaseService } from '../lib/supabase';
 import { invalidateCache, MODERATION_STATUSES } from '../lib/data';
-import { PRIORITIES, UUID, staffRole, validDate, queueFilters } from '../lib/staff-workspace';
+import { PRIORITIES, UUID, staffRole, validDate, queueFilters, loadStaffMembers, searchStudentProfiles, updateStaffRole, inviteStaffMember, loadAnalyticsData } from '../lib/staff-workspace';
 
 const router = Router();
 const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { fn(req, res).catch(next); };
@@ -15,6 +15,43 @@ router.param('id', (_req, res, next, id) => {
   if (!UUID.test(id)) return res.status(400).json({ success: false, error: 'Invalid ID.' });
   next();
 });
+router.get('/analytics', run(async (_req, res) => {
+  const data = await loadAnalyticsData();
+  return res.json({ success: true, data });
+}));
+router.get('/members', run(async (_req, res) => {
+  const members = await loadStaffMembers();
+  return res.json({ success: true, members });
+}));
+router.patch('/members/:memberId/role', run(async (req, res) => {
+  const actor = req.session.user!;
+  if (actor.role !== 'admin' && actor.role !== 'staff') {
+    return res.status(403).json({ success: false, error: 'Only administrators can modify roles.' });
+  }
+  const { role } = req.body;
+  if (!['admin', 'moderator', 'student'].includes(role)) {
+    return res.status(400).json({ success: false, error: 'Choose a valid role: admin, moderator, or student.' });
+  }
+  await updateStaffRole(actor.id, req.params['memberId'] as string, role);
+  return res.json({ success: true });
+}));
+router.get('/students', run(async (req, res) => {
+  const search = typeof req.query.search === 'string' ? req.query.search : '';
+  const students = await searchStudentProfiles(search);
+  return res.json({ success: true, students });
+}));
+router.post('/invite', run(async (req, res) => {
+  const actor = req.session.user!;
+  if (actor.role !== 'admin' && actor.role !== 'staff') {
+    return res.status(403).json({ success: false, error: 'Only administrators can invite or promote staff.' });
+  }
+  const { email, role } = req.body;
+  if (typeof email !== 'string' || !email.includes('@') || (role !== 'admin' && role !== 'moderator')) {
+    return res.status(400).json({ success: false, error: 'Provide a valid university email and staff role.' });
+  }
+  const result = await inviteStaffMember(email, role);
+  return res.json(result);
+}));
 router.patch('/submissions/:id/review', run(async (req, res) => {
   const { status, note, assignee, priority, targetDate, updatedAt } = req.body;
   if (typeof status !== 'string' || !MODERATION_STATUSES.some(s => s === status) ||

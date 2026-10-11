@@ -76,6 +76,27 @@ export function createWorkspacePreview() {
   const counts=Object.fromEntries(['pending','approved','in_progress','resolved','rejected'].map(s=>[s,items.filter(i=>i.status===s).length]));
   res.send(eta.render('admin',{currentPath:'/admin',user:{id:staffId,display_name:'Alex Reyes',full_name:'Alex Reyes',role:'admin'},counts:{...counts,all:items.length},status:filters.status,search:filters.search,filters,page,pageCount:Math.max(1,Math.ceil(matched.length/15)),perPage:15,totalCount:matched.length,submissions:matched.slice((page-1)*15,page*15),staffMembers:[{id:staffId,display_name:'Alex Reyes',role:'admin'}],savedViews:views}));
  });
+ app.get('/admin/analytics',(req,res)=>{
+  const counts=Object.fromEntries(['pending','approved','in_progress','resolved','rejected'].map(s=>[s,items.filter(i=>i.status===s).length]));
+  const analytics={
+    kpis:{totalSubmissions:{value:items.length,delta:12},approvalRate:{value:75,delta:5},totalVotes:{value:340,delta:18},resolutionRate:{value:33,delta:2},avgVotes:{value:9.4,delta:6}},
+    timeline:[{date:'Oct 1',fullDate:'October 1, 2026',submissions:4,approved:3,votes:30},{date:'Oct 10',fullDate:'October 10, 2026',submissions:10,approved:8,votes:95}],
+    categories:[{name:'Facilities',count:18,votes:190,approved:12,resolved:4,pct:50},{name:'Learning',count:18,votes:150,approved:10,resolved:3,pct:50}],
+    funnel:[{status:'pending',label:'Needs review',count:counts['pending'],pct:100},{status:'approved',label:'Planned',count:counts['approved'],pct:50},{status:'in_progress',label:'In progress',count:counts['in_progress'],pct:30},{status:'resolved',label:'Completed',count:counts['resolved'],pct:20},{status:'rejected',label:'Declined',count:counts['rejected'],pct:10}],
+    rawSubmissions:items.map(i=>({id:i.id,title:i.title,category:i.category,status:i.status,vote_count:i.vote_count,created_at:i.created_at})),
+  };
+  res.send(eta.render('admin-analytics',{currentPath:'/admin/analytics',user:{id:staffId,display_name:'Alex Reyes',role:'admin'},counts:{...counts,all:items.length},analytics,activeSection:'analytics'}));
+ });
+ app.get('/admin/staff',(req,res)=>{
+  const counts=Object.fromEntries(['pending','approved','in_progress','resolved','rejected'].map(s=>[s,items.filter(i=>i.status===s).length]));
+  const staffMembers=[{id:staffId,display_name:'Alex Reyes',email:'alex@school.edu.ph',role:'admin',created_at:'2026-08-01'},{id:'00000000-0000-4000-8000-000000000020',display_name:'Maria Santos',email:'maria@school.edu.ph',role:'moderator',created_at:'2026-08-15'}];
+  const students=[{id:'00000000-0000-4000-8000-000000000030',display_name:'Juan Dela Cruz',email:'juan@school.edu.ph',role:'student',created_at:'2026-09-01'}];
+  res.send(eta.render('admin-staff',{currentPath:'/admin/staff',user:{id:staffId,display_name:'Alex Reyes',role:'admin'},counts:{...counts,all:items.length},staffMembers,students,activeSection:'staff'}));
+ });
+ app.get('/api/staff/members',(_req,res)=>res.json({success:true,members:[{id:staffId,display_name:'Alex Reyes',email:'alex@school.edu.ph',role:'admin'}]}));
+ app.get('/api/staff/students',(_req,res)=>res.json({success:true,students:[{id:'00000000-0000-4000-8000-000000000030',display_name:'Juan Dela Cruz',email:'juan@school.edu.ph'}]}));
+ app.patch('/api/staff/members/:id/role',(_req,res)=>res.json({success:true}));
+ app.post('/api/staff/invite',(req,res)=>res.json({success:true,isExisting:false,inviteUrl:'/staff-login?invite='+encodeURIComponent(req.body.email)}));
  app.get('/staff-login',(_req,res)=>res.send(eta.render('staff-login',{currentPath:'/admin',user:null})));
  app.get('/api/staff/submissions/:id/activity',(req,res)=>res.json({success:true,history:history.filter(e=>e.submission_id===req.params.id),transitions:[],notes:notes.filter(e=>e.submission_id===req.params.id)}));
  app.post('/api/staff/submissions/:id/notes',(req,res)=>{notes.unshift({id:String(notes.length+1),submission_id:req.params.id,body:req.body.body,created_at:new Date().toISOString(),actor:{display_name:'Alex Reyes'}});res.status(201).json({success:true});});

@@ -1,0 +1,31 @@
+<%
+  const icon = name => '<svg class="workspace-svg" aria-hidden="true"><use href="#ws-'+name+'"></use></svg>';
+  const activeSection = it.activeSection || 'queue';
+  const counts = it.counts || { pending: 0 };
+  const filters = it.filters || { status: 'pending', search: '', assignment: 'all', priority: 'all', overdue: 'false' };
+  const viewUrl = f => '/admin?' + new URLSearchParams(f).toString();
+  const sameView = f => Object.keys(filters).every(k => (f[k] ?? (k==='search'?'':k==='overdue'?'false':k==='status'?'pending':'all')) === filters[k]);
+  const isFiltered = !!filters.search || filters.assignment !== 'all' || filters.priority !== 'all' || filters.overdue === 'true';
+%>
+<aside class="staff-sidebar" aria-label="Staff workspace">
+  <a class="staff-brand" href="/admin"><span class="staff-brand-mark" aria-hidden="true">S</span><span>SuggFeed<small>STAFF WORKSPACE</small></span></a>
+  <p class="workspace-kicker">WORKSPACE</p>
+  <nav aria-label="Staff navigation">
+    <a class="staff-nav-item<%= activeSection === 'queue' && !isFiltered ? ' is-current' : '' %>" href="/admin" <%= activeSection === 'queue' && !isFiltered ? 'aria-current="page"' : '' %>><%~ icon('inbox') %> Review queue <span class="staff-nav-count" id="staff-pending-count"><%= counts.pending || 0 %></span></a>
+    <a class="staff-nav-item<%= activeSection === 'analytics' ? ' is-current' : '' %>" href="/admin/analytics" <%= activeSection === 'analytics' ? 'aria-current="page"' : '' %>><%~ icon('chart') %> Analytics</a>
+    <a class="staff-nav-item<%= activeSection === 'staff' ? ' is-current' : '' %>" href="/admin/staff" <%= activeSection === 'staff' ? 'aria-current="page"' : '' %>><%~ icon('users') %> Manage staff</a>
+  </nav>
+  <% if (activeSection === 'queue') { %>
+  <p class="workspace-kicker">YOUR QUEUES</p>
+  <nav aria-label="Personal queues">
+    <% for(const [name,f] of [['Assigned to me',{status:'all',assignment:'mine'}],['Unassigned review',{status:'pending',assignment:'unassigned'}],['Past target date',{status:'all',overdue:'true'}]]) { %>
+      <a class="staff-nav-item<%= sameView(f) ? ' is-current' : '' %>" href="<%= viewUrl(f) %>" <%= sameView(f) ? 'aria-current="page"' : '' %>><%= name %></a>
+    <% } %>
+  </nav>
+  <p class="workspace-kicker">SAVED VIEWS</p>
+  <div class="staff-saved-views" id="staff-saved-views"><% for(const view of it.savedViews || []) { %>
+    <div class="staff-saved-view"><a class="staff-nav-item<%= sameView(view.filters) ? ' is-current' : '' %>" href="<%= viewUrl(view.filters) %>"><%= view.name %></a><button type="button" class="staff-remove-view" data-delete-view="<%= view.id %>" aria-label="Remove saved view: <%= view.name %>">×</button></div>
+  <% } %><% if(!it.savedViews?.length) { %><p class="staff-sidebar-hint">Save a filter combination for quick access. Your views are private to you.</p><% } %></div>
+  <% } %>
+  <div class="staff-identity"><span class="staff-brand-mark" aria-hidden="true"><%= (it.user?.display_name || 'S').slice(0,1).toUpperCase() %></span><div><strong><%= it.user?.display_name || 'School staff' %></strong><small><%= it.user?.role==='admin' ? 'Administrator' : 'Moderator' %></small></div></div>
+</aside>

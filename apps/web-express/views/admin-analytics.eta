@@ -1,0 +1,222 @@
+<% layout('layout') %>
+<%
+  const icon = name => '<svg class="workspace-svg" aria-hidden="true"><use href="#ws-'+name+'"></use></svg>';
+  const a = it.analytics || {};
+  const kpis = a.kpis || {
+    totalSubmissions: { value: 0, delta: 0 },
+    approvalRate: { value: 0, delta: 0 },
+    totalVotes: { value: 0, delta: 0 },
+    resolutionRate: { value: 0, delta: 0 },
+    avgVotes: { value: 0, delta: 0 }
+  };
+  const categories = a.categories || [];
+  const funnel = a.funnel || [];
+%>
+<main class="staff-workspace">
+  <%~ include('partials/staff-sidebar', it) %>
+  <div class="staff-main">
+    <header class="workspace-heading">
+      <div>
+        <p class="workspace-kicker">CAMPUS / INSIGHTS</p>
+        <h1>Analytics & metrics<span class="workspace-title-dot">.</span></h1>
+        <p>Engagement, submission trends, and resolution performance across campus.</p>
+      </div>
+      <div class="workspace-actions">
+        <button class="workspace-button" id="analytics-refresh-btn" type="button"><%~ icon('refresh') %> Refresh</button>
+        <button class="workspace-button" id="analytics-export-csv" type="button"><%~ icon('export') %> Export CSV</button>
+      </div>
+    </header>
+
+    <!-- Filter & Time Range Bar -->
+    <div class="analytics-filter-bar">
+      <div class="analytics-time-pills" id="analytics-time-pills" role="radiogroup" aria-label="Select analytics time window">
+        <button type="button" class="analytics-pill" data-range="7d" role="radio" aria-checked="false">7 days</button>
+        <button type="button" class="analytics-pill is-active" data-range="30d" role="radio" aria-checked="true">30 days</button>
+        <button type="button" class="analytics-pill" data-range="90d" role="radio" aria-checked="false">90 days</button>
+        <button type="button" class="analytics-pill" data-range="all" role="radio" aria-checked="false">All time</button>
+      </div>
+      <div class="analytics-filter-select-wrap">
+        <label for="analytics-category-select" class="visually-hidden">Filter category</label>
+        <select id="analytics-category-select" class="workspace-input">
+          <option value="all">All categories</option>
+          <% for (const cat of categories) { %>
+            <option value="<%= cat.name %>"><%= cat.name %> (<%= cat.count %>)</option>
+          <% } %>
+        </select>
+      </div>
+    </div>
+
+    <!-- Top KPI Metrics Cards -->
+    <section class="staff-metrics analytics-kpi-grid" aria-label="Key Performance Indicators">
+      <div class="staff-metric">
+        <div>
+          <span>Total Suggestions</span>
+          <small class="analytics-delta <%= kpis.totalSubmissions.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.totalSubmissions.delta >= 0 ? '+' : '' %><%= kpis.totalSubmissions.delta %>% vs previous
+          </small>
+        </div>
+        <strong id="kpi-total-subs"><%= kpis.totalSubmissions.value.toLocaleString() %></strong>
+      </div>
+
+      <div class="staff-metric">
+        <div>
+          <span>Approval Rate</span>
+          <small class="analytics-delta <%= kpis.approvalRate.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.approvalRate.delta >= 0 ? '+' : '' %><%= kpis.approvalRate.delta %>% vs previous
+          </small>
+        </div>
+        <strong id="kpi-approval-rate" style="color:var(--success)"><%= kpis.approvalRate.value %>%</strong>
+      </div>
+
+      <div class="staff-metric">
+        <div>
+          <span>Community Votes</span>
+          <small class="analytics-delta <%= kpis.totalVotes.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.totalVotes.delta >= 0 ? '+' : '' %><%= kpis.totalVotes.delta %>% vs previous
+          </small>
+        </div>
+        <strong id="kpi-total-votes" style="color:#0284c7"><%= kpis.totalVotes.value.toLocaleString() %></strong>
+      </div>
+
+      <div class="staff-metric">
+        <div>
+          <span>Resolution Rate</span>
+          <small class="analytics-delta <%= kpis.resolutionRate.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.resolutionRate.delta >= 0 ? '+' : '' %><%= kpis.resolutionRate.delta %>% vs previous
+          </small>
+        </div>
+        <strong id="kpi-resolution-rate" style="color:var(--navy)"><%= kpis.resolutionRate.value %>%</strong>
+      </div>
+
+      <div class="staff-metric">
+        <div>
+          <span>Avg Votes / Idea</span>
+          <small class="analytics-delta <%= kpis.avgVotes.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.avgVotes.delta >= 0 ? '+' : '' %><%= kpis.avgVotes.delta %>% vs previous
+          </small>
+        </div>
+        <strong id="kpi-avg-votes"><%= kpis.avgVotes.value %></strong>
+      </div>
+    </section>
+
+    <!-- Main Chart Section -->
+    <div class="analytics-grid">
+      <!-- Activity Timeline Chart -->
+      <section class="analytics-card analytics-card--wide" aria-labelledby="timeline-heading">
+        <div class="analytics-card-header">
+          <div>
+            <h2 id="timeline-heading" class="analytics-card-title">Activity & Volume Trends</h2>
+            <p class="analytics-card-subtitle">Daily submission inflow and approved suggestions over time.</p>
+          </div>
+          <div class="analytics-chart-toggle">
+            <button type="button" class="analytics-btn-toggle is-active" id="btn-toggle-daily">Daily</button>
+            <button type="button" class="analytics-btn-toggle" id="btn-toggle-cum">Cumulative</button>
+          </div>
+        </div>
+        <div class="analytics-chart-container" id="analytics-timeline-chart" aria-label="Visual submission timeline">
+          <!-- Dynamically generated SVG chart rendered via client script -->
+          <div class="analytics-chart-loading">Rendering chart…</div>
+        </div>
+        <div class="analytics-legend">
+          <span class="analytics-legend-item"><span class="analytics-dot analytics-dot--blue"></span> Submissions</span>
+          <span class="analytics-legend-item"><span class="analytics-dot analytics-dot--green"></span> Approved / Active</span>
+          <span class="analytics-legend-item"><span class="analytics-dot analytics-dot--amber"></span> Community Votes</span>
+        </div>
+      </section>
+
+      <!-- Status Conversion Funnel -->
+      <section class="analytics-card" aria-labelledby="funnel-heading">
+        <div class="analytics-card-header">
+          <div>
+            <h2 id="funnel-heading" class="analytics-card-title">Moderation Pipeline</h2>
+            <p class="analytics-card-subtitle">Current status breakdown and progress through stages.</p>
+          </div>
+        </div>
+        <div class="analytics-funnel-list" id="analytics-funnel-list">
+          <% for (const step of funnel) { %>
+            <div class="analytics-funnel-step">
+              <div class="analytics-funnel-info">
+                <span class="workspace-status" data-status="<%= step.status %>"><%= step.label %></span>
+                <span class="analytics-funnel-count"><strong><%= step.count %></strong> <small>(<%= step.pct %>%)</small></span>
+              </div>
+              <div class="analytics-bar-track">
+                <div class="analytics-bar-fill analytics-bar-fill--<%= step.status %>" style="width: <%= Math.max(step.pct, step.count > 0 ? 5 : 0) %>%"></div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- Category Breakdown -->
+      <section class="analytics-card" aria-labelledby="category-breakdown-heading">
+        <div class="analytics-card-header">
+          <div>
+            <h2 id="category-breakdown-heading" class="analytics-card-title">Category Distribution</h2>
+            <p class="analytics-card-subtitle">Share of suggestions and student interest by campus domain.</p>
+          </div>
+        </div>
+        <div class="analytics-category-list" id="analytics-category-list">
+          <% for (const cat of categories) { %>
+            <div class="analytics-cat-row">
+              <div class="analytics-cat-info">
+                <span class="workspace-tag"><%= cat.name %></span>
+                <span class="analytics-cat-stat"><strong><%= cat.count %></strong> ideas · <strong><%= cat.votes %></strong> votes</span>
+              </div>
+              <div class="analytics-bar-track">
+                <div class="analytics-bar-fill" style="width: <%= Math.max(cat.pct, 4) %>%"></div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </section>
+    </div>
+
+    <!-- Category Performance Table -->
+    <section class="analytics-card analytics-table-card" aria-labelledby="table-heading">
+      <div class="analytics-card-header">
+        <div>
+          <h2 id="table-heading" class="analytics-card-title">Category Performance Matrix</h2>
+          <p class="analytics-card-subtitle">Detailed breakdown of review progress and completion rates by department.</p>
+        </div>
+      </div>
+      <div class="analytics-table-wrap">
+        <table class="analytics-table">
+          <thead>
+            <tr>
+              <th scope="col">Category</th>
+              <th scope="col">Total Ideas</th>
+              <th scope="col">Community Votes</th>
+              <th scope="col">Approved / Planned</th>
+              <th scope="col">Completed</th>
+              <th scope="col">Approval Rate</th>
+            </tr>
+          </thead>
+          <tbody id="analytics-table-body">
+            <% for (const cat of categories) { %>
+              <tr>
+                <td><strong><%= cat.name %></strong></td>
+                <td><%= cat.count %></td>
+                <td><%= cat.votes %></td>
+                <td><%= cat.approved %></td>
+                <td><%= cat.resolved %></td>
+                <td>
+                  <span class="analytics-pct-badge"><%= cat.count > 0 ? Math.round((cat.approved / cat.count) * 100) : 0 %>%</span>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="staff-footnote">Analytics are updated in real-time as students submit ideas and cast votes.</p>
+  </div>
+</main>
+<section class="staff-mobile-notice">
+  <span class="workspace-empty-symbol" aria-hidden="true"><%~ icon('chart') %></span>
+  <h1>Staff analytics</h1>
+  <p>Open the staff portal on a desktop or larger screen to explore detailed reports and charts.</p>
+  <a class="workspace-button" href="/roadmap">Explore the campus roadmap →</a>
+</section>
+<script id="analytics-data-json" type="application/json"><%~ JSON.stringify(it.analytics || {}).replace(/</g, '\\u003c') %></script>
+<script src="/js/admin-analytics.js?v=20261011-analytics"></script>

@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { loadModerationCounts, MODERATION_STATUSES, PER_PAGE } from "../lib/data";
-import { queueFilters, loadStaffQueue, loadStaffMembers, loadSavedViews } from '../lib/staff-workspace';
+import { queueFilters, loadStaffQueue, loadStaffMembers, loadSavedViews, loadAnalyticsData, searchStudentProfiles } from '../lib/staff-workspace';
 
 const router = Router();
 
@@ -29,6 +29,9 @@ router.get(
   "/",
   requireStaff,
   asyncHandler(async (req: Request, res: Response) => {
+    if (req.query["view"] === "analytics") return res.redirect("/admin/analytics");
+    if (req.query["view"] === "staff") return res.redirect("/admin/staff");
+
     const requestedPage = Number(req.query["page"]);
     const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     const rawStatus = typeof req.query["status"] === "string" ? req.query["status"] : "pending";
@@ -58,6 +61,47 @@ router.get(
       status,
       search,
       filters, staffMembers, savedViews,
+      activeSection: "queue",
+    });
+  })
+);
+
+router.get(
+  "/analytics",
+  requireStaff,
+  asyncHandler(async (req: Request, res: Response) => {
+    const [counts, analytics] = await Promise.all([
+      loadModerationCounts(),
+      loadAnalyticsData(),
+    ]);
+
+    res.render("admin-analytics", {
+      title: "Analytics & Metrics — Staff Portal — SuggFeed",
+      description: "Campus feedback metrics, volume trends, and resolution performance.",
+      counts,
+      analytics,
+      activeSection: "analytics",
+    });
+  })
+);
+
+router.get(
+  "/staff",
+  requireStaff,
+  asyncHandler(async (req: Request, res: Response) => {
+    const [counts, staffMembers, students] = await Promise.all([
+      loadModerationCounts(),
+      loadStaffMembers(),
+      searchStudentProfiles("", 20),
+    ]);
+
+    res.render("admin-staff", {
+      title: "Manage Staff & Access — Staff Portal — SuggFeed",
+      description: "Manage staff directory, change user roles, and invite campus administrators.",
+      counts,
+      staffMembers,
+      students,
+      activeSection: "staff",
     });
   })
 );

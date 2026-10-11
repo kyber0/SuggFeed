@@ -1,0 +1,227 @@
+<% layout('layout') %>
+<%
+  const icon = name => '<svg class="workspace-svg" aria-hidden="true"><use href="#ws-'+name+'"></use></svg>';
+  const staff = it.staffMembers || [];
+  const adminCount = staff.filter(s => s.role === 'admin').length;
+  const modCount = staff.filter(s => s.role === 'moderator').length;
+  const currentUserId = it.user?.id || '';
+%>
+<main class="staff-workspace">
+  <%~ include('partials/staff-sidebar', it) %>
+  <div class="staff-main">
+    <header class="workspace-heading">
+      <div>
+        <p class="workspace-kicker">PORTAL GOVERNANCE</p>
+        <h1>Staff & access management<span class="workspace-title-dot">.</span></h1>
+        <p>Manage moderator roles, promote student leaders, and invite faculty.</p>
+      </div>
+      <div class="workspace-actions">
+        <button class="workspace-button" id="staff-refresh-btn" type="button"><%~ icon('refresh') %> Refresh</button>
+      </div>
+    </header>
+
+    <!-- Top KPI Metrics -->
+    <section class="staff-metrics" aria-label="Staff metrics">
+      <div class="staff-metric">
+        <div>
+          <span>Total Staff</span>
+          <small>Active campus team members</small>
+        </div>
+        <strong id="kpi-total-staff"><%= staff.length %></strong>
+      </div>
+
+      <div class="staff-metric">
+        <div>
+          <span>Administrators</span>
+          <small>Full portal governance & access</small>
+        </div>
+        <strong id="kpi-admin-count" style="color:var(--warn)"><%= adminCount %></strong>
+      </div>
+
+      <div class="staff-metric">
+        <div>
+          <span>Moderators</span>
+          <small>Content review & status triage</small>
+        </div>
+        <strong id="kpi-mod-count" style="color:var(--success)"><%= modCount %></strong>
+      </div>
+    </section>
+
+    <!-- Operational 2-Column Layout -->
+    <div class="staff-management-layout">
+      <!-- Left Column: Staff Directory -->
+      <section class="staff-mgmt-section" aria-labelledby="roster-heading">
+        <div class="staff-mgmt-header">
+          <div>
+            <h2 id="roster-heading" class="staff-mgmt-title">Staff Directory</h2>
+            <p class="staff-mgmt-subtitle">Promote moderators to administrators or revoke staff access.</p>
+          </div>
+          <span class="workspace-tag" id="staff-roster-count"><%= staff.length %> members</span>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="staff-search-controls">
+          <label class="workspace-search">
+            <%~ icon('search') %>
+            <input class="workspace-search-input" type="search" id="staff-search-input" placeholder="Search staff by name or email…" aria-label="Filter staff members" />
+          </label>
+          <div class="staff-filter-pills" id="staff-role-filter-pills">
+            <button type="button" class="staff-filter-pill is-active" data-filter="all">All</button>
+            <button type="button" class="staff-filter-pill" data-filter="admin">Admins</button>
+            <button type="button" class="staff-filter-pill" data-filter="moderator">Moderators</button>
+          </div>
+        </div>
+
+        <div class="staff-roster-list" id="staff-roster-list">
+          <% for (const member of staff) { const isSelf = member.id === currentUserId; %>
+            <article class="staff-member-card" data-id="<%= member.id %>" data-role="<%= member.role %>" data-name="<%= (member.display_name || '').toLowerCase() %>" data-email="<%= (member.email || '').toLowerCase() %>">
+              <div class="staff-member-avatar staff-member-avatar--<%= member.role %>" aria-hidden="true">
+                <%= (member.display_name || member.email || 'S').slice(0,1).toUpperCase() %>
+              </div>
+              <div class="staff-member-info">
+                <div class="staff-member-name-row">
+                  <h3 class="staff-member-name"><%= member.display_name || member.email?.split('@')[0] || 'Staff Member' %></h3>
+                  <% if (isSelf) { %><span class="staff-you-badge">You</span><% } %>
+                </div>
+                <div class="staff-member-meta">
+                  <span class="staff-role-badge staff-role-badge--<%= member.role %>">
+                    <%~ icon(member.role === 'admin' ? 'crown' : 'shield') %>
+                    <span><%= member.role === 'admin' ? 'Administrator' : 'Moderator' %></span>
+                  </span>
+                  <% if (member.email) { %>
+                    <span class="staff-member-email"><%~ icon('mail') %> <%= member.email %></span>
+                  <% } %>
+                </div>
+              </div>
+              <div class="staff-member-actions">
+                <% if (member.role === 'moderator') { %>
+                  <button type="button" class="workspace-button staff-action-btn" data-action="make-admin" data-id="<%= member.id %>" data-name="<%= member.display_name || 'Staff member' %>">
+                    <%~ icon('crown') %> Make Admin
+                  </button>
+                <% } else { %>
+                  <button type="button" class="workspace-button staff-action-btn" data-action="demote-mod" data-id="<%= member.id %>" data-name="<%= member.display_name || 'Staff member' %>" <%= isSelf ? 'disabled title="You cannot demote yourself"' : '' %>>
+                    <%~ icon('shield') %> Demote
+                  </button>
+                <% } %>
+                <button type="button" class="workspace-button workspace-button--danger staff-action-btn" data-action="revoke-access" data-id="<%= member.id %>" data-name="<%= member.display_name || 'Staff member' %>" <%= isSelf ? 'disabled title="You cannot revoke your own access"' : '' %> aria-label="Revoke staff access">
+                  Revoke
+                </button>
+              </div>
+            </article>
+          <% } %>
+          <% if (!staff.length) { %>
+            <div class="workspace-empty"><p>No staff members found.</p></div>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- Right Column: Promotion & Invites -->
+      <div class="staff-side-panels">
+        <!-- Promote Registered Student Panel -->
+        <section class="staff-mgmt-section" aria-labelledby="promote-heading">
+          <div class="staff-mgmt-header">
+            <div>
+              <h2 id="promote-heading" class="staff-mgmt-title">Promote Registered User</h2>
+              <p class="staff-mgmt-subtitle">Search student accounts by name or email to elevate to staff.</p>
+            </div>
+          </div>
+          <form class="staff-student-search-form" id="student-search-form">
+            <label class="workspace-search">
+              <%~ icon('search') %>
+              <input class="workspace-search-input" type="search" id="student-search-input" placeholder="Search by student name or Gmail…" aria-label="Search student accounts" />
+            </label>
+            <button type="submit" class="workspace-button workspace-button--primary">Find</button>
+          </form>
+
+          <div class="student-results-list" id="student-results-list">
+            <% for (const student of it.students || []) { %>
+              <div class="student-result-card" data-id="<%= student.id %>">
+                <div class="student-avatar" aria-hidden="true">
+                  <%= (student.display_name || student.email || 'S').slice(0,1).toUpperCase() %>
+                </div>
+                <div class="student-info">
+                  <strong><%= student.display_name || student.email?.split('@')[0] || 'Student' %></strong>
+                  <small><%= student.email || 'No email' %></small>
+                </div>
+                <div class="student-actions">
+                  <button type="button" class="workspace-button staff-promote-btn" data-promote-role="moderator" data-user-id="<%= student.id %>" data-name="<%= student.display_name || 'Student' %>">+ Mod</button>
+                  <button type="button" class="workspace-button staff-promote-btn" data-promote-role="admin" data-user-id="<%= student.id %>" data-name="<%= student.display_name || 'Student' %>">+ Admin</button>
+                </div>
+              </div>
+            <% } %>
+            <% if (!it.students?.length) { %>
+              <p class="staff-empty-hint">Type a name or email address above to search students.</p>
+            <% } %>
+          </div>
+        </section>
+
+        <!-- Invite New Staff Panel -->
+        <section class="staff-mgmt-section" aria-labelledby="invite-heading">
+          <div class="staff-mgmt-header">
+            <div>
+              <h2 id="invite-heading" class="staff-mgmt-title">Invite Team Member</h2>
+              <p class="staff-mgmt-subtitle">Generate an authorized access link for school staff or faculty.</p>
+            </div>
+          </div>
+          <form id="staff-invite-form" class="staff-invite-form">
+            <label class="staff-form-label" for="invite-email-input">
+              <span>University Email Address</span>
+              <input class="workspace-input" type="email" id="invite-email-input" required placeholder="staff.name@cspc.edu.ph" />
+            </label>
+            <div class="staff-role-choice">
+              <span class="staff-field-label">Assigned Role</span>
+              <div class="staff-role-options">
+                <label class="staff-role-option">
+                  <input type="radio" name="invite-role" value="moderator" checked />
+                  <span>Moderator</span>
+                </label>
+                <label class="staff-role-option">
+                  <input type="radio" name="invite-role" value="admin" />
+                  <span>Administrator</span>
+                </label>
+              </div>
+            </div>
+            <button type="submit" class="workspace-button workspace-button--primary" id="btn-invite-submit">
+              <%~ icon('user-plus') %> Generate Invitation Link
+            </button>
+            <p id="staff-invite-status" class="workspace-message" role="status" aria-live="polite"></p>
+          </form>
+
+          <!-- Generated Invite Box -->
+          <div class="staff-invite-output" id="staff-invite-output" hidden>
+            <label for="staff-invite-url" class="staff-field-label">Access Link</label>
+            <div class="staff-invite-link-row">
+              <input type="text" id="staff-invite-url" readonly class="workspace-input" />
+              <button type="button" class="workspace-button" id="btn-copy-invite-url">Copy</button>
+            </div>
+            <p class="staff-invite-hint">Share this link directly with the faculty member or moderator.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Dialog for Revoking Access -->
+  <dialog class="workspace-dialog staff-confirm-dialog" id="staff-revoke-dialog" aria-labelledby="revoke-dialog-title">
+    <header class="workspace-dialog-header">
+      <h2 id="revoke-dialog-title">Revoke Staff Access</h2>
+      <button type="button" class="workspace-icon-button" id="btn-revoke-cancel-x" aria-label="Close dialog">×</button>
+    </header>
+    <div class="staff-dialog-body">
+      <p id="revoke-dialog-message">Are you sure you want to revoke staff access for this user? They will be reverted to a student account.</p>
+    </div>
+    <footer class="workspace-dialog-actions">
+      <button type="button" class="workspace-button" id="btn-revoke-cancel">Cancel</button>
+      <button type="button" class="workspace-button workspace-button--danger" id="btn-revoke-confirm">Revoke Access</button>
+    </footer>
+  </dialog>
+</main>
+<section class="staff-mobile-notice">
+  <span class="workspace-empty-symbol" aria-hidden="true"><%~ icon('users') %></span>
+  <h1>Staff management</h1>
+  <p>Open the staff portal on a desktop or larger screen to manage roles and team members.</p>
+  <a class="workspace-button" href="/roadmap">Explore the campus roadmap →</a>
+</section>
+<script id="staff-roster-data" type="application/json"><%~ JSON.stringify(it.staffMembers || []).replace(/</g, '\\u003c') %></script>
+<script id="staff-current-user" type="application/json"><%~ JSON.stringify({ id: it.user?.id || '', role: it.user?.role || '' }).replace(/</g, '\\u003c') %></script>
+<script src="/js/admin-staff.js?v=20261011-staff"></script>

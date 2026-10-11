@@ -15,26 +15,7 @@
 %>
 <a class="workspace-skip" href="#staff-queue-title">Skip to review queue</a>
 <main class="staff-workspace">
-  <aside class="staff-sidebar" aria-label="Staff workspace">
-    <a class="staff-brand" href="/admin"><span class="staff-brand-mark" aria-hidden="true">S</span><span>SuggFeed<small>STAFF WORKSPACE</small></span></a>
-    <p class="workspace-kicker">WORKSPACE</p>
-    <nav aria-label="Staff navigation">
-      <a class="staff-nav-item<%= !isFiltered ? ' is-current' : '' %>" href="/admin" <%= !isFiltered ? 'aria-current="page"' : '' %>><%~ icon('inbox') %> Review queue <span class="staff-nav-count" id="staff-pending-count"><%= counts.pending %></span></a>
-      <a class="staff-nav-item" href="/roadmap"><%~ icon('board') %> Campus roadmap <%~ icon('arrow') %></a>
-      <a class="staff-nav-item" href="/feed"><%~ icon('list') %> Community feed <%~ icon('arrow') %></a>
-    </nav>
-    <p class="workspace-kicker">YOUR QUEUES</p>
-    <nav aria-label="Personal queues">
-      <% for(const [name,f] of [['Assigned to me',{status:'all',assignment:'mine'}],['Unassigned review',{status:'pending',assignment:'unassigned'}],['Past target date',{status:'all',overdue:'true'}]]) { %>
-        <a class="staff-nav-item<%= sameView(f) ? ' is-current' : '' %>" href="<%= viewUrl(f) %>" <%= sameView(f) ? 'aria-current="page"' : '' %>><%= name %></a>
-      <% } %>
-    </nav>
-    <p class="workspace-kicker">SAVED VIEWS</p>
-    <div class="staff-saved-views" id="staff-saved-views"><% for(const view of it.savedViews || []) { %>
-      <div class="staff-saved-view"><a class="staff-nav-item<%= sameView(view.filters) ? ' is-current' : '' %>" href="<%= viewUrl(view.filters) %>"><%= view.name %></a><button type="button" class="staff-remove-view" data-delete-view="<%= view.id %>" aria-label="Remove saved view: <%= view.name %>">×</button></div>
-    <% } %><% if(!it.savedViews?.length) { %><p class="staff-sidebar-hint">Save a filter combination for quick access. Your views are private to you.</p><% } %></div>
-    <div class="staff-identity"><span class="staff-brand-mark" aria-hidden="true"><%= (it.user?.display_name || 'S').slice(0,1).toUpperCase() %></span><div><strong><%= it.user?.display_name || 'School staff' %></strong><small><%= it.user?.role==='admin' ? 'Administrator' : 'Moderator' %></small></div></div>
-  </aside>
+  <%~ include('partials/staff-sidebar', it) %>
   <div class="staff-main">
     <header class="workspace-heading">
       <div><p class="workspace-kicker">COMMUNITY / MODERATION</p><h1>Review queue<span class="workspace-title-dot">.</span></h1><p>A clear next step for every suggestion.</p></div>
