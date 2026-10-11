@@ -4,39 +4,103 @@
     const board = document.getElementById('campus-roadmap-board');
     const dialog = document.getElementById('roadmap-dialog');
     const labels = { approved: 'Planned', in_progress: 'In progress', resolved: 'Completed' };
-    const hints = { approved: 'The school has approved this idea. A delivery date has not been announced.', in_progress: 'Work on this idea is underway. Follow the discussion for updates from your school.', resolved: 'The school has marked this idea as completed.' };
+    const hints = {
+        approved: 'The school has approved this idea. A delivery date has not been announced.',
+        in_progress: 'Work on this idea is underway. Follow the discussion for updates from your school.',
+        resolved: 'The school has marked this idea as completed.'
+    };
     let returnFocus = null;
     let syncingHistory = false;
     let detailRequest;
     const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    function normalizeView(view) {
+        if (view === 'tree' || view === 'list')
+            return 'tree';
+        if (view === 'timeline')
+            return 'timeline';
+        return 'board';
+    }
     function setView(view, updateUrl = true) {
-        board.dataset.view = view;
-        document.getElementById('roadmap-view-input').value = view;
-        document.querySelectorAll('[data-roadmap-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.roadmapView === view)));
-        document.querySelectorAll('[data-roadmap-state-link]').forEach(link => { const url = new URL(link.href); url.searchParams.set('view', view); link.href = url.toString(); });
+        const normalized = normalizeView(view);
+        board.dataset.view = normalized;
+        const viewInput = document.getElementById('roadmap-view-input');
+        if (viewInput)
+            viewInput.value = normalized;
+        document.querySelectorAll('[data-roadmap-view]').forEach(b => {
+            const bView = normalizeView(b.dataset.roadmapView);
+            b.setAttribute('aria-pressed', String(bView === normalized));
+        });
+        document.querySelectorAll('[data-roadmap-state-link]').forEach(link => {
+            try {
+                const url = new URL(link.href, window.location.origin);
+                url.searchParams.set('view', normalized);
+                link.href = url.toString();
+            }
+            catch { }
+        });
         if (updateUrl) {
             const url = new URL(window.location.href);
-            url.searchParams.set('view', view);
+            url.searchParams.set('view', normalized);
             window.history.replaceState(null, '', url);
         }
     }
-    document.querySelectorAll('[data-roadmap-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.roadmapView)));
+    document.querySelectorAll('[data-roadmap-view]').forEach(button => {
+        button.addEventListener('click', () => setView(button.dataset.roadmapView));
+    });
+    // Tree category branch folding
+    function toggleBranch(header) {
+        const isExpanded = header.getAttribute('aria-expanded') !== 'false';
+        const nextState = isExpanded ? 'false' : 'true';
+        header.setAttribute('aria-expanded', nextState);
+        const branch = header.closest('.roadmap-tree-branch');
+        if (branch) {
+            branch.classList.toggle('is-collapsed', !isExpanded);
+        }
+    }
+    document.querySelectorAll('.roadmap-tree-header').forEach(header => {
+        header.addEventListener('click', (e) => {
+            // Don't toggle if clicking an inner link
+            if (e.target.tagName === 'A')
+                return;
+            toggleBranch(header);
+        });
+        header.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleBranch(header);
+            }
+        });
+    });
+    function formatManilaDate(dateStr) {
+        if (!dateStr)
+            return '';
+        return new Date(dateStr).toLocaleDateString('en-PH', {
+            timeZone: 'Asia/Manila',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    }
     function show(item) {
         document.getElementById('roadmap-detail-content').hidden = false;
         document.getElementById('roadmap-detail-error').textContent = '';
         const badge = document.getElementById('roadmap-detail-status');
-        badge.textContent = labels[item.status];
+        badge.textContent = labels[item.status] || item.status;
         badge.dataset.status = item.status;
         document.getElementById('roadmap-detail-title').textContent = item.title;
         document.getElementById('roadmap-detail-description').textContent = item.description;
-        document.getElementById('roadmap-detail-meta').textContent = item.category + ' · ' + item.votes + ' votes · Updated ' + new Date(item.updated_at).toLocaleDateString('en-PH', { dateStyle: 'medium' });
+        const datePrefix = item.status === 'resolved' ? 'Completed ' : 'Updated ';
+        const dateValue = item.status === 'resolved' ? (item.resolved_at || item.updated_at) : item.updated_at;
+        document.getElementById('roadmap-detail-meta').textContent = `${item.category} · ${item.votes} votes · ${datePrefix}${formatManilaDate(dateValue)}`;
         document.getElementById('roadmap-detail-response').textContent = item.response || 'The school has not posted a public response yet.';
-        document.getElementById('roadmap-detail-hint').textContent = hints[item.status];
+        document.getElementById('roadmap-detail-hint').textContent = hints[item.status] || '';
         document.getElementById('roadmap-detail-link').href = '/idea/' + encodeURIComponent(item.id);
-        document.querySelectorAll('[data-progress-stage]').forEach(step => { if (step.dataset.progressStage === item.status)
-            step.setAttribute('aria-current', 'step');
-        else
-            step.removeAttribute('aria-current'); });
+        document.querySelectorAll('[data-progress-stage]').forEach(step => {
+            if (step.dataset.progressStage === item.status)
+                step.setAttribute('aria-current', 'step');
+            else
+                step.removeAttribute('aria-current');
+        });
     }
     async function open(id, push = true) {
         detailRequest?.abort();
@@ -71,8 +135,9 @@
         try {
             const response = await fetch('/roadmap/idea/' + encodeURIComponent(id), { signal: controller.signal });
             const body = await response.json();
-            if (!response.ok || !body.success)
+            if (!response.ok || !body.success) {
                 throw new Error(response.status === 404 ? 'This idea is no longer on the public roadmap.' : 'This idea could not load. Close the panel and reopen it to retry.');
+            }
             if (dialog.open && detailRequest === controller)
                 show(body.item);
         }
@@ -86,10 +151,18 @@
             clearTimeout(timer);
         }
     }
-    document.querySelectorAll('[data-roadmap-open]').forEach(button => button.addEventListener('click', () => void open(button.dataset.roadmapOpen)));
+    document.addEventListener('click', event => {
+        const btn = event.target?.closest('[data-roadmap-open]');
+        if (btn && btn.dataset.roadmapOpen) {
+            event.preventDefault();
+            void open(btn.dataset.roadmapOpen);
+        }
+    });
     document.getElementById('roadmap-close').addEventListener('click', () => dialog.close());
-    dialog.addEventListener('click', event => { if (event.target === dialog && event.clientX < dialog.getBoundingClientRect().left)
-        dialog.close(); });
+    dialog.addEventListener('click', event => {
+        if (event.target === dialog && event.clientX < dialog.getBoundingClientRect().left)
+            dialog.close();
+    });
     dialog.addEventListener('close', () => {
         detailRequest?.abort();
         returnFocus?.focus();
@@ -102,7 +175,7 @@
     });
     window.addEventListener('popstate', () => {
         const url = new URL(window.location.href);
-        setView(url.searchParams.get('view') === 'list' ? 'list' : 'board', false);
+        setView(url.searchParams.get('view'), false);
         const id = url.searchParams.get('item');
         if (id)
             void open(id, false);
@@ -111,7 +184,7 @@
             dialog.close();
         }
     });
-    setView(new URL(window.location.href).searchParams.get('view') === 'list' ? 'list' : 'board', false);
+    setView(new URL(window.location.href).searchParams.get('view'), false);
     const initial = new URL(window.location.href).searchParams.get('item');
     if (initial)
         void open(initial, false);

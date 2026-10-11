@@ -3,7 +3,7 @@ import express from 'express';
 import path from 'node:path';
 import { Eta } from 'eta';
 import { queueFilters } from '../../src/lib/staff-workspace';
-import { roadmapFilters } from '../../src/lib/roadmap';
+import { roadmapFilters, groupTreeByCategory, groupTimelineByMonth, formatManilaDate } from '../../src/lib/roadmap';
 
 export function createWorkspacePreview() {
  const app=express();const root=path.resolve(__dirname,'../..');const eta=new Eta({views:path.join(root,'views')});
@@ -14,10 +14,11 @@ export function createWorkspacePreview() {
   id:'00000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),title,
   description:'Students use this area every day, but it could be more welcoming. A small improvement would make a real difference, especially between classes. Please consider this in the next round of campus improvements.',
   status:statuses[index],category:index%2?'Learning':'Facilities',created_at:'2026-10-08T10:00:00Z',updated_at:'2026-10-10T10:00:00Z',
+  resolved_at:statuses[index]==='resolved'?'2026-10-10T12:00:00Z':null,
   vote_count:24+index*7,comment_count:index+2,staff_note:index===1?'The library team is reviewing staffing for extended hours during exams. We will post an update after the next planning meeting.':'',
   assignee_id:index===2?staffId:'',assignee_name:index===2?'Alex Reyes':'',priority:index===2?'high':'normal',target_date:index===2?'2026-10-09':''
  }));
- for(let index=6;index<36;index++) items.push({...items[index%6],id:'00000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),title:titles[index%6]+' · Campus zone '+(index+1),status:['approved','in_progress','resolved'][index%3]});
+ for(let index=6;index<36;index++) items.push({...items[index%6],id:'00000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),title:titles[index%6]+' · Campus zone '+(index+1),status:['approved','in_progress','resolved'][index%3],resolved_at:['approved','in_progress','resolved'][index%3]==='resolved'?'2026-10-10T12:00:00Z':null});
  // Match the production inline-handler restriction for browser regression checks.
  app.use((_req,res,next)=>{res.setHeader('Content-Security-Policy',"script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; script-src-attr 'none'");next();});
  app.use(express.json());app.use(express.static(path.join(root,'public')));
@@ -60,13 +61,18 @@ export function createWorkspacePreview() {
  const notes:Array<{id:string;submission_id:string;body:string;created_at:string;actor:{display_name:string}}>=[];
  const history:Array<any>=[];
  const views:Array<any>=[];
- const publicItem=(item:typeof items[number])=>({id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,votes:item.vote_count,comments:item.comment_count,created_at:item.created_at,updated_at:item.updated_at,response:item.staff_note});
+ const publicItem=(item:typeof items[number])=>({id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,votes:item.vote_count,comments:item.comment_count,created_at:item.created_at,updated_at:item.updated_at,resolved_at:(item as any).resolved_at || null,response:item.staff_note});
  app.get('/roadmap',(req,res)=>{
   const filters=roadmapFilters(req.query);
   const matched=req.query.empty?[]:items.filter(i=>['approved','in_progress','resolved'].includes(i.status) && (filters.category==='all' || filters.category===i.category) && (!filters.search || (i.title+' '+i.description).toLowerCase().includes(filters.search.toLowerCase())));
   const counts=Object.fromEntries(['approved','in_progress','resolved'].map(s=>[s,matched.filter(i=>i.status===s).length]));
   const pageItems=['approved','in_progress','resolved'].filter(s=>filters.stage==='all' || filters.stage===s).flatMap(s=>matched.filter(i=>i.status===s).slice((filters.page-1)*8,filters.page*8));
-  res.send(eta.render('roadmap',{currentPath:'/roadmap',user:null,items:pageItems.map(publicItem),counts,totalCount:items.filter(i=>['approved','in_progress','resolved'].includes(i.status)).length,matchingCount:matched.length,pageCount:Math.max(1,...Object.entries(counts).filter(([s])=>filters.stage==='all' || filters.stage===s).map(([,count])=>Math.ceil(count/8))),perStage:8,filters,categories:['Facilities','Learning']}));
+  const mappedItems=pageItems.map(publicItem);
+  const recentlyCompleted=items.filter(i=>i.status==='resolved').map(publicItem).slice(0,3);
+  const categories=['Facilities','Learning'];
+  const treeData=groupTreeByCategory(mappedItems,categories);
+  const timelineData=groupTimelineByMonth(mappedItems);
+  res.send(eta.render('roadmap',{currentPath:'/roadmap',user:null,items:mappedItems,counts,totalCount:items.filter(i=>['approved','in_progress','resolved'].includes(i.status)).length,matchingCount:matched.length,pageCount:Math.max(1,...Object.entries(counts).filter(([s])=>filters.stage==='all' || filters.stage===s).map(([,count])=>Math.ceil(count/8))),perStage:8,filters,categories,recentlyCompleted,treeData,timelineData,formatManilaDate}));
  });
  app.get('/roadmap/idea/:id',(req,res)=>{const item=items.find(i=>i.id===req.params.id && ['approved','in_progress','resolved'].includes(i.status));res.status(item?200:404).json(item?{success:true,item:publicItem(item)}:{success:false});});
  app.get('/admin',(req,res)=>{

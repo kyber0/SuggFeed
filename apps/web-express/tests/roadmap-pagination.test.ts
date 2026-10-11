@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { supabase } from '../src/lib/supabase';
-import { roadmapFilters, loadRoadmapPage, loadPublicRoadmapIdea } from '../src/lib/roadmap';
+import { roadmapFilters, loadRoadmapPage, loadPublicRoadmapIdea, formatManilaDate } from '../src/lib/roadmap';
 
 test('roadmap paginates each public stage independently and counts matches across all pages', async () => {
  const original=supabase.from;const queries:Array<any>=[];
@@ -32,6 +32,7 @@ test('roadmap paginates each public stage independently and counts matches acros
   assert.equal(queries.filter(q=>q.range).length,1);
  } finally {supabase.from=original;}
 });
+
 test('shared roadmap links load only public stages and expose only public fields', async () => {
  const original=supabase.from;let allowed:string[]=[];
  supabase.from=(()=>({select(){return this;},eq(){return this;},in(_key,values){allowed=values;return this;},async maybeSingle(){return {error:null,data:{id:'public-id',title:'Public idea',status:'approved',staff_note:'School update',anonymous_tracking_hash:'PRIVATE',user_id:'PRIVATE',assignee_id:'PRIVATE',categories:{name:'Learning'}}};}})) as any;
@@ -39,5 +40,11 @@ test('shared roadmap links load only public stages and expose only public fields
   const item=await loadPublicRoadmapIdea('public-id');assert.deepEqual(allowed,['approved','in_progress','resolved']);
   assert.equal(item.response,'School update');assert.equal(JSON.stringify(item).includes('PRIVATE'),false);
   assert.equal(roadmapFilters({page:'99999999999'}).page,1);
+  assert.equal(roadmapFilters({view:'tree'}).view,'tree');
+  assert.equal(roadmapFilters({view:'list'}).view,'tree');
+  assert.equal(roadmapFilters({view:'timeline'}).view,'timeline');
+  assert.equal(roadmapFilters({view:'board'}).view,'board');
+  assert.equal(roadmapFilters({view:'invalid'}).view,'board');
+  assert.match(formatManilaDate('2026-10-10T14:30:00Z'), /Oct 10, 2026/);
  } finally {supabase.from=original;}
 });

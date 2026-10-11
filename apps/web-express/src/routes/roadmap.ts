@@ -1,5 +1,14 @@
 import { Router } from 'express';
-import { roadmapFilters, loadRoadmapPage, loadRoadmapCategories, loadPublicRoadmapIdea } from '../lib/roadmap';
+import {
+  roadmapFilters,
+  loadRoadmapPage,
+  loadRoadmapCategories,
+  loadPublicRoadmapIdea,
+  loadRecentlyCompleted,
+  groupTreeByCategory,
+  groupTimelineByMonth,
+  formatManilaDate,
+} from '../lib/roadmap';
 
 const router = Router();
 router.get('/idea/:id', async (req, res, next) => {
@@ -14,12 +23,24 @@ router.get('/idea/:id', async (req, res, next) => {
 router.get('/', async (req, res, next) => {
   try {
     const filters = roadmapFilters(req.query);
-    const [result, categories] = await Promise.all([loadRoadmapPage(filters), loadRoadmapCategories()]);
+    const [result, categories, recentlyCompleted] = await Promise.all([
+      loadRoadmapPage(filters),
+      loadRoadmapCategories(),
+      loadRecentlyCompleted(),
+    ]);
     if (filters.page > result.pageCount) return res.redirect('/roadmap?' + new URLSearchParams({ ...filters, page: String(result.pageCount) }).toString());
+    const treeData = groupTreeByCategory(result.items, categories);
+    const timelineData = groupTimelineByMonth(result.items);
     res.render('roadmap', {
       title: 'Campus roadmap — SuggFeed',
       description: 'See which community ideas are planned, in progress, and completed.',
-      ...result, filters, categories,
+      ...result,
+      filters,
+      categories,
+      recentlyCompleted,
+      treeData,
+      timelineData,
+      formatManilaDate,
     });
   } catch (error) { next(error); }
 });
