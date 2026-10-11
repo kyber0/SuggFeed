@@ -42,6 +42,26 @@
             year: 'numeric'
         });
     }
+    function getVotedSet() {
+        try {
+            const raw = localStorage.getItem('sf_voted_ideas');
+            return new Set(Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : []);
+        }
+        catch {
+            return new Set();
+        }
+    }
+    function saveVotedId(id) {
+        try {
+            const set = getVotedSet();
+            set.add(id);
+            localStorage.setItem('sf_voted_ideas', JSON.stringify(Array.from(set)));
+        }
+        catch { }
+    }
+    function hasVoted(id) {
+        return getVotedSet().has(id);
+    }
     function show(item) {
         document.getElementById('roadmap-detail-content').hidden = false;
         document.getElementById('roadmap-detail-error').textContent = '';
@@ -50,6 +70,32 @@
         badge.dataset.status = item.status;
         document.getElementById('roadmap-detail-title').textContent = item.title;
         document.getElementById('roadmap-detail-description').textContent = item.description;
+        const blockedAlert = document.getElementById('roadmap-detail-blocked-alert');
+        if (blockedAlert) {
+            blockedAlert.hidden = !item.is_blocked;
+        }
+        const progressWrap = document.getElementById('roadmap-detail-progress-wrap');
+        const progressBar = document.getElementById('roadmap-detail-bar-fill');
+        const progressText = document.getElementById('roadmap-detail-progress-text');
+        if (progressWrap && progressBar && progressText) {
+            if (typeof item.progress_percent === 'number' && (item.status === 'in_progress' || item.status === 'resolved')) {
+                progressWrap.hidden = false;
+                progressBar.style.width = `${item.progress_percent}%`;
+                progressText.textContent = `${item.progress_percent}% complete`;
+            }
+            else {
+                progressWrap.hidden = true;
+            }
+        }
+        const detailVote = document.getElementById('roadmap-detail-vote');
+        const detailVotes = document.getElementById('roadmap-detail-votes');
+        if (detailVote && detailVotes) {
+            detailVote.dataset.voteId = item.id;
+            detailVotes.textContent = String(item.votes);
+            const voted = hasVoted(item.id);
+            detailVote.classList.toggle('is-voted', voted);
+            detailVote.setAttribute('aria-pressed', String(voted));
+        }
         const dateLabel = item.status === 'resolved'
             ? item.resolved_at ? `Completed ${item.resolved_at_estimated ? 'around ' : ''}${formatManilaDate(item.resolved_at)}` : 'Completion date not recorded'
             : `Updated ${formatManilaDate(item.updated_at)}`;
@@ -196,6 +242,59 @@
         else if (dialog.open) {
             syncingHistory = true;
             dialog.close();
+        }
+    });
+    // Sync initial voted states from local storage
+    document.querySelectorAll('[data-vote-id]').forEach(btn => {
+        if (btn.dataset.voteId && hasVoted(btn.dataset.voteId)) {
+            btn.classList.add('is-voted');
+            btn.setAttribute('aria-pressed', 'true');
+        }
+    });
+    document.addEventListener('click', async (event) => {
+        const btn = event.target?.closest('[data-vote-id]');
+        if (!btn || !btn.dataset.voteId || btn.disabled)
+            return;
+        event.preventDefault();
+        event.stopPropagation();
+        const id = btn.dataset.voteId;
+        const matching = Array.from(document.querySelectorAll(`[data-vote-id="${id}"]`));
+        matching.forEach(b => { b.disabled = true; b.setAttribute('aria-busy', 'true'); });
+        try {
+            const res = await fetch('/api/vote/' + encodeURIComponent(id), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ action: 'up' }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success && typeof data.vote_count === 'number') {
+                saveVotedId(id);
+                matching.forEach(b => {
+                    b.classList.add('is-voted');
+                    b.setAttribute('aria-pressed', 'true');
+                    const countEl = b.querySelector('.roadmap-card-vote-count');
+                    if (countEl)
+                        countEl.textContent = String(data.vote_count);
+                });
+                const cached = items.find(i => i.id === id);
+                if (cached)
+                    cached.votes = data.vote_count;
+                const detailVotes = document.getElementById('roadmap-detail-votes');
+                if (detailVotes && document.getElementById('roadmap-detail-vote')?.dataset.voteId === id) {
+                    detailVotes.textContent = String(data.vote_count);
+                }
+                if (typeof window.sfToast === 'function') {
+                    window.sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
+                }
+            }
+        }
+        catch {
+            if (typeof window.sfToast === 'function') {
+                window.sfToast('Could not record your support. Please try again.', 'error');
+            }
+        }
+        finally {
+            matching.forEach(b => { b.disabled = false; b.removeAttribute('aria-busy'); });
         }
     });
     const initial = new URL(window.location.href).searchParams.get('item');

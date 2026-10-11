@@ -77,6 +77,33 @@
    <% } %>
   </div>
 
+  <% if (recentlyCompleted && recentlyCompleted.length > 0 && filters.view === 'board' && filters.stage === 'all' && !filtered) { %>
+   <section class="roadmap-recent-strip" aria-labelledby="recent-strip-heading">
+    <div class="roadmap-recent-strip-heading">
+     <span class="roadmap-recent-strip-pill">Recent outcome</span>
+     <h2 id="recent-strip-heading">Recently completed campus improvements</h2>
+    </div>
+    <div class="roadmap-recent-strip-cards">
+     <% for (const recent of recentlyCompleted) { %>
+      <article class="roadmap-recent-card" data-roadmap-id="<%= recent.id %>">
+       <div class="roadmap-recent-card-top">
+        <span class="workspace-tag"><%= recent.category %></span>
+        <span class="roadmap-card-date roadmap-card-date--completed"><%= completionLabel(recent) %></span>
+       </div>
+       <h3 class="roadmap-recent-card-title"><button type="button" data-roadmap-open="<%= recent.id %>" aria-haspopup="dialog"><%= recent.title %></button></h3>
+       <footer class="roadmap-recent-card-footer">
+        <button type="button" class="roadmap-card-vote-btn roadmap-card-vote-btn--compact" data-vote-id="<%= recent.id %>" aria-label="Support idea, <%= recent.votes %> votes" title="Support this idea">
+         <span class="roadmap-card-vote-icon" aria-hidden="true">↑</span>
+         <span class="roadmap-card-vote-count"><%= recent.votes %></span>
+        </button>
+        <span class="workspace-status" data-status="resolved">Completed</span>
+       </footer>
+      </article>
+     <% } %>
+    </div>
+   </section>
+  <% } %>
+
   <div class="roadmap-board" id="campus-roadmap-board" data-view="<%= filters.view %>" data-stage="<%= filters.stage %>">
    <!-- Board Layout -->
    <% if (filters.view === 'board') { %>
@@ -93,6 +120,9 @@
        <article class="roadmap-idea" data-roadmap-id="<%= item.id %>">
         <div class="roadmap-card-top">
          <span class="workspace-tag"><%= item.category %></span>
+         <% if (item.is_blocked) { %>
+          <span class="roadmap-card-blocked-pill" title="Work is waiting on external dependencies">Blocked</span>
+         <% } %>
          <% if (stage.key === 'resolved') { %>
           <span class="roadmap-card-date roadmap-card-date--completed"><%= completionLabel(item) %></span>
          <% } else { %>
@@ -101,8 +131,20 @@
         </div>
         <h3 class="roadmap-card-title"><button type="button" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button></h3>
         <p class="roadmap-card-desc"><%= item.description %></p>
+        <% if (item.progress_percent !== null && (item.status === 'in_progress' || item.status === 'resolved')) { %>
+         <div class="roadmap-card-progress" role="progressbar" aria-valuenow="<%= item.progress_percent %>" aria-valuemin="0" aria-valuemax="100" aria-label="<%= item.progress_percent %>% complete">
+          <div class="roadmap-card-progress-track">
+           <div class="roadmap-card-progress-bar" style="width:<%= item.progress_percent %>%"></div>
+          </div>
+          <span class="roadmap-card-progress-label"><%= item.progress_percent %>%</span>
+         </div>
+        <% } %>
         <footer class="roadmap-card-footer">
-         <span class="roadmap-card-metric">↑ <%= item.votes %> votes</span>
+         <button type="button" class="roadmap-card-vote-btn" data-vote-id="<%= item.id %>" aria-label="Support idea, <%= item.votes %> votes" title="Support this idea">
+          <span class="roadmap-card-vote-icon" aria-hidden="true">↑</span>
+          <span class="roadmap-card-vote-count"><%= item.votes %></span>
+          <span class="sr-only">votes</span>
+         </button>
          <% if (item.comments) { %><span class="roadmap-card-comments"> · <%= item.comments %> comments</span><% } %>
         </footer>
        </article>
@@ -158,8 +200,20 @@
           <div class="roadmap-tree-leaf-title">
            <h4><button type="button" data-roadmap-open="<%= leaf.id %>" aria-haspopup="dialog"><%= leaf.title %></button></h4>
           </div>
+          <% if (leaf.is_blocked) { %>
+           <span class="roadmap-card-blocked-pill" title="Work is waiting on external dependencies">Blocked</span>
+          <% } %>
+          <% if (leaf.progress_percent !== null && (leaf.status === 'in_progress' || leaf.status === 'resolved')) { %>
+           <span class="roadmap-tree-leaf-progress" title="<%= leaf.progress_percent %>% complete">
+            <span class="roadmap-tree-leaf-progress-bar" style="width:<%= leaf.progress_percent %>%"></span>
+            <span class="roadmap-tree-leaf-progress-text"><%= leaf.progress_percent %>%</span>
+           </span>
+          <% } %>
           <span class="workspace-status" data-status="<%= leaf.status %>"><%= leaf.status === 'resolved' ? 'Completed' : leaf.status === 'in_progress' ? 'In progress' : 'Planned' %></span>
-          <span class="roadmap-tree-leaf-votes">↑ <%= leaf.votes %></span>
+          <button type="button" class="roadmap-card-vote-btn roadmap-card-vote-btn--compact" data-vote-id="<%= leaf.id %>" aria-label="Support idea, <%= leaf.votes %> votes" title="Support this idea">
+           <span class="roadmap-card-vote-icon" aria-hidden="true">↑</span>
+           <span class="roadmap-card-vote-count"><%= leaf.votes %></span>
+          </button>
           <span class="roadmap-tree-leaf-date"><%= leaf.status === 'resolved' ? completionLabel(leaf) : 'Updated ' + formatManilaDate(leaf.updated_at) %></span>
          </article>
         <% } %>
@@ -254,6 +308,19 @@
    <p id="roadmap-detail-meta" class="workspace-detail-meta"></p>
    <p id="roadmap-detail-error" class="workspace-message" role="status"></p>
    <div id="roadmap-detail-content">
+    <div id="roadmap-detail-blocked-alert" class="roadmap-detail-blocked-alert" hidden>
+     <strong>⚠️ Work is currently paused</strong>
+     <p id="roadmap-detail-blocked-reason">The school is waiting on external dependencies.</p>
+    </div>
+    <div id="roadmap-detail-progress-wrap" class="roadmap-detail-progress-bar-wrap" hidden>
+     <div class="roadmap-detail-progress-bar-header">
+      <span class="workspace-field-label">Progress estimate</span>
+      <strong id="roadmap-detail-progress-text">0%</strong>
+     </div>
+     <div class="roadmap-detail-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="roadmap-detail-bar-el">
+      <div class="roadmap-detail-bar-fill" id="roadmap-detail-bar-fill" style="width:0%"></div>
+     </div>
+    </div>
     <h3 class="workspace-field-label">About this idea</h3>
     <p class="workspace-description" id="roadmap-detail-description"></p>
     <section class="roadmap-school-update" aria-labelledby="roadmap-update-title">
@@ -275,8 +342,15 @@
      <p id="roadmap-history-status" role="status"></p>
      <ol id="roadmap-history-list" class="roadmap-history-list"></ol>
     </section>
-    <a class="workspace-button workspace-button--primary" id="roadmap-detail-link" href="/feed">Open idea &amp; discussion →</a>
-    <button type="button" class="workspace-button" id="roadmap-follow" data-follow-idea="" aria-pressed="false">Follow this idea</button>
+    <div class="roadmap-detail-actions">
+     <a class="workspace-button workspace-button--primary" id="roadmap-detail-link" href="/feed">Open idea &amp; discussion →</a>
+     <button type="button" class="roadmap-card-vote-btn roadmap-detail-vote-btn" id="roadmap-detail-vote" data-vote-id="" aria-label="Support this idea">
+      <span class="roadmap-card-vote-icon" aria-hidden="true">↑</span>
+      <span class="roadmap-vote-label">Support</span>
+      <span class="roadmap-card-vote-count" id="roadmap-detail-votes">0</span>
+     </button>
+     <button type="button" class="workspace-button" id="roadmap-follow" data-follow-idea="" aria-pressed="false">Follow this idea</button>
+    </div>
     <p class="workspace-detail-meta">Following sends school updates to <a href="/notifications">your notifications</a>. Email and push alerts are not enabled.</p>
    </div>
   </div>
