@@ -50,6 +50,7 @@
         retry.disabled = true;
         error.hidden = true;
         retry.hidden = true;
+        list.setAttribute('aria-busy', 'true');
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 15000);
         try {
@@ -64,6 +65,11 @@
                 const entry = document.createElement('li');
                 entry.className = 'notification-item';
                 entry.dataset.unread = String(!notification.read_at);
+                const unread = document.createElement('span');
+                unread.className = 'notification-new';
+                unread.textContent = 'New update';
+                if (!notification.read_at)
+                    entry.append(unread);
                 const link = document.createElement('a');
                 link.href = '/roadmap?item=' + encodeURIComponent(notification.submission_id);
                 link.textContent = notification.title;
@@ -86,6 +92,7 @@
                                 throw new Error();
                             entry.dataset.unread = 'false';
                             mark.remove();
+                            unread.remove();
                             summary.textContent = 'Update marked as read.';
                         }
                         catch {
@@ -115,6 +122,7 @@
             loading = false;
             more.disabled = false;
             retry.disabled = false;
+            list.removeAttribute('aria-busy');
         }
     }
     more.addEventListener('click', () => void load());

@@ -5,7 +5,7 @@
     <div class="staff-review-tabs" role="tablist" aria-label="Submission sections"><% for(const [key,name] of [['decision','Review'],['progress','Progress'],['notes','Internal notes'],['history','History']]) { %><button type="button" role="tab" id="review-tab-<%= key %>" aria-controls="review-panel-<%= key %>" aria-selected="<%= key==='decision' %>" tabindex="<%= key==='decision' ? '0' : '-1' %>" data-review-tab="<%= key %>"><%= name %><% if(key==='notes') { %><span class="workspace-tag">Private</span><% } %></button><% } %></div>
     <div class="staff-review-scroll">
       <section role="tabpanel" id="review-panel-decision" aria-labelledby="review-tab-decision" class="staff-review-panel">
-        <h3 class="workspace-field-label">The suggestion</h3><p class="workspace-description" id="review-description"></p>
+        <section class="staff-review-context" aria-labelledby="review-context-title"><h3 class="workspace-field-label" id="review-context-title">The suggestion</h3><p class="workspace-description" id="review-description"></p><p class="staff-footnote">Read the original suggestion before changing its status or publishing a response.</p></section>
         <form id="staff-review-form" novalidate>
           <label class="workspace-field-label" for="staff-response-template">Response starter</label><select id="staff-response-template" class="workspace-input"><option value="">Choose an editable template…</option><option value="planned">Approved for planning</option><option value="clarify">Request more information</option><option value="declined">Explain a decline</option></select><p class="staff-footnote">Edit the template before saving. A response template does not send a private clarification request.</p>
           <fieldset id="staff-review-fields">
@@ -27,8 +27,10 @@
       </section>
       <section role="tabpanel" id="review-panel-notes" aria-labelledby="review-tab-notes" class="staff-review-panel" hidden>
         <h3 class="staff-panel-title">Coordinate with your team</h3><p class="staff-panel-copy">Internal notes are visible only to school staff. Keep sensitive personal details out of these notes.</p>
+        <div class="staff-notes-layout">
         <form id="staff-internal-note-form"><label class="workspace-field-label" for="review-internal-note">New private note</label><textarea id="review-internal-note" class="workspace-input" required maxlength="2000" rows="4" placeholder="Add context, a question, or the next action…"></textarea><button class="workspace-button workspace-button--primary" type="submit" id="review-add-note">Add internal note</button><p id="review-internal-message" role="status" aria-live="polite"></p></form>
-        <p id="review-notes-state" role="status" aria-live="polite"></p><div id="review-internal-notes" class="staff-activity-list" aria-live="polite"></div>
+        <section aria-labelledby="review-notes-title"><h3 class="staff-panel-title" id="review-notes-title">Team notes</h3><p id="review-notes-state" role="status" aria-live="polite"></p><div id="review-internal-notes" class="staff-activity-list" aria-live="polite"></div></section>
+        </div>
       </section>
       <section role="tabpanel" id="review-panel-history" aria-labelledby="review-tab-history" class="staff-review-panel" hidden>
         <div class="staff-panel-heading"><div><h3 class="staff-panel-title">Submission history</h3><p class="staff-panel-copy">Decisions and changes, most recent first.</p></div><button class="workspace-button" type="button" id="review-retry-activity">Refresh</button></div>

@@ -7,13 +7,25 @@
  <% if (!it.signedIn) { %>
   <section class="roadmap-lane-empty"><h2>Sign in to follow campus ideas</h2><p>Choose Follow on an idea to receive updates here. Email and push alerts are not enabled by following.</p><button type="button" class="workspace-button workspace-button--primary" data-sf-click="action-94">Sign in</button></section>
  <% } else { %>
-  <section class="care-card"><h2>Notification preferences</h2><form id="notification-preferences" class="care-form"><label>In-app updates<select name="update_mode" class="workspace-input"><option value="all">All school updates</option><option value="milestones">Milestones, starts, blockers, completion and corrections</option></select></label><label><span><input type="checkbox" name="weekly_digest" disabled/> Optional weekly email digest</span></label><p id="digest-availability">Checking email availability…</p><button class="workspace-button" type="submit" disabled>Save preferences</button><p id="preferences-status" role="status"></p></form><div class="workspace-actions"><a href="/feed?scope=following">Followed ideas</a><a href="/inbox">Private school messages</a></div></section>
-  <section aria-label="Your notifications">
+  <div class="notification-layout">
+  <section class="notification-stream" aria-labelledby="notification-stream-title">
+   <h2 id="notification-stream-title">Latest updates</h2>
    <p id="notification-summary" role="status">Loading your updates…</p>
    <p id="notification-error" class="workspace-message" role="alert" hidden></p>
    <ol class="notification-list" id="notification-list"></ol>
    <div class="notification-actions"><button type="button" class="workspace-button" id="notification-retry" hidden>Try again</button><button type="button" class="workspace-button" id="notification-more" hidden>Load older updates</button></div>
   </section>
-  <script src="/js/notifications.js?v=20261012-progress"></script>
+  <details class="care-card notification-settings">
+   <summary>Notification preferences</summary>
+   <form id="notification-preferences" class="care-form">
+    <label>In-app updates<select name="update_mode" class="workspace-input"><option value="all">All school updates</option><option value="milestones">Milestones, starts, blockers, completion and corrections</option></select></label>
+    <label><span><input type="checkbox" name="weekly_digest" disabled/> Optional weekly email digest</span></label>
+    <p id="digest-availability">Checking email availability…</p>
+    <button class="workspace-button" type="submit" disabled>Save preferences</button><p id="preferences-status" role="status"></p>
+   </form>
+   <div class="workspace-actions"><a href="/feed?scope=following">Browse ideas you follow →</a><a href="/inbox">Private school messages →</a></div>
+  </details>
+  </div>
+  <script src="/js/notifications.js?v=20261012-system"></script>
  <% } %>
 </main>

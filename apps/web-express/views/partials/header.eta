@@ -1,15 +1,16 @@
+<% const menuIcon=name=>'<svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-'+name+'"></use></svg>'; %>
 <header class="site-header">
   <a class="brand" href="/">Sugg<span>Feed</span></a>
-  <nav>
-    <a href="/" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>">Home</a>
-    <a href="/feed" class="nav-link-hide-mobile<%= it.currentPath === '/feed' ? ' active' : '' %>">Community ideas</a>
-    <a href="/roadmap" class="nav-link-hide-mobile<%= it.currentPath === '/roadmap' ? ' active' : '' %>">Roadmap</a>
-    <a href="/admin" class="nav-link-hide-mobile<%= it.currentPath.startsWith('/admin') ? ' active' : '' %>">Staff portal</a>
+  <nav aria-label="Primary navigation">
+    <a href="/" aria-current="<%= it.currentPath === '/' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>">Home</a>
+    <a href="/feed" aria-current="<%= it.currentPath === '/feed' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/feed' ? ' active' : '' %>">Community ideas</a>
+    <a href="/roadmap" aria-current="<%= it.currentPath === '/roadmap' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/roadmap' ? ' active' : '' %>">Roadmap</a>
+    <a href="/admin" aria-current="<%= it.currentPath.startsWith('/admin') ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath.startsWith('/admin') ? ' active' : '' %>">Staff portal</a>
 
     <% if (it.user) { %>
       <!-- Authenticated: avatar chip with dropdown -->
       <div class="header-user-menu">
-        <button class="avatar-chip" id="header-avatar-btn" aria-haspopup="true" aria-expanded="false">
+        <button class="avatar-chip" id="header-avatar-btn" aria-label="Open account menu" aria-controls="header-dropdown" aria-haspopup="true" aria-expanded="false">
           <% if (it.user.avatar_url) { %>
             <img src="<%= it.user.avatar_url %>" alt="<%= it.user.full_name?.[0]?.toUpperCase() ?? 'U' %>"
               class="avatar-circle" referrerpolicy="no-referrer" />
@@ -26,20 +27,20 @@
           </div>
           <div class="divider"></div>
           <a href="/profile" class="dropdown-link">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <%~ menuIcon('user') %>
             My Profile &amp; Ideas
           </a>
-          <a href="/notifications" class="dropdown-link">School updates</a>
-          <a href="/feed?scope=following" class="dropdown-link">Following</a>
-          <a href="/inbox" class="dropdown-link">Private school messages</a>
+          <a href="/notifications" class="dropdown-link"><%~ menuIcon('bell') %> School updates</a>
+          <a href="/feed?scope=following" class="dropdown-link"><%~ menuIcon('bookmark') %> Following</a>
+          <a href="/inbox" class="dropdown-link"><%~ menuIcon('message') %> Private school messages</a>
           <a href="/admin" class="dropdown-link dropdown-link--staff">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <%~ menuIcon('shield') %>
             Staff Portal
           </a>
           <div class="divider"></div>
           <form action="/auth/signout" method="POST" class="dropdown-form">
             <button type="submit" class="danger dropdown-signout-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <%~ menuIcon('signout') %>
               Sign out
             </button>
           </form>
@@ -66,4 +67,4 @@
   </nav>
 </header>
 
-<script src="/js/header.js?v=20261010-ts"></script>
+<script src="/js/header.js?v=20261012-system"></script>

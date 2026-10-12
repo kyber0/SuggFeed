@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/styles.css?v=20261012-shared-review" />
+  <link rel="stylesheet" href="/css/styles.css?v=20261012-menu-icons" />
   <script src="/js/events.js?v=20261011-feed"></script>
 
   <!-- Theme init (before render to prevent flash) -->
@@ -29,12 +29,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
+<a class="system-skip-link" href="#page-content">Skip to page content</a>
 <%~ include('partials/workspace-icons', it) %>
 <div id="sf-auth-config" hidden data-url="<%= it.supabaseUrl || '' %>" data-key="<%= it.supabaseAnonKey || '' %>" data-user="<%= it.user?.id || '' %>"></div>
 
 <%~ include('partials/header', it) %>
 
-<%~ it.body ?? '' %>
+<div id="page-content" tabindex="-1"><%~ it.body ?? '' %></div>
 
 <%~ include('partials/auth-modal', it) %>
 <%~ include('partials/submit-panel', it) %>

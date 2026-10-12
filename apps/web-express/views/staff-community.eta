@@ -1,8 +1,14 @@
 <% layout('layout') %>
+<% const careIcon=name=>'<svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-'+name+'"></use></svg>'; %>
 <main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main community-care-page">
  <header class="workspace-heading"><div><p class="workspace-kicker">COMMUNITY / CARE</p><h1>Keep the conversation moving</h1><p>Private follow-ups, human-reviewed reports, and accountable duplicate decisions.</p></div><a class="workspace-button" href="/admin">Review queue</a></header>
  <p id="care-message" role="status" aria-live="polite"></p><p class="staff-footnote"><%= it.coverage %> Refresh this page after saving to review the latest queue.</p>
- <nav class="care-section-nav" aria-label="Community care sections"><a href="#care-reminders">Stale work · <%= it.alerts.length %> shown</a><a href="#care-reports">Reports · <%= it.reports.length %> shown</a><a href="#care-clarification">Clarification · <%= it.requests.length %> shown</a><a href="#care-merges">Merge duplicates</a></nav>
+ <nav class="care-section-nav" aria-label="Community care sections">
+  <a href="#care-reminders"><%~ careIcon('clock') %> Stale work · <%= it.alerts.length %> shown</a>
+  <a href="#care-reports"><%~ careIcon('shield') %> Reports · <%= it.reports.length %> shown</a>
+  <a href="#care-clarification"><%~ careIcon('message') %> Clarification · <%= it.requests.length %> shown</a>
+  <a href="#care-merges"><%~ careIcon('merge') %> Merge duplicates</a>
+ </nav>
  <section class="care-card" id="care-reminders"><h2>Needs attention</h2><p>No public update for 30 days, or continuously blocked for more than 14 days. Votes and internal edits do not reset these reminders. No statuses are changed automatically.</p>
   <% for(const alert of it.alerts) { %><article class="care-row"><a href="/admin?idea=<%= alert.id %>" data-review="<%= alert.id %>" data-review-section="progress" aria-haspopup="dialog"><%= alert.title %></a><span><%= alert.reason %></span></article><% } %>
   <% if(!it.alerts.length) { %><p>No 30-day reminders in this window.</p><% } %>

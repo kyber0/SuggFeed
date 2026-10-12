@@ -1,9 +1,9 @@
 <% layout('layout') %>
 <main class="campus-roadmap community-care-page">
  <header class="workspace-heading"><div><p class="workspace-kicker">PRIVATE, NOT PUBLIC</p><h1>School messages</h1><p>Reply to a clarification request without posting a public comment.</p></div><a class="workspace-button" href="/profile">My submissions</a></header>
- <section class="care-card"><h2>Anonymous submission?</h2><p>Your tracking code is the key to your private messages. It is sent securely in the request body—not stored in this browser or added to the address bar. Signed-in messages load automatically.</p>
+ <details class="care-card inbox-code-panel" <%= it.user ? '' : 'open' %>><summary>Find messages with a tracking code</summary><p>For anonymous submissions, use the code you saved after submitting. Your code is sent in the request body—not stored in this browser or added to the address bar. Signed-in messages load automatically.</p>
   <form id="private-code-form" class="care-form"><label>Private tracking code<input class="workspace-input" name="trackingCode" autocomplete="off" maxlength="35" placeholder="CV-…" required/></label><button class="workspace-button" type="submit">Find messages</button></form>
- </section>
+ </details>
  <p id="care-message" role="status" aria-live="polite"></p><section id="private-messages" aria-label="Private clarification requests"></section>
  <section class="care-card"><h2>Your content reports</h2><p>Reports are private. Staff decisions and removal reasons appear here.</p><div id="my-report-history"></div></section>
 </main>

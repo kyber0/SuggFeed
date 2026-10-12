@@ -14,7 +14,7 @@
     return `status-${s}`;
   }
   function statusLabel(status) {
-    return (status || 'pending').replace(/_/g, ' ');
+    return ({pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'})[status || 'pending'] || 'Needs review';
   }
 %>
 

@@ -23,6 +23,7 @@
   async function load() {
     if (loading) return;
     loading = true; more.disabled = true; retry.disabled = true; error.hidden = true; retry.hidden = true;
+    list!.setAttribute('aria-busy','true');
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
@@ -35,6 +36,8 @@
         const entry = document.createElement('li');
         entry.className = 'notification-item';
         entry.dataset.unread = String(!notification.read_at);
+        const unread=document.createElement('span');unread.className='notification-new';unread.textContent='New update';
+        if(!notification.read_at)entry.append(unread);
         const link = document.createElement('a');
         link.href = '/roadmap?item=' + encodeURIComponent(notification.submission_id);
         link.textContent = notification.title;
@@ -52,7 +55,7 @@
             try {
               const result = await fetch('/api/notifications/' + encodeURIComponent(notification.id) + '/read', { method: 'PATCH', signal: readController.signal, headers: { Accept: 'application/json' } });
               if (!result.ok) throw new Error();
-              entry.dataset.unread = 'false'; mark.remove();
+              entry.dataset.unread = 'false'; mark.remove();unread.remove();
               summary.textContent = 'Update marked as read.';
             } catch { error.hidden = false; error.textContent = 'Could not mark this update as read. Please try again.'; mark.disabled = false; }
             finally { clearTimeout(readTimer); }
@@ -65,7 +68,7 @@
       summary.textContent = seen.size ? `${payload.unreadCount} unread · ${seen.size} updates shown` : 'You’re all caught up. Follow an idea on the roadmap to receive its next school update here.';
     } catch (failure) {
       error.hidden = false; error.textContent = failure instanceof Error && failure.name !== 'AbortError' ? failure.message : 'Loading timed out. Please try again.'; retry.hidden = false;
-    } finally { clearTimeout(timer); loading = false; more.disabled = false; retry.disabled = false; }
+    } finally { clearTimeout(timer); loading = false; more.disabled = false; retry.disabled = false; list!.removeAttribute('aria-busy'); }
   }
   more.addEventListener('click', () => void load()); retry.addEventListener('click', () => void load());
   void load();

@@ -4,6 +4,7 @@
 </div>
 <p id="staff-progress-state" class="staff-progress-state" role="status" aria-live="polite"></p>
 <div id="staff-progress-summary" class="staff-progress-summary" hidden></div>
+<div class="staff-progress-layout">
 <form id="staff-progress-form" class="staff-progress-form" novalidate>
   <fieldset id="staff-progress-fields" disabled>
     <legend class="staff-progress-legend">New progress update</legend>
@@ -44,3 +45,4 @@
   <p id="staff-progress-message" class="workspace-message" role="status" aria-live="polite" tabindex="-1"></p>
 </form>
 <section class="staff-progress-history" aria-labelledby="staff-progress-history-title"><h3 id="staff-progress-history-title">Progress history</h3><p class="staff-panel-copy">Public updates and staff-only records, newest first.</p><div id="staff-progress-history" class="staff-progress-events"></div><p id="staff-progress-history-limit" class="staff-footnote" hidden>Showing the latest 100 updates.</p></section>
+</div>

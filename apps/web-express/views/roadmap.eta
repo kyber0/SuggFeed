@@ -352,6 +352,7 @@
    <p id="roadmap-detail-error" class="workspace-message" role="status"></p>
    <button type="button" class="workspace-button" id="roadmap-detail-retry" hidden>Try again</button>
    <div id="roadmap-detail-content">
+    <div class="roadmap-detail-overview">
     <div id="roadmap-detail-blocked-alert" class="roadmap-detail-blocked-alert" hidden>
      <strong>⚠️ Work is currently paused</strong>
      <p id="roadmap-detail-blocked-reason">The school is waiting on external dependencies.</p>
@@ -365,7 +366,7 @@
       <div class="roadmap-detail-bar-fill" id="roadmap-detail-bar-fill" style="width:0%"></div>
      </div>
     </div>
-    <h3 class="workspace-field-label">About this idea</h3>
+    <h3 class="workspace-field-label" id="roadmap-about-title">About this idea</h3>
     <p class="workspace-description" id="roadmap-detail-description"></p>
     <section class="roadmap-school-update" aria-labelledby="roadmap-update-title">
      <h3 id="roadmap-update-title">Latest school response</h3>
@@ -380,6 +381,7 @@
      </ol>
      <p id="roadmap-detail-hint"></p>
      <p id="roadmap-detail-estimate" class="workspace-detail-meta"></p>
+    </div>
     </div>
     <section class="roadmap-public-history" aria-labelledby="roadmap-history-title">
      <h3 id="roadmap-history-title">School progress updates</h3>

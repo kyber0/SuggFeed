@@ -66,7 +66,7 @@ function browser(fetchResponse: (url: string, options: any) => Promise<any> = as
   const toasts: string[] = [];
   const window: Record<string, any> = {
     location: { href: 'https://www.suggfeed.me/feed?category=Learning&search=library', origin: 'https://www.suggfeed.me', search: '?category=Learning&search=library' },
-    setTimeout, clearTimeout, sfToast: true,
+    setTimeout, clearTimeout, sfToast: (message: string) => toasts.push(message),
   };
   const context = {
     window, URL, URLSearchParams, AbortController, setTimeout, clearTimeout,
