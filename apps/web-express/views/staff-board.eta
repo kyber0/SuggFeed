@@ -1,16 +1,35 @@
-<% layout('layout'); const stages={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'}; %>
-<main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main">
- <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / FLOW</p><h1>Work board</h1><p>Move an idea with its menu or drag it to a stage. Every change requires confirmation.</p></div><a class="workspace-button" href="/admin">Detailed review</a></header>
- <p class="staff-footnote">Oldest 200 submissions shown. Review the full queue for complete coverage. Publishing a stage makes the suggestion visible—check for private details first.</p>
- <p id="staff-tools-message" role="status" aria-live="polite"></p>
- <div class="staff-bulk-controls"><label>Assign selected to<select class="workspace-input" id="staff-bulk-assignee"><option value="">Unassigned</option><% for(const member of it.members) { %><option value="<%= member.id %>"><%= member.display_name || 'Staff member' %></option><% } %></select></label><button class="workspace-button" id="staff-bulk-assign" type="button">Review bulk assignment</button><span id="staff-selection-count" role="status">0 selected · maximum 25</span></div>
- <section class="staff-flow-board" aria-label="Submission stages">
-  <% for(const [key,label] of Object.entries(stages)) { const rows=it.items.filter(s=>s.status===key); %>
-   <section class="staff-flow-lane" data-drop-stage="<%= key %>" aria-label="<%= label %>"><h2><%= label %> <span class="workspace-tag"><%= rows.length %></span></h2>
-    <% for(const item of rows) { %><article class="staff-flow-card" data-board-id="<%= item.id %>" draggable="true"><label><input type="checkbox" data-bulk-id="<%= item.id %>" aria-label="Select <%= item.title %>"/> Select</label><h3><%= item.title %></h3><p><%= item.categories?.name || 'Other' %> · <%= item.assignee_name || 'Unassigned' %></p><label>Move to<select class="workspace-input" data-stage-select="<%= item.id %>"><% for(const [status,name] of Object.entries(stages)) { %><option value="<%= status %>" <%= status===key ? 'selected' : '' %>><%= name %></option><% } %></select></label><a href="/admin?status=all&search=<%= encodeURIComponent(item.title) %>">Open detailed review →</a></article><% } %>
-    <% if(!rows.length) { %><p>No submissions here in this window.</p><% } %>
-   </section>
-  <% } %>
+<% layout('layout');
+ const filters=it.filters;
+ const urlFor=(stage,page)=>{
+  const values=new URLSearchParams({sort:filters.sort,pageSize:String(filters.pageSize)});
+  if(filters.search) values.set('search',filters.search);
+  for(const lane of it.lanes) {const number=lane.status===stage?page:lane.page;if(number>1) values.set(lane.status+'Page',String(number));}
+  return '/admin/board?'+values.toString()+(stage?'#board-lane-'+stage:'');
+ };
+ const pageFields=stage=>Array.from(new URLSearchParams(urlFor('',1).split('?')[1]).entries()).filter(([key])=>key!==stage+'Page');
+ const meta={filters,totalCount:it.totalCount,lanes:it.lanes.map(({items,...lane})=>lane)};
+%>
+<main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main staff-board-main">
+ <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / FLOW</p><h1>Work board</h1><p>Drag to a stage, or use Move. Select cards to assign them together.</p></div><a class="workspace-button" href="/admin">Detailed review</a></header>
+ <form class="staff-board-toolbar" action="/admin/board" method="get" role="search" id="staff-board-filters">
+  <label class="staff-board-search"><span class="visually-hidden">Search the work board</span><input class="workspace-input" type="search" name="search" value="<%= filters.search %>" maxlength="120" placeholder="Search suggestions…" aria-label="Search the work board"/></label>
+  <label>Order<select class="workspace-input" name="sort"><option value="oldest" <%= filters.sort==='oldest'?'selected':'' %>>Oldest first</option><option value="newest" <%= filters.sort==='newest'?'selected':'' %>>Newest first</option></select></label>
+  <label>Cards per stage<select class="workspace-input" name="pageSize"><% for(const size of [6,12,24]) { %><option value="<%= size %>" <%= filters.pageSize===size?'selected':'' %>><%= size %></option><% } %></select></label>
+  <button class="workspace-button" type="submit">Apply</button>
+  <% if(filters.search || filters.sort!=='oldest' || filters.pageSize!==6) { %><a class="workspace-text-link" href="/admin/board" data-board-reset>Reset</a><% } %>
+ </form>
+ <div class="staff-board-caption"><p id="staff-board-summary"><%= it.items.length %> shown · <%= it.totalCount.toLocaleString() %> matching submissions</p><p>Each stage has its own pages.</p></div>
+ <div class="staff-board-feedback"><p id="staff-tools-message" role="status" aria-live="polite"></p><button type="button" class="workspace-text-link" id="staff-board-retry" hidden>Retry loading</button></div>
+ <div class="staff-bulk-controls staff-board-selection" id="staff-selection-tools" hidden>
+  <strong id="staff-selection-count" role="status">0 selected · maximum 25</strong>
+  <label><span class="visually-hidden">Assign selected cards to</span><select class="workspace-input" id="staff-bulk-assignee" aria-label="Assign selected cards to"><option value="">Unassigned</option><% for(const member of it.members) { %><option value="<%= member.id %>"><%= member.display_name || 'Staff member' %></option><% } %></select></label>
+  <button class="workspace-button" id="staff-bulk-assign" type="button">Assign selected</button><button class="workspace-text-link" id="staff-clear-selection" type="button">Clear selection</button>
+ </div>
+ <section class="staff-flow-board" id="staff-flow-board" aria-label="Submission stages">
+  <% for(const lane of it.lanes) { %><%~ include('partials/staff-board-lane',{lane,urlFor,pageFields}) %><% } %>
  </section>
- <script id="staff-board-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script><script src="/js/staff-tools.js?v=20261012-care"></script>
+ <p class="staff-board-safety">Stage changes require confirmation. Planned, in-progress and completed ideas are public; check private details in the review queue first.</p>
+ <script id="staff-board-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script>
+ <script id="staff-board-meta" type="application/json"><%~ JSON.stringify(meta).replace(/</g,'\\u003c') %></script>
+ <script src="/js/staff-tools.js?v=20261012-board-pages"></script>
 </div></main><section class="staff-mobile-notice"><h1>Staff workspace</h1><p>Use a desktop or larger screen to manage the work board.</p><a class="workspace-button" href="/roadmap">Explore the roadmap</a></section>

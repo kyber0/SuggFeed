@@ -7,9 +7,15 @@ New screens: `/admin/community` (reports, private clarification, duplicate merge
 assignment), `/inbox` (private replies and report decisions), `/feed?scope=following`,
 and notification preferences on `/notifications`. Staff queue shortcuts are `/`
 for search and `J`/`K` for Review buttons. Response starters remain editable drafts.
-The board displays the oldest 200 submissions; bulk assignment supports 1–25
-selected ideas, rolls back completely if any version is stale, and does not
-change public responses or stages. Community-care sections show the oldest 50
+The board pages every stage independently, with exact matching totals and 6,
+12 or 24 cards per stage. Search and oldest/newest order apply before pagination;
+there is no 200-submission cutoff. Previous/next and page-jump controls preserve
+the other columns' pages. Cards and column scroll areas are compact; bulk tools
+only appear when something is selected. Selection survives inline page changes
+in memory (not browser storage), including the original review version; changing
+filters or leaving the page clears it. Bulk assignment supports 1–25 selected
+ideas, rolls back completely if any version is stale, and does not change public
+responses or stages. Community-care sections show the oldest 50
 open records each, not fabricated school-wide totals.
 
 The composer suggests up to five related public titles using bounded keyword

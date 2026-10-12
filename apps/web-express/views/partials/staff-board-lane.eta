@@ -1,0 +1,22 @@
+<% const lane=it.lane; %>
+<section class="staff-flow-lane" id="board-lane-<%= lane.status %>" data-drop-stage="<%= lane.status %>" aria-labelledby="board-title-<%= lane.status %>">
+ <header class="staff-lane-heading"><h2 id="board-title-<%= lane.status %>" tabindex="-1"><%= lane.label %><span class="staff-lane-count" aria-label="<%= lane.count %> matching submissions"><%= lane.count.toLocaleString() %></span></h2><p><%= lane.count ? lane.from+'–'+lane.to+' of '+lane.count.toLocaleString() : 'No matching submissions' %></p></header>
+ <div class="staff-lane-cards" role="region" tabindex="0" aria-label="<%= lane.label %> cards; scroll to see this page">
+  <% for(const item of lane.items) { %>
+  <article class="staff-flow-card" data-board-id="<%= item.id %>" draggable="true">
+   <div class="staff-card-top"><label class="staff-card-select"><input type="checkbox" data-bulk-id="<%= item.id %>" aria-label="Select <%= item.title %>"/></label><span class="staff-card-category" title="<%= item.categories?.name || 'Other' %>"><%= item.categories?.name || 'Other' %></span><% if(['high','urgent'].includes(item.priority)) { %><span class="staff-card-priority" data-priority="<%= item.priority %>"><%= item.priority %></span><% } %></div>
+   <h3><a href="/admin?status=all&search=<%= encodeURIComponent(item.title) %>" title="<%= item.title %>"><%= item.title %></a></h3>
+   <div class="staff-card-bottom"><span class="staff-card-assignee" title="<%= item.assignee_name || 'Unassigned' %>"><%= item.assignee_name || 'Unassigned' %></span><details class="staff-card-move"><summary>Move <span aria-hidden="true">⌄</span></summary><label><span>Move <%= item.title %> to</span><select class="workspace-input" data-stage-select="<%= item.id %>" aria-label="Move <%= item.title %> to"><% for(const [status,label] of [['pending','Needs review'],['approved','Planned'],['in_progress','In progress'],['resolved','Completed'],['rejected','Declined']]) { %><option value="<%= status %>" <%= item.status===status?'selected':'' %>><%= label %></option><% } %></select></label></details></div>
+  </article>
+  <% } %>
+  <% if(!lane.items.length) { %><div class="staff-lane-empty"><span aria-hidden="true">—</span><p><%= lane.count ? 'This page changed. Refresh to see the latest cards.' : 'Nothing here yet.' %></p></div><% } %>
+ </div>
+ <nav class="staff-lane-pagination" aria-label="<%= lane.label %> pages">
+  <% if(lane.hasPrevious) { %><a href="<%= it.urlFor(lane.status,lane.page-1) %>" data-board-page="<%= lane.status %>" aria-label="Previous <%= lane.label %> page" title="Previous page">‹</a><% } else { %><span aria-disabled="true" aria-label="No previous <%= lane.label %> page">‹</span><% } %>
+  <form action="/admin/board#board-lane-<%= lane.status %>" method="get" data-board-jump="<%= lane.status %>">
+   <% for(const [name,value] of it.pageFields(lane.status)) { %><input type="hidden" name="<%= name %>" value="<%= value %>"/><% } %>
+   <label class="visually-hidden" for="board-page-<%= lane.status %>">Page for <%= lane.label %></label><input class="staff-page-input" type="number" name="<%= lane.status %>Page" id="board-page-<%= lane.status %>" min="1" max="<%= lane.pageCount %>" value="<%= lane.page %>" required inputmode="numeric"/><span class="staff-page-total">/ <%= lane.pageCount.toLocaleString() %></span><button type="submit" aria-label="Go to <%= lane.label %> page">Go</button>
+  </form>
+  <% if(lane.hasNext) { %><a href="<%= it.urlFor(lane.status,lane.page+1) %>" data-board-page="<%= lane.status %>" aria-label="Next <%= lane.label %> page" title="Next page">›</a><% } else { %><span aria-disabled="true" aria-label="No next <%= lane.label %> page">›</span><% } %>
+ </nav>
+</section>

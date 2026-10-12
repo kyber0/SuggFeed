@@ -3,6 +3,7 @@ import express from 'express';
 import path from 'node:path';
 import { Eta } from 'eta';
 import { queueFilters } from '../../src/lib/staff-workspace';
+import { boardFilters, BOARD_STAGES } from '../../src/lib/staff-board';
 import { roadmapFilters, groupTreeByCategory, groupTimelineByMonth, formatManilaDate, buildWorkTimeline } from '../../src/lib/roadmap';
 
 export function createWorkspacePreview() {
@@ -34,7 +35,20 @@ export function createWorkspacePreview() {
  app.post('/api/community/inbox',(_req,res)=>res.json({success:true,requests:privateRequests}));
  app.post('/api/community/reply',(req,res)=>{const entry=privateRequests.find(x=>x.id===req.body.id);if(!entry)return res.status(404).json({success:false});entry.reply=req.body.body;entry.replied_at=new Date().toISOString();return res.json({success:true});});
  app.post('/api/community/report',(_req,res)=>res.json({success:true}));
- app.get('/admin/board',(_req,res)=>res.send(eta.render('staff-board',{currentPath:'/admin/board',activeSection:'board',user:{id:staffId,display_name:'Alex Reyes',full_name:'Alex Reyes',role:'admin'},items:items.map(s=>({...s,categories:{name:s.category}})),members:[{id:staffId,display_name:'Alex Reyes'}]})));
+ const boardItems=items.map(s=>({...s,categories:{name:s.category}}));
+ for(let index=36;index<186;index++) boardItems.push({...boardItems[index%36],id:'00000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),title:titles[index%6]+' · Campus zone '+(index+1),status:BOARD_STAGES[index%5].status,categories:{name:index%2?'Learning':'Facilities'}});
+ app.get('/admin/board',(req,res)=>{
+  const filters=boardFilters(req.query);
+  const lanes=BOARD_STAGES.map(stage=>{
+   const all=req.query.empty?[]:boardItems.filter(item=>item.status===stage.status && (!filters.search || (item.title+' '+item.description).toLowerCase().includes(filters.search.toLowerCase())));
+   all.sort((a,b)=>{const comparison=a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id);return filters.sort==='newest'?-comparison:comparison;});
+   const count=all.length,pageCount=Math.max(1,Math.ceil(count/filters.pageSize)),page=Math.min(filters.pages[stage.status],pageCount);
+   const rows=all.slice((page-1)*filters.pageSize,page*filters.pageSize);
+   return {...stage,count,page,pageCount,from:count?(page-1)*filters.pageSize+1:0,to:count?Math.min(page*filters.pageSize,count):0,hasPrevious:page>1,hasNext:page<pageCount,items:rows};
+  });
+  const pages=Object.fromEntries(lanes.map(lane=>[lane.status,lane.page]));
+  res.send(eta.render('staff-board',{currentPath:'/admin/board',activeSection:'board',user:{id:staffId,display_name:'Alex Reyes',full_name:'Alex Reyes',role:'admin'},items:lanes.flatMap(lane=>lane.items),lanes,filters:{...filters,pages},totalCount:lanes.reduce((sum,lane)=>sum+lane.count,0),members:[{id:staffId,display_name:'Alex Reyes'}]}));
+ });
  app.get('/admin/community',(_req,res)=>res.send(eta.render('staff-community',{currentPath:'/admin/community',activeSection:'community',user:{id:staffId,display_name:'Alex Reyes',full_name:'Alex Reyes',role:'admin'},alerts:items.slice(0,3).map(s=>({id:s.id,title:s.title,reason:'No public update for 30 days'})),coverage:'Local visual fixtures only; no live database writes.',requests:privateRequests.map(r=>({...r,submission:{title:r.title}})),reports:[{id:'60000000-0000-4000-8000-000000000001',reason:'Contains a student name and phone number.',comment:{body:'[Preview of a reported comment]'}}],members:[{id:staffId,display_name:'Alex Reyes'}]})));
  app.post('/api/community/staff/bulk_assign',(_req,res)=>res.json({success:true}));
  const comments:Array<{id:string;submission_id:string;body:string;display_name:string;created_at:string;parent_id:string|null}>=[];

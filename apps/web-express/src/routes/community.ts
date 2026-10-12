@@ -4,6 +4,7 @@ import { CommunityError, textField, idField, communityAction, privateInbox, repl
 import { staffRole, loadStaffMembers } from '../lib/staff-workspace';
 import { supabaseService } from '../lib/supabase';
 import { invalidateCache } from '../lib/data';
+import { boardFilters, loadStaffBoard } from '../lib/staff-board';
 
 export const communityRouter = Router();
 export const communityPages = Router();
@@ -65,6 +66,11 @@ communityRouter.get('/staff/idea/:id',run(async(req,res)=>{
   if(error) throw error;if(!data) throw new CommunityError(404,'Idea unavailable.');
   return res.json({success:true,idea:data});
 }));
+communityRouter.get('/staff/board',run(async(req,res)=>{
+  const user=req.session.user;
+  if(!user || !staffRole(user.role)) throw new CommunityError(user ? 403 : 401,'Staff access required.');
+  return res.json({success:true,...await loadStaffBoard(boardFilters(req.query))});
+}));
 communityPages.get('/inbox',(_req,res)=>{res.setHeader('Cache-Control','private, no-store');res.render('private-inbox',{title:'Private school messages — SuggFeed'});});
 communityPages.get('/admin/community',run(async(req,res)=>{
   const user=req.session.user;
@@ -78,7 +84,6 @@ communityPages.get('/admin/board',run(async(req,res)=>{
   if(!user) return res.redirect('/admin');
   if(!staffRole(user.role)) return res.status(403).render('error',{title:'Access denied',message:'Staff access required.'});
   res.setHeader('Cache-Control','private, no-store');
-  const {data,error}=await supabaseService.from('staff_submission_queue').select('*').order('created_at').limit(200);
-  if(error) throw error;
-  res.render('staff-board',{title:'Work board — SuggFeed',activeSection:'board',items:data || [],members:await loadStaffMembers()});
+  const [board,members]=await Promise.all([loadStaffBoard(boardFilters(req.query)),loadStaffMembers()]);
+  res.render('staff-board',{title:'Work board — SuggFeed',activeSection:'board',...board,members});
 }));
