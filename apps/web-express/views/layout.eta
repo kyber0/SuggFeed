@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/styles.css?v=20261011-progress" />
+  <link rel="stylesheet" href="/css/styles.css?v=20261012-timeline" />
   <script src="/js/events.js?v=20261011-feed"></script>
 
   <!-- Theme init (before render to prevent flash) -->
@@ -40,6 +40,7 @@
 <%~ include('partials/submit-panel', it) %>
 <%~ include('partials/idea-detail-drawer', it) %>
 <%~ include('partials/toast', it) %>
+<%~ include('partials/report-dialog', it) %>
 <%~ include('partials/mobile-nav', it) %>
 
 <!-- Client-side auth state sync -->
@@ -47,7 +48,8 @@
 
 <!-- Theme toggle logic -->
 <script src="/js/theme.js?v=20261010-ts"></script>
-<script src="/js/engagement.js?v=20261011-progress"></script>
+<script src="/js/engagement.js?v=20261012-progress"></script>
+<script src="/js/community.js?v=20261012-care"></script>
 
 </body>
 </html>

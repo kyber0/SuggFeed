@@ -13,6 +13,7 @@ const feedUrl = (changes = {}) => {
   if (values.sort !== 'all') params.set('sort', values.sort);
   if (values.category !== 'All') params.set('category', values.category);
   if (values.search) params.set('search', values.search);
+  if (it.following) params.set('scope','following');
   if (values.page) params.set('page', String(values.page));
   return '/feed' + (params.size ? '?' + params.toString() : '');
 };
@@ -22,6 +23,9 @@ const feedUrl = (changes = {}) => {
     <div class="left-nav-inner">
       <div class="nav-brand-title"><span>YOUR CAMPUS, TOGETHER</span></div>
       <nav class="left-nav-menu" aria-label="Explore">
+        <a href="/feed?scope=following" class="nav-item<%= it.following ? ' active' : '' %>">Following</a>
+        <a href="/notifications" class="nav-item">School updates</a>
+        <a href="/inbox" class="nav-item">Private messages</a>
         <a href="/" class="nav-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 10 9-7 9 7v11H3zM9 21v-8h6v8"/></svg>Home</a>
         <a href="/feed" class="nav-item active" aria-current="page"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#ws-list"/></svg>Community ideas</a>
         <a href="/roadmap" class="nav-item"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#ws-board"/></svg>Roadmap</a>
@@ -43,7 +47,7 @@ const feedUrl = (changes = {}) => {
       <div class="feed-title-bar">
         <div class="feed-heading-group">
           <p class="feed-eyebrow">THE COMMUNITY BOARD</p>
-          <h1 class="feed-heading" id="feed-heading">Community ideas</h1>
+          <h1 class="feed-heading" id="feed-heading"><%= it.following ? 'Ideas you follow' : 'Community ideas' %></h1>
         </div>
         <div class="feed-title-actions"><button type="button" class="feed-create-button" data-sf-click="action-49" aria-label="Share an idea" title="Share an idea"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Share an idea</span></button></div>
       </div>
@@ -52,6 +56,7 @@ const feedUrl = (changes = {}) => {
         <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#ws-search"/></svg>
         <input type="hidden" name="sort" value="<%= sort %>"/>
         <input type="hidden" name="category" value="<%= category %>"/>
+        <% if(it.following) { %><input type="hidden" name="scope" value="following"/><% } %>
         <input type="search" name="search" id="feed-search" class="feed-search-input" maxlength="120" placeholder="Search ideas…" value="<%= search %>" aria-label="Search titles and descriptions" autocomplete="off"/>
         <button type="button" class="feed-search-clear-btn" id="feed-search-clear" data-sf-click="action-31" aria-label="Clear search" <%= search ? '' : 'hidden' %>>×</button>
         <button type="submit" class="feed-search-submit">Search</button>
@@ -88,9 +93,10 @@ const feedUrl = (changes = {}) => {
       <% if (!feed.length) { %>
         <section class="feed-empty-state">
           <span class="feed-empty-icon" aria-hidden="true"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ws-search"/></svg></span>
-          <h2><%= filtered ? 'No ideas match your search' : 'The next great idea could be yours' %></h2>
-          <p><%= filtered ? 'Try a shorter phrase or another topic. You can also clear your filters to explore all ideas.' : 'Published ideas will appear here after review. Share a constructive suggestion to get the conversation started.' %></p>
+          <h2><%= filtered ? 'No ideas match your search' : it.following ? 'Your following feed is waiting' : 'The next great idea could be yours' %></h2>
+          <p><%= filtered ? 'Try a shorter phrase or another topic. You can also clear your filters to explore all ideas.' : it.following ? 'Choose Follow on a roadmap idea to keep it here. School updates and unread changes are in School updates.' : 'Published ideas will appear here after review. Share a constructive suggestion to get the conversation started.' %></p>
           <div class="feed-empty-actions">
+            <% if(it.following) { %><a href="/roadmap" class="btn-clear-filters">Find ideas to follow</a><% } %>
             <% if (filtered) { %><a class="btn-clear-filters" href="<%= feedUrl({search: '', category: 'All'}) %>">Explore all ideas</a><% } else { %><button type="button" class="btn-empty-create" data-sf-click="action-49">Share an idea</button><% } %>
           </div>
         </section>

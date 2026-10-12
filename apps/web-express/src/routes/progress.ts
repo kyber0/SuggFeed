@@ -20,7 +20,7 @@ router.param('id', (_req, res, next, id) => {
 });
 router.get(['/:id/updates', '/submissions/:id/updates'], run(async (req, res) => {
   const id = req.params.id as string;
-  const [submission, updates] = await Promise.all([loadStaffProgressSubmission(id), listStaffProgress(id)]);
+  const [submission, updates] = await Promise.all([loadStaffProgressSubmission(id), listStaffProgress(id, req.session.user!.id)]);
   return res.json({ success: true, submission, updates, limit: 100 });
 }));
 router.post(['/:id/updates', '/submissions/:id/updates'], run(async (req, res) => {

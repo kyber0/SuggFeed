@@ -89,7 +89,15 @@
         document.getElementById('review-dismiss').textContent = 'Cancel';
         document.getElementById('review-title').textContent = item.title;
         document.getElementById('review-description').textContent = item.description;
-        document.getElementById('review-meta').textContent = item.category + ' · Received ' + new Date(item.created_at).toLocaleDateString('en-PH', { dateStyle: 'medium' });
+        document.getElementById('review-meta').textContent = item.category + ' · Received ' + new Date(item.created_at).toLocaleDateString('en-PH', { dateStyle: 'medium' }) + ' · Submission ID: ' + item.id;
+        let clarification = document.getElementById('review-clarification-link');
+        if (!clarification) {
+            clarification = document.createElement('a');
+            clarification.id = 'review-clarification-link';
+            clarification.textContent = 'Request private clarification →';
+            document.getElementById('review-meta').after(clarification);
+        }
+        clarification.href = '/admin/community?idea=' + encodeURIComponent(item.id);
         document.getElementById('review-position').textContent = 'Item ' + (items.indexOf(item) + 1) + ' of ' + items.length + ' on this page';
         const badge = document.getElementById('review-current-status');
         badge.textContent = labels[item.status];
@@ -221,6 +229,11 @@
         }
         if (!form.reportValidity())
             return;
+        if (/\[(explain the decision|provide a helpful option)\]/i.test(note.value)) {
+            message.textContent = 'Replace the template placeholders with your actual decision and next step.';
+            note.focus();
+            return;
+        }
         busy = true;
         discardWarning.hidden = true;
         fields.disabled = true;

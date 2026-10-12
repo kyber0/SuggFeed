@@ -2,6 +2,7 @@
 (function () {
   const config = document.getElementById('sf-feed-config');
   if (!config) return;
+  const following = new URLSearchParams(window.location.search).get('scope') === 'following';
   let _currentSort = config.dataset.sort || 'all';
   let _currentCat = config.dataset.category || 'All';
   let _appliedSearch = config.dataset.search ?? new URLSearchParams(window.location.search).get('search') ?? '';
@@ -68,6 +69,7 @@
     url.searchParams.set('sort', _currentSort);
     if (_currentCat !== 'All') url.searchParams.set('category', _currentCat);
     if (_appliedSearch.trim()) url.searchParams.set('search', _appliedSearch.trim());
+    if (following) url.searchParams.set('scope','following');
     window.location.href = url.toString();
   }
 
@@ -157,6 +159,8 @@
     pendingVotes.add(id);
     const matchingButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.action-like[data-id]')).filter(other => other.dataset.id === id);
     if (!matchingButtons.includes(button)) matchingButtons.push(button);
+    const previous=matchingButtons.map(other=>({other,supported:other.classList.contains('active'),count:other.querySelector<HTMLElement>('.action-count')?.textContent || '0'}));
+    previous.forEach(saved=>{setSupportedState(saved.other,true);const count=saved.other.querySelector<HTMLElement>('.action-count');if(count && !saved.supported)count.textContent=String((Number(saved.count)||0)+1);});
     matchingButtons.forEach(other => { other.disabled = true; other.setAttribute('aria-busy', 'true'); });
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 15000);
@@ -173,11 +177,13 @@
       sfSaveVotedId(id);
       matchingButtons.forEach(other => {
         setSupportedState(other, true);
+        other.classList.add('vote-success');window.setTimeout(()=>other.classList.remove('vote-success'),350);
         const count = other.querySelector<HTMLElement>('.action-count');
         if (count) count.textContent = String(Math.max(0, Number(data.vote_count)));
       });
       if (window.sfToast) sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
     } catch (error) {
+      previous.forEach(saved=>{setSupportedState(saved.other,saved.supported);const count=saved.other.querySelector<HTMLElement>('.action-count');if(count)count.textContent=saved.count;});
       const message = error?.message === 'rate-limit'
         ? 'Too many requests. Wait a moment, then try supporting this idea again.'
         : controller.signal.aborted
@@ -263,6 +269,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg><span>${attachmentCount} attachment${attachmentCount === 1 ? '' : 's'}</span><span class="attachment-cta">View files →</span>
         </a></div>` : ''}
         <div class="post-footer" data-sf-click="stop">
+          <button type="button" class="care-report" data-report-idea="${id}">Report</button>
           <button type="button" class="action-btn action-like${supported ? ' active' : ''}" data-id="${id}" data-sf-click="vote-feed" aria-pressed="${supported}" title="${supported ? 'You supported this idea' : 'Support this idea'}">
             <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="action-count">${votes}</span><span class="action-label">${supported ? 'Supported' : 'Support'}</span>
           </button>
@@ -302,6 +309,7 @@
     try {
       const nextPage = _currentPage + 1;
       const params = new URLSearchParams({ page: String(nextPage), sort: _currentSort, category: _currentCat, search: _appliedSearch });
+      if (following) params.set('scope','following');
       const response = await fetch('/api/feed?' + params.toString(), { headers: { Accept: 'application/json' }, signal: controller.signal });
       if (!response.ok) throw new Error('request-failed');
       const data = await response.json();

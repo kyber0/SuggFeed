@@ -110,8 +110,9 @@ export async function loadPublishedSubmissions(opts: {
   sortBy?: SortMode;
   category?: string;
   search?: string;
+  followingUserId?: string;
 } = {}) {
-  const { page = 1, sortBy = "all", category = "All", search = "" } = opts;
+  const { page = 1, sortBy = "all", category = "All", search = "", followingUserId } = opts;
 
   const normalizedSort: "all" | "top" | "oldest" =
     sortBy === "top" || sortBy === "popular"
@@ -122,12 +123,13 @@ export async function loadPublishedSubmissions(opts: {
 
   const cacheKey = `feed_${normalizedSort}_${category}_${search}_p${page}`;
   const cached = getCache<{ data: Submission[]; count: number; hasMore: boolean }>(cacheKey);
-  if (cached) return cached;
+  if (cached && !followingUserId) return cached;
 
-  let query = supabase
+  let query = (followingUserId ? supabaseService : supabase)
     .from("submissions")
-    .select(SUBMISSION_SELECT, { count: "exact" })
+    .select(SUBMISSION_SELECT + (followingUserId ? ',idea_follows!inner(user_id)' : ''), { count: "exact" })
     .in("status", ["approved", "in_progress", "resolved"]);
+  if (followingUserId) query = query.eq('idea_follows.user_id', followingUserId);
 
   // Category filter: resolve name → UUID for reliable matching
   if (category && category !== "All") {
@@ -163,13 +165,13 @@ export async function loadPublishedSubmissions(opts: {
   if (error) throw error;
 
   const result = {
-    data: (data ?? []) as unknown as Submission[],
+    data: (data ?? []).map(({idea_follows, ...row}: any) => row) as unknown as Submission[],
     count: count ?? 0,
     hasMore: (count ?? 0) > page * PER_PAGE,
   };
 
   // Cache 30s for first page (hot path), 2min for deeper pages
-  setCache(cacheKey, result, page === 1 ? 30_000 : 120_000);
+  if (!followingUserId) setCache(cacheKey, result, page === 1 ? 30_000 : 120_000);
   return result;
 }
 

@@ -212,7 +212,10 @@ router.get(
     const rawSearch = (req.query["search"] as string) || "";
     const search = rawSearch ? sanitizeSearch(rawSearch) : "";
 
-    const result = await loadPublishedSubmissions({ page, sortBy, category, search });
+    const following = req.query.scope === 'following';
+    if (following && !req.session.user) return res.status(401).json({success:false,error:'Sign in to see followed ideas.'});
+    if (following) res.setHeader('Cache-Control','private, no-store');
+    const result = await loadPublishedSubmissions({ page, sortBy, category, search, followingUserId: following ? req.session.user!.id : undefined });
     res.json({
       success: true,
       feed: result.data,

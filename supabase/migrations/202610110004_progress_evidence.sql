@@ -76,8 +76,8 @@ BEGIN
   SELECT * INTO file FROM public.idea_update_uploads WHERE id=p_file_id FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'Evidence not found' USING errcode='P0002'; END IF;
   IF file.actor_id IS DISTINCT FROM p_actor_id THEN RAISE EXCEPTION 'Evidence belongs to another account' USING errcode='42501'; END IF;
-  IF p_path IS DISTINCT FROM file.id::text || '/final.' || CASE WHEN file.declared_mime='application/pdf' THEN 'pdf' ELSE 'webp' END
-    OR p_mime IS DISTINCT FROM CASE WHEN file.declared_mime='application/pdf' THEN 'application/pdf' ELSE 'image/webp' END
+  IF p_path IS DISTINCT FROM (file.id::text || '/final.' || CASE WHEN file.declared_mime='application/pdf' THEN 'pdf' ELSE 'webp' END)
+    OR p_mime IS DISTINCT FROM (CASE WHEN file.declared_mime='application/pdf' THEN 'application/pdf' ELSE 'image/webp' END)
     OR p_size IS NULL OR p_size NOT BETWEEN 1 AND 10485760 THEN RAISE EXCEPTION 'Invalid validated evidence' USING errcode='22023'; END IF;
   IF file.state='ready' AND file.final_path=p_path AND file.mime_type=p_mime AND file.size_bytes=p_size THEN RETURN file; END IF;
   IF file.state<>'pending' OR file.expires_at<=clock_timestamp() THEN RAISE EXCEPTION 'Evidence draft expired or published' USING errcode='22023'; END IF;

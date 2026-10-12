@@ -16,6 +16,7 @@
  const recentlyCompleted = it.recentlyCompleted || [];
  const treeData = it.treeData || [];
  const timelineData = it.timelineData || [];
+ const workTimeline = it.workTimeline;
  const formatManilaDate = it.formatManilaDate || ((d) => d ? new Date(d).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric' }) : '');
  const completionLabel = item => item.resolved_at ? 'Completed ' + (item.resolved_at_estimated ? 'around ' : '') + formatManilaDate(item.resolved_at) : 'Completion date not recorded';
 %>
@@ -61,7 +62,7 @@
    <button type="submit" class="workspace-button">Filter</button>
 
    <nav class="roadmap-view-switch" aria-label="Roadmap layout">
-    <% for (const [view, name, glyph] of [['board', 'Board', 'board'], ['tree', 'By category', 'list'], ['done', 'Completed', 'arrow']]) { %>
+    <% for (const [view, name, glyph] of [['board', 'Board', 'board'], ['tree', 'By category', 'list'], ['timeline', 'Timeline', 'arrow'], ['done', 'Completed', 'arrow']]) { %>
      <a href="<%= urlFor({ view, stage: view === 'done' ? 'resolved' : filters.view === 'done' ? 'all' : filters.stage, page: '1' }) %>" data-roadmap-view="<%= view %>" aria-current="<%= filters.view === view ? 'page' : 'false' %>"><%~ icon(glyph) %> <%= name %></a>
     <% } %>
    </nav>
@@ -76,6 +77,7 @@
     <a class="workspace-text-link" href="<%= urlFor({ stage: 'all', page: '1' }) %>">Show all stages</a>
    <% } %>
   </div>
+  <p id="roadmap-vote-status" class="workspace-detail-meta" role="status"></p>
 
   <% if (recentlyCompleted && recentlyCompleted.length > 0 && filters.view === 'board' && filters.stage === 'all' && !filtered) { %>
    <section class="roadmap-recent-strip" aria-labelledby="recent-strip-heading">
@@ -105,6 +107,47 @@
   <% } %>
 
   <div class="roadmap-board" id="campus-roadmap-board" data-view="<%= filters.view %>" data-stage="<%= filters.stage %>">
+   <% if (filters.view === 'timeline' && workTimeline) { %>
+    <section class="roadmap-work-timeline" aria-labelledby="work-timeline-title">
+     <header class="work-timeline-heading">
+      <div class="timeline-controls"><label>Calendar scale <select id="timeline-zoom" class="workspace-input"><option value="month">Month detail</option><option value="week">Week detail</option><option value="term">Term overview</option></select></label><button type="button" class="workspace-button" data-timeline-pan="-1" aria-label="Scroll calendar earlier">←</button><button type="button" class="workspace-button" data-timeline-pan="1" aria-label="Scroll calendar later">→</button></div>
+      <div><h2 id="work-timeline-title">Work over time</h2><p id="work-timeline-help">Cards mark recorded starts. Rails run to completion or today—not a promised deadline. Percentages are school estimates.</p></div>
+      <button type="button" class="workspace-button work-timeline-today-date" id="timeline-jump-today" aria-controls="work-calendar-scroll">Today · <%= workTimeline.todayLabel %></button>
+     </header>
+     <% if (workTimeline.rows.length) { %>
+      <div class="work-timeline-scroll" id="work-calendar-scroll" data-today-left="<%= workTimeline.todayLeft %>" tabindex="0" role="region" aria-label="Work calendar; scroll horizontally to explore months" aria-describedby="work-timeline-help">
+       <div class="work-timeline-chart" data-timeline-days="<%= workTimeline.totalDays %>" style="--chart-width:<%= workTimeline.minWidth %>px;--week-width:<%= workTimeline.weekWidth %>%;--today-left:<%= workTimeline.todayLeft %>%">
+        <div class="work-timeline-months" aria-hidden="true">
+         <% for (const month of workTimeline.months) { %><span style="left:<%= month.left %>%;width:<%= month.width %>%"><%= month.label %></span><% } %>
+        </div>
+        <div class="work-timeline-rows">
+         <span class="work-timeline-today" aria-hidden="true"><span>Today</span></span>
+         <% for (const row of workTimeline.rows) { const item = row.item; %>
+          <article class="work-timeline-row" data-status="<%= item.is_blocked ? 'blocked' : item.status %>" style="--work-left:<%= row.left %>%;--work-width:<%= row.width %>%">
+           <span class="work-timeline-rail" aria-hidden="true"></span>
+           <button type="button" class="work-timeline-card" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog" aria-label="<%= item.title %>. <%= item.status === 'resolved' ? 'Completed' : item.is_blocked ? 'Blocked' : 'In progress' %>. <%= row.dateLabel %>. <%= item.progress_percent === null ? 'Progress not estimated' : item.progress_percent + ' percent complete, school estimate' %>">
+            <span class="work-timeline-card-top"><span class="workspace-tag"><%= item.category %></span><span class="work-timeline-card-percent"><%= item.progress_percent === null ? 'Not estimated' : item.progress_percent + '%' %><span class="work-timeline-status-dot" aria-hidden="true"></span></span></span>
+            <strong><%= item.title %></strong>
+            <span class="work-timeline-card-dates"><%= row.clipped ? '← ' : '' %><%= row.dateLabel %></span>
+            <% if (item.is_blocked) { %><span class="work-timeline-card-state">Work blocked</span><% } %>
+           </button>
+          </article>
+         <% } %>
+        </div>
+       </div>
+      </div>
+      <p class="work-timeline-scroll-hint">Scroll across the calendar · Select an idea for school updates and evidence.</p>
+     <% } else { %>
+      <div class="roadmap-lane-empty"><h3>No work dates recorded yet</h3><p>When the school posts a Started update, its recorded work will appear on this calendar.</p></div>
+     <% } %>
+     <% if (workTimeline.undated.length) { %>
+      <section class="work-timeline-unscheduled" aria-labelledby="work-unscheduled-title">
+       <h3 id="work-unscheduled-title">Not scheduled or outside this window</h3>
+       <ul><% for (const { item, reason } of workTimeline.undated) { %><li><button type="button" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button><span><%= reason %></span></li><% } %></ul>
+      </section>
+     <% } %>
+    </section>
+   <% } %>
    <!-- Board Layout -->
    <% if (filters.view === 'board') { %>
    <% for (const stage of stages.filter(s => filters.stage === 'all' || filters.stage === s.key)) { const laneItems = (it.items || []).filter(i => i.status === stage.key); %>
@@ -277,7 +320,7 @@
   </div>
 
   <nav class="roadmap-pagination" aria-label="Roadmap pages">
-   <span>Page <%= filters.page %> of <%= pageCount %><span class="roadmap-page-hint"> · <%= filters.view === 'done' ? 'Up to 20 completed ideas per page' : filters.view === 'tree' ? 'Up to 8 ideas per category' : 'Up to 8 ideas per stage' %></span></span>
+   <span>Page <%= filters.page %> of <%= pageCount %><span class="roadmap-page-hint"> · <%= filters.view === 'done' ? 'Up to 20 completed ideas per page' : filters.view === 'timeline' ? 'Up to 20 recently updated ideas per page' : filters.view === 'tree' ? 'Up to 8 ideas per category' : 'Up to 8 ideas per stage' %></span></span>
    <div>
     <% if (filters.page > 1) { %>
      <a class="workspace-button" data-roadmap-state-link href="<%= urlFor({ page: String(filters.page - 1) }) %>">← Previous</a>
@@ -317,7 +360,7 @@
       <span class="workspace-field-label">Progress estimate</span>
       <strong id="roadmap-detail-progress-text">0%</strong>
      </div>
-     <div class="roadmap-detail-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="roadmap-detail-bar-el">
+     <div class="roadmap-detail-bar" role="progressbar" aria-label="School-estimated work completion" aria-valuemin="0" aria-valuemax="100" id="roadmap-detail-bar-el">
       <div class="roadmap-detail-bar-fill" id="roadmap-detail-bar-fill" style="width:0%"></div>
      </div>
     </div>
@@ -357,4 +400,4 @@
  </dialog>
 </main>
 <script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items || []).replace(/</g, '\\u003c') %></script>
-<script src="/js/roadmap.js?v=20261011-progress"></script>
+<script src="/js/roadmap.js?v=20261012-timeline"></script>

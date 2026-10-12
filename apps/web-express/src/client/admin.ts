@@ -67,7 +67,10 @@
     document.getElementById('review-dismiss')!.textContent='Cancel';
     document.getElementById('review-title')!.textContent=item.title;
     document.getElementById('review-description')!.textContent=item.description;
-    document.getElementById('review-meta')!.textContent=item.category+' · Received '+new Date(item.created_at).toLocaleDateString('en-PH',{dateStyle:'medium'});
+    document.getElementById('review-meta')!.textContent=item.category+' · Received '+new Date(item.created_at).toLocaleDateString('en-PH',{dateStyle:'medium'})+' · Submission ID: '+item.id;
+    let clarification=document.getElementById('review-clarification-link') as HTMLAnchorElement;
+    if(!clarification){clarification=document.createElement('a');clarification.id='review-clarification-link';clarification.textContent='Request private clarification →';document.getElementById('review-meta')!.after(clarification);}
+    clarification.href='/admin/community?idea='+encodeURIComponent(item.id);
     document.getElementById('review-position')!.textContent='Item '+(items.indexOf(item)+1)+' of '+items.length+' on this page';
     const badge=document.getElementById('review-current-status')!; badge.textContent=labels[item.status];badge.dataset.status=item.status;
     status.value=item.status;note.value=item.staff_note;priority.value=item.priority;targetDate.value=item.target_date;
@@ -131,6 +134,7 @@
     selectTab('decision');
     if(!targetDate.validity.valid){targetDate.setAttribute('aria-invalid','true');document.getElementById('review-date-error')!.textContent='Choose a valid date between 2000 and 2100.';}
     if(!form.reportValidity())return;
+    if(/\[(explain the decision|provide a helpful option)\]/i.test(note.value)){message.textContent='Replace the template placeholders with your actual decision and next step.';note.focus();return;}
     busy=true;discardWarning.hidden=true;fields.disabled=true;save.disabled=true;saveNext.disabled=true;save.textContent='Saving…';
     form.setAttribute('aria-busy','true');dialog.querySelectorAll<HTMLButtonElement>('[data-close-review]').forEach(b=>{b.disabled=true;});
     message.classList.remove('is-success');message.textContent='';

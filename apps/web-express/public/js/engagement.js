@@ -19,17 +19,17 @@
             const body = await response.json();
             if (!response.ok || !body.success)
                 throw new Error();
-            if (button.dataset.followIdea !== id)
+            if (button.dataset.followIdea !== id || requests.get(button) !== controller)
                 return;
             button.dataset.following = String(body.following);
             button.setAttribute('aria-pressed', String(body.following));
             button.textContent = body.following ? 'Following · Unfollow' : 'Follow this idea';
         }
         catch {
-            if (button.dataset.followIdea === id && !controller.signal.aborted)
+            if (button.dataset.followIdea === id && requests.get(button) === controller) {
                 button.textContent = 'Follow status unavailable · Retry';
-            if (button.dataset.followIdea === id)
                 delete button.dataset.following;
+            }
         }
         finally {
             clearTimeout(timer);
@@ -67,14 +67,14 @@
             const result = await response.json();
             if (!response.ok || !result.success)
                 throw new Error();
-            if (button.dataset.followIdea !== id)
+            if (button.dataset.followIdea !== id || requests.get(button) !== controller)
                 return;
             button.dataset.following = String(result.following);
             button.setAttribute('aria-pressed', String(result.following));
             button.textContent = result.following ? 'Following · Unfollow' : 'Follow this idea';
         }
         catch {
-            if (button.dataset.followIdea === id) {
+            if (button.dataset.followIdea === id && requests.get(button) === controller) {
                 delete button.dataset.following;
                 button.textContent = 'Could not save · Check status again';
             }

@@ -18,12 +18,16 @@ router.get(
     const sortBy = (req.query["sort"] as string) || "all";
     const category = (req.query["category"] as string) || "All";
     const search = (req.query["search"] as string) || "";
+    const following = req.query.scope === 'following';
+    if (following && !req.session.user) return res.redirect('/notifications');
+    if (following) res.setHeader('Cache-Control','private, no-store');
 
     const { data: feed, count, hasMore } = await loadPublishedSubmissions({
       page,
       sortBy: sortBy as any,
       category,
       search,
+      followingUserId: following ? req.session.user!.id : undefined,
     });
 
     res.render("feed", {
@@ -37,6 +41,7 @@ router.get(
       category,
       search,
       categories: DEFAULT_CATEGORIES,
+      following,
     });
   })
 );

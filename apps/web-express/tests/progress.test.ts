@@ -36,6 +36,7 @@ test('progress validates audience, text, estimate steps, blocked reasons, and th
 test('public progress uses a database-filtered RPC and additionally whitelists response fields', async () => {
   const original = supabase.rpc; let calls = 0;
   supabase.rpc = (async (name, args) => {
+    if (name === 'read_public_idea_update_files') return { error: null, data: [] };
     calls++; assert.equal(name, 'read_public_idea_updates'); assert.deepEqual(args, { p_submission_id: id });
     return { error: null, data: [{ id, kind: 'update', body: 'Public update', percent: null, occurred_on: '2026-10-11',
       office_label: 'School administration', created_at: '2026-10-11T01:00:00Z',
@@ -44,7 +45,7 @@ test('public progress uses a database-filtered RPC and additionally whitelists r
   try {
     const result = await listPublicProgress(id);
     assert.equal(result.length, 1); assert.equal(JSON.stringify(result).includes('PRIVATE'), false);
-    assert.deepEqual(Object.keys(result[0]), ['id', 'kind', 'body', 'percent', 'blocked_reason', 'next_step', 'occurred_on', 'office_label', 'created_at']);
+    assert.deepEqual(Object.keys(result[0]), ['id', 'kind', 'body', 'percent', 'blocked_reason', 'next_step', 'occurred_on', 'office_label', 'created_at', 'files']);
     assert.deepEqual(await listPublicProgress('not-an-id'), []); assert.equal(calls, 1);
   } finally { supabase.rpc = original; }
 });
@@ -55,7 +56,7 @@ test('staff history scopes one submission, excludes deleted events, and has a bo
   for (const method of ['select', 'eq', 'is', 'order', 'limit']) query[method] = (...args) => { calls.push([method, ...args]); return query; };
   supabaseService.from = ((table) => { assert.equal(table, 'idea_updates'); return query; }) as any;
   try {
-    await listStaffProgress(id);
+    await listStaffProgress(id, id);
     assert.ok(calls.some(c => c[0] === 'eq' && c[1] === 'submission_id' && c[2] === id));
     assert.ok(calls.some(c => c[0] === 'is' && c[1] === 'deleted_at' && c[2] === null));
     assert.deepEqual(calls.filter(c => c[0] === 'order').map(c => c[1]), ['occurred_on', 'created_at', 'id']);

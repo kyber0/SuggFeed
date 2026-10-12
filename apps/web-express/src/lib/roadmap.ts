@@ -4,9 +4,10 @@ import { sanitizeSearch } from './data';
 export const ROADMAP_STAGES = ['approved', 'in_progress', 'resolved'] as const;
 export const ROADMAP_PER_STAGE = 8;
 export const ROADMAP_DONE_PER_PAGE = 20;
+export const ROADMAP_TIMELINE_PER_PAGE = 20;
 export function roadmapFilters(input: Record<string, unknown>) {
   const requestedPage = Number(input.page);
-  const view = input.view === 'tree' || input.view === 'list' ? 'tree' : input.view === 'done' || input.view === 'timeline' ? 'done' : 'board';
+  const view = input.view === 'tree' || input.view === 'list' ? 'tree' : input.view === 'done' || input.view === 'outcomes' ? 'done' : input.view === 'timeline' ? 'timeline' : 'board';
   return {
     search: typeof input.search === 'string' ? input.search.trim().slice(0, 120) : '',
     category: typeof input.category === 'string' ? input.category.trim().slice(0, 80) || 'all' : 'all',
@@ -109,9 +110,64 @@ export async function loadRoadmapPage(filters: ReturnType<typeof roadmapFilters>
     items = (data || []).map(publicItem);
     doneData = groupTimelineByMonth(items);
     pageCount = Math.max(1, Math.ceil(matchingCount / ROADMAP_DONE_PER_PAGE));
+  } else if (filters.view === 'timeline') {
+    let query = supabase.from('submissions').select(`${publicColumns},${filters.category === 'all' ? 'categories(name)' : 'categories!inner(name)'}`)
+      .in('status', filters.stage === 'all' ? [...ROADMAP_STAGES] : [filters.stage]);
+    if (filters.category !== 'all') query = query.eq('categories.name', filters.category);
+    if (filters.search) query = query.or(`title.ilike.%${sanitizeSearch(filters.search)}%,description.ilike.%${sanitizeSearch(filters.search)}%`);
+    const { data, error } = await query.order('updated_at', { ascending: false }).order('id')
+      .range((filters.page - 1) * ROADMAP_TIMELINE_PER_PAGE, filters.page * ROADMAP_TIMELINE_PER_PAGE - 1);
+    if (error) throw error;
+    items = (data || []).map(publicItem);
+    pageCount = Math.max(1, Math.ceil(matchingCount / ROADMAP_TIMELINE_PER_PAGE));
   }
   return { items, counts, totalCount, matchingCount, pageCount, perStage: ROADMAP_PER_STAGE,
-    perPage: filters.view === 'done' ? ROADMAP_DONE_PER_PAGE : ROADMAP_PER_STAGE, treeData, doneData, timelineData: doneData };
+    perPage: filters.view === 'done' ? ROADMAP_DONE_PER_PAGE : filters.view === 'timeline' ? ROADMAP_TIMELINE_PER_PAGE : ROADMAP_PER_STAGE,
+    treeData, doneData, timelineData: doneData, workTimeline: buildWorkTimeline(items) };
+}
+
+/** Calendar geometry only; no target dates, dependencies or fabricated historic starts. */
+export function buildWorkTimeline(items: Array<ReturnType<typeof publicItem>>, now = new Date()) {
+  const dayMs = 86400000;
+  const manilaDay = (value: string | Date) => {
+    const date = new Date(value);
+    return Number.isFinite(date.getTime()) ? Math.floor((date.getTime() + 8 * 3600000) / dayMs) : null;
+  };
+  const today = manilaDay(now)!;
+  const calendarToday = new Date(today * dayMs);
+  const monthDay = (offset: number) => Date.UTC(calendarToday.getUTCFullYear(), calendarToday.getUTCMonth() + offset, 1) / dayMs;
+  const dated = items.filter(item => {
+    const start = manilaDay(item.started_at || '');
+    const finish = manilaDay(item.resolved_at || '');
+    return start !== null && start <= today && (item.status !== 'resolved' || (finish !== null && finish >= start && finish <= today));
+  });
+  const earliest = Math.min(monthDay(-1), ...dated.map(item => manilaDay(item.started_at!)!));
+  const startDay = Math.max(monthDay(-4), Date.UTC(new Date(earliest * dayMs).getUTCFullYear(), new Date(earliest * dayMs).getUTCMonth(), 1) / dayMs);
+  const endDay = monthDay(2);
+  const totalDays = endDay - startDay;
+  const percent = (day: number) => Math.max(0, Math.min(100, (day - startDay) / totalDays * 100));
+  const months: Array<{ label: string; left: number; width: number }> = [];
+  for (let date = new Date(startDay * dayMs); date.getTime() / dayMs < endDay;) {
+    const next = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1));
+    months.push({ label: date.toLocaleDateString('en-PH', { timeZone: 'UTC', month: 'long', year: 'numeric' }), left: percent(date.getTime() / dayMs), width: (next.getTime() / dayMs - date.getTime() / dayMs) / totalDays * 100 });
+    date = next;
+  }
+  const rows = dated.map(item => {
+    const actualStart = manilaDay(item.started_at!)!;
+    const recordedEnd = item.status === 'resolved' ? manilaDay(item.resolved_at || '') : today;
+    const actualEnd = Math.min(today, recordedEnd ?? today);
+    return {
+      item, left: percent(actualStart), width: Math.max(0, percent(actualEnd + 1) - percent(actualStart)),
+      clipped: actualStart < startDay,
+      dateLabel: `${formatManilaDate(item.started_at)} → ${item.status === 'resolved' && item.resolved_at ? (item.resolved_at_estimated ? 'around ' : '') + formatManilaDate(item.resolved_at) : 'Today'}`,
+    };
+  }).filter(row => manilaDay(row.item.started_at!)! <= today && (row.item.status !== 'resolved' || (manilaDay(row.item.resolved_at || '') ?? today) >= startDay));
+  const plotted = new Set(rows.map(row => row.item.id));
+  const undated = items.filter(item => !plotted.has(item.id)).map(item => ({ item,
+    reason: !item.started_at ? item.status === 'approved' ? 'Not scheduled — a start date has not been announced.' : 'A work start date has not been recorded.' : item.status === 'resolved' && !item.resolved_at ? 'A completion date has not been recorded.' : 'Confirmed work dates are unavailable in this calendar window.',
+  }));
+  return { months, rows, undated, todayLeft: percent(today), minWidth: Math.max(1040, months.length * 270), totalDays,
+    todayLabel: formatManilaDate(now.toISOString()), weekWidth: 7 / totalDays * 100 };
 }
 
 export async function loadRecentlyCompleted(): Promise<Array<ReturnType<typeof publicItem>>> {

@@ -58,6 +58,10 @@ test('staff and roadmap render populated, empty, and login screens', async () =>
     const secondPage = JSON.parse(await get('/api/feed?page=2'));
     assert.equal(secondPage.feed.length, 15);
     assert.equal(secondPage.hasMore, true);
+    assert.match(await get('/admin/board'),/Review bulk assignment/);
+    assert.match(await get('/admin/community'),/Content reports/);
+    assert.match(await get('/inbox'),/School messages/);
+    assert.match(await get('/notifications'),/Notification preferences/);
   } finally {
     server.closeAllConnections();
     await new Promise<void>(resolve => server.close(() => resolve()));

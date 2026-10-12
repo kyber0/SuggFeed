@@ -1,0 +1,16 @@
+<% layout('layout'); const stages={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'}; %>
+<main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main">
+ <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / FLOW</p><h1>Work board</h1><p>Move an idea with its menu or drag it to a stage. Every change requires confirmation.</p></div><a class="workspace-button" href="/admin">Detailed review</a></header>
+ <p class="staff-footnote">Oldest 200 submissions shown. Review the full queue for complete coverage. Publishing a stage makes the suggestion visible—check for private details first.</p>
+ <p id="staff-tools-message" role="status" aria-live="polite"></p>
+ <div class="staff-bulk-controls"><label>Assign selected to<select class="workspace-input" id="staff-bulk-assignee"><option value="">Unassigned</option><% for(const member of it.members) { %><option value="<%= member.id %>"><%= member.display_name || 'Staff member' %></option><% } %></select></label><button class="workspace-button" id="staff-bulk-assign" type="button">Review bulk assignment</button><span id="staff-selection-count" role="status">0 selected · maximum 25</span></div>
+ <section class="staff-flow-board" aria-label="Submission stages">
+  <% for(const [key,label] of Object.entries(stages)) { const rows=it.items.filter(s=>s.status===key); %>
+   <section class="staff-flow-lane" data-drop-stage="<%= key %>" aria-label="<%= label %>"><h2><%= label %> <span class="workspace-tag"><%= rows.length %></span></h2>
+    <% for(const item of rows) { %><article class="staff-flow-card" data-board-id="<%= item.id %>" draggable="true"><label><input type="checkbox" data-bulk-id="<%= item.id %>" aria-label="Select <%= item.title %>"/> Select</label><h3><%= item.title %></h3><p><%= item.categories?.name || 'Other' %> · <%= item.assignee_name || 'Unassigned' %></p><label>Move to<select class="workspace-input" data-stage-select="<%= item.id %>"><% for(const [status,name] of Object.entries(stages)) { %><option value="<%= status %>" <%= status===key ? 'selected' : '' %>><%= name %></option><% } %></select></label><a href="/admin?status=all&search=<%= encodeURIComponent(item.title) %>">Open detailed review →</a></article><% } %>
+    <% if(!rows.length) { %><p>No submissions here in this window.</p><% } %>
+   </section>
+  <% } %>
+ </section>
+ <script id="staff-board-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script><script src="/js/staff-tools.js?v=20261012-care"></script>
+</div></main><section class="staff-mobile-notice"><h1>Staff workspace</h1><p>Use a desktop or larger screen to manage the work board.</p><a class="workspace-button" href="/roadmap">Explore the roadmap</a></section>

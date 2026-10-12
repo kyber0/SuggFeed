@@ -190,7 +190,7 @@
             Title <span class="sip-required">*</span>
           </label>
           <div class="sip-char-wrap">
-            <span id="sip-title-req" class="sip-validation-badge">Min 8 chars</span>
+            <span id="sip-title-req" class="sip-validation-badge">Min 10 chars</span>
             <span id="sip-title-count" class="sip-char-counter">0 / 100</span>
           </div>
         </div>
@@ -207,6 +207,8 @@
         </div>
       </div>
 
+      <div id="similar-public-ideas" aria-live="polite"></div>
+      <p class="care-guidance">Describe the place, the impact, and one practical change. Avoid names, student numbers and contact details. Example: “Add shaded seating near the science building so students can wait out of the sun.” Anonymous submissions are not attached to your account; keep your private tracking code to receive clarification requests.</p>
       <!-- Description Field -->
       <div class="sip-field">
         <div class="sip-field-label-row">

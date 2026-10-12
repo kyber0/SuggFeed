@@ -153,6 +153,7 @@ let activeReplyingToId = null;
       </div>
       <div class="comment-body">${(c.body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
       <div class="comment-actions">
+        <button type="button" class="care-report" data-report-comment="${sfEscapeAttribute(c.id)}">Report</button>
         <button type="button" class="comment-reply-btn" data-sf-click="reply-idea" data-reply-id="${c.id}" data-reply-author="${sfEscapeAttribute(author)}">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
           Reply

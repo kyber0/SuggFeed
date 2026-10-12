@@ -18,6 +18,10 @@
     const summary = document.getElementById('staff-progress-summary');
     const refresh = document.getElementById('staff-progress-refresh');
     const post = document.getElementById('staff-progress-post');
+    const filePicker = document.getElementById('staff-progress-files');
+    const fileList = document.getElementById('staff-progress-evidence-list');
+    const fileMessage = document.getElementById('staff-progress-evidence-message');
+    const previewFiles = document.getElementById('staff-progress-preview-files');
     const labels = { started: 'Work started', update: 'Progress update', milestone: 'Milestone reached', blocked: 'Work is blocked', completed: 'Work completed', correction: 'Correction' };
     const reasons = { budget: 'Budget', parts: 'Parts or supplies', approval: 'Approval', scheduling: 'Scheduling', other: 'Other' };
     const hints = {
@@ -31,13 +35,262 @@
     let controller;
     let loading = false, posting = false, baseline = '', generation = 0;
     let retry;
+    let draftRequestId;
+    let draftFiles = [];
+    let evidenceBusy = 0;
+    let announcedBusy = false;
+    const acceptedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
+    const isBusy = () => posting || evidenceBusy > 0;
+    const evidenceReady = () => draftFiles.every(file => file.state === 'ready');
+    const evidenceUrl = (value) => typeof value === 'string' && /^\/api\/progress-evidence\/[0-9a-f-]{36}$/i.test(value) ? value : null;
+    function evidenceLink(file) {
+        const href = evidenceUrl(file.href);
+        if (!href)
+            return null;
+        const link = document.createElement('a');
+        link.href = href;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = file.mime_type?.startsWith('image/') && file.alt ? file.alt : file.display_name || 'View evidence';
+        return link;
+    }
+    async function evidenceRequest(url, method, payload) {
+        const request = new AbortController();
+        const timer = setTimeout(() => request.abort(), 30000);
+        try {
+            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: payload === undefined ? undefined : JSON.stringify(payload), signal: request.signal, cache: 'no-store' });
+            const data = await response.json().catch(() => null);
+            if (!response.ok || !data?.success)
+                throw new Error(response.status === 401 || response.status === 403 ? 'Your staff session expired or access changed. Sign in again.' : response.status === 400 || response.status === 409 || response.status === 413 ? data?.error || 'The evidence could not be accepted. Check the file and try again.' : 'The evidence request could not be confirmed. Retry or remove the file before posting.');
+            return data;
+        }
+        finally {
+            clearTimeout(timer);
+        }
+    }
+    function evidenceChanged() {
+        post.disabled = posting || !evidenceReady();
+        filePicker.disabled = isBusy() || draftFiles.length >= 5;
+        refresh.disabled = loading || isBusy();
+        document.getElementById('staff-progress-clear').disabled = isBusy();
+        document.getElementById('staff-progress-evidence-count').textContent = draftFiles.length + ' / 5 files';
+        previewFiles.replaceChildren();
+        for (const file of draftFiles) {
+            const link = file.evidence && evidenceLink(file.evidence);
+            if (link)
+                previewFiles.append(link);
+        }
+        if (announcedBusy !== isBusy()) {
+            announcedBusy = isBusy();
+            host?.posting(announcedBusy);
+        }
+        host?.changed();
+    }
+    function drawEvidence() {
+        fileList.replaceChildren();
+        for (const file of draftFiles) {
+            const row = document.createElement('li');
+            row.className = 'staff-progress-evidence-file';
+            const heading = document.createElement('div');
+            heading.className = 'staff-progress-evidence-file-heading';
+            const name = document.createElement('strong');
+            name.textContent = file.file.name;
+            const size = document.createElement('span');
+            size.textContent = (file.file.size / 1048576).toFixed(1) + ' MB';
+            heading.append(name, size);
+            row.append(heading);
+            if (file.file.type.startsWith('image/')) {
+                if (file.previewUrl) {
+                    const figure = document.createElement('figure');
+                    const image = document.createElement('img');
+                    image.src = file.previewUrl;
+                    image.alt = file.alt || 'Local image preview, not yet validated';
+                    image.className = 'staff-upload-thumbnail';
+                    const caption = document.createElement('figcaption');
+                    caption.textContent = 'Local preview · validation happens after upload';
+                    figure.append(image, caption);
+                    row.append(figure);
+                }
+                const label = document.createElement('label');
+                label.htmlFor = 'evidence-alt-' + file.localId;
+                label.textContent = 'Image description';
+                const input = document.createElement('input');
+                input.id = label.htmlFor;
+                input.className = 'workspace-input';
+                input.type = 'text';
+                input.maxLength = 200;
+                input.value = file.alt;
+                input.placeholder = 'Describe what the photo shows, without private details';
+                input.disabled = !!file.reservationId || file.state === 'uploading';
+                input.addEventListener('input', () => { file.alt = input.value; fileMessage.textContent = ''; host?.changed(); });
+                label.append(input);
+                row.append(label);
+            }
+            const stateLabel = document.createElement('p');
+            stateLabel.className = 'staff-progress-evidence-file-state';
+            stateLabel.classList.toggle('is-error', file.state === 'error');
+            stateLabel.textContent = file.state === 'ready' ? 'Ready to attach. Not published yet.' : file.state === 'uploading' ? file.step === 'finalize' ? 'Validating and removing image metadata…' : file.step === 'reserve' ? 'Preparing a secure upload…' : 'Uploading evidence…' : file.state === 'removing' ? 'Removing evidence…' : file.error || 'Not uploaded. Upload this file before posting.';
+            const actions = document.createElement('div');
+            actions.className = 'staff-progress-evidence-file-actions';
+            if (file.state !== 'ready') {
+                const upload = document.createElement('button');
+                upload.type = 'button';
+                upload.className = 'workspace-button';
+                upload.textContent = file.state === 'error' ? 'Retry upload' : 'Upload evidence';
+                upload.disabled = file.state === 'uploading' || file.state === 'removing' || posting;
+                upload.addEventListener('click', () => void uploadEvidence(file));
+                actions.append(upload);
+            }
+            const link = file.evidence && evidenceLink(file.evidence);
+            if (link)
+                actions.append(link);
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'workspace-button';
+            remove.textContent = 'Remove';
+            remove.disabled = file.state === 'uploading' || file.state === 'removing' || posting;
+            remove.addEventListener('click', () => void removeEvidence(file));
+            actions.append(remove);
+            row.append(stateLabel, actions);
+            fileList.append(row);
+        }
+        evidenceChanged();
+    }
+    async function uploadEvidence(file) {
+        if (!active || posting || file.state === 'uploading' || file.state === 'removing' || file.state === 'ready')
+            return;
+        if (file.file.type.startsWith('image/') && !file.alt.trim()) {
+            fileMessage.textContent = 'Describe the image before uploading it. This description will be visible with the evidence.';
+            document.getElementById('evidence-alt-' + file.localId)?.focus();
+            return;
+        }
+        const ownGeneration = generation;
+        draftRequestId || (draftRequestId = crypto.randomUUID());
+        file.state = 'uploading';
+        file.error = undefined;
+        evidenceBusy++;
+        drawEvidence();
+        try {
+            if (!file.reservationId) {
+                const data = await evidenceRequest('/api/staff/progress-upload/reserve', 'POST', { requestId: draftRequestId, uploadId: file.localId, name: file.file.name, mime: file.file.type, size: file.file.size, alt: file.alt.trim() || null });
+                file.reservationId = data.file.id;
+                file.upload = data.upload;
+                file.step = 'upload';
+                if (data.file.state === 'ready' && evidenceUrl(data.file.href)) {
+                    file.evidence = data.file;
+                    file.state = 'ready';
+                    fileMessage.textContent = 'Evidence is ready. It will be attached when you post this update.';
+                    return;
+                }
+            }
+            if (file.step === 'upload') {
+                let url;
+                try {
+                    url = new URL(file.upload.signedUrl);
+                }
+                catch {
+                    throw new Error('The upload link was invalid. Remove this file and choose it again.');
+                }
+                if (url.protocol !== 'https:')
+                    throw new Error('The upload link was not secure. Remove this file and try again.');
+                const request = new AbortController();
+                const timer = setTimeout(() => request.abort(), 90000);
+                try {
+                    const response = await fetch(url.href, { method: 'PUT', headers: { 'Content-Type': file.file.type, 'x-upsert': 'false' }, body: file.file, signal: request.signal });
+                    // A retry may encounter an object already uploaded after a lost response. Finalization verifies the actual object.
+                    if (!response.ok && response.status !== 409 && response.status !== 400)
+                        throw new Error('The file upload failed. Retry before publishing this update.');
+                }
+                finally {
+                    clearTimeout(timer);
+                }
+                file.step = 'finalize';
+                drawEvidence();
+            }
+            const result = await evidenceRequest('/api/staff/progress-upload/' + encodeURIComponent(file.reservationId) + '/finalize', 'POST');
+            if (result.file?.state !== 'ready' || !evidenceUrl(result.file?.href))
+                throw new Error('The evidence is not ready. Retry processing before publishing.');
+            file.evidence = result.file;
+            file.state = 'ready';
+            fileMessage.textContent = 'Evidence is ready. It will be attached when you post this update.';
+        }
+        catch (error) {
+            file.state = 'error';
+            file.error = error instanceof Error && error.name !== 'AbortError' && !(error instanceof TypeError) ? error.message : 'The upload could not be confirmed. Retry this file; your draft is still here.';
+            fileMessage.textContent = file.error;
+        }
+        finally {
+            evidenceBusy--;
+            if (ownGeneration === generation)
+                drawEvidence();
+            else
+                host?.posting(isBusy());
+        }
+    }
+    async function removeEvidence(file) {
+        if (posting || file.state === 'uploading' || file.state === 'removing')
+            return;
+        const previous = file.state;
+        const ownGeneration = generation;
+        file.state = 'removing';
+        evidenceBusy++;
+        drawEvidence();
+        try {
+            if (file.reservationId)
+                await evidenceRequest('/api/staff/progress-upload/' + encodeURIComponent(file.reservationId), 'DELETE');
+            draftFiles = draftFiles.filter(item => item !== file);
+            fileMessage.textContent = 'Evidence removed from this draft.';
+            if (file.previewUrl)
+                URL.revokeObjectURL(file.previewUrl);
+        }
+        catch (error) {
+            file.state = previous;
+            file.error = error instanceof Error ? error.message : 'Could not remove evidence. Try again.';
+            fileMessage.textContent = file.error;
+        }
+        finally {
+            evidenceBusy--;
+            if (ownGeneration === generation)
+                drawEvidence();
+            else
+                host?.posting(isBusy());
+        }
+    }
+    function discardEvidence() {
+        const abandoned = draftFiles;
+        draftFiles = [];
+        for (const file of abandoned)
+            if (file.previewUrl)
+                URL.revokeObjectURL(file.previewUrl);
+        for (const file of abandoned)
+            if (file.reservationId)
+                void fetch('/api/staff/progress-upload/' + encodeURIComponent(file.reservationId), { method: 'DELETE', headers: { Accept: 'application/json' }, keepalive: true }).catch(() => undefined);
+    }
     const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    const localPreview = (file) => { try {
+        return file.type.startsWith('image/') && typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : undefined;
+    }
+    catch {
+        return undefined;
+    } };
     const published = () => !!snapshot && ['approved', 'in_progress', 'resolved'].includes(snapshot.status);
-    const value = () => JSON.stringify({ kind: kind.value, body: body.value, visibility: visibility.value, percent: percent.value, blocked: blocked.value, nextStep: nextStep.value, date: date.value, notify: notify.checked });
+    const value = () => JSON.stringify({ kind: kind.value, body: body.value, visibility: visibility.value, percent: percent.value, blocked: blocked.value, nextStep: nextStep.value, date: date.value, notify: notify.checked, files: draftFiles.map(file => ({ id: file.localId, alt: file.alt, state: file.state })) });
     const hasDraft = () => Boolean(active && baseline && value() !== baseline);
     function setMessage(text, success = false) { message.textContent = text; message.classList.toggle('is-success', success); }
     function dateText(value) { const parsed = new Date(value.length === 10 ? value + 'T12:00:00+08:00' : value); return Number.isFinite(parsed.getTime()) ? parsed.toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium' }) : 'Date unavailable'; }
-    function resetDraft() {
+    function resetDraft(discard = true) {
+        if (discard)
+            discardEvidence();
+        else {
+            for (const file of draftFiles)
+                if (file.previewUrl)
+                    URL.revokeObjectURL(file.previewUrl);
+            draftFiles = [];
+        }
+        draftRequestId = undefined;
+        filePicker.value = '';
+        fileMessage.textContent = '';
+        drawEvidence();
         form.reset();
         kind.value = 'update';
         visibility.value = published() ? 'public' : 'staff';
@@ -89,6 +342,7 @@
         previewMeta.push(staffOnly ? 'Staff only' : 'Posted by the school');
         document.getElementById('staff-progress-preview-meta').textContent = previewMeta.join(' · ');
         post.textContent = posting ? 'Posting…' : staffOnly ? 'Post staff update' : kind.value === 'correction' ? 'Publish correction' : 'Publish update';
+        evidenceChanged();
         host?.changed();
     }
     function drawSummary() {
@@ -145,6 +399,16 @@
             const office = document.createElement('small');
             office.textContent = update.office_label || 'School staff';
             article.append(office);
+            if (Array.isArray(update.files) && update.files.length) {
+                const files = document.createElement('div');
+                files.className = 'staff-progress-event-files';
+                for (const file of update.files) {
+                    const link = evidenceLink(file);
+                    if (link)
+                        files.append(link);
+                }
+                article.append(files);
+            }
             if (update.visibility === 'public') {
                 const correction = document.createElement('button');
                 correction.type = 'button';
@@ -170,7 +434,7 @@
         }
     }
     async function load() {
-        if (!active || posting)
+        if (!active || isBusy())
             return;
         controller?.abort();
         const request = new AbortController();
@@ -197,7 +461,7 @@
             drawSummary();
             drawHistory(updates);
             if (!hadDraft || confirmedRetry) {
-                resetDraft();
+                resetDraft(!confirmedRetry);
             }
             else
                 updateComposer();
@@ -221,18 +485,46 @@
     }
     for (const input of [kind, visibility, body, percent, blocked, nextStep, date, notify])
         input.addEventListener('input', () => { setMessage(''); updateComposer(); });
+    filePicker.addEventListener('change', () => {
+        if (!active || isBusy())
+            return;
+        const errors = [];
+        for (const file of Array.from(filePicker.files || [])) {
+            if (draftFiles.length >= 5) {
+                errors.push('You can attach up to 5 files per update.');
+                break;
+            }
+            if (!acceptedTypes.has(file.type)) {
+                errors.push(file.name + ': choose a JPEG, PNG, WebP photo or PDF.');
+                continue;
+            }
+            if (!file.size || file.size > 10485760) {
+                errors.push(file.name + ': choose a file between 1 byte and 10 MB.');
+                continue;
+            }
+            draftFiles.push({ localId: crypto.randomUUID(), file, alt: '', state: 'selected', step: 'reserve', previewUrl: localPreview(file) });
+        }
+        filePicker.value = '';
+        fileMessage.textContent = errors.join(' ');
+        drawEvidence();
+    });
     kind.addEventListener('change', () => { if (kind.value !== 'completed' && percent.value === '100' && snapshot?.progress_percent !== 100)
         percent.value = ''; notify.checked = ['started', 'milestone', 'blocked', 'completed'].includes(kind.value); updateComposer(); });
     refresh.addEventListener('click', () => void load());
-    document.getElementById('staff-progress-clear').addEventListener('click', () => { if (!posting) {
+    document.getElementById('staff-progress-clear').addEventListener('click', () => { if (!isBusy()) {
         resetDraft();
         setMessage('Draft cleared.');
         body.focus();
     } });
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (posting || loading || !active || !snapshot)
+        if (isBusy() || loading || !active || !snapshot)
             return;
+        if (!evidenceReady()) {
+            fileMessage.textContent = 'Upload or remove every selected file before publishing this update.';
+            fileMessage.focus();
+            return;
+        }
         if (host?.canPost() === false) {
             setMessage('Save or discard changes in Review before posting a progress update. Your progress draft is safe here.');
             message.focus();
@@ -257,8 +549,10 @@
             percent: visibility.value === 'staff' || (percent.disabled && kind.value !== 'completed') ? null : percent.value === '' ? null : Number(percent.value),
             blockedReason: kind.value === 'blocked' ? blocked.value : null, nextStep: nextStep.value.trim() || null, occurredOn: date.value, notify: visibility.value === 'public' && notify.checked };
         const serialized = JSON.stringify(payload);
-        if (!retry || retry.payload !== serialized)
-            retry = { payload: serialized, requestId: crypto.randomUUID() };
+        if (!retry || retry.payload !== serialized) {
+            draftRequestId || (draftRequestId = crypto.randomUUID());
+            retry = { payload: serialized, requestId: draftRequestId };
+        }
         const requestId = retry.requestId;
         const ownGeneration = generation;
         posting = true;
@@ -286,7 +580,7 @@
                 return;
             snapshot = data.submission;
             host?.applySnapshot(snapshot);
-            resetDraft();
+            resetDraft(false);
             drawSummary();
             try {
                 await host?.afterPost(snapshot);
@@ -319,8 +613,8 @@
     window.sfStaffProgress = {
         bind(value) { host = value; },
         open(item) { generation++; controller?.abort(); active = item; snapshot = undefined; baseline = ''; history.replaceChildren(); summary.hidden = true; fields.disabled = true; setMessage(''); resetDraft(); void load(); },
-        refresh: load, hasDraft, isBusy: () => posting,
+        refresh: load, hasDraft, isBusy,
         focusDraft() { body.focus(); },
-        close() { generation++; controller?.abort(); active = undefined; snapshot = undefined; baseline = ''; retry = undefined; loading = false; }
+        close() { generation++; controller?.abort(); discardEvidence(); draftRequestId = undefined; active = undefined; snapshot = undefined; baseline = ''; retry = undefined; loading = false; }
     };
 })();

@@ -61,6 +61,7 @@ router.patch('/submissions/:id/review', run(async (req, res) => {
       typeof updatedAt !== 'string' || !Number.isFinite(Date.parse(updatedAt))) {
     return res.status(400).json({ success: false, error: 'Check the status, response, assignee, priority, and date.' });
   }
+  if (/\[(explain the decision|provide a helpful option)\]/i.test(note)) return res.status(400).json({success:false,error:'Replace the template placeholders with your actual decision and next step.'});
   const { error } = await supabaseService.rpc('save_staff_review', {
     p_submission_id: req.params.id, p_staff_id: req.session.user!.id,
     p_expected_updated_at: updatedAt, p_status: status, p_note: note.trim(),

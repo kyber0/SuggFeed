@@ -218,6 +218,8 @@
             </div>
           </div>
 
+          <div class="workspace-actions"><button type="button" class="care-report" data-report-idea="<%= it.submission.id %>">Report this idea</button><a href="/inbox">Private school messages</a></div>
+          <section data-merge-history="<%= it.submission.id %>" aria-label="Duplicate merge history"></section>
           <!-- Proposal Description Section -->
           <div class="detail-description-section">
             <div class="detail-section-header">
@@ -305,6 +307,7 @@
                     </div>
                     <div class="comment-body"><%= c.body %></div>
                     <div class="comment-actions">
+                      <button type="button" class="care-report" data-report-comment="<%= c.id %>">Report</button>
                       <button type="button" class="comment-reply-btn" data-reply-id="<%= c.id %>" data-reply-author="<%= cAuthor %>" data-sf-click="action-88">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
                         Reply
@@ -333,6 +336,7 @@
                           </div>
                           <div class="comment-body"><%= rc.body %></div>
                           <div class="comment-actions">
+                            <button type="button" class="care-report" data-report-comment="<%= rc.id %>">Report</button>
                             <button type="button" class="comment-reply-btn" data-reply-id="<%= c.id %>" data-reply-author="<%= rcAuthor %>" data-sf-click="action-89">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
                               Reply

@@ -25,6 +25,7 @@
     occurred_on: string;
     office_label: string;
     created_at: string;
+    files?: Array<{ id: string; display_name: string; mime_type: string; size_bytes: number; alt: string | null }>;
   }
 
   const items: RoadmapItem[] = JSON.parse(document.getElementById('sf-roadmap-data')!.textContent || '[]');
@@ -40,11 +41,39 @@
   let returnFocus: HTMLElement | null = null;
   let syncingHistory = false;
   let detailRequest: AbortController | undefined;
+  const voting = new Set<string>();
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const calendar=document.getElementById('work-calendar-scroll');
+  const chart=calendar?.querySelector<HTMLElement>('.work-timeline-chart');
+  if(chart)chart.style.setProperty('--chart-width',Math.max(1040,Number(chart.dataset.timelineDays)*22)+'px');
+  if(!calendar)document.querySelectorAll<HTMLButtonElement|HTMLSelectElement>('[data-timeline-pan],#timeline-jump-today,#timeline-zoom').forEach(control=>{control.disabled=true;control.title='There are no recorded work dates in this window.';});
+  const smooth=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' as const : 'smooth' as const;
+  document.getElementById('timeline-zoom')?.addEventListener('change',e=>{
+    if(!calendar || !chart) return;
+    const scale=(e.target as HTMLSelectElement).value, midpoint=(calendar.scrollLeft+calendar.clientWidth/2)/calendar.scrollWidth;
+    chart.style.setProperty('--chart-width',Math.max(1040,Number(chart.dataset.timelineDays)*({week:48,month:22,term:9}[scale] || 22))+'px');
+    calendar.scrollLeft=midpoint*calendar.scrollWidth-calendar.clientWidth/2;
+  });
+  document.querySelectorAll<HTMLElement>('[data-timeline-pan]').forEach(button=>button.addEventListener('click',()=>calendar?.scrollBy({left:Number(button.dataset.timelinePan)*calendar.clientWidth*.8,behavior:smooth()})));
+  let pan:{id:number;x:number;left:number}|null=null;
+  calendar?.addEventListener('pointerdown',e=>{
+    if(e.pointerType!=='mouse' || e.button!==0 || (e.target as HTMLElement).closest('button,a,input,select')) return;
+    pan={id:e.pointerId,x:e.clientX,left:calendar.scrollLeft};calendar.setPointerCapture(e.pointerId);calendar.classList.add('is-panning');
+  });
+  calendar?.addEventListener('pointermove',e=>{if(pan && e.pointerId===pan.id){calendar.scrollLeft=pan.left-(e.clientX-pan.x);e.preventDefault();}});
+  const endPan=()=>{pan=null;calendar?.classList.remove('is-panning');};
+  calendar?.addEventListener('pointerup',endPan);calendar?.addEventListener('pointercancel',endPan);calendar?.addEventListener('lostpointercapture',endPan);
+  document.getElementById('timeline-jump-today')?.addEventListener('click', () => {
+    const calendar = document.getElementById('work-calendar-scroll');
+    if (!calendar) return;
+    calendar.scrollTo({ left: calendar.scrollWidth * Number(calendar.dataset.todayLeft) / 100 - calendar.clientWidth / 2,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  });
 
   function normalizeView(view: string | null | undefined): string {
     if (view === 'tree' || view === 'list') return 'tree';
-    if (view === 'done' || view === 'timeline') return 'done';
+    if (view === 'done' || view === 'outcomes') return 'done';
+    if (view === 'timeline') return 'timeline';
     return 'board';
   }
 
@@ -99,6 +128,9 @@
     badge.dataset.status = item.status;
     document.getElementById('roadmap-detail-title')!.textContent = item.title;
     document.getElementById('roadmap-detail-description')!.textContent = item.description;
+    let report=document.getElementById('roadmap-report-idea') as HTMLButtonElement;
+    if(!report){report=document.createElement('button');report.id='roadmap-report-idea';report.type='button';report.className='care-report';report.textContent='Report this idea';document.getElementById('roadmap-detail-description')!.after(report);}
+    report.dataset.reportIdea=item.id;
 
     const blockedAlert = document.getElementById('roadmap-detail-blocked-alert');
     if (blockedAlert) {
@@ -112,7 +144,10 @@
       if (typeof item.progress_percent === 'number' && (item.status === 'in_progress' || item.status === 'resolved')) {
         progressWrap.hidden = false;
         progressBar.style.width = `${item.progress_percent}%`;
-        progressText.textContent = `${item.progress_percent}% complete`;
+        progressText.textContent = `${item.progress_percent}% complete — school estimate`;
+        const accessibleBar = document.getElementById('roadmap-detail-bar-el');
+        accessibleBar?.setAttribute('aria-valuenow', String(item.progress_percent));
+        accessibleBar?.setAttribute('aria-valuetext', `${item.progress_percent}% complete, school estimate`);
       } else {
         progressWrap.hidden = true;
       }
@@ -122,6 +157,7 @@
     const detailVotes = document.getElementById('roadmap-detail-votes');
     if (detailVote && detailVotes) {
       detailVote.dataset.voteId = item.id;
+      detailVote.disabled = voting.has(item.id);
       detailVotes.textContent = String(item.votes);
       const voted = hasVoted(item.id);
       detailVote.classList.toggle('is-voted', voted);
@@ -152,6 +188,14 @@
   function showUpdates(updates: PublicUpdate[]) {
     const list = document.getElementById('roadmap-history-list')!;
     list.replaceChildren();
+    const earlier=updates.filter(u=>u.kind==='started').sort((a,b)=>a.occurred_on.localeCompare(b.occurred_on)).flatMap(u=>(u.files || []).map(file=>({file,update:u}))).find(x=>x.file.mime_type.startsWith('image/') && uuid.test(x.file.id));
+    const later=updates.filter(u=>u.kind==='completed').sort((a,b)=>b.occurred_on.localeCompare(a.occurred_on)).flatMap(u=>(u.files || []).map(file=>({file,update:u}))).find(x=>x.file.mime_type.startsWith('image/') && uuid.test(x.file.id));
+    if(earlier && later && earlier.update.occurred_on<=later.update.occurred_on) {
+      const comparison=document.createElement('li'),heading=document.createElement('h4'),help=document.createElement('p'),images=document.createElement('div');
+      heading.textContent='From work started to completed';help.textContent='School-published evidence. Dates refer to updates, not verified photo capture times; images may show different viewpoints.';images.className='evidence-comparison';
+      for(const [label,entry] of [['Work started',earlier],['Completed',later]] as const){const figure=document.createElement('figure'),image=document.createElement('img'),caption=document.createElement('figcaption');image.src='/api/progress-evidence/'+encodeURIComponent(entry.file.id);image.alt=entry.file.alt || entry.file.display_name;image.loading='lazy';image.referrerPolicy='no-referrer';caption.textContent=label+' · '+entry.update.occurred_on+' · '+(entry.file.alt || entry.file.display_name);image.addEventListener('error',()=>{image.remove();caption.textContent+=' · Image unavailable. Open the evidence link in the update below.';});figure.append(image,caption);images.append(figure);}
+      comparison.append(heading,help,images);list.append(comparison);
+    }
     const names: Record<string, string> = { started: 'Work started', update: 'Progress update', milestone: 'Milestone', blocked: 'Work blocked', completed: 'Completed', correction: 'Correction' };
     for (const update of updates) {
       const entry = document.createElement('li');
@@ -179,10 +223,25 @@
         nextStep.textContent = 'Next step: ' + update.next_step;
         entry.append(nextStep);
       }
+      if (update.files?.length) {
+        const files = document.createElement('ul');
+        files.className = 'roadmap-evidence-list';
+        for (const file of update.files) {
+          if (!uuid.test(file.id)) continue;
+          const row = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = '/api/progress-evidence/' + encodeURIComponent(file.id);
+          link.target = '_blank'; link.rel = 'noopener noreferrer';
+          link.textContent = `${file.display_name} · ${Math.ceil(file.size_bytes / 1024)} KB`;
+          if (file.alt) link.setAttribute('aria-label', `${file.display_name}: ${file.alt}`);
+          row.append(link); files.append(row);
+        }
+        entry.append(files);
+      }
       list.append(entry);
     }
     document.getElementById('roadmap-history-status')!.textContent = updates.length
-      ? updates.length === 50 ? 'Showing the latest 50 school updates.' : ''
+      ? updates.length >= 100 ? 'Showing the latest 100 school updates.' : ''
       : 'The school has not posted a progress update yet.';
   }
 
@@ -225,6 +284,10 @@
       if (dialog.open && detailRequest === controller) {
         show(body.item);
         showUpdates(Array.isArray(body.updates) ? body.updates : []);
+        void fetch('/api/community/merges/'+encodeURIComponent(id),{headers:{Accept:'application/json'},signal:controller.signal}).then(async response=>{
+          if(!response.ok) return;const data=await response.json();if(detailRequest!==controller || !dialog.open) return;
+          for(const merge of data.merges || []){const entry=document.createElement('li');entry.textContent='Merged public idea: '+merge.source_title+' · '+merge.reason;document.getElementById('roadmap-history-list')!.append(entry);}
+        }).catch(()=>undefined);
       }
     } catch (error) {
       if (dialog.open && detailRequest === controller) {
@@ -288,19 +351,31 @@
     event.preventDefault();
     event.stopPropagation();
     const id = btn.dataset.voteId;
+    if (!uuid.test(id) || voting.has(id)) return;
+    voting.add(id);
     const matching = Array.from(document.querySelectorAll<HTMLButtonElement>(`[data-vote-id="${id}"]`));
+    const previous=matching.map(button=>({button,pressed:button.getAttribute('aria-pressed'),voted:button.classList.contains('is-voted'),counts:Array.from(button.querySelectorAll<HTMLElement>('.roadmap-card-vote-count,#roadmap-detail-votes')).map(el=>({el,text:el.textContent}))}));
+    previous.forEach(saved=>{saved.button.classList.add('is-voted');saved.button.setAttribute('aria-pressed','true');saved.counts.forEach(({el,text})=>{if(!saved.voted)el.textContent=String((Number(text)||0)+1);});});
     matching.forEach(b => { b.disabled = true; b.setAttribute('aria-busy', 'true'); });
+    const voteStatus = document.getElementById('roadmap-vote-status');
+    if (voteStatus) voteStatus.textContent = '';
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
     try {
       const res = await fetch('/api/vote/' + encodeURIComponent(id), {
         method: 'POST',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ action: 'up' }),
       });
       const data = await res.json();
-      if (res.ok && data.success && typeof data.vote_count === 'number') {
+      if (!res.ok || !data.success || typeof data.vote_count !== 'number') throw new Error();
+      if (data.success) {
         saveVotedId(id);
         matching.forEach(b => {
+          if (b.dataset.voteId !== id) return;
           b.classList.add('is-voted');
+          b.classList.add('vote-success');setTimeout(()=>b.classList.remove('vote-success'),350);
           b.setAttribute('aria-pressed', 'true');
           const countEl = b.querySelector('.roadmap-card-vote-count');
           if (countEl) countEl.textContent = String(data.vote_count);
@@ -314,13 +389,18 @@
         if (typeof (window as any).sfToast === 'function') {
           (window as any).sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
         }
+        if (voteStatus) voteStatus.textContent = data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded.';
       }
     } catch {
+      previous.forEach(saved=>{if(saved.button.dataset.voteId!==id)return;saved.button.classList.toggle('is-voted',saved.voted);saved.button.setAttribute('aria-pressed',saved.pressed || 'false');saved.counts.forEach(({el,text})=>{el.textContent=text;});});
+      if (voteStatus) voteStatus.textContent = 'Could not record your support. Please try again.';
       if (typeof (window as any).sfToast === 'function') {
         (window as any).sfToast('Could not record your support. Please try again.', 'error');
       }
     } finally {
-      matching.forEach(b => { b.disabled = false; b.removeAttribute('aria-busy'); });
+      clearTimeout(timer);
+      voting.delete(id);
+      matching.forEach(b => { if (b.dataset.voteId === id) { b.disabled = false; b.removeAttribute('aria-busy'); } });
     }
   });
 

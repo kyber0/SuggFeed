@@ -42,7 +42,7 @@ test('shared roadmap links load only public stages and expose only public fields
   assert.equal(roadmapFilters({page:'99999999999'}).page,1);
   assert.equal(roadmapFilters({view:'tree'}).view,'tree');
   assert.equal(roadmapFilters({view:'list'}).view,'tree');
-  assert.equal(roadmapFilters({view:'timeline'}).view,'done');
+  assert.equal(roadmapFilters({view:'timeline'}).view,'timeline');
   assert.equal(roadmapFilters({view:'done',stage:'approved'}).stage,'resolved');
   assert.equal(roadmapFilters({view:'board'}).view,'board');
   assert.equal(roadmapFilters({view:'invalid'}).view,'board');
@@ -136,7 +136,7 @@ test('tree category drill-down paginates eight items while preserving exact cate
 test('completed outcomes use their own twenty-item pagination even with hundreds of planned ideas', async () => {
  const mock = mockRoadmap([...ideaRows(140, 'approved'), ...ideaRows(45, 'resolved')]);
  try {
-  const result = await loadRoadmapPage(roadmapFilters({ view: 'timeline', page: '2', stage: 'approved' }));
+  const result = await loadRoadmapPage(roadmapFilters({ view: 'done', page: '2', stage: 'approved' }));
   assert.equal(result.pageCount, 3);
   assert.equal(result.perPage, 20);
   assert.equal(result.matchingCount, 45);

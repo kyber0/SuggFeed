@@ -7,7 +7,7 @@
 
 declare const self: ServiceWorkerGlobalScope;
 
-const CACHE_VERSION = "cv-v9-roadmap-progress";
+const CACHE_VERSION = "cv-v10-community-care";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
@@ -66,7 +66,8 @@ self.addEventListener("fetch", (event: FetchEvent) => {
   // which causes a flood of "Failed to fetch" / CSP violation errors.
   if (url.origin !== self.location.origin) return;
   // Never cache login callbacks, session state, private pages or API responses.
-  if (/^\/(auth|api|admin|profile|notifications|staff)(\/|$)/.test(url.pathname)) return;
+  if (/^\/(auth|api|admin|profile|notifications|staff|internal|inbox|digest)(\/|$)/.test(url.pathname)) return;
+  if(url.pathname==='/feed' && url.searchParams.get('scope')==='following') return;
   // Public detail JSON must reflect moderation changes and unpublished ideas immediately.
   if (url.pathname.startsWith("/roadmap/idea/")) return;
 

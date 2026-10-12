@@ -22,7 +22,7 @@
         <div class="dropdown-menu" id="header-dropdown" hidden>
           <div class="dropdown-user-header">
             <div class="dropdown-user-name"><%= it.user.full_name ?? 'Account' %></div>
-            <div class="dropdown-user-email"><%= it.user.email %></div>
+            <% if(it.user.email) { %><div class="dropdown-user-email"><%= it.user.email %></div><% } %>
           </div>
           <div class="divider"></div>
           <a href="/profile" class="dropdown-link">
@@ -30,6 +30,8 @@
             My Profile &amp; Ideas
           </a>
           <a href="/notifications" class="dropdown-link">School updates</a>
+          <a href="/feed?scope=following" class="dropdown-link">Following</a>
+          <a href="/inbox" class="dropdown-link">Private school messages</a>
           <a href="/admin" class="dropdown-link dropdown-link--staff">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Staff Portal

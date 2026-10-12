@@ -103,12 +103,12 @@
             counter.classList.toggle('is-danger', val.length >= 95);
         }
         if (req) {
-            if (val.trim().length >= 8) {
+            if (val.trim().length >= 10) {
                 req.textContent = 'Ready';
                 req.className = 'sip-validation-badge sip-validation-badge--valid';
             }
             else {
-                req.textContent = 'Min 8 chars';
+                req.textContent = 'Min 10 chars';
                 req.className = 'sip-validation-badge';
             }
         }
@@ -273,15 +273,15 @@
         else if (sipCurrentStep === 2) {
             const title = document.getElementById('sip-title').value.trim();
             const desc = document.getElementById('sip-description').value.trim();
-            if (title.length < 8) {
+            if (title.length < 10) {
                 const titleInput = document.getElementById('sip-title');
                 titleInput.classList.add('sip-input-error');
                 titleInput.focus();
                 setTimeout(() => titleInput.classList.remove('sip-input-error'), 1200);
                 if (window.sfToast)
-                    sfToast('Title must be at least 8 characters.', 'warning');
+                    sfToast('Title must be at least 10 characters.', 'warning');
                 else
-                    alert('Title must be at least 8 characters.');
+                    alert('Title must be at least 10 characters.');
                 return;
             }
             if (desc.length < 20) {

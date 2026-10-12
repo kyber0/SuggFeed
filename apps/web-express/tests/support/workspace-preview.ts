@@ -3,7 +3,7 @@ import express from 'express';
 import path from 'node:path';
 import { Eta } from 'eta';
 import { queueFilters } from '../../src/lib/staff-workspace';
-import { roadmapFilters, groupTreeByCategory, groupTimelineByMonth, formatManilaDate } from '../../src/lib/roadmap';
+import { roadmapFilters, groupTreeByCategory, groupTimelineByMonth, formatManilaDate, buildWorkTimeline } from '../../src/lib/roadmap';
 
 export function createWorkspacePreview() {
  const app=express();const root=path.resolve(__dirname,'../..');const eta=new Eta({views:path.join(root,'views')});
@@ -13,7 +13,7 @@ export function createWorkspacePreview() {
  const items=titles.map((title,index)=>({
   id:'00000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),title,
   description:'Students use this area every day, but it could be more welcoming. A small improvement would make a real difference, especially between classes. Please consider this in the next round of campus improvements.',
-  status:statuses[index],category:index%2?'Learning':'Facilities',created_at:'2026-10-08T10:00:00Z',updated_at:'2026-10-10T10:00:00Z',
+  status:statuses[index],category:index%2?'Learning':'Facilities',created_at:'2026-09-01T10:00:00Z',updated_at:'2026-10-10T10:00:00Z',
   resolved_at:statuses[index]==='resolved'?'2026-10-10T12:00:00Z':null,
   vote_count:24+index*7,comment_count:index+2,staff_note:index===1?'The library team is reviewing staffing for extended hours during exams. We will post an update after the next planning meeting.':'',
   assignee_id:index===2?staffId:'',assignee_name:index===2?'Alex Reyes':'',priority:index===2?'high':'normal',target_date:index===2?'2026-10-09':''
@@ -22,6 +22,21 @@ export function createWorkspacePreview() {
  // Match the production inline-handler restriction for browser regression checks.
  app.use((_req,res,next)=>{res.setHeader('Content-Security-Policy',"script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; script-src-attr 'none'");next();});
  app.use(express.json());app.use(express.static(path.join(root,'public')));
+ const privateRequests=[{id:'50000000-0000-4000-8000-000000000001',submission_id:items[0].id,title:items[0].title,prompt:'Which campus zone would benefit most from shaded seating?',reply:null as string|null,created_at:'2026-10-01T10:00:00Z',replied_at:null as string|null,closed_at:null as string|null}];
+ app.get('/inbox',(_req,res)=>res.send(eta.render('private-inbox',{currentPath:'/inbox',user:{id:staffId,display_name:'Preview member',role:'student'}})));
+ app.get('/notifications',(_req,res)=>res.send(eta.render('notifications',{currentPath:'/notifications',user:{id:staffId,display_name:'Preview member',role:'student'},signedIn:true})));
+ app.get('/api/notifications/preferences',(_req,res)=>res.json({success:true,preferences:{update_mode:'all',weekly_digest:false},digestAvailable:false}));
+ app.post('/api/notifications/preferences',(_req,res)=>res.json({success:true}));
+ app.get('/api/notifications',(_req,res)=>res.json({success:true,notifications:[],unreadCount:0,nextCursor:null}));
+ app.get('/api/community/report-history',(_req,res)=>res.json({success:true,reports:[{reason:'A comment included personal details.',resolution:'removed',resolution_reason:'Removed to protect student privacy.'}]}));
+ app.get('/api/community/merges/:id',(_req,res)=>res.json({success:true,merges:[]}));
+ app.get('/api/community/similar',(_req,res)=>res.json({success:true,ideas:items.filter(s=>['approved','in_progress','resolved'].includes(s.status)).slice(0,3)}));
+ app.post('/api/community/inbox',(_req,res)=>res.json({success:true,requests:privateRequests}));
+ app.post('/api/community/reply',(req,res)=>{const entry=privateRequests.find(x=>x.id===req.body.id);if(!entry)return res.status(404).json({success:false});entry.reply=req.body.body;entry.replied_at=new Date().toISOString();return res.json({success:true});});
+ app.post('/api/community/report',(_req,res)=>res.json({success:true}));
+ app.get('/admin/board',(_req,res)=>res.send(eta.render('staff-board',{currentPath:'/admin/board',activeSection:'board',user:{id:staffId,display_name:'Alex Reyes',full_name:'Alex Reyes',role:'admin'},items:items.map(s=>({...s,categories:{name:s.category}})),members:[{id:staffId,display_name:'Alex Reyes'}]})));
+ app.get('/admin/community',(_req,res)=>res.send(eta.render('staff-community',{currentPath:'/admin/community',activeSection:'community',user:{id:staffId,display_name:'Alex Reyes',full_name:'Alex Reyes',role:'admin'},alerts:items.slice(0,3).map(s=>({id:s.id,title:s.title,reason:'No public update for 30 days'})),coverage:'Local visual fixtures only; no live database writes.',requests:privateRequests.map(r=>({...r,submission:{title:r.title}})),reports:[{id:'60000000-0000-4000-8000-000000000001',reason:'Contains a student name and phone number.',comment:{body:'[Preview of a reported comment]'}}],members:[{id:staffId,display_name:'Alex Reyes'}]})));
+ app.post('/api/community/staff/bulk_assign',(_req,res)=>res.json({success:true}));
  const comments:Array<{id:string;submission_id:string;body:string;display_name:string;created_at:string;parent_id:string|null}>=[];
  const feedPage=(query:Record<string,unknown>)=>{
   const page=Math.max(1,Number(query.page)||1);
@@ -61,21 +76,33 @@ export function createWorkspacePreview() {
  const notes:Array<{id:string;submission_id:string;body:string;created_at:string;actor:{display_name:string}}>=[];
  const history:Array<any>=[];
  const views:Array<any>=[];
- const publicItem=(item:typeof items[number])=>({id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,votes:item.vote_count,comments:item.comment_count,created_at:item.created_at,updated_at:item.updated_at,resolved_at:(item as any).resolved_at || null,resolved_at_estimated:false,progress_percent:null,started_at:null,is_blocked:false,response:item.staff_note});
+ const publicItem=(item:typeof items[number])=>({id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,votes:item.vote_count,comments:item.comment_count,created_at:item.created_at,updated_at:item.updated_at,resolved_at:(item as any).resolved_at || null,resolved_at_estimated:false,progress_percent:item.status==='resolved'?100:item.status==='in_progress'?35:null,started_at:item.status==='resolved'?'2026-09-20T08:00:00Z':item.status==='in_progress'?'2026-09-10T08:00:00Z':null,is_blocked:false,response:item.staff_note});
+ const progressUpdates:Array<any>=[];
+ const progressSnapshot=(item:typeof items[number])=>({...item,progress_percent:item.status==='resolved'?100:null,started_at:null,is_blocked:false});
+ app.get('/staff/workspace/:id/updates',(req,res)=>{const item=items.find(i=>i.id===req.params.id);if(!item)return res.status(404).json({success:false});res.json({success:true,submission:progressSnapshot(item),updates:progressUpdates.filter(update=>update.submission_id===item.id),limit:100});});
+ app.post('/staff/workspace/:id/updates',(req,res)=>{
+  const item=items.find(i=>i.id===req.params.id);if(!item)return res.status(404).json({success:false});
+  const replay=progressUpdates.find(update=>update.request_id===req.body.requestId);
+  if(replay)return res.json({success:true,update:replay,submission:progressSnapshot(item),replayed:true});
+  if(item.updated_at!==req.body.updatedAt)return res.status(409).json({success:false,error:'This submission changed. Refresh it before posting; keep your draft.'});
+  const update={id:'00000000-0000-4000-8000-'+String(1000+progressUpdates.length).padStart(12,'0'),submission_id:item.id,request_id:req.body.requestId,kind:req.body.kind,body:req.body.body,visibility:req.body.visibility,percent:req.body.percent??null,blocked_reason:req.body.blockedReason||null,next_step:req.body.nextStep||null,occurred_on:req.body.occurredOn,office_label:'School administration',created_at:new Date().toISOString(),files:[]};
+  if(update.visibility==='public'){if(update.kind==='completed'){item.status='resolved';item.staff_note=update.body;item.resolved_at=update.created_at;}else if(item.status==='approved'&&['started','update','milestone'].includes(update.kind))item.status='in_progress';item.updated_at=update.created_at;}
+  progressUpdates.unshift(update);res.status(201).json({success:true,update,submission:progressSnapshot(item),replayed:false});
+ });
  app.get('/roadmap',(req,res)=>{
   const filters=roadmapFilters(req.query);
   const matched=req.query.empty?[]:items.filter(i=>['approved','in_progress','resolved'].includes(i.status) && (filters.category==='all' || filters.category===i.category) && (!filters.search || (i.title+' '+i.description).toLowerCase().includes(filters.search.toLowerCase())));
   const counts=Object.fromEntries(['approved','in_progress','resolved'].map(s=>[s,matched.filter(i=>i.status===s).length]));
   const selected=matched.filter(i=>filters.stage==='all' || filters.stage===i.status);
-  const pageItems=filters.view==='done'?selected.slice((filters.page-1)*20,filters.page*20):filters.view==='tree'?selected: ['approved','in_progress','resolved'].filter(s=>filters.stage==='all' || filters.stage===s).flatMap(s=>matched.filter(i=>i.status===s).slice((filters.page-1)*8,filters.page*8));
+  const pageItems=['done','timeline'].includes(filters.view)?selected.slice((filters.page-1)*20,filters.page*20):filters.view==='tree'?selected: ['approved','in_progress','resolved'].filter(s=>filters.stage==='all' || filters.stage===s).flatMap(s=>matched.filter(i=>i.status===s).slice((filters.page-1)*8,filters.page*8));
   const mappedItems=pageItems.map(publicItem);
   const recentlyCompleted=items.filter(i=>i.status==='resolved').map(publicItem).slice(0,3);
   const categories=['Facilities','Learning'];
   const treeData=groupTreeByCategory(selected.map(publicItem),categories).map(branch=>({...branch,leaves:branch.leaves.slice(filters.category==='all'?0:(filters.page-1)*8,filters.category==='all'?8:filters.page*8)}));
   const timelineData=groupTimelineByMonth(mappedItems);
-  res.send(eta.render('roadmap',{currentPath:'/roadmap',user:null,items:filters.view==='tree'?treeData.flatMap(branch=>branch.leaves):mappedItems,counts,totalCount:items.filter(i=>['approved','in_progress','resolved'].includes(i.status)).length,matchingCount:selected.length,pageCount:filters.view==='done'?Math.max(1,Math.ceil(selected.length/20)):filters.view==='tree'?(filters.category==='all'?1:Math.max(1,Math.ceil(selected.length/8))):Math.max(1,...Object.entries(counts).filter(([s])=>filters.stage==='all' || filters.stage===s).map(([,count])=>Math.ceil(count/8))),perStage:8,filters,categories,recentlyCompleted,treeData,timelineData,formatManilaDate}));
+  res.send(eta.render('roadmap',{currentPath:'/roadmap',user:null,items:filters.view==='tree'?treeData.flatMap(branch=>branch.leaves):mappedItems,counts,totalCount:items.filter(i=>['approved','in_progress','resolved'].includes(i.status)).length,matchingCount:selected.length,pageCount:['done','timeline'].includes(filters.view)?Math.max(1,Math.ceil(selected.length/20)):filters.view==='tree'?(filters.category==='all'?1:Math.max(1,Math.ceil(selected.length/8))):Math.max(1,...Object.entries(counts).filter(([s])=>filters.stage==='all' || filters.stage===s).map(([,count])=>Math.ceil(count/8))),perStage:8,filters,categories,recentlyCompleted,treeData,timelineData,workTimeline:buildWorkTimeline(mappedItems),formatManilaDate}));
  });
- app.get('/roadmap/idea/:id',(req,res)=>{const item=items.find(i=>i.id===req.params.id && ['approved','in_progress','resolved'].includes(i.status));res.status(item?200:404).json(item?{success:true,item:publicItem(item)}:{success:false});});
+ app.get('/roadmap/idea/:id',(req,res)=>{const item=items.find(i=>i.id===req.params.id && ['approved','in_progress','resolved'].includes(i.status));res.status(item?200:404).json(item?{success:true,item:publicItem(item),updates:progressUpdates.filter(update=>update.submission_id===item.id&&update.visibility==='public').map(({submission_id,request_id,visibility,...update})=>update)}:{success:false});});
  app.get('/admin',(req,res)=>{
   const filters=queueFilters({...req.query,status:req.query.status || 'all'});
   const page=Math.max(1,Number(req.query.page)||1);

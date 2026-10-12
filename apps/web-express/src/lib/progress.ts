@@ -1,5 +1,6 @@
 import { supabase, supabaseService } from './supabase';
 import { UUID, validDate } from './staff-workspace';
+import { EvidenceFile, listPublicEvidence, listStaffEvidence } from './progress-evidence';
 
 export const PROGRESS_KINDS = ['started', 'update', 'milestone', 'blocked', 'completed', 'correction'] as const;
 export const BLOCK_REASONS = ['budget', 'parts', 'approval', 'scheduling', 'other'] as const;
@@ -13,6 +14,7 @@ export interface PublicProgress {
   id: string; kind: ProgressKind; body: string; percent: number | null;
   blocked_reason: string | null; next_step: string | null; occurred_on: string;
   office_label: string; created_at: string;
+  files: EvidenceFile[];
 }
 export class ProgressError extends Error {
   constructor(public readonly status: number, message: string) { super(message); this.name = 'ProgressError'; }
@@ -59,11 +61,12 @@ export function validateProgress(input: unknown, now = new Date()): ProgressInpu
     notify: b.visibility === 'public' && (typeof b.notify === 'boolean' ? b.notify : ['started', 'milestone', 'blocked', 'completed'].includes(b.kind as string)),
   };
 }
-function publicProgress(row: Record<string, any>): PublicProgress {
+function publicProgress(row: Record<string, any>, files: EvidenceFile[]): PublicProgress {
   return {
     id: row.id, kind: row.kind, body: row.body, percent: row.percent ?? null,
     blocked_reason: row.blocked_reason ?? null, next_step: row.next_step ?? null,
     occurred_on: row.occurred_on, office_label: row.office_label, created_at: row.created_at,
+    files: files.filter(file => file.update_id === row.id),
   };
 }
 /** The narrowly granted RPC filters the parent publication state and event audience in the database. */
@@ -71,16 +74,20 @@ export async function listPublicProgress(id: string): Promise<PublicProgress[]> 
   if (!UUID.test(id)) return [];
   const { data, error } = await supabase.rpc('read_public_idea_updates', { p_submission_id: id });
   if (error) throw error;
-  return (data ?? []).map(publicProgress);
+  if (!data?.length) return [];
+  const files = await listPublicEvidence(id);
+  return data.map((row: Record<string, any>) => publicProgress(row, files));
 }
 /** Only call from an authenticated staff route; the service client bypasses RLS. */
-export async function listStaffProgress(id: string) {
+export async function listStaffProgress(id: string, staffId: string) {
   const { data, error } = await supabaseService.from('idea_updates')
     .select('id,kind,body,visibility,percent,blocked_reason,next_step,occurred_on,office_label,created_at,posted_by,request_id')
     .eq('submission_id', id).is('deleted_at', null).order('occurred_on', { ascending: false })
     .order('created_at', { ascending: false }).order('id', { ascending: false }).limit(100);
   if (error) throw error;
-  return data ?? [];
+  if (!data?.length) return [];
+  const files = await listStaffEvidence(id, staffId);
+  return data.map(row => ({ ...row, files: files.filter(file => file.update_id === row.id) }));
 }
 export async function loadStaffProgressSubmission(id: string) {
   const { data, error } = await supabaseService.from('staff_submission_queue')

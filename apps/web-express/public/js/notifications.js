@@ -3,6 +3,38 @@
     const list = document.getElementById('notification-list');
     if (!list)
         return;
+    const preferences = document.getElementById('notification-preferences');
+    if (preferences) {
+        const mode = preferences.elements.namedItem('update_mode'), digest = preferences.elements.namedItem('weekly_digest'), save = preferences.querySelector('button[type=submit]'), status = document.getElementById('preferences-status');
+        void fetch('/api/notifications/preferences', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) }).then(async (response) => {
+            const data = await response.json();
+            if (!response.ok || !data.success)
+                throw new Error();
+            mode.value = data.preferences.update_mode;
+            digest.checked = data.preferences.weekly_digest;
+            digest.disabled = !data.digestAvailable && !data.preferences.weekly_digest;
+            save.disabled = false;
+            document.getElementById('digest-availability').textContent = data.digestAvailable ? 'Opt-in only. A verified account email is required. No private messages are included.' : 'Your school has not enabled weekly email delivery yet. In-app updates work independently.';
+        }).catch(() => { status.textContent = 'Preferences could not load. Refresh to retry.'; });
+        preferences.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            save.disabled = true;
+            status.textContent = 'Saving…';
+            try {
+                const response = await fetch('/api/notifications/preferences', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ update_mode: mode.value, weekly_digest: digest.disabled ? false : digest.checked }) });
+                const data = await response.json();
+                if (!response.ok || !data.success)
+                    throw new Error(data.error || 'Preferences not saved.');
+                status.textContent = 'Saved. Applies to new school updates; existing notifications are retained.';
+            }
+            catch (e) {
+                status.textContent = e.name === 'TimeoutError' ? 'Saving timed out. Refresh to confirm preferences.' : e.message;
+            }
+            finally {
+                save.disabled = false;
+            }
+        });
+    }
     const summary = document.getElementById('notification-summary');
     const error = document.getElementById('notification-error');
     const more = document.getElementById('notification-more');
@@ -46,8 +78,10 @@
                     mark.textContent = 'Mark as read';
                     mark.addEventListener('click', async () => {
                         mark.disabled = true;
+                        const readController = new AbortController();
+                        const readTimer = setTimeout(() => readController.abort(), 15000);
                         try {
-                            const result = await fetch('/api/notifications/' + encodeURIComponent(notification.id) + '/read', { method: 'PATCH', headers: { Accept: 'application/json' } });
+                            const result = await fetch('/api/notifications/' + encodeURIComponent(notification.id) + '/read', { method: 'PATCH', signal: readController.signal, headers: { Accept: 'application/json' } });
                             if (!result.ok)
                                 throw new Error();
                             entry.dataset.unread = 'false';
@@ -58,6 +92,9 @@
                             error.hidden = false;
                             error.textContent = 'Could not mark this update as read. Please try again.';
                             mark.disabled = false;
+                        }
+                        finally {
+                            clearTimeout(readTimer);
                         }
                     });
                     entry.append(mark);

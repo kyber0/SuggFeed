@@ -67,7 +67,7 @@
       </div>
       <footer class="staff-pagination"><span><%= it.totalCount ? (it.page-1)*it.perPage+1 : 0 %>–<%= Math.min(it.page*it.perPage,it.totalCount) %> of <%= it.totalCount %> matching submissions</span><nav aria-label="Submission pages"><% if(it.page>1) { %><a class="workspace-button" href="<%= urlFor(status,it.page-1) %>">← Previous</a><% } %><span>Page <%= it.page %> of <%= it.pageCount %></span><% if(it.page<it.pageCount) { %><a class="workspace-button" href="<%= urlFor(status,it.page+1) %>">Next →</a><% } %></nav></footer>
     </section>
-    <p class="staff-footnote">Only planned, in-progress, and completed ideas appear publicly. Check for private details before publishing.</p>
+    <p class="staff-footnote">Only planned, in-progress, and completed ideas appear publicly. Check for private details before publishing. Keyboard: / searches, J and K move between Review buttons. Private clarification requests are in <a href="/admin/community">Community care</a>. Find the submission ID in History or copy it below the review title.</p>
   </div>
   <dialog class="workspace-dialog staff-review-dialog" id="staff-review-dialog" aria-labelledby="review-title">
     <header class="workspace-dialog-header"><div><span class="workspace-kicker">SUBMISSION REVIEW</span><span id="review-position" class="staff-review-position"></span></div><button type="button" class="workspace-icon-button" data-close-review aria-label="Close review">×</button></header>
@@ -77,6 +77,7 @@
       <section role="tabpanel" id="review-panel-decision" aria-labelledby="review-tab-decision" class="staff-review-panel">
         <h3 class="workspace-field-label">The suggestion</h3><p class="workspace-description" id="review-description"></p>
         <form id="staff-review-form" novalidate>
+          <label class="workspace-field-label" for="staff-response-template">Response starter</label><select id="staff-response-template" class="workspace-input"><option value="">Choose an editable template…</option><option value="planned">Approved for planning</option><option value="clarify">Request more information</option><option value="declined">Explain a decline</option></select><p class="staff-footnote">Edit the template before saving. A response template does not send a private clarification request.</p>
           <fieldset id="staff-review-fields">
             <legend>Your decision</legend>
             <label class="workspace-field-label" for="review-status">Status</label><select id="review-status" class="workspace-input" required aria-describedby="review-status-hint"><% for(const key of Object.keys(labels).filter(k=>k!=='all')) { %><option value="<%= key %>"><%= labels[key] %></option><% } %></select>
@@ -116,5 +117,6 @@
 <script id="staff-queue-data" type="application/json"><%~ JSON.stringify(it.submissions.map(s=>({id:s.id,title:s.title,description:s.description,status:s.status,category:s.category || s.categories?.name || 'Other',created_at:s.created_at,updated_at:s.updated_at,staff_note:s.staff_note || '',assignee_id:s.assignee_id || '',priority:s.priority || 'normal',target_date:s.target_date || ''}))).replace(/</g,'\\u003c') %></script>
 <script id="staff-filter-data" type="application/json"><%~ JSON.stringify(filters).replace(/</g,'\\u003c') %></script>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
-<script src="/js/staff-progress.js?v=20261012-progress"></script>
+<script src="/js/staff-progress.js?v=20261012-evidence"></script>
 <script src="/js/admin.js?v=20261012-progress"></script>
+<script src="/js/staff-tools.js?v=20261012-care"></script>

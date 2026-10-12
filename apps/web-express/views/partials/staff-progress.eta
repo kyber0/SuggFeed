@@ -24,9 +24,18 @@
       <label class="workspace-field-label" for="staff-progress-next-step">Next step · optional</label><input type="text" id="staff-progress-next-step" class="workspace-input" maxlength="200" placeholder="e.g. Install the first benches next week"/>
       <label class="workspace-field-label" for="staff-progress-date">When did this happen?</label><input type="date" id="staff-progress-date" class="workspace-input" required aria-describedby="staff-progress-date-hint"/><p id="staff-progress-date-hint" class="workspace-field-hint">Today by default. You may backdate up to 14 days; the posting date remains visible.</p>
     </details>
+    <section class="staff-progress-evidence" aria-labelledby="staff-progress-evidence-title">
+      <div class="staff-progress-evidence-heading"><h4 id="staff-progress-evidence-title">Evidence · optional</h4><span id="staff-progress-evidence-count">0 / 5 files</span></div>
+      <p id="staff-progress-evidence-hint" class="workspace-field-hint">Add photos or PDF documents, up to 10 MB each. Describe each image, then upload it. Files stay private until this update is published; staff-only evidence stays private.</p>
+      <label class="staff-progress-file-picker" for="staff-progress-files">Choose evidence<input type="file" id="staff-progress-files" multiple accept="image/jpeg,image/png,image/webp,application/pdf" aria-describedby="staff-progress-evidence-hint"/></label>
+      <p id="staff-progress-evidence-message" class="workspace-message" role="status" aria-live="polite" tabindex="-1"></p>
+      <ul id="staff-progress-evidence-list" class="staff-progress-evidence-list" aria-label="Evidence for this draft"></ul>
+      <p class="staff-progress-evidence-note">Photos are processed on the server to remove metadata. Check the image itself and PDF contents for names or other private information. Draft files are temporary; leaving this page does not save your draft.</p>
+    </section>
     <section class="staff-progress-preview" id="staff-progress-preview" aria-labelledby="staff-progress-preview-title">
       <div class="staff-progress-preview-heading"><h4 id="staff-progress-preview-title">Public preview</h4><span class="workspace-tag" id="staff-progress-preview-kind">Progress update</span></div>
       <p id="staff-progress-preview-body">Your update will appear here before you publish it.</p><p id="staff-progress-preview-next" hidden></p><small id="staff-progress-preview-meta"></small>
+      <div id="staff-progress-preview-files" class="staff-progress-preview-files"></div>
     </section>
     <p class="staff-progress-immutable">Posted updates stay in the record. To clarify a public update, publish a correction.</p>
     <label class="staff-progress-notify" id="staff-progress-notify-field"><input type="checkbox" id="staff-progress-notify"/><span>Notify followers about this update<small>Best for milestones, delays, and completion. Ordinary updates can stay quiet.</small></span></label>

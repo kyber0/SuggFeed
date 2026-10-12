@@ -41,6 +41,10 @@ import apiRouter from "./routes/api";
 import staffWorkspaceRouter from './routes/staff-workspace';
 import progressRouter from './routes/progress';
 import notificationsRouter from './routes/notifications';
+import engagementRouter from './routes/engagement';
+import progressEvidenceRouter, { cleanupHandler } from './routes/progress-evidence';
+import { communityRouter, communityPages } from './routes/community';
+import digestRouter from './routes/digests';
 import legalRouter from "./routes/legal";
 
 const app = express();
@@ -227,10 +231,17 @@ app.use("/profile", profileRouter);
 app.use('/notifications', notificationsRouter);
 app.use("/admin", adminRouter);
 app.use("/auth", authRouter);
+app.use('/api/community', communityRouter);
+app.use('/', communityPages);
+app.use('/', digestRouter);
 app.use("/api", apiRouter);
+app.use('/api', engagementRouter);
+app.use('/api/progress-evidence', progressEvidenceRouter);
+app.use('/api/staff/progress-upload', progressEvidenceRouter);
 app.use('/api/staff', progressRouter);
 app.use('/staff/workspace', generalApiLimiter, progressRouter);
 app.use('/api/staff', staffWorkspaceRouter);
+app.get('/internal/progress-evidence-cleanup', cleanupHandler);
 app.use("/", legalRouter);
 
 /* ── 404 ─────────────────────────────────────────────────────────────────── */

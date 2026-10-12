@@ -10,7 +10,7 @@
     "test": "npm run build:client && tsc -p tsconfig.tests.json && node -r ts-node/register/transpile-only --test tests/*.test.ts",
     "predev": "npm run build:client",
     "dev:client": "tsc -p tsconfig.client.json --watch",
-    "dev": "nodemon --exec \"node --use-system-ca -r ts-node/register\" src/server.ts",
+    "dev": "node --watch --use-system-ca -r ts-node/register src/server.ts",
     "build:server": "tsc -p tsconfig.json",
     "build:sw": "tsc -p tsconfig.sw.json",
     "build:client": "tsc -p tsconfig.client.json",
@@ -29,16 +29,16 @@
     "express-session": "^1.18.1",
     "helmet": "^8.3.0",
     "morgan": "^1.12.1",
-    "sharp": "0.35.4"
+    "sharp": "0.35.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.1",
     "@types/morgan": "^1.9.10",
     "@types/node": "^22.0.0",
-    "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }

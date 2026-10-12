@@ -1,0 +1,3 @@
+<dialog id="content-report-dialog" class="workspace-dialog" aria-labelledby="content-report-title">
+ <form id="content-report-form" class="care-form"><h2 id="content-report-title">Report content</h2><p>Reports are private and reviewed by school staff. Content is not automatically removed.</p><label>What needs review?<textarea class="workspace-input" name="body" required minlength="10" maxlength="500" placeholder="Describe the concern without adding personal information."></textarea></label><p id="content-report-message" role="status"></p><div class="workspace-actions"><button type="button" id="content-report-cancel" class="workspace-button">Cancel</button><button type="submit" class="workspace-button workspace-button--primary">Send report</button></div></form>
+</dialog>

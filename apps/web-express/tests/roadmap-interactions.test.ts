@@ -33,7 +33,7 @@ test('Tree native button can collapse and reopen repeatedly without duplicate ke
 test('roadmap layout changes are real links with independent page-one URLs', () => {
   const source = fs.readFileSync(path.join(__dirname, '../views/roadmap.eta'), 'utf8');
   assert.match(source, /<a href="<%= urlFor\(\{ view, stage:.*page: '1'/);
-  assert.doesNotMatch(source, /data-roadmap-view="timeline"|role="button" tabindex="0"/);
+  assert.doesNotMatch(source, /role="button" tabindex="0"/);
   assert.match(source, /aria-controls="roadmap-branch-/);
   assert.match(source, /Marked completed; an outcome summary has not been posted/);
 });

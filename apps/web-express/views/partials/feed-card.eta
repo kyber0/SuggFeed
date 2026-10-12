@@ -31,6 +31,7 @@ const comments = Math.max(0, Number(item.comment_count) || 0);
   </div>
   <% if (attachments) { %><div class="post-media-container"><a class="post-attachment-pill" href="<%= href %>" data-sf-click="open-detail" data-idea-id="<%= item.id %>"><span><%= attachments %> attachment<%= attachments === 1 ? '' : 's' %></span><span class="attachment-cta">View files →</span></a></div><% } %>
   <div class="post-footer" data-sf-click="stop">
+    <button type="button" class="care-report" data-report-idea="<%= item.id %>">Report</button>
     <button type="button" class="action-btn action-like" data-id="<%= item.id %>" data-sf-click="vote-feed" aria-pressed="false" title="Support this idea">
       <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="action-count"><%= votes %></span><span class="action-label">Support</span>
     </button>

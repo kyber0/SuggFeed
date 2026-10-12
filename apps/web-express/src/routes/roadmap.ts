@@ -26,7 +26,7 @@ router.get('/', async (req, res, next) => {
     const [result, categories, recentlyCompleted] = await Promise.all([
       loadRoadmapPage(filters),
       loadRoadmapCategories(),
-      filters.view !== 'done' && !filters.search && filters.category === 'all' ? loadRecentlyCompleted() : Promise.resolve([]),
+      filters.view === 'board' && filters.stage === 'all' && !filters.search && filters.category === 'all' ? loadRecentlyCompleted() : Promise.resolve([]),
     ]);
     if (filters.page > result.pageCount) return res.redirect('/roadmap?' + new URLSearchParams({ ...filters, page: String(result.pageCount) }).toString());
     res.render('roadmap', {
