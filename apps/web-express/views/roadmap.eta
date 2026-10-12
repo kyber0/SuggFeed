@@ -342,14 +342,15 @@
 
  <dialog class="workspace-dialog" id="roadmap-dialog" aria-labelledby="roadmap-detail-title">
   <header class="workspace-dialog-header">
-   <span class="workspace-kicker">CAMPUS ROADMAP</span>
+   <div class="roadmap-drawer-heading"><span class="workspace-kicker">CAMPUS ROADMAP</span><span>Idea &amp; progress</span></div>
    <button type="button" class="workspace-icon-button" id="roadmap-close" aria-label="Close idea details">×</button>
   </header>
   <div class="workspace-dialog-body">
-   <span class="workspace-status" id="roadmap-detail-status"></span>
+   <div class="roadmap-detail-tags"><span class="workspace-status" id="roadmap-detail-status"></span><span id="roadmap-detail-category"></span></div>
    <h2 id="roadmap-detail-title"></h2>
    <p id="roadmap-detail-meta" class="workspace-detail-meta"></p>
    <p id="roadmap-detail-error" class="workspace-message" role="status"></p>
+   <button type="button" class="workspace-button" id="roadmap-detail-retry" hidden>Try again</button>
    <div id="roadmap-detail-content">
     <div id="roadmap-detail-blocked-alert" class="roadmap-detail-blocked-alert" hidden>
      <strong>⚠️ Work is currently paused</strong>
@@ -357,7 +358,7 @@
     </div>
     <div id="roadmap-detail-progress-wrap" class="roadmap-detail-progress-bar-wrap" hidden>
      <div class="roadmap-detail-progress-bar-header">
-      <span class="workspace-field-label">Progress estimate</span>
+     <span class="workspace-field-label">School estimate</span>
       <strong id="roadmap-detail-progress-text">0%</strong>
      </div>
      <div class="roadmap-detail-bar" role="progressbar" aria-label="School-estimated work completion" aria-valuemin="0" aria-valuemax="100" id="roadmap-detail-bar-el">
@@ -385,8 +386,11 @@
      <p id="roadmap-history-status" role="status"></p>
      <ol id="roadmap-history-list" class="roadmap-history-list"></ol>
     </section>
+   </div>
+  </div>
+  <footer class="roadmap-drawer-footer" id="roadmap-detail-footer" hidden>
     <div class="roadmap-detail-actions">
-     <a class="workspace-button workspace-button--primary" id="roadmap-detail-link" href="/feed">Open idea &amp; discussion →</a>
+     <a class="workspace-button workspace-button--primary" id="roadmap-detail-link" href="/feed">Join the discussion <span aria-hidden="true">→</span></a>
      <button type="button" class="roadmap-card-vote-btn roadmap-detail-vote-btn" id="roadmap-detail-vote" data-vote-id="" aria-label="Support this idea">
       <span class="roadmap-card-vote-icon" aria-hidden="true">↑</span>
       <span class="roadmap-vote-label">Support</span>
@@ -394,10 +398,9 @@
      </button>
      <button type="button" class="workspace-button" id="roadmap-follow" data-follow-idea="" aria-pressed="false">Follow this idea</button>
     </div>
-    <p class="workspace-detail-meta">Following sends school updates to <a href="/notifications">your notifications</a>. Email and push alerts are not enabled.</p>
-   </div>
-  </div>
+    <p class="workspace-detail-meta">Follow for <a href="/notifications">in-app updates</a>. No email or push alerts.</p>
+  </footer>
  </dialog>
 </main>
 <script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items || []).replace(/</g, '\\u003c') %></script>
-<script src="/js/roadmap.js?v=20261012-timeline"></script>
+<script src="/js/roadmap.js?v=20261012-drawer"></script>

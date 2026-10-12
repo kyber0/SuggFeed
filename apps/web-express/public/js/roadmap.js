@@ -14,6 +14,15 @@
     let detailRequest;
     const voting = new Set();
     const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    let currentIdeaId = '';
+    function drawerState(ready, retry = false) {
+        const footer = document.getElementById('roadmap-detail-footer');
+        const retryButton = document.getElementById('roadmap-detail-retry');
+        if (footer)
+            footer.hidden = !ready;
+        if (retryButton)
+            retryButton.hidden = !retry;
+    }
     const calendar = document.getElementById('work-calendar-scroll');
     const chart = calendar?.querySelector('.work-timeline-chart');
     if (chart)
@@ -104,11 +113,15 @@
         return getVotedSet().has(id);
     }
     function show(item) {
+        drawerState(true);
         document.getElementById('roadmap-detail-content').hidden = false;
         document.getElementById('roadmap-detail-error').textContent = '';
         const badge = document.getElementById('roadmap-detail-status');
         badge.textContent = labels[item.status] || item.status;
         badge.dataset.status = item.status;
+        const category = document.getElementById('roadmap-detail-category');
+        if (category)
+            category.textContent = item.category;
         document.getElementById('roadmap-detail-title').textContent = item.title;
         document.getElementById('roadmap-detail-description').textContent = item.description;
         let report = document.getElementById('roadmap-report-idea');
@@ -132,7 +145,7 @@
             if (typeof item.progress_percent === 'number' && (item.status === 'in_progress' || item.status === 'resolved')) {
                 progressWrap.hidden = false;
                 progressBar.style.width = `${item.progress_percent}%`;
-                progressText.textContent = `${item.progress_percent}% complete — school estimate`;
+                progressText.textContent = `${item.progress_percent}%`;
                 const accessibleBar = document.getElementById('roadmap-detail-bar-el');
                 accessibleBar?.setAttribute('aria-valuenow', String(item.progress_percent));
                 accessibleBar?.setAttribute('aria-valuetext', `${item.progress_percent}% complete, school estimate`);
@@ -154,11 +167,10 @@
         const dateLabel = item.status === 'resolved'
             ? item.resolved_at ? `Completed ${item.resolved_at_estimated ? 'around ' : ''}${formatManilaDate(item.resolved_at)}` : 'Completion date not recorded'
             : `Updated ${formatManilaDate(item.updated_at)}`;
-        document.getElementById('roadmap-detail-meta').textContent = `${item.category} · ${item.votes} votes · ${dateLabel}`;
+        document.getElementById('roadmap-detail-meta').textContent = dateLabel;
         document.getElementById('roadmap-detail-response').textContent = item.response || 'The school has not posted a public response yet.';
         document.getElementById('roadmap-detail-hint').textContent = hints[item.status] || '';
         document.getElementById('roadmap-detail-estimate').textContent = [
-            typeof item.progress_percent === 'number' ? `${item.progress_percent}% complete — school estimate` : '',
             item.is_blocked ? 'Work is currently blocked; see the school update below.' : '',
         ].filter(Boolean).join(' · ');
         document.getElementById('roadmap-detail-link').href = '/idea/' + encodeURIComponent(item.id);
@@ -199,6 +211,7 @@
         const names = { started: 'Work started', update: 'Progress update', milestone: 'Milestone', blocked: 'Work blocked', completed: 'Completed', correction: 'Correction' };
         for (const update of updates) {
             const entry = document.createElement('li');
+            entry.dataset.kind = update.kind;
             const title = document.createElement('h4');
             title.textContent = names[update.kind] || 'School update';
             const meta = document.createElement('p');
@@ -220,6 +233,7 @@
             }
             if (update.next_step) {
                 const nextStep = document.createElement('p');
+                nextStep.className = 'roadmap-history-next';
                 nextStep.textContent = 'Next step: ' + update.next_step;
                 entry.append(nextStep);
             }
@@ -234,7 +248,7 @@
                     link.href = '/api/progress-evidence/' + encodeURIComponent(file.id);
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
-                    link.textContent = `${file.display_name} · ${Math.ceil(file.size_bytes / 1024)} KB`;
+                    link.textContent = `${file.mime_type === 'application/pdf' ? 'PDF' : 'Image'} · ${file.display_name} · ${Math.ceil(file.size_bytes / 1024)} KB ↗`;
                     if (file.alt)
                         link.setAttribute('aria-label', `${file.display_name}: ${file.alt}`);
                     row.append(link);
@@ -249,6 +263,8 @@
             : 'The school has not posted a progress update yet.';
     }
     async function open(id, push = true) {
+        currentIdeaId = id;
+        drawerState(false);
         detailRequest?.abort();
         detailRequest = undefined;
         if (!dialog.open)
@@ -269,6 +285,9 @@
             document.getElementById('roadmap-detail-content').hidden = true;
             document.getElementById('roadmap-detail-status').textContent = '';
             document.getElementById('roadmap-detail-meta').textContent = '';
+            const category = document.getElementById('roadmap-detail-category');
+            if (category)
+                category.textContent = '';
             document.getElementById('roadmap-detail-error').textContent = '';
         }
         document.getElementById('roadmap-history-list').replaceChildren();
@@ -285,7 +304,7 @@
             const response = await fetch('/roadmap/idea/' + encodeURIComponent(id), { signal: controller.signal });
             const body = await response.json();
             if (!response.ok || !body.success) {
-                throw new Error(response.status === 404 ? 'This idea is no longer on the public roadmap.' : 'This idea could not load. Close the panel and reopen it to retry.');
+                throw new Error(response.status === 404 ? 'This idea is no longer on the public roadmap.' : 'This idea could not load. Please try again.');
             }
             if (dialog.open && detailRequest === controller) {
                 show(body.item);
@@ -308,7 +327,8 @@
             if (dialog.open && detailRequest === controller) {
                 document.getElementById('roadmap-detail-title').textContent = 'Idea unavailable';
                 document.getElementById('roadmap-detail-content').hidden = true;
-                document.getElementById('roadmap-detail-error').textContent = error instanceof Error && error.name !== 'AbortError' ? error.message : 'Loading timed out. Close the panel and reopen it to retry.';
+                drawerState(false, true);
+                document.getElementById('roadmap-detail-error').textContent = error instanceof Error && error.name !== 'AbortError' ? error.message : 'Loading timed out. Please try again.';
             }
         }
         finally {
@@ -323,6 +343,7 @@
         }
     });
     document.getElementById('roadmap-close').addEventListener('click', () => dialog.close());
+    document.getElementById('roadmap-detail-retry')?.addEventListener('click', () => { void open(currentIdeaId, false); });
     dialog.addEventListener('click', event => {
         if (event.target === dialog && event.clientX < dialog.getBoundingClientRect().left)
             dialog.close();

@@ -402,6 +402,55 @@ input.feed-search {
 .action-btn.action-share:hover { color: #267150; background: #edf7f1; }
 .action-count { font-weight: 700; font-variant-numeric: tabular-nums; }
 .action-label { font-size: 12px; }
+
+/* ── Card 3-dot kebab menu ────────────────────────────────────────────── */
+/* Always visible: Report lives here on all viewports. Save & Share shown here on mobile only. */
+.post-menu-wrap { display: inline-flex; position: relative; flex-shrink: 0; margin-left: auto; }
+/* Report is always in the 3-dot menu; never shown in the card footer */
+.post-footer > .care-report { display: none !important; }
+.post-menu-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; padding: 0;
+  border: 0; border-radius: 8px; background: transparent;
+  color: var(--feed-muted); cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+.post-menu-btn:hover { background: var(--feed-tint); color: var(--feed-ink); }
+.post-menu-btn:focus-visible { outline: 2px solid var(--feed-focus); outline-offset: 1px; }
+.post-menu-dropdown {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 120;
+  min-width: 155px; padding: 5px;
+  border: 1px solid var(--feed-border); border-radius: 10px;
+  background: var(--surface-card);
+  box-shadow: 0 8px 24px rgba(16,42,67,.13), 0 2px 6px rgba(16,42,67,.06);
+  animation: post-menu-in 140ms ease both;
+}
+@keyframes post-menu-in {
+  from { opacity: 0; transform: translateY(-5px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.post-menu-item {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; padding: 9px 10px; border: 0; border-radius: 7px;
+  background: transparent; color: var(--feed-ink);
+  font: inherit; font-size: 13px; font-weight: 500;
+  text-align: left; cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.post-menu-item:hover { background: var(--feed-tint); }
+.post-menu-item:focus-visible { outline: 2px solid var(--feed-focus); outline-offset: -1px; }
+.post-menu-item svg { flex-shrink: 0; color: var(--feed-muted); }
+.post-menu-item:hover svg { color: var(--feed-ink); }
+.post-menu-item--danger { color: #b34248; }
+.post-menu-item--danger svg { color: #b34248; }
+.post-menu-item--danger:hover { background: #fff0f0; color: #8c2c30; }
+.post-menu-item--danger:hover svg { color: #8c2c30; }
+.post-menu-divider { height: 1px; margin: 4px 5px; background: var(--feed-border); }
+/* Bookmark active state inside dropdown */
+.post-menu-item.action-bookmark.active { color: #8a6218; }
+.post-menu-item.action-bookmark.active svg { color: #8a6218; fill: currentColor; }
+/* ─────────────────────────────────────────────────────────────────────── */
+
 .feed-empty-state {
   display: flex; align-items: center; flex-direction: column; gap: 10px;
   padding: 52px 24px; text-align: center; border: 1px solid var(--feed-border);
@@ -513,6 +562,13 @@ input.feed-search {
 [data-theme="dark"] .action-btn.action-bookmark:hover,
 [data-theme="dark"] .action-btn.action-bookmark.active { background: #443e2e; color: #e9ca8d; }
 [data-theme="dark"] .action-btn.action-share:hover { background: #234339; color: #a3dabc; }
+[data-theme="dark"] .post-menu-dropdown { box-shadow: 0 8px 24px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.2); }
+[data-theme="dark"] .post-menu-item--danger { color: #f2938f; }
+[data-theme="dark"] .post-menu-item--danger svg { color: #f2938f; }
+[data-theme="dark"] .post-menu-item--danger:hover { background: #4a303e; color: #ffb5c5; }
+[data-theme="dark"] .post-menu-item--danger:hover svg { color: #ffb5c5; }
+[data-theme="dark"] .post-menu-item.action-bookmark.active { color: #e9ca8d; }
+[data-theme="dark"] .post-menu-item.action-bookmark.active svg { color: #e9ca8d; }
 
 @keyframes feed-card-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes feed-like-pop { 0%,100% { transform: scale(1); } 45% { transform: scale(1.3); } }
@@ -526,6 +582,11 @@ input.feed-search {
 @media (max-width: 899px) {
   .community-page-wrapper { grid-template-columns: minmax(0, 740px); max-width: 790px; padding: 25px 24px 100px; }
   .community-left-nav { display: none; }
+}
+/* Mobile-only: hide Save/Share from footer (they move to the 3-dot menu) */
+@media (max-width: 768px) {
+  .post-footer .action-bookmark,
+  .post-footer .action-share { display: none !important; }
 }
 @media (max-width: 600px) {
   .community-page-wrapper { padding: 21px 14px 95px; }

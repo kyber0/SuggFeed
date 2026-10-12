@@ -259,6 +259,26 @@
             ${validDate ? `<span class="post-dot" aria-hidden="true">·</span><time class="post-timestamp" datetime="${created.toISOString()}" title="${sfEscapeHtml(created.toLocaleString('en-PH'))}">${relativeTime}</time>` : ''}
           </div></div>
           <span class="post-badge-status status-${status}"><span class="badge-dot" aria-hidden="true"></span>${statuses[status]}</span>
+          <div class="post-menu-wrap" data-sf-click="stop">
+            <button type="button" class="post-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="More options" title="More options">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+            </button>
+            <div class="post-menu-dropdown" hidden>
+              <button type="button" class="post-menu-item action-bookmark${saved ? ' active' : ''}" data-id="${id}" data-sf-click="bookmark-feed" aria-pressed="${saved}" aria-label="${saved ? 'Remove saved idea from this device' : 'Save idea on this device'}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                <span class="action-label">${saved ? 'Saved' : 'Save'}</span>
+              </button>
+              <button type="button" class="post-menu-item action-share" data-sf-click="share-feed" data-id="${id}" aria-label="Share idea">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98m0-10.98-6.83 3.98"/></svg>
+                <span>Share</span>
+              </button>
+              <div class="post-menu-divider" role="separator"></div>
+              <button type="button" class="post-menu-item post-menu-item--danger care-report" data-report-idea="${id}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Report</span>
+              </button>
+            </div>
+          </div>
         </div>
         <div class="post-content">
           <span class="post-badge-category cat-${categoryClass}"><span class="badge-dot" aria-hidden="true"></span>${sfEscapeHtml(category)}</span>
@@ -285,6 +305,55 @@
         </div>
       </article>`;
   }
+
+  // ── Post card 3-dot dropdown menu ────────────────────────────────────
+  function sfCloseAllPostMenus(except?: Element) {
+    document.querySelectorAll<HTMLElement>('.post-menu-wrap').forEach(wrap => {
+      if (wrap === except) return;
+      const btn = wrap.querySelector<HTMLButtonElement>('.post-menu-btn');
+      const dropdown = wrap.querySelector<HTMLElement>('.post-menu-dropdown');
+      if (dropdown && !dropdown.hidden) { dropdown.hidden = true; btn?.setAttribute('aria-expanded', 'false'); }
+    });
+  }
+
+  document.addEventListener('click', event => {
+    const btn = (event.target as Element).closest<HTMLButtonElement>('.post-menu-btn');
+    if (btn) {
+      const wrap = btn.closest('.post-menu-wrap')!;
+      const dropdown = wrap.querySelector<HTMLElement>('.post-menu-dropdown')!;
+      const opening = dropdown.hidden;
+      sfCloseAllPostMenus(opening ? wrap : undefined);
+      dropdown.hidden = !opening;
+      btn.setAttribute('aria-expanded', String(opening));
+      if (opening) {
+        const firstItem = dropdown.querySelector<HTMLElement>('.post-menu-item');
+        firstItem?.focus();
+      }
+      return;
+    }
+    // Close if clicked outside any open menu
+    if (!(event.target as Element).closest('.post-menu-wrap')) sfCloseAllPostMenus();
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') sfCloseAllPostMenus();
+  });
+
+  // Close menu when any item inside is activated
+  document.addEventListener('click', event => {
+    const item = (event.target as Element).closest<HTMLElement>('.post-menu-item');
+    if (item) {
+      const wrap = item.closest('.post-menu-wrap');
+      if (wrap) {
+        const dropdown = wrap.querySelector<HTMLElement>('.post-menu-dropdown');
+        const menuBtn = wrap.querySelector<HTMLButtonElement>('.post-menu-btn');
+        if (dropdown) dropdown.hidden = true;
+        menuBtn?.setAttribute('aria-expanded', 'false');
+      }
+    }
+  }, true /* capture so it runs before community.ts click */
+  );
+  // ─────────────────────────────────────────────────────────────────────
 
   function updateResultSummary(total?: number) {
     if (!_resultSummary || !_feedContainer) return;
