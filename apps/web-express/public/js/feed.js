@@ -12,8 +12,8 @@
     function updateFilterStates() {
         document.querySelectorAll('[data-feed-sort]').forEach(button => {
             const selected = button.dataset.feedSort === _currentSort ||
-                (['all', 'latest'].includes(button.dataset.feedSort) && ['all', 'latest'].includes(_currentSort)) ||
-                (['top', 'popular'].includes(button.dataset.feedSort) && ['top', 'popular'].includes(_currentSort));
+                (['all', 'latest'].includes(button.dataset.feedSort || '') && ['all', 'latest'].includes(_currentSort)) ||
+                (['top', 'popular'].includes(button.dataset.feedSort || '') && ['top', 'popular'].includes(_currentSort));
             button.classList.toggle('active', selected);
             button.setAttribute('aria-pressed', String(selected));
         });
@@ -80,13 +80,13 @@
     searchInput?.addEventListener('input', () => sfFeedSearch(searchInput.value));
     document.addEventListener('keydown', event => {
         const active = document.activeElement;
-        const editing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName) || active?.isContentEditable;
+        const editing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName || '') || Boolean(active?.isContentEditable);
         if (event.key === '/' && !editing && !event.ctrlKey && !event.metaKey && !event.altKey) {
             event.preventDefault();
             searchInput?.focus();
             searchInput?.select();
         }
-        else if (event.key === 'Escape' && active === searchInput) {
+        else if (event.key === 'Escape' && searchInput && active === searchInput) {
             if (searchInput.value !== _appliedSearch) {
                 searchInput.value = _appliedSearch;
                 sfFeedSearch(_appliedSearch);
@@ -149,18 +149,18 @@
                     setSavedState(other, willSave);
             });
             if (window.sfToast)
-                sfToast(willSave ? 'Idea saved on this device.' : 'Idea removed from saved ideas on this device.', willSave ? 'success' : 'info');
+                window.sfToast(willSave ? 'Idea saved on this device.' : 'Idea removed from saved ideas on this device.', willSave ? 'success' : 'info');
         }
         catch {
             if (window.sfToast)
-                sfToast('Your browser could not save this idea. Check its storage settings and try again.', 'error');
+                window.sfToast('Your browser could not save this idea. Check its storage settings and try again.', 'error');
         }
     }
     function sfInitLocalStates() {
         const votes = sfGetVotedSet();
         const saved = sfGetSavedSet();
-        document.querySelectorAll('.action-like[data-id]').forEach(button => setSupportedState(button, votes.has(button.dataset.id)));
-        document.querySelectorAll('.action-bookmark[data-id]').forEach(button => setSavedState(button, saved.has(button.dataset.id)));
+        document.querySelectorAll('.action-like[data-id]').forEach(button => setSupportedState(button, votes.has(button.dataset.id || '')));
+        document.querySelectorAll('.action-bookmark[data-id]').forEach(button => setSavedState(button, saved.has(button.dataset.id || '')));
     }
     const pendingVotes = new Set();
     async function sfVoteFeed(id, button) {
@@ -198,7 +198,7 @@
                     count.textContent = String(Math.max(0, Number(data.vote_count)));
             });
             if (window.sfToast)
-                sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
+                window.sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
         }
         catch (error) {
             previous.forEach(saved => { setSupportedState(saved.other, saved.supported); const count = saved.other.querySelector('.action-count'); if (count)
@@ -209,7 +209,7 @@
                     ? 'The request timed out. Try again to confirm your support.'
                     : 'Could not confirm your support. Please try again.';
             if (window.sfToast)
-                sfToast(message, 'error');
+                window.sfToast(message, 'error');
         }
         finally {
             window.clearTimeout(timeout);
@@ -232,12 +232,12 @@
                     window.setTimeout(() => { label.textContent = 'Share'; }, 2000);
                 }
                 if (window.sfToast)
-                    sfToast('Idea link copied.', 'success');
+                    window.sfToast('Idea link copied.', 'success');
             }
         }
         catch (error) {
             if (error?.name !== 'AbortError' && window.sfToast)
-                sfToast('Could not share this idea. Open it to copy the page address.', 'error');
+                window.sfToast('Could not share this idea. Open it to copy the page address.', 'error');
         }
     }
     let _currentPage = Math.max(1, Number(config.dataset.page) || 1);
@@ -249,7 +249,7 @@
     const _feedLoadStatus = document.getElementById('feed-load-status');
     const _resultSummary = document.getElementById('feed-result-summary');
     function sfEscapeHtml(value) {
-        return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
+        return String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character] || character));
     }
     function sfCreatePostCardHtml(item) {
         const category = String(item.category || item.categories?.name || 'Other');
@@ -280,7 +280,7 @@
             ${validDate ? `<span class="post-dot" aria-hidden="true">·</span><time class="post-timestamp" datetime="${created.toISOString()}" title="${sfEscapeHtml(created.toLocaleString('en-PH'))}">${relativeTime}</time>` : ''}
           </div></div>
           <span class="post-badge-status status-${status}"><span class="badge-dot" aria-hidden="true"></span>${statuses[status]}</span>
-          <div class="post-menu-wrap" data-sf-click="stop">
+          <div class="post-menu-wrap">
             <button type="button" class="post-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="More options" title="More options">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
             </button>
@@ -340,31 +340,29 @@
         });
     }
     document.addEventListener('click', event => {
-        const btn = event.target.closest('.post-menu-btn');
+        const target = event.target;
+        if (!target)
+            return;
+        const btn = target.closest('.post-menu-btn');
         if (btn) {
             const wrap = btn.closest('.post-menu-wrap');
-            const dropdown = wrap.querySelector('.post-menu-dropdown');
-            const opening = dropdown.hidden;
-            sfCloseAllPostMenus(opening ? wrap : undefined);
-            dropdown.hidden = !opening;
-            btn.setAttribute('aria-expanded', String(opening));
-            if (opening) {
-                const firstItem = dropdown.querySelector('.post-menu-item');
-                firstItem?.focus();
+            if (wrap) {
+                const dropdown = wrap.querySelector('.post-menu-dropdown');
+                if (dropdown) {
+                    const opening = dropdown.hidden;
+                    sfCloseAllPostMenus(opening ? wrap : undefined);
+                    dropdown.hidden = !opening;
+                    btn.setAttribute('aria-expanded', String(opening));
+                    if (opening) {
+                        const items = Array.from(dropdown.querySelectorAll('.post-menu-item'));
+                        const firstVisible = items.find(el => el.offsetWidth > 0 || el.offsetHeight > 0 || window.getComputedStyle(el).display !== 'none');
+                        (firstVisible || items[0])?.focus();
+                    }
+                }
             }
             return;
         }
-        // Close if clicked outside any open menu
-        if (!event.target.closest('.post-menu-wrap'))
-            sfCloseAllPostMenus();
-    });
-    document.addEventListener('keydown', event => {
-        if (event.key === 'Escape')
-            sfCloseAllPostMenus();
-    });
-    // Close menu when any item inside is activated
-    document.addEventListener('click', event => {
-        const item = event.target.closest('.post-menu-item');
+        const item = target.closest('.post-menu-item');
         if (item) {
             const wrap = item.closest('.post-menu-wrap');
             if (wrap) {
@@ -374,8 +372,16 @@
                     dropdown.hidden = true;
                 menuBtn?.setAttribute('aria-expanded', 'false');
             }
+            return;
         }
-    }, true /* capture so it runs before community.ts click */);
+        // Close if clicked outside any open menu
+        if (!target.closest('.post-menu-wrap'))
+            sfCloseAllPostMenus();
+    }, true /* capture phase so nothing can intercept menu toggle or outside click */);
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape')
+            sfCloseAllPostMenus();
+    });
     // ─────────────────────────────────────────────────────────────────────
     function updateResultSummary(total) {
         if (!_resultSummary || !_feedContainer)

@@ -1,7 +1,7 @@
 (() => {
  const boardData=document.getElementById('staff-board-data');
  const queueData=document.getElementById('staff-queue-data');
- if(!boardData && !queueData) return;
+ if(!boardData && !queueData && !document.querySelector('.community-care-page')) return;
  const message=document.getElementById('staff-tools-message') || document.getElementById('staff-page-message');
  const tell=(text:string)=>{if(message) message.textContent=text;};
  let busy=false, dragging:string|null=null;
@@ -109,8 +109,8 @@
     if(input.checked)selected.set(id,{...item});else selected.delete(id);selectionState();
    } else if(input.matches('[data-stage-select]'))void move(input.dataset.stageSelect!,input.value);
   });
-  board.addEventListener('dragstart',e=>{const card=(e.target as HTMLElement).closest<HTMLElement>('[data-board-id]');if(!card)return;if(busy || loading || (e.target as HTMLElement).closest('input,select,a,button,summary')){e.preventDefault();return;}dragging=card.dataset.boardId!;e.dataTransfer?.setData('text/plain',dragging);});
-  board.addEventListener('dragend',()=>{dragging=null;board.querySelectorAll('.is-drop-target').forEach(el=>el.classList.remove('is-drop-target'));});
+  board.addEventListener('dragstart',e=>{const card=(e.target as HTMLElement).closest<HTMLElement>('[data-board-id]');if(!card)return;if(busy || loading || (e.target as HTMLElement).closest('input,select,a,button,summary')){e.preventDefault();return;}card.dataset.dragging='true';dragging=card.dataset.boardId!;e.dataTransfer?.setData('text/plain',dragging);});
+  board.addEventListener('dragend',()=>{board.querySelectorAll<HTMLElement>('[data-dragging]').forEach(card=>{delete card.dataset.dragging;card.dataset.draggedAt=String(Date.now());});dragging=null;board.querySelectorAll('.is-drop-target').forEach(el=>el.classList.remove('is-drop-target'));});
   board.addEventListener('dragover',e=>{const lane=(e.target as HTMLElement).closest<HTMLElement>('[data-drop-stage]');if(lane && dragging && !busy && !loading){e.preventDefault();lane.classList.add('is-drop-target');}});
   board.addEventListener('dragleave',e=>{const lane=(e.target as HTMLElement).closest<HTMLElement>('[data-drop-stage]');if(lane && !lane.contains(e.relatedTarget as Node))lane.classList.remove('is-drop-target');});
   board.addEventListener('drop',e=>{const lane=(e.target as HTMLElement).closest<HTMLElement>('[data-drop-stage]');if(!lane)return;e.preventDefault();lane.classList.remove('is-drop-target');if(dragging)void move(dragging,lane.dataset.dropStage!);dragging=null;});
@@ -128,6 +128,7 @@
   document.querySelector('[data-board-reset]')?.addEventListener('click',e=>{if(busy || loading || (selected.size && !window.confirm('Reset filters and clear your selection?')))e.preventDefault();});
   window.addEventListener('popstate',()=>{if(busy || loading){window.history.pushState(null,'',urlFor(null).href);tell('Wait for the current request before changing pages.');return;}void navigate(null,window.location.href,false);});
   selectionState();
+  window.sfStaffBoardRefresh=()=>navigate(null,urlFor(null).href,false);
  }
  document.getElementById('staff-response-template')?.addEventListener('change',e=>{
   const select=e.target as HTMLSelectElement, note=document.getElementById('review-note') as HTMLTextAreaElement;

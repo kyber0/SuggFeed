@@ -7,6 +7,27 @@ import { queueFilters, validDate, loadStaffQueue } from '../src/lib/staff-worksp
 import { sameOriginOnly } from '../src/lib/security';
 
 const id = '00000000-0000-4000-8000-000000000001';
+test('exact submission detail requires staff, validates IDs and excludes submitter and tracking fields', async () => {
+  const original=supabaseService.from;
+  let role:string|null=null, missing=false, failed=false;const selections:string[]=[],ids:string[]=[];
+  supabaseService.from=((table)=>{assert.equal(table,'staff_submission_queue');return {
+    select(fields:string){selections.push(fields);return this;},eq(key:string,value:string){assert.equal(key,'id');ids.push(value);return this;},
+    async maybeSingle(){return {data:missing?null:{id,title:'Duplicate title',description:'Details',status:'pending',categories:{name:'Facilities'},created_at:'2026-10-01',updated_at:'2026-10-12T00:00:00Z',staff_note:null,assignee_id:null,priority:null,target_date:null,user_id:'private',anonymous_tracking_hash:'secret',email:'private@example.test'},error:failed?{message:'Database secret'}:null};}
+  };}) as any;
+  const app=express();app.use((req,_res,next)=>{req.session={user:role?{id,role}:undefined} as any;next();});app.use('/api/staff',staffRouter);
+  const server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));
+  const base='http://127.0.0.1:'+(server.address() as {port:number}).port+'/api/staff/submissions/';
+  try{
+    assert.equal((await fetch(base+id)).status,401);role='student';assert.equal((await fetch(base+id)).status,403);
+    role='moderator';assert.equal((await fetch(base+'invalid')).status,400);assert.equal(selections.length,0);
+    const response=await fetch(base+id),body=await response.json() as any;assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');
+    assert.deepEqual(Object.keys(body.item).sort(),['id','title','description','status','category','created_at','updated_at','staff_note','assignee_id','priority','target_date'].sort());
+    assert.equal(body.item.category,'Facilities');assert.equal(body.item.staff_note,'');assert.equal(ids[0],id);
+    assert.doesNotMatch(selections[0],/\*|user_id|tracking|email/);
+    missing=true;assert.equal((await fetch(base+id)).status,404);missing=false;failed=true;
+    const unavailable=await fetch(base+id);assert.equal(unavailable.status,503);assert.doesNotMatch(await unavailable.text(),/Database secret/);
+  }finally{supabaseService.from=original;server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
+});
 test('staff filters normalize untrusted values and dates reject impossible calendar dates', () => {
   assert.deepEqual(queueFilters({status:'private', assignment:id, priority:'super', overdue:true, search:'  library  '}), {status:'pending', assignment:'all', priority:'all', overdue:'false', search:'library'});
   assert.equal(validDate('2026-02-30'), false);

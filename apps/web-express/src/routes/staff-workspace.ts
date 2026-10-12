@@ -15,6 +15,16 @@ router.param('id', (_req, res, next, id) => {
   if (!UUID.test(id)) return res.status(400).json({ success: false, error: 'Invalid ID.' });
   next();
 });
+router.get('/submissions/:id', run(async (req, res) => {
+  const {data,error}=await supabaseService.from('staff_submission_queue')
+    .select('id,title,description,status,categories,created_at,updated_at,staff_note,assignee_id,priority,target_date')
+    .eq('id',req.params.id).maybeSingle();
+  if(error) return res.status(503).json({success:false,error:'Submission details could not load. Please try again.'});
+  if(!data) return res.status(404).json({success:false,error:'This submission is no longer available.'});
+  return res.json({success:true,item:{id:data.id,title:data.title,description:data.description,status:data.status,
+    category:(data.categories as {name?:string} | null)?.name || 'Other',created_at:data.created_at,updated_at:data.updated_at,
+    staff_note:data.staff_note || '',assignee_id:data.assignee_id || '',priority:data.priority || 'normal',target_date:data.target_date || ''}});
+}));
 router.get('/analytics', run(async (_req, res) => {
   const data = await loadAnalyticsData();
   return res.json({ success: true, data });

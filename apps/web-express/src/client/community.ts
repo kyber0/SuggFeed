@@ -84,7 +84,8 @@
       for(const report of data.reports) {const p=document.createElement('p');p.textContent=`${report.resolution || 'Awaiting staff review'} · ${report.resolution_reason || report.reason}`;history.append(p);}
     }).catch(()=>{history.textContent='Report decisions could not load. Refresh to retry.';});
   }
-  document.querySelectorAll<HTMLFormElement>('[data-care-action]').forEach(form=>form.addEventListener('submit',async e=>{
+  document.addEventListener('submit',async e=>{
+    const form=(e.target as Element).closest<HTMLFormElement>('[data-care-action]');if(!form)return;
     e.preventDefault();const button=form.querySelector<HTMLButtonElement>('[type=submit],button')!;button.disabled=true;
     const body:any=Object.fromEntries(new FormData(form)); const action=form.dataset.careAction;
     try {
@@ -99,7 +100,7 @@
       if(action==='close' || action==='resolve') form.closest('article')?.remove();
     }catch(error){notify(fail(error));}
     finally{button.disabled=false;}
-  }));
+  });
   // Similar public ideas: debounce, abort stale lookups, retain the draft.
   const titleInput=document.getElementById('sip-title') as HTMLInputElement;
   const similar=document.getElementById('similar-public-ideas');

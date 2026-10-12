@@ -12,6 +12,7 @@ interface Window {
   sfSignOut: () => Promise<void>;
   openAuthModal: (tab?: string) => void;
   closeAuthModal: () => void;
+  sfToast?: (message: string, type?: string, title?: string) => void;
 }
 declare function sfToast(message: string, type?: string, title?: string): void;
 declare function sfEscapeAttribute(value: string): string;

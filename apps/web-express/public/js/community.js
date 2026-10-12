@@ -160,7 +160,10 @@
                 }
             }).catch(() => { history.textContent = 'Report decisions could not load. Refresh to retry.'; });
     }
-    document.querySelectorAll('[data-care-action]').forEach(form => form.addEventListener('submit', async (e) => {
+    document.addEventListener('submit', async (e) => {
+        const form = e.target.closest('[data-care-action]');
+        if (!form)
+            return;
         e.preventDefault();
         const button = form.querySelector('[type=submit],button');
         button.disabled = true;
@@ -190,7 +193,7 @@
         finally {
             button.disabled = false;
         }
-    }));
+    });
     // Similar public ideas: debounce, abort stale lookups, retain the draft.
     const titleInput = document.getElementById('sip-title');
     const similar = document.getElementById('similar-public-ideas');

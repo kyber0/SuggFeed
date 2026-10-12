@@ -23,7 +23,7 @@ const comments = Math.max(0, Number(item.comment_count) || 0);
       <% if (validDate) { %><span class="post-dot" aria-hidden="true">·</span><time class="post-timestamp" datetime="<%= date.toISOString() %>" title="<%= date.toLocaleString('en-PH') %>"><%= time %></time><% } %>
     </div></div>
     <span class="post-badge-status status-<%= status %>"><span class="badge-dot" aria-hidden="true"></span><%= statuses[status] %></span>
-    <div class="post-menu-wrap" data-sf-click="stop">
+    <div class="post-menu-wrap">
       <button type="button" class="post-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="More options" title="More options">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
       </button>

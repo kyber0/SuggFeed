@@ -2,7 +2,7 @@
 (() => {
     const boardData = document.getElementById('staff-board-data');
     const queueData = document.getElementById('staff-queue-data');
-    if (!boardData && !queueData)
+    if (!boardData && !queueData && !document.querySelector('.community-care-page'))
         return;
     const message = document.getElementById('staff-tools-message') || document.getElementById('staff-page-message');
     const tell = (text) => { if (message)
@@ -217,8 +217,8 @@
             return; if (busy || loading || e.target.closest('input,select,a,button,summary')) {
             e.preventDefault();
             return;
-        } dragging = card.dataset.boardId; e.dataTransfer?.setData('text/plain', dragging); });
-        board.addEventListener('dragend', () => { dragging = null; board.querySelectorAll('.is-drop-target').forEach(el => el.classList.remove('is-drop-target')); });
+        } card.dataset.dragging = 'true'; dragging = card.dataset.boardId; e.dataTransfer?.setData('text/plain', dragging); });
+        board.addEventListener('dragend', () => { board.querySelectorAll('[data-dragging]').forEach(card => { delete card.dataset.dragging; card.dataset.draggedAt = String(Date.now()); }); dragging = null; board.querySelectorAll('.is-drop-target').forEach(el => el.classList.remove('is-drop-target')); });
         board.addEventListener('dragover', e => { const lane = e.target.closest('[data-drop-stage]'); if (lane && dragging && !busy && !loading) {
             e.preventDefault();
             lane.classList.add('is-drop-target');
@@ -270,6 +270,7 @@
             return;
         } void navigate(null, window.location.href, false); });
         selectionState();
+        window.sfStaffBoardRefresh = () => navigate(null, urlFor(null).href, false);
     }
     document.getElementById('staff-response-template')?.addEventListener('change', e => {
         const select = e.target, note = document.getElementById('review-note');

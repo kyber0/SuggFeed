@@ -142,6 +142,7 @@ export function createWorkspacePreview() {
   res.send(eta.render('admin-staff',{currentPath:'/admin/staff',user:{id:staffId,display_name:'Alex Reyes',role:'admin'},counts:{...counts,all:items.length},staffMembers,students,activeSection:'staff'}));
  });
  app.get('/api/staff/members',(_req,res)=>res.json({success:true,members:[{id:staffId,display_name:'Alex Reyes',email:'alex@school.edu.ph',role:'admin'}]}));
+ app.get('/api/staff/submissions/:id',(req,res)=>{const item=items.find(i=>i.id===req.params.id);res.status(item?200:404).json(item?{success:true,item:{id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,created_at:item.created_at,updated_at:item.updated_at,staff_note:item.staff_note || '',assignee_id:item.assignee_id || '',priority:item.priority || 'normal',target_date:item.target_date || ''}}:{success:false});});
  app.get('/api/staff/students',(_req,res)=>res.json({success:true,students:[{id:'00000000-0000-4000-8000-000000000030',display_name:'Juan Dela Cruz',email:'juan@school.edu.ph'}]}));
  app.patch('/api/staff/members/:id/role',(_req,res)=>res.json({success:true}));
  app.post('/api/staff/invite',(req,res)=>res.json({success:true,isExisting:false,inviteUrl:'/staff-login?invite='+encodeURIComponent(req.body.email)}));

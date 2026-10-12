@@ -588,6 +588,14 @@ input.feed-search {
   .post-footer .action-bookmark,
   .post-footer .action-share { display: none !important; }
 }
+/* Desktop-only: on screens >768px, Save and Share live in the footer; only Report is in the 3-dot menu */
+@media (min-width: 769px) {
+  .post-menu-dropdown .action-bookmark,
+  .post-menu-dropdown .action-share,
+  .post-menu-dropdown .post-menu-divider {
+    display: none !important;
+  }
+}
 @media (max-width: 600px) {
   .community-page-wrapper { padding: 21px 14px 95px; }
   .community-feed-header { gap: 14px; padding-bottom: 16px; }

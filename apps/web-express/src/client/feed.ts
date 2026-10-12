@@ -11,8 +11,8 @@
   function updateFilterStates() {
     document.querySelectorAll<HTMLElement>('[data-feed-sort]').forEach(button => {
       const selected = button.dataset.feedSort === _currentSort ||
-        (['all', 'latest'].includes(button.dataset.feedSort) && ['all', 'latest'].includes(_currentSort)) ||
-        (['top', 'popular'].includes(button.dataset.feedSort) && ['top', 'popular'].includes(_currentSort));
+        (['all', 'latest'].includes(button.dataset.feedSort || '') && ['all', 'latest'].includes(_currentSort)) ||
+        (['top', 'popular'].includes(button.dataset.feedSort || '') && ['top', 'popular'].includes(_currentSort));
       button.classList.toggle('active', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
@@ -82,12 +82,12 @@
 
   document.addEventListener('keydown', event => {
     const active = document.activeElement as HTMLElement | null;
-    const editing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName) || active?.isContentEditable;
+    const editing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName || '') || Boolean(active?.isContentEditable);
     if (event.key === '/' && !editing && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault();
       searchInput?.focus();
       searchInput?.select();
-    } else if (event.key === 'Escape' && active === searchInput) {
+    } else if (event.key === 'Escape' && searchInput && active === searchInput) {
       if (searchInput.value !== _appliedSearch) {
         searchInput.value = _appliedSearch;
         sfFeedSearch(_appliedSearch);
@@ -140,17 +140,17 @@
       document.querySelectorAll<HTMLElement>('.action-bookmark[data-id]').forEach(other => {
         if (other.dataset.id === id) setSavedState(other, willSave);
       });
-      if (window.sfToast) sfToast(willSave ? 'Idea saved on this device.' : 'Idea removed from saved ideas on this device.', willSave ? 'success' : 'info');
+      if (window.sfToast) window.sfToast(willSave ? 'Idea saved on this device.' : 'Idea removed from saved ideas on this device.', willSave ? 'success' : 'info');
     } catch {
-      if (window.sfToast) sfToast('Your browser could not save this idea. Check its storage settings and try again.', 'error');
+      if (window.sfToast) window.sfToast('Your browser could not save this idea. Check its storage settings and try again.', 'error');
     }
   }
 
   function sfInitLocalStates() {
     const votes = sfGetVotedSet();
     const saved = sfGetSavedSet();
-    document.querySelectorAll<HTMLElement>('.action-like[data-id]').forEach(button => setSupportedState(button, votes.has(button.dataset.id)));
-    document.querySelectorAll<HTMLElement>('.action-bookmark[data-id]').forEach(button => setSavedState(button, saved.has(button.dataset.id)));
+    document.querySelectorAll<HTMLElement>('.action-like[data-id]').forEach(button => setSupportedState(button, votes.has(button.dataset.id || '')));
+    document.querySelectorAll<HTMLElement>('.action-bookmark[data-id]').forEach(button => setSavedState(button, saved.has(button.dataset.id || '')));
   }
 
   const pendingVotes = new Set<string>();
@@ -181,15 +181,15 @@
         const count = other.querySelector<HTMLElement>('.action-count');
         if (count) count.textContent = String(Math.max(0, Number(data.vote_count)));
       });
-      if (window.sfToast) sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
+      if (window.sfToast) window.sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
     } catch (error) {
       previous.forEach(saved=>{setSupportedState(saved.other,saved.supported);const count=saved.other.querySelector<HTMLElement>('.action-count');if(count)count.textContent=saved.count;});
-      const message = error?.message === 'rate-limit'
+      const message = (error as any)?.message === 'rate-limit'
         ? 'Too many requests. Wait a moment, then try supporting this idea again.'
         : controller.signal.aborted
           ? 'The request timed out. Try again to confirm your support.'
           : 'Could not confirm your support. Please try again.';
-      if (window.sfToast) sfToast(message, 'error');
+      if (window.sfToast) window.sfToast(message, 'error');
     } finally {
       window.clearTimeout(timeout);
       pendingVotes.delete(id);
@@ -210,10 +210,10 @@
           label.textContent = 'Copied!';
           window.setTimeout(() => { label.textContent = 'Share'; }, 2000);
         }
-        if (window.sfToast) sfToast('Idea link copied.', 'success');
+        if (window.sfToast) window.sfToast('Idea link copied.', 'success');
       }
     } catch (error) {
-      if (error?.name !== 'AbortError' && window.sfToast) sfToast('Could not share this idea. Open it to copy the page address.', 'error');
+      if ((error as any)?.name !== 'AbortError' && window.sfToast) window.sfToast('Could not share this idea. Open it to copy the page address.', 'error');
     }
   }
 
@@ -227,13 +227,13 @@
   const _resultSummary = document.getElementById('feed-result-summary');
 
   function sfEscapeHtml(value: unknown): string {
-    return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
+    return String(value ?? '').replace(/[&<>"']/g, (character: string) => (({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' } as Record<string, string>)[character] || character));
   }
 
-  function sfCreatePostCardHtml(item) {
+  function sfCreatePostCardHtml(item: any) {
     const category = String(item.category || item.categories?.name || 'Other');
     const categoryClass = category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const statuses = { approved: 'Planned', in_progress: 'In progress', resolved: 'Completed' };
+    const statuses: Record<string, string> = { approved: 'Planned', in_progress: 'In progress', resolved: 'Completed' };
     const status = ['approved', 'in_progress', 'resolved'].includes(item.status) ? item.status : 'approved';
     const anonymous = item.is_anonymous || !item.author?.display_name;
     const author = anonymous ? 'Anonymous student' : String(item.author.display_name);
@@ -259,7 +259,7 @@
             ${validDate ? `<span class="post-dot" aria-hidden="true">·</span><time class="post-timestamp" datetime="${created.toISOString()}" title="${sfEscapeHtml(created.toLocaleString('en-PH'))}">${relativeTime}</time>` : ''}
           </div></div>
           <span class="post-badge-status status-${status}"><span class="badge-dot" aria-hidden="true"></span>${statuses[status]}</span>
-          <div class="post-menu-wrap" data-sf-click="stop">
+          <div class="post-menu-wrap">
             <button type="button" class="post-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="More options" title="More options">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
             </button>
@@ -317,31 +317,28 @@
   }
 
   document.addEventListener('click', event => {
-    const btn = (event.target as Element).closest<HTMLButtonElement>('.post-menu-btn');
+    const target = event.target as Element;
+    if (!target) return;
+    const btn = target.closest<HTMLButtonElement>('.post-menu-btn');
     if (btn) {
-      const wrap = btn.closest('.post-menu-wrap')!;
-      const dropdown = wrap.querySelector<HTMLElement>('.post-menu-dropdown')!;
-      const opening = dropdown.hidden;
-      sfCloseAllPostMenus(opening ? wrap : undefined);
-      dropdown.hidden = !opening;
-      btn.setAttribute('aria-expanded', String(opening));
-      if (opening) {
-        const firstItem = dropdown.querySelector<HTMLElement>('.post-menu-item');
-        firstItem?.focus();
+      const wrap = btn.closest('.post-menu-wrap');
+      if (wrap) {
+        const dropdown = wrap.querySelector<HTMLElement>('.post-menu-dropdown');
+        if (dropdown) {
+          const opening = dropdown.hidden;
+          sfCloseAllPostMenus(opening ? wrap : undefined);
+          dropdown.hidden = !opening;
+          btn.setAttribute('aria-expanded', String(opening));
+          if (opening) {
+            const items = Array.from(dropdown.querySelectorAll<HTMLElement>('.post-menu-item'));
+            const firstVisible = items.find(el => el.offsetWidth > 0 || el.offsetHeight > 0 || window.getComputedStyle(el).display !== 'none');
+            (firstVisible || items[0])?.focus();
+          }
+        }
       }
       return;
     }
-    // Close if clicked outside any open menu
-    if (!(event.target as Element).closest('.post-menu-wrap')) sfCloseAllPostMenus();
-  });
-
-  document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') sfCloseAllPostMenus();
-  });
-
-  // Close menu when any item inside is activated
-  document.addEventListener('click', event => {
-    const item = (event.target as Element).closest<HTMLElement>('.post-menu-item');
+    const item = target.closest<HTMLElement>('.post-menu-item');
     if (item) {
       const wrap = item.closest('.post-menu-wrap');
       if (wrap) {
@@ -350,9 +347,15 @@
         if (dropdown) dropdown.hidden = true;
         menuBtn?.setAttribute('aria-expanded', 'false');
       }
+      return;
     }
-  }, true /* capture so it runs before community.ts click */
-  );
+    // Close if clicked outside any open menu
+    if (!target.closest('.post-menu-wrap')) sfCloseAllPostMenus();
+  }, true /* capture phase so nothing can intercept menu toggle or outside click */);
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') sfCloseAllPostMenus();
+  });
   // ─────────────────────────────────────────────────────────────────────
 
   function updateResultSummary(total?: number) {

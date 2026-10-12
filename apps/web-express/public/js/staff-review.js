@@ -1,6 +1,8 @@
 "use strict";
 (() => {
-    let items = JSON.parse(document.getElementById('staff-queue-data').textContent || '[]');
+    const queueData = document.getElementById('staff-queue-data');
+    const isQueue = !!queueData;
+    let items = JSON.parse(queueData?.textContent || '[]');
     const currentUser = JSON.parse(document.getElementById('staff-current-user').textContent || '{}').id;
     const dialog = document.getElementById('staff-review-dialog');
     const form = document.getElementById('staff-review-form');
@@ -17,11 +19,13 @@
     const save = document.getElementById('review-save');
     const saveNext = document.getElementById('review-save-next');
     const message = document.getElementById('review-message');
-    const pageMessage = document.getElementById('staff-page-message');
+    const pageMessage = (document.getElementById('staff-page-message') || document.getElementById('care-message') || document.getElementById('staff-tools-message'));
     const discardWarning = document.getElementById('review-discard-warning');
     const reviewed = new Set();
     let noteBusy = false, busy = false, saved = false, refreshing = false;
     let activityRequest;
+    let detailRequest;
+    let requestedId = '', requestedSection = 'decision';
     let active;
     let returnFocus = null;
     const labels = { pending: 'Needs review', approved: 'Planned', in_progress: 'In progress', resolved: 'Completed', rejected: 'Declined' };
@@ -42,7 +46,7 @@
         });
         dialog.querySelectorAll('[role="tabpanel"]').forEach(panel => { panel.hidden = panel.id !== 'review-panel-' + key; });
         save.hidden = saved || key === 'progress';
-        saveNext.hidden = saved || key === 'progress';
+        saveNext.hidden = !isQueue || !items.some(i => i.id === active?.id) || saved || key === 'progress';
     }
     const tabs = Array.from(dialog.querySelectorAll('[data-review-tab]'));
     tabs.forEach((button, index) => {
@@ -70,12 +74,11 @@
         }
         dialog.close();
     }
-    function openReview(id, trigger) {
-        const item = items.find(i => i.id === id);
-        if (!item)
-            return;
+    function populateReview(item, section = 'decision') {
         active = item;
-        returnFocus = trigger || document.querySelector('[data-review="' + id + '"]');
+        const index = items.findIndex(i => i.id === item.id);
+        if (index >= 0)
+            items[index] = item;
         saved = false;
         fields.disabled = false;
         save.disabled = false;
@@ -98,7 +101,7 @@
             document.getElementById('review-meta').after(clarification);
         }
         clarification.href = '/admin/community?idea=' + encodeURIComponent(item.id);
-        document.getElementById('review-position').textContent = 'Item ' + (items.indexOf(item) + 1) + ' of ' + items.length + ' on this page';
+        document.getElementById('review-position').textContent = isQueue && index >= 0 ? 'Item ' + (index + 1) + ' of ' + items.length + ' on this page' : isQueue ? 'Opened from a direct link' : document.getElementById('staff-board-data') ? 'Work board' : 'Community care';
         const badge = document.getElementById('review-current-status');
         badge.textContent = labels[item.status];
         badge.dataset.status = item.status;
@@ -119,7 +122,7 @@
         document.getElementById('review-date-error').textContent = '';
         updateHint();
         updateCount();
-        selectTab('decision');
+        selectTab(section);
         if (!dialog.open)
             dialog.showModal();
         else
@@ -128,11 +131,87 @@
         void loadActivity();
         window.sfStaffProgress?.open(item);
     }
-    document.querySelector('.staff-rows').addEventListener('click', event => {
-        const button = event.target.closest('[data-review]');
-        if (button)
-            openReview(button.dataset.review, button);
+    async function openReview(id, trigger, section = 'decision') {
+        if (busy || noteBusy || window.sfStaffProgress?.isBusy())
+            return;
+        if (dialog.open && hasUnsavedChanges()) {
+            discardWarning.hidden = false;
+            document.getElementById('review-keep-editing').focus();
+            return;
+        }
+        detailRequest?.abort();
+        activityRequest?.abort();
+        window.sfStaffProgress?.close();
+        requestedId = id;
+        requestedSection = section === 'progress' ? 'progress' : 'decision';
+        if (!dialog.open)
+            returnFocus = trigger || document.activeElement;
+        active = undefined;
+        internalNote.value = '';
+        saved = false;
+        discardWarning.hidden = true;
+        dialog.dataset.unavailable = 'true';
+        dialog.setAttribute('aria-busy', 'true');
+        fields.disabled = true;
+        save.hidden = true;
+        saveNext.hidden = true;
+        document.getElementById('review-title').textContent = 'Loading submission…';
+        document.getElementById('review-position').textContent = '';
+        message.textContent = 'Loading fresh details…';
+        message.classList.remove('is-success');
+        const retry = document.getElementById('review-retry-detail');
+        retry.hidden = true;
+        if (!dialog.open)
+            dialog.showModal();
+        const controller = new AbortController();
+        detailRequest = controller;
+        const timer = setTimeout(() => controller.abort(), 15000);
+        try {
+            if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
+                throw new Error('This link contains an invalid submission ID.');
+            const response = await fetch('/api/staff/submissions/' + encodeURIComponent(id), { headers: { Accept: 'application/json' }, cache: 'no-store', signal: controller.signal });
+            const body = await response.json().catch(() => null);
+            if (!response.ok || !body?.success)
+                throw new Error(response.status === 401 || response.status === 403 ? 'Your staff session expired or access changed. Sign in again.' : response.status === 404 ? 'This submission is no longer available.' : 'Submission details could not load. Please retry.');
+            if (!dialog.open || detailRequest !== controller)
+                return;
+            if (body.item?.id !== id || !labels[body.item?.status])
+                throw new Error('Submission details were incomplete. Please retry.');
+            delete dialog.dataset.unavailable;
+            populateReview(body.item, requestedSection);
+        }
+        catch (error) {
+            if (dialog.open && detailRequest === controller) {
+                document.getElementById('review-title').textContent = 'Submission unavailable';
+                message.textContent = error.name === 'AbortError' ? 'Loading timed out. Retry loading this submission.' : error.message;
+                retry.hidden = false;
+            }
+        }
+        finally {
+            clearTimeout(timer);
+            if (detailRequest === controller)
+                dialog.removeAttribute('aria-busy');
+        }
+    }
+    document.addEventListener('click', event => {
+        const target = event.target;
+        const card = target.closest('[data-board-id]');
+        if (card && (Date.now() - Number(card.dataset.draggedAt || 0) < 400 || card.dataset.dragging === 'true'))
+            return;
+        const button = target.closest('[data-review]');
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
+            return;
+        if (button) {
+            event.preventDefault();
+            void openReview(button.dataset.review, button, button.dataset.reviewSection);
+        }
+        else if (card && !target.closest('input,select,button,a,label,summary,details') && !window.getSelection()?.toString()) {
+            const title = card.querySelector('[data-review]');
+            if (title)
+                void openReview(card.dataset.boardId, title);
+        }
     });
+    document.getElementById('review-retry-detail').addEventListener('click', () => void openReview(requestedId, undefined, requestedSection));
     document.querySelectorAll('[data-close-review]').forEach(button => button.addEventListener('click', () => close()));
     document.getElementById('review-keep-editing').addEventListener('click', () => { discardWarning.hidden = true; if (window.sfStaffProgress?.hasDraft()) {
         selectTab('progress');
@@ -146,10 +225,10 @@
     dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
     dialog.addEventListener('click', event => { if (event.target === dialog && event.clientX < dialog.getBoundingClientRect().left)
         close(); });
-    dialog.addEventListener('close', () => { activityRequest?.abort(); window.sfStaffProgress?.close(); if (returnFocus?.isConnected)
+    dialog.addEventListener('close', () => { detailRequest?.abort(); activityRequest?.abort(); window.sfStaffProgress?.close(); if (returnFocus?.isConnected)
         returnFocus.focus();
     else
-        document.getElementById('staff-queue-title').focus(); });
+        document.querySelector('#staff-queue-title,.workspace-heading h1')?.focus(); });
     window.addEventListener('beforeunload', event => { if (dialog.open && (busy || noteBusy || window.sfStaffProgress?.isBusy() || hasUnsavedChanges())) {
         event.preventDefault();
         event.returnValue = '';
@@ -164,7 +243,49 @@
             updateDraft();
         }
     });
+    async function refreshCare() {
+        const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
+        try {
+            const response = await fetch(window.location.href, { headers: { Accept: 'text/html' }, cache: 'no-store', signal: controller.signal });
+            const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+            const ids = ['care-reminders', 'care-reports', 'care-clarification', 'care-merges'];
+            if (!response.ok || ids.some(id => !doc.getElementById(id)))
+                throw new Error('Community care could not refresh. Check your staff session.');
+            // Preserve the actual form nodes (values, focus, and in-flight state), not
+            // just serialized values. Never replace an unrelated care draft.
+            const key = (form) => (form.closest('[data-care-row]')?.dataset.careRow || '') + ':' + form.dataset.careAction;
+            const existing = new Map(Array.from(document.querySelectorAll('.community-care-page [data-care-action]')).map(form => [key(form), form]));
+            for (const fresh of doc.querySelectorAll('[data-care-action]')) {
+                const old = existing.get(key(fresh));
+                if (old)
+                    fresh.replaceWith(old);
+            }
+            for (const id of ids) {
+                const old = document.getElementById(id), fresh = doc.getElementById(id);
+                for (const row of old.querySelectorAll('[data-care-row]')) {
+                    if (!fresh.querySelector(`[data-care-row="${row.dataset.careRow}"]`) && Array.from(row.querySelectorAll('input,textarea')).some(input => input.value !== input.defaultValue))
+                        fresh.append(row);
+                }
+                old.replaceChildren(...Array.from(fresh.childNodes));
+            }
+            const nav = document.querySelector('.care-section-nav'), freshNav = doc.querySelector('.care-section-nav');
+            if (nav && freshNav)
+                nav.replaceChildren(...Array.from(freshNav.childNodes));
+        }
+        finally {
+            clearTimeout(timer);
+        }
+    }
     async function refreshQueue() {
+        if (!isQueue) {
+            if (document.getElementById('staff-board-data')) {
+                if (!await window.sfStaffBoardRefresh?.())
+                    throw new Error('Work board refresh failed.');
+                return;
+            }
+            await refreshCare();
+            return;
+        }
         if (refreshing)
             throw new Error('A queue refresh is already running.');
         refreshing = true;
@@ -248,7 +369,8 @@
         const timer = setTimeout(() => controller.abort(), 20000);
         const savedId = active.id;
         let nextId;
-        const candidates = [...items.slice(items.indexOf(active) + 1), ...items.slice(0, items.indexOf(active))].map(i => i.id);
+        const index = items.findIndex(i => i.id === active?.id);
+        const candidates = [...items.slice(index + 1), ...items.slice(0, index)].map(i => i.id);
         try {
             const response = await fetch('/api/staff/submissions/' + encodeURIComponent(savedId) + '/review', {
                 method: 'PATCH', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
@@ -261,18 +383,18 @@
             reviewed.add(savedId);
             save.hidden = true;
             saveNext.hidden = true;
-            document.getElementById('review-dismiss').textContent = 'Back to queue';
+            document.getElementById('review-dismiss').textContent = 'Done';
             message.classList.add('is-success');
-            message.textContent = 'Review saved. Updating the queue…';
+            message.textContent = 'Review saved. Updating this workspace…';
             updateDraft();
             void loadActivity();
             try {
                 await refreshQueue();
                 nextId = moveNext ? candidates.find(id => !reviewed.has(id) && items.some(i => i.id === id)) || items.find(i => i.id !== savedId && !reviewed.has(i.id))?.id : undefined;
-                message.textContent = moveNext && !nextId ? 'Saved. You have reviewed every available suggestion on this page.' : 'Review saved. The queue is up to date.';
+                message.textContent = moveNext && !nextId ? 'Saved. You have reviewed every available suggestion on this page.' : 'Review saved. This workspace is up to date.';
             }
             catch {
-                message.textContent = 'Review saved, but the queue could not refresh. Close this panel and use Refresh before reviewing another suggestion.';
+                message.textContent = 'Review saved, but this workspace could not refresh. Your changes were saved; refresh the page to see the latest cards.';
             }
         }
         catch (error) {
@@ -445,7 +567,7 @@
             saveNext.disabled = posting;
             const onProgress = dialog.querySelector('[data-review-tab="progress"]')?.getAttribute('aria-selected') === 'true';
             save.hidden = onProgress;
-            saveNext.hidden = onProgress;
+            saveNext.hidden = !isQueue || !items.some(i => i.id === active?.id) || onProgress;
             document.getElementById('review-dismiss').textContent = 'Cancel';
             updateHint();
             updateCount();
@@ -462,6 +584,11 @@
             updateDraft();
         }
     });
+    const initial = new URL(window.location.href).searchParams.get('idea');
+    if (initial && window.location.pathname === '/admin')
+        void openReview(initial);
+    if (!isQueue)
+        return;
     const viewDialog = document.getElementById('staff-save-view-dialog');
     const viewMessage = document.getElementById('staff-view-message');
     document.getElementById('staff-open-save-view').addEventListener('click', () => { viewMessage.textContent = ''; viewDialog.showModal(); });

@@ -199,6 +199,117 @@ test('loaded feed cards escape content and expose native title links without dup
   assert.match(html, /<h2 class="post-title"><a class="post-title-link"/);
   const articleOpening = html.match(/<article[^>]*>/)![0];
   assert.doesNotMatch(articleOpening, /data-sf-click|tabindex|data-sf-keydown/);
+  assert.match(html, /<div class="post-menu-wrap">/);
+  assert.doesNotMatch(html, /<div class="post-menu-wrap"[^>]*data-sf-click/);
   assert.match(html, /Completed/);
   assert.doesNotMatch(html, /Trending/);
 });
+
+test('3-dot kebab menu toggles open and closed on click and closes on Escape', () => {
+  const docListeners = new Map<string, Array<{ listener: (e: any) => void; capture: boolean }>>();
+  class MockNode {
+    attributes = new Map<string, string>();
+    hidden = true;
+    style = { display: '' };
+    offsetWidth = 100;
+    offsetHeight = 30;
+    children: MockNode[] = [];
+    focused = false;
+    constructor(public tagName: string, public className: string, public parent: MockNode | null = null) {}
+    setAttribute(k: string, v: string) { this.attributes.set(k, v); }
+    getAttribute(k: string) { return this.attributes.get(k) ?? null; }
+    focus() { this.focused = true; }
+    closest(selector: string): MockNode | null {
+      for (let n: MockNode | null = this; n; n = n.parent) {
+        if (selector === '.post-menu-btn' && n.className.includes('post-menu-btn')) return n;
+        if (selector === '.post-menu-wrap' && n.className.includes('post-menu-wrap')) return n;
+        if (selector === '.post-menu-item' && n.className.includes('post-menu-item')) return n;
+      }
+      return null;
+    }
+    querySelector(selector: string): MockNode | null {
+      if (selector === '.post-menu-btn') return this.children.find(c => c.className.includes('post-menu-btn')) ?? null;
+      if (selector === '.post-menu-dropdown') return this.children.find(c => c.className.includes('post-menu-dropdown')) ?? null;
+      return null;
+    }
+    querySelectorAll(selector: string): MockNode[] {
+      if (selector === '.post-menu-wrap') return this.children.filter(c => c.className.includes('post-menu-wrap'));
+      if (selector === '.post-menu-item') return this.children.filter(c => c.className.includes('post-menu-item'));
+      return [];
+    }
+  }
+
+  const wrap = new MockNode('DIV', 'post-menu-wrap');
+  const btn = new MockNode('BUTTON', 'post-menu-btn', wrap);
+  const svg = new MockNode('svg', '', btn);
+  const dropdown = new MockNode('DIV', 'post-menu-dropdown', wrap);
+  dropdown.hidden = true;
+  const item1 = new MockNode('BUTTON', 'post-menu-item action-bookmark', dropdown);
+  const item2 = new MockNode('BUTTON', 'post-menu-item action-share', dropdown);
+  const item3 = new MockNode('BUTTON', 'post-menu-item post-menu-item--danger care-report', dropdown);
+  dropdown.children.push(item1, item2, item3);
+  wrap.children.push(btn, dropdown);
+
+  const doc = {
+    addEventListener(type: string, listener: (e: any) => void, opts?: any) {
+      const list = docListeners.get(type) ?? [];
+      list.push({ listener, capture: !!(opts && (opts === true || opts.capture)) });
+      docListeners.set(type, list);
+    },
+    querySelectorAll(selector: string) {
+      if (selector === '.post-menu-wrap') return [wrap];
+      return [];
+    },
+    getElementById(id: string) {
+      if (id === 'sf-feed-config') return { dataset: { sort: 'all', category: 'All' } };
+      return null;
+    },
+    createDocumentFragment() { return {}; },
+    activeElement: null,
+  };
+
+  const context = {
+    window: { location: { href: 'http://localhost/feed', origin: 'http://localhost', search: '' }, getComputedStyle: () => ({ display: 'block' }), sfToast: true },
+    document: doc,
+    URL, URLSearchParams, AbortController, setTimeout, clearTimeout,
+    localStorage: { getItem: () => null, setItem: () => {} },
+    navigator: {},
+  };
+
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/feed.js'), 'utf8'), context);
+
+  function dispatch(type: string, target: any, key?: string) {
+    const list = docListeners.get(type) ?? [];
+    for (const entry of list) {
+      entry.listener({ target, key });
+    }
+  }
+
+  // 1. Initial state: dropdown is hidden
+  assert.equal(dropdown.hidden, true);
+
+  // 2. Click 3-dot button (on the inner svg) -> dropdown opens
+  dispatch('click', svg);
+  assert.equal(dropdown.hidden, false, 'Clicking 3-dot button must open the dropdown');
+  assert.equal(btn.getAttribute('aria-expanded'), 'true');
+  assert.equal(item1.focused, true, 'First visible item must receive focus');
+
+  // 3. Click 3-dot button again -> dropdown closes
+  dispatch('click', btn);
+  assert.equal(dropdown.hidden, true, 'Clicking 3-dot button again must close the dropdown');
+  assert.equal(btn.getAttribute('aria-expanded'), 'false');
+
+  // 4. Open dropdown again and test clicking outside -> dropdown closes
+  dispatch('click', btn);
+  assert.equal(dropdown.hidden, false);
+  const outsideEl = new MockNode('DIV', 'outside-element');
+  dispatch('click', outsideEl);
+  assert.equal(dropdown.hidden, true, 'Clicking outside must close the dropdown');
+
+  // 5. Open dropdown again and test Escape key -> dropdown closes
+  dispatch('click', btn);
+  assert.equal(dropdown.hidden, false);
+  dispatch('keydown', null, 'Escape');
+  assert.equal(dropdown.hidden, true, 'Escape must close the dropdown');
+});
+

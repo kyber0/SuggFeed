@@ -322,3 +322,10 @@
   .staff-member-card { flex-wrap:wrap; }
   .staff-member-actions { width:100%; justify-content:flex-end; margin-top:4px; }
 }
+/* Shared review loading/error state must not expose stale editable panels. */
+.staff-review-dialog[data-unavailable="true"] :is(.staff-review-tabs,.staff-review-scroll,#review-current-status,#review-meta,#review-clarification-link,#review-draft-state) { display:none; }
+.staff-review-dialog[data-unavailable="true"] .staff-review-heading { flex:1; }
+.staff-review-dialog:not([open]) { display:none; }
+.staff-flow-card { cursor:pointer; }
+.staff-flow-card:has([data-review]:focus-visible) { outline:2px solid var(--navy); outline-offset:2px; }
+html:has(.staff-review-dialog[open]) { overflow:hidden; }
