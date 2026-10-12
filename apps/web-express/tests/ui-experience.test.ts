@@ -18,6 +18,18 @@ function render(url:string){
   layer.route.stack[0].handle({query:Object.fromEntries(parsed.searchParams)}, {send(value:string){html=value;}},()=>{});
   assert.ok(html);return html;
 }
+test('Other views marks the selected view and retains native filtered navigation links',()=>{
+  const html=render('/roadmap?view=timeline&search=library&category=Facilities');
+  const menu=html.match(/<details class="roadmap-other-views"[\s\S]*?<\/details>/)![0];
+  assert.match(menu,/aria-label="Other views: Work calendar"/);
+  assert.match(menu,/data-roadmap-view="timeline" aria-current="page"/);
+  assert.match(menu,/href="#ws-calendar"/);assert.match(menu,/href="#ws-check"/);
+  assert.match(menu,/recorded work dates, not deadlines/);
+  const hrefs=[...menu.matchAll(/<a href="([^"]+)"/g)].map(match=>new URL(match[1].replace(/&amp;|&#38;/g,'&'),'https://preview.test'));
+  assert.equal(hrefs.length,3);assert.deepEqual(hrefs.map(url=>url.searchParams.get('view')),['tree','timeline','done']);
+  assert.ok(hrefs.every(url=>url.searchParams.get('search')==='library' && url.searchParams.get('category')==='Facilities' && url.searchParams.get('page')==='1'));
+  assert.doesNotMatch(menu,/role="menu"|role="menuitem"/);
+});
 test('main student and staff screens render the shared keyboard navigation and correct current-page cue',()=>{
   for(const route of ['/feed','/roadmap','/admin','/admin/board','/admin/community','/notifications','/inbox']){
     const html=render(route);assert.match(html,/class="system-skip-link" href="#page-content"/);

@@ -19,6 +19,8 @@
  const workTimeline = it.workTimeline;
  const formatManilaDate = it.formatManilaDate || ((d) => d ? new Date(d).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric' }) : '');
  const completionLabel = item => item.resolved_at ? 'Completed ' + (item.resolved_at_estimated ? 'around ' : '') + formatManilaDate(item.resolved_at) : 'Completion date not recorded';
+ const otherViews=[['tree','By category','list','Browse improvements grouped by topic.'],['timeline','Work calendar','calendar','Explore recorded work dates, not deadlines.'],['done','Completed outcomes','check','Read completed work and published outcomes.']];
+ const activeView=otherViews.find(([view])=>view===filters.view);
 %>
 <main class="campus-roadmap">
  <header class="workspace-heading roadmap-heading">
@@ -45,9 +47,10 @@
  <section class="roadmap-workspace" aria-label="Campus improvement board">
   <nav class="roadmap-view-switch roadmap-view-navigation" aria-label="Roadmap views">
    <a href="<%= urlFor({view:'board',page:'1'}) %>" data-roadmap-view="board" aria-current="<%= filters.view==='board'?'page':'false' %>"><%~ icon('board') %> Status board</a>
-   <details class="roadmap-other-views"><summary>Other views</summary><div>
-    <% for(const [view,name,glyph] of [['tree','By category','list'],['timeline','Work calendar','arrow'],['done','Completed outcomes','arrow']]) { %>
-     <a href="<%= urlFor({view,stage:view==='done'?'resolved':filters.view==='done'?'all':filters.stage,page:'1'}) %>" data-roadmap-view="<%= view %>" aria-current="<%= filters.view===view?'page':'false' %>"><%~ icon(glyph) %> <%= name %></a>
+   <details class="roadmap-other-views" data-active="<%= !!activeView %>"><summary aria-controls="roadmap-other-views-list" aria-label="<%= activeView?'Other views: '+activeView[1]:'Other views' %>"><%~ icon(activeView?activeView[2]:'list') %><span><%= activeView?activeView[1]:'Other views' %></span><span class="roadmap-views-chevron"><%~ icon('chevron-down') %></span></summary><div id="roadmap-other-views-list" class="roadmap-view-menu">
+    <p class="roadmap-view-menu-label">Explore another view</p>
+    <% for(const [view,name,glyph,description] of otherViews) { %>
+     <a href="<%= urlFor({view,stage:view==='done'?'resolved':filters.view==='done'?'all':filters.stage,page:'1'}) %>" data-roadmap-view="<%= view %>" aria-current="<%= filters.view===view?'page':'false' %>"><span class="roadmap-view-menu-icon"><%~ icon(glyph) %></span><span class="roadmap-view-menu-copy"><strong><%= name %></strong><small><%= description %></small></span><% if(filters.view===view) { %><span class="roadmap-view-current" aria-label="Current view"><%~ icon('check') %></span><% } %></a>
     <% } %>
    </div></details>
   </nav>
@@ -410,3 +413,4 @@
 </main>
 <script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items || []).replace(/</g, '\\u003c') %></script>
 <script src="/js/roadmap.js?v=20261012-drawer"></script>
+<script src="/js/roadmap-views.js?v=20261012-view-menu"></script>
