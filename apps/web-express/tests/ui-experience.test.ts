@@ -4,6 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createWorkspacePreview} from './support/workspace-preview';
 
+test('roadmap and staff filter toolbars neutralize stacked label spacing and match control heights',()=>{
+  const css=fs.readFileSync(path.join(__dirname,'../public/css/modules/workspace.css'),'utf8');
+  assert.match(css,/:is\(\.roadmap-controls,\.staff-search-form\) > label \{ margin-bottom:0; \}/);
+  assert.match(css,/:is\(\.roadmap-controls,\.staff-search-form\) > \.workspace-button \{ min-height:44px; \}/);
+});
+
 // Exercise the preview's real Eta rendering without binding a local HTTP port.
 function render(url:string){
   const app=createWorkspacePreview(),parsed=new URL(url,'https://preview.test');

@@ -31,6 +31,9 @@
 .roadmap-category-label .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
 .workspace-search input::placeholder,.workspace-input::placeholder { color:var(--ink-2); opacity:.75; }
 .workspace-input { width:100%; min-height:44px; padding:11px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); font:400 13px/1.5 Inter,Arial,sans-serif; }
+/* Toolbar labels must not inherit the shared stacked-form bottom margin. */
+:is(.roadmap-controls,.staff-search-form) > label { margin-bottom:0; }
+:is(.roadmap-controls,.staff-search-form) > .workspace-button { min-height:44px; }
 textarea.workspace-input { resize:vertical; }
 .workspace-empty { text-align:center; padding:62px 24px; }
 .workspace-empty h3 { font-size:19px; margin-bottom:8px; }

@@ -26,7 +26,7 @@
 /* ── 3. Page & Feature Modules ── */
 @import url('./modules/feed.css?v=20261011-feed');
 @import url('./modules/idea.css');
-@import url('./modules/workspace.css?v=20261011-workspace');
+@import url('./modules/workspace.css?v=20261012-filter-alignment');
 @import url('./modules/roadmap.css?v=20261012-drawer');
 @import url('./modules/admin.css?v=20261012-shared-review');
 @import url('./modules/profile.css');
