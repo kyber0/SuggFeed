@@ -35,9 +35,13 @@
 .workspace-dialog#roadmap-dialog .roadmap-drawer-footer p { max-width:36ch; }
 
 /* Persistent review heading, tabs and action bar surround one scroll region. */
-#staff-review-dialog .staff-review-heading { padding:18px var(--detail-gutter) 0; }
-#staff-review-dialog .staff-review-heading h2 { font-size:clamp(24px,2.5vw,32px); max-width:48ch; }
-#staff-review-dialog .staff-review-heading .workspace-detail-meta { margin-bottom:12px; font-size:12px; }
+#staff-review-dialog .staff-review-heading { padding:10px var(--detail-gutter) 8px; display:grid; gap:4px; align-content:start; }
+#staff-review-dialog .staff-review-heading-title { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; min-width:0; }
+#staff-review-dialog .staff-review-heading h2 { font-size:22px; max-width:none; margin:0; line-height:1.3; min-width:0; overflow-wrap:anywhere; }
+#staff-review-dialog .staff-review-heading-title .workspace-status { font-size:11px; flex:none; }
+#staff-review-dialog .staff-review-heading-meta { display:flex; flex-wrap:wrap; gap:4px 20px; align-items:center; justify-content:space-between; min-width:0; }
+#staff-review-dialog .staff-review-heading .workspace-detail-meta { margin:0; font-size:11px; line-height:1.6; overflow-wrap:anywhere; }
+#staff-review-dialog #review-clarification-link { flex:none; min-height:30px; display:inline-flex; align-items:center; font-size:12px; }
 #staff-review-dialog .staff-review-tabs { padding-inline:var(--detail-gutter); gap:28px; overflow-x:auto; }
 #staff-review-dialog .staff-review-tabs button { white-space:nowrap; }
 #staff-review-dialog .staff-review-scroll { background:var(--bg); }
@@ -83,6 +87,28 @@
 }
 @media(min-width:961px) and (min-height:700px) { #staff-review-dialog .staff-review-context { position:sticky; top:24px; } }
 @media(max-height:650px) {
-  #staff-review-dialog .staff-review-heading { padding-top:12px; }
-  #staff-review-dialog .staff-review-heading h2 { font-size:24px; margin-top:6px; }
+  #staff-review-dialog .staff-review-heading { padding-top:8px; }
+  #staff-review-dialog .staff-review-heading h2 { font-size:20px; margin:0; }
+}
+.workflow-guidance { margin-top:20px; padding:16px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+#workflow-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start; }
+.workflow-secondary { position:relative; }
+.workflow-secondary summary { cursor:pointer; padding:9px 12px; }
+.workflow-secondary[open] { display:grid; gap:8px; }
+#work-date-repair-form:not([hidden]) { display:grid; gap:12px; margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }
+#work-date-repair-form label { display:grid; gap:5px; }
+.roadmap-view-navigation { margin-bottom:16px; align-items:flex-start; }
+.roadmap-other-views summary { cursor:pointer; padding:10px 14px; }
+.roadmap-other-views > div { display:flex; flex-wrap:wrap; gap:6px; }
+.roadmap-active-filters { display:flex; flex-wrap:wrap; gap:8px; }
+.roadmap-active-filters > span { border:1px solid var(--line); border-radius:6px; padding:4px 8px; font-size:12px; }
+.care-pagination { display:flex; gap:16px; align-items:center; margin:16px 0; }
+.submission-picker { display:grid; gap:8px; }
+[data-picker-results] { display:grid; gap:6px; max-height:260px; overflow:auto; }
+[data-picker-results] button { text-align:left; white-space:normal; justify-content:flex-start; }
+.community-care-page [hidden] { display:none !important; }
+@media(max-width:600px) {
+ .roadmap-work-timeline .timeline-controls { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:end; width:100%; }
+ .roadmap-work-timeline .timeline-controls label { min-width:0; }
+ .roadmap-work-timeline .timeline-controls select { width:100%; }
 }

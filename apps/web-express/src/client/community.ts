@@ -4,6 +4,25 @@
   const signedIn = !!document.getElementById('sf-auth-config')?.dataset.user;
   const message = document.getElementById('care-message');
   const notify = (text: string) => { if (message) message.textContent = text; else (window as any).sfToast?.(text, 'info'); };
+  document.querySelectorAll<HTMLElement>('[data-submission-picker]').forEach(picker=>{
+    const input=picker.querySelector<HTMLInputElement>('[data-picker-search]')!, value=picker.querySelector<HTMLInputElement>('[data-picker-value]')!, selected=picker.querySelector<HTMLElement>('[data-picker-selected]')!, results=picker.querySelector<HTMLElement>('[data-picker-results]')!;
+    let controller:AbortController | undefined,timer:ReturnType<typeof setTimeout>,generation=0;
+    const status:Record<string,string>={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'};
+    const choose=(item:any)=>{value.value=item.id;selected.textContent=`${item.title} · ${item.category || item.categories?.name || 'Other'} · ${status[item.status] || item.status} · ${item.id.slice(0,8)}`;input.setCustomValidity('');results.replaceChildren();};
+    if(value.value)void fetch('/api/staff/submissions/'+encodeURIComponent(value.value),{cache:'no-store'}).then(async response=>{const data=await response.json();if(generation!==0)return;if(!response.ok || !data.item)throw new Error();choose(data.item);}).catch(()=>{if(generation===0){value.value='';selected.textContent='Selected suggestion unavailable. Search again.';}});
+    input.addEventListener('input',()=>{
+      clearTimeout(timer);controller?.abort();const current=++generation;value.value='';selected.textContent='Choose a result before sending.';results.replaceChildren();input.setCustomValidity('Choose a suggestion from the search results.');
+      if(input.value.trim().length<2)return;
+      timer=setTimeout(async()=>{
+        controller=new AbortController();selected.textContent='Searching…';
+        try{const response=await fetch('/api/staff/submission-search?'+new URLSearchParams({q:input.value.trim(),public:picker.dataset.publicScope || 'false'}),{signal:controller.signal,cache:'no-store'});const data=await response.json();if(current!==generation)return;if(!response.ok)throw new Error();
+          selected.textContent=data.items.length?'Choose a suggestion.':'No matching suggestions.';
+          for(const item of data.items){const button=document.createElement('button');button.type='button';button.className='workspace-button';button.textContent=`${item.title} · ${item.categories?.name || 'Other'} · ${status[item.status]} · ${item.id.slice(0,8)}`;button.addEventListener('click',()=>choose(item));results.append(button);}
+        }catch(error){if(current===generation && error.name!=='AbortError')selected.textContent='Search failed or session expired. Edit the search to retry.';}
+      },250);
+    });
+    picker.closest('form')?.addEventListener('submit',event=>{if(!value.value){event.preventDefault();input.setCustomValidity('Choose a suggestion before sending.');input.reportValidity();input.focus();}});
+  });
   async function request(path: string, body?: unknown) {
     const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
     try {
@@ -85,7 +104,7 @@
     }).catch(()=>{history.textContent='Report decisions could not load. Refresh to retry.';});
   }
   document.addEventListener('submit',async e=>{
-    const form=(e.target as Element).closest<HTMLFormElement>('[data-care-action]');if(!form)return;
+    const form=(e.target as Element).closest<HTMLFormElement>('[data-care-action]');if(!form || e.defaultPrevented)return;
     e.preventDefault();const button=form.querySelector<HTMLButtonElement>('[type=submit],button')!;button.disabled=true;
     const body:any=Object.fromEntries(new FormData(form)); const action=form.dataset.careAction;
     try {

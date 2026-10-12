@@ -208,7 +208,7 @@
             comparison.append(heading, help, images);
             list.append(comparison);
         }
-        const names = { started: 'Work started', update: 'Progress update', milestone: 'Milestone', blocked: 'Work blocked', completed: 'Completed', correction: 'Correction' };
+        const names = { started: 'Work started', update: 'Progress update', milestone: 'Milestone', blocked: 'Work paused', completed: 'Completed', correction: 'Correction', resumed: 'Work resumed', reopened: 'Work reopened', withdrawn: 'Idea withdrawn' };
         for (const update of updates) {
             const entry = document.createElement('li');
             entry.dataset.kind = update.kind;

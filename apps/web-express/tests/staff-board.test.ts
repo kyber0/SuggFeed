@@ -201,8 +201,8 @@ test('work-board JSON and page routes enforce staff access, no-store and normali
     assert.equal(response.headers.get('cache-control'), 'private, no-store');
     const body: any = await response.json();
     assert.equal(body.success, true);
-    assert.deepEqual(body.filters, { search: 'library', sort: 'newest', pageSize: 12, pages: { pending: 2, approved: 1, in_progress: 1, resolved: 1, rejected: 1 } });
-    assert.equal(body.totalCount, 22);
+    assert.deepEqual(body.filters, { search: 'library', sort: 'newest', pageSize: 12, pages: { approved: 1, in_progress: 1, resolved: 1 } });
+    assert.equal(body.totalCount, body.lanes.reduce((sum:number,lane:any)=>sum+lane.count,0));
     role = 'admin';
     const page = await fetch(origin + '/admin/board' + params);
     assert.equal(page.headers.get('cache-control'), 'private, no-store');
@@ -210,7 +210,7 @@ test('work-board JSON and page routes enforce staff access, no-store and normali
     assert.equal(rendered.view, 'staff-board');
     assert.equal(rendered.data.activeSection, 'board');
     assert.deepEqual(rendered.data.filters, body.filters);
-    assert.equal(rendered.data.lanes[0].count, 13);
+    assert.deepEqual(rendered.data.lanes.map((lane:any)=>lane.status), ['approved','in_progress','resolved']);
     assert.deepEqual(rendered.data.members, []);
   } finally {
     mock.restore();

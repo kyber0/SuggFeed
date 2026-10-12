@@ -189,6 +189,8 @@ router.patch(
       p_note: typeof note === "string" ? note.trim() : null,
     });
 
+    if(error?.code==='P0101')return res.status(409).json({success:false,code:'WORKFLOW_ACTION_REQUIRED',error:'Use the guided staff workspace to change status.'});
+    if(error?.code==='P0103')return res.status(503).json({success:false,code:'LIFECYCLE_PAUSED',error:'Work changes are temporarily paused.'});
     if (error?.code === "P0002") return res.status(404).json({ success: false, error: "Submission not found." });
     if (error?.code === "42501") return res.status(403).json({ success: false, error: "Staff access required." });
 

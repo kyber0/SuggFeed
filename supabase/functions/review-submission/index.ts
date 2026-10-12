@@ -22,6 +22,8 @@ Deno.serve(async (request) => {
       p_submission_id: existing.id, p_staff_id: user.id, p_expected_status: existing.status,
       p_status: input.status, p_note: input.note || null,
     });
+    if(updateError?.code==='P0101')return json({code:'WORKFLOW_ACTION_REQUIRED',error:'Use the guided staff workspace to change status.'},409);
+    if(updateError?.code==='P0103')return json({code:'LIFECYCLE_PAUSED',error:'Work changes are temporarily paused.'},503);
     if (updateError?.code === "40001") return json({ error: "This submission changed. Reload it before reviewing." }, 409);
     if (updateError?.code === "P0002") return json({ error: "Submission not found" }, 404);
     if (updateError?.code === "42501") return json({ error: "Moderator access required" }, 403);

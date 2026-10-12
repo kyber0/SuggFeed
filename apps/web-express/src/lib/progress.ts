@@ -2,7 +2,7 @@ import { supabase, supabaseService } from './supabase';
 import { UUID, validDate } from './staff-workspace';
 import { EvidenceFile, listPublicEvidence, listStaffEvidence } from './progress-evidence';
 
-export const PROGRESS_KINDS = ['started', 'update', 'milestone', 'blocked', 'completed', 'correction'] as const;
+export const PROGRESS_KINDS = ['started', 'update', 'milestone', 'blocked', 'completed', 'correction','resumed','reopened','withdrawn'] as const;
 export const BLOCK_REASONS = ['budget', 'parts', 'approval', 'scheduling', 'other'] as const;
 export type ProgressKind = typeof PROGRESS_KINDS[number];
 export interface ProgressInput {
@@ -17,7 +17,7 @@ export interface PublicProgress {
   files: EvidenceFile[];
 }
 export class ProgressError extends Error {
-  constructor(public readonly status: number, message: string) { super(message); this.name = 'ProgressError'; }
+  constructor(public readonly status: number, message: string,public readonly code?:string) { super(message); this.name = 'ProgressError'; }
 }
 export function manilaToday(now = new Date()): string {
   return new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -58,7 +58,7 @@ export function validateProgress(input: unknown, now = new Date()): ProgressInpu
     requestId: b.requestId, updatedAt: b.updatedAt, kind: b.kind as ProgressKind,
     body: b.body.trim(), visibility: b.visibility as 'public' | 'staff', percent: percent as number | null,
     blockedReason: blockedReason as string | null, nextStep, occurredOn,
-    notify: b.visibility === 'public' && (typeof b.notify === 'boolean' ? b.notify : ['started', 'milestone', 'blocked', 'completed'].includes(b.kind as string)),
+    notify: b.visibility === 'public' && (typeof b.notify === 'boolean' ? b.notify : ['started', 'milestone', 'blocked', 'completed','resumed','reopened'].includes(b.kind as string)),
   };
 }
 function publicProgress(row: Record<string, any>, files: EvidenceFile[]): PublicProgress {
@@ -107,6 +107,8 @@ export async function postProgress(id: string, staffId: string, body: unknown) {
     p_notify: input.notify,
   });
   if (error) {
+    const workflowCodes:Record<string,[number,string]>={P0101:[409,'Use an available guided action.'],P0102:[409,'An administrator must verify missing work dates first.'],P0103:[503,'Work changes are temporarily paused.'],P0104:[400,'Completion requires ready evidence attached to this update.']};
+    if(workflowCodes[error.code])throw new ProgressError(...workflowCodes[error.code],error.code);
     if (error.code === '40001') throw new ProgressError(409, 'This submission changed. Refresh it before posting; keep your draft.');
     if (error.code === '23505') throw new ProgressError(409, 'This request was already used for a different update. Refresh and try again.');
     if (error.code === 'P0002') throw new ProgressError(404, 'Submission not found.');

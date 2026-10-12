@@ -9,6 +9,61 @@
         message.textContent = text;
     else
         window.sfToast?.(text, 'info'); };
+    document.querySelectorAll('[data-submission-picker]').forEach(picker => {
+        const input = picker.querySelector('[data-picker-search]'), value = picker.querySelector('[data-picker-value]'), selected = picker.querySelector('[data-picker-selected]'), results = picker.querySelector('[data-picker-results]');
+        let controller, timer, generation = 0;
+        const status = { pending: 'Needs review', approved: 'Planned', in_progress: 'In progress', resolved: 'Completed', rejected: 'Declined' };
+        const choose = (item) => { value.value = item.id; selected.textContent = `${item.title} · ${item.category || item.categories?.name || 'Other'} · ${status[item.status] || item.status} · ${item.id.slice(0, 8)}`; input.setCustomValidity(''); results.replaceChildren(); };
+        if (value.value)
+            void fetch('/api/staff/submissions/' + encodeURIComponent(value.value), { cache: 'no-store' }).then(async (response) => { const data = await response.json(); if (generation !== 0)
+                return; if (!response.ok || !data.item)
+                throw new Error(); choose(data.item); }).catch(() => { if (generation === 0) {
+                value.value = '';
+                selected.textContent = 'Selected suggestion unavailable. Search again.';
+            } });
+        input.addEventListener('input', () => {
+            clearTimeout(timer);
+            controller?.abort();
+            const current = ++generation;
+            value.value = '';
+            selected.textContent = 'Choose a result before sending.';
+            results.replaceChildren();
+            input.setCustomValidity('Choose a suggestion from the search results.');
+            if (input.value.trim().length < 2)
+                return;
+            timer = setTimeout(async () => {
+                controller = new AbortController();
+                selected.textContent = 'Searching…';
+                try {
+                    const response = await fetch('/api/staff/submission-search?' + new URLSearchParams({ q: input.value.trim(), public: picker.dataset.publicScope || 'false' }), { signal: controller.signal, cache: 'no-store' });
+                    const data = await response.json();
+                    if (current !== generation)
+                        return;
+                    if (!response.ok)
+                        throw new Error();
+                    selected.textContent = data.items.length ? 'Choose a suggestion.' : 'No matching suggestions.';
+                    for (const item of data.items) {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'workspace-button';
+                        button.textContent = `${item.title} · ${item.categories?.name || 'Other'} · ${status[item.status]} · ${item.id.slice(0, 8)}`;
+                        button.addEventListener('click', () => choose(item));
+                        results.append(button);
+                    }
+                }
+                catch (error) {
+                    if (current === generation && error.name !== 'AbortError')
+                        selected.textContent = 'Search failed or session expired. Edit the search to retry.';
+                }
+            }, 250);
+        });
+        picker.closest('form')?.addEventListener('submit', event => { if (!value.value) {
+            event.preventDefault();
+            input.setCustomValidity('Choose a suggestion before sending.');
+            input.reportValidity();
+            input.focus();
+        } });
+    });
     async function request(path, body) {
         const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
         try {
@@ -162,7 +217,7 @@
     }
     document.addEventListener('submit', async (e) => {
         const form = e.target.closest('[data-care-action]');
-        if (!form)
+        if (!form || e.defaultPrevented)
             return;
         e.preventDefault();
         const button = form.querySelector('[type=submit],button');

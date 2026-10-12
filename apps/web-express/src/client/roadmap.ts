@@ -205,7 +205,7 @@
       for(const [label,entry] of [['Work started',earlier],['Completed',later]] as const){const figure=document.createElement('figure'),image=document.createElement('img'),caption=document.createElement('figcaption');image.src='/api/progress-evidence/'+encodeURIComponent(entry.file.id);image.alt=entry.file.alt || entry.file.display_name;image.loading='lazy';image.referrerPolicy='no-referrer';caption.textContent=label+' · '+entry.update.occurred_on+' · '+(entry.file.alt || entry.file.display_name);image.addEventListener('error',()=>{image.remove();caption.textContent+=' · Image unavailable. Open the evidence link in the update below.';});figure.append(image,caption);images.append(figure);}
       comparison.append(heading,help,images);list.append(comparison);
     }
-    const names: Record<string, string> = { started: 'Work started', update: 'Progress update', milestone: 'Milestone', blocked: 'Work blocked', completed: 'Completed', correction: 'Correction' };
+    const names: Record<string, string> = { started: 'Work started', update: 'Progress update', milestone: 'Milestone', blocked: 'Work paused', completed: 'Completed', correction: 'Correction', resumed:'Work resumed', reopened:'Work reopened',withdrawn:'Idea withdrawn' };
     for (const update of updates) {
       const entry = document.createElement('li');
       entry.dataset.kind = update.kind;

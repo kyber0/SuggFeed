@@ -28,6 +28,54 @@
     let requestedId = '', requestedSection = 'decision';
     let active;
     let returnFocus = null;
+    let repairRetry;
+    const repairForm = document.getElementById('work-date-repair-form');
+    function hasRepairDraft() { return !!repairForm && !repairForm.hidden && ['repair-source', 'repair-reason', 'repair-start', 'repair-end'].some(id => { const input = document.getElementById(id); return input && input.value !== input.defaultValue; }); }
+    function paintWorkflow(context) {
+        if (!context || !active)
+            return;
+        active.workflow = context;
+        const state = document.getElementById('workflow-state'), actions = document.getElementById('workflow-actions');
+        if (!state || !actions)
+            return;
+        state.textContent = context.paused ? 'Work changes are temporarily paused.' : context.issues.length ? 'Work changes require verified historical dates. Reading, assignment and private follow-ups remain available.' : context.mode === 'preview' ? 'Guided actions are available. Operator rollout enforcement has not been enabled yet.' : 'Choose the next action. Saving assignment does not publish an update.';
+        actions.replaceChildren();
+        const names = { approve: 'Approve', decline: 'Decline', start: 'Start work', update: 'Publish update', milestone: 'Record milestone', pause: 'Pause work', resume: 'Resume work', complete: 'Complete with evidence', correction: 'Correct an update', reopen: 'Reopen work', withdraw: 'Withdraw public idea' };
+        const more = document.createElement('details'), caption = document.createElement('summary');
+        caption.textContent = 'Other actions';
+        more.className = 'workflow-secondary';
+        more.append(caption);
+        const primary = active.status === 'pending' ? ['approve', 'decline'] : active.status === 'approved' ? ['start'] : context.allowedActions.includes('resume') ? ['resume', 'complete'] : active.status === 'in_progress' ? ['update', 'complete'] : ['reopen', 'correction'];
+        for (const action of context.allowedActions) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'workspace-button';
+            button.textContent = names[action];
+            button.dataset.workflowAction = action;
+            (primary.includes(action) ? actions : more).append(button);
+        }
+        if (context.allowedActions.includes('withdraw')) {
+            const merge = document.createElement('a');
+            merge.className = 'workspace-button';
+            merge.textContent = 'Merge duplicate';
+            merge.href = '/admin/community?section=clarifications&task=merge&idea=' + encodeURIComponent(active.id);
+            more.append(merge);
+        }
+        if (more.children.length > 1)
+            actions.append(more);
+        if (repairForm)
+            repairForm.hidden = !context.canRepair;
+    }
+    document.addEventListener('sf:workflow-context', event => paintWorkflow(event.detail));
+    document.addEventListener('click', event => { const button = event.target.closest('[data-workflow-action]'); if (button) {
+        selectTab('progress');
+        window.sfStaffProgress?.prepareAction?.(button.dataset.workflowAction);
+    } });
+    document.addEventListener('sf:review-action', event => { const { id, action, trigger } = event.detail || {}; if (typeof id !== 'string')
+        return; void openReview(id, trigger).then(() => { if (active?.id === id) {
+        selectTab('progress');
+        window.sfStaffProgress?.prepareAction?.(action);
+    } }); });
     const labels = { pending: 'Needs review', approved: 'Planned', in_progress: 'In progress', resolved: 'Completed', rejected: 'Declined' };
     const hints = {
         pending: 'Keep this suggestion in the private review queue.',
@@ -60,7 +108,7 @@
         });
     });
     function hasReviewDraft() { return Boolean(active && !saved && (status.value !== active.status || note.value !== active.staff_note || assignee.value !== active.assignee_id || priority.value !== active.priority || targetDate.value !== active.target_date)); }
-    function hasUnsavedChanges() { return Boolean(internalNote.value.trim() || hasReviewDraft() || window.sfStaffProgress?.hasDraft()); }
+    function hasUnsavedChanges() { return Boolean(internalNote.value.trim() || hasReviewDraft() || hasRepairDraft() || window.sfStaffProgress?.hasDraft()); }
     function updateDraft() { document.getElementById('review-draft-state').textContent = hasUnsavedChanges() ? 'Unsaved changes' : saved ? 'Changes saved' : 'No unsaved changes'; }
     function updateHint() { document.getElementById('review-status-hint').textContent = hints[status.value] || ''; }
     function updateCount() { document.getElementById('review-note-count').textContent = note.value.length.toLocaleString() + ' / 2,000'; updateDraft(); }
@@ -85,7 +133,7 @@
         save.hidden = false;
         saveNext.hidden = false;
         saveNext.disabled = false;
-        save.textContent = 'Save update';
+        save.textContent = 'Save assignment';
         discardWarning.hidden = true;
         message.textContent = '';
         message.classList.remove('is-success');
@@ -130,7 +178,59 @@
         dialog.querySelector('.staff-review-scroll').scrollTop = 0;
         void loadActivity();
         window.sfStaffProgress?.open(item);
+        repairRetry = undefined;
+        if (repairForm) {
+            for (const [id, value] of [['repair-start', item.started_at], ['repair-end', item.resolved_at], ['repair-source', ''], ['repair-reason', '']]) {
+                const input = document.getElementById(id);
+                input.value = value ? new Date(Date.parse(value) + 8 * 3600000).toISOString().slice(0, 10) : '';
+                input.defaultValue = input.value;
+            }
+            document.getElementById('repair-end-wrap').hidden = item.status !== 'resolved';
+            document.getElementById('repair-end').required = item.status === 'resolved';
+        }
+        paintWorkflow(item.workflow);
     }
+    repairForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!active || busy || noteBusy || window.sfStaffProgress?.isBusy() || !repairForm.reportValidity())
+            return;
+        const value = (id) => document.getElementById(id).value;
+        const payload = JSON.stringify({ updatedAt: active.updated_at, startedOn: value('repair-start'), completedOn: value('repair-end'), source: value('repair-source'), reason: value('repair-reason') });
+        if (!repairRetry || repairRetry.payload !== payload)
+            repairRetry = { payload, id: crypto.randomUUID() };
+        const state = document.getElementById('repair-message');
+        busy = true;
+        const button = repairForm.querySelector('button[type="submit"]');
+        button.disabled = true;
+        state.textContent = 'Saving verified dates…';
+        try {
+            const data = await request('/api/staff/submissions/' + active.id + '/work-dates', 'POST', { ...JSON.parse(payload), requestId: repairRetry.id });
+            for (const id of ['repair-source', 'repair-reason', 'repair-start', 'repair-end']) {
+                const input = document.getElementById(id);
+                input.defaultValue = input.value;
+            }
+            Object.assign(active, data.submission);
+            paintWorkflow(data.workflow);
+            state.textContent = 'Verified dates saved.';
+            repairRetry = undefined;
+            busy = false;
+            try {
+                await refreshQueue();
+                await window.sfStaffProgress?.refresh();
+            }
+            catch {
+                state.textContent = 'Verified dates saved, but the workspace could not refresh.';
+            }
+        }
+        catch (error) {
+            state.textContent = error.message || 'Could not confirm the repair. Keep your draft and retry the same request.';
+        }
+        finally {
+            busy = false;
+            button.disabled = false;
+            updateDraft();
+        }
+    });
     async function openReview(id, trigger, section = 'decision') {
         if (busy || noteBusy || window.sfStaffProgress?.isBusy())
             return;
@@ -244,6 +344,7 @@
         }
     });
     async function refreshCare() {
+        const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null, scrollY = window.scrollY;
         const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
         try {
             const response = await fetch(window.location.href, { headers: { Accept: 'text/html' }, cache: 'no-store', signal: controller.signal });
@@ -271,6 +372,12 @@
             const nav = document.querySelector('.care-section-nav'), freshNav = doc.querySelector('.care-section-nav');
             if (nav && freshNav)
                 nav.replaceChildren(...Array.from(freshNav.childNodes));
+            const pager = document.querySelector('.care-pagination'), freshPager = doc.querySelector('.care-pagination');
+            if (pager && freshPager)
+                pager.replaceChildren(...Array.from(freshPager.childNodes));
+            if (focused?.isConnected)
+                focused.focus({ preventScroll: true });
+            window.scrollTo({ top: scrollY });
         }
         finally {
             clearTimeout(timer);
@@ -406,7 +513,7 @@
             fields.disabled = saved;
             save.disabled = saved;
             saveNext.disabled = saved;
-            save.textContent = 'Save update';
+            save.textContent = 'Save assignment';
             form.removeAttribute('aria-busy');
             dialog.querySelectorAll('[data-close-review]').forEach(b => { b.disabled = false; });
             if (nextId)
@@ -536,7 +643,7 @@
         }
     });
     window.sfStaffProgress?.bind({
-        canPost: () => !busy && !noteBusy && !hasReviewDraft(),
+        canPost: () => !busy && !noteBusy && !hasReviewDraft() && !hasRepairDraft(),
         applySnapshot(submission) {
             if (!active || active.id !== submission.id || busy)
                 return false;

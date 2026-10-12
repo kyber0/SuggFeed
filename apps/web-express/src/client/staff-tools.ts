@@ -18,7 +18,7 @@
   let meta:BoardMeta=JSON.parse(metaData.textContent || '{}');
   let items=new Map<string,BoardItem>((JSON.parse(boardData.textContent || '[]') as BoardItem[]).map(item=>[item.id,item]));
   const selected=new Map<string,BoardItem>();
-  const labels:Record<string,string>={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'};
+  const labels:Record<string,string>=Object.fromEntries(meta.lanes.map(lane=>[lane.status,lane.label]));
   const retry=document.getElementById('staff-board-retry') as HTMLButtonElement;
   let loading=false, failedPage:{stage:string|null;url:string;push:boolean}|null=null;
   const urlFor=(stage:string|null,page?:number)=>{
@@ -84,12 +84,11 @@
    finally{clearTimeout(timer);ownLane?.removeAttribute('aria-busy');loading=false;controls();}
   }
   async function move(id:string,stage:string){
-   const item=items.get(id);if(!item || !labels[stage] || item.status===stage || busy || loading)return;
-   if(!window.confirm(`Move “${item.title}” to ${labels[stage]}? Planned, In progress and Completed are public. The current response, assignment and target date are preserved.`)){const select=board.querySelector<HTMLSelectElement>(`[data-stage-select="${id}"]`);if(select)select.value=item.status;return;}
-   busy=true;controls();tell('Saving stage…');
-   try {await save('/api/staff/submissions/'+id+'/review',{status:stage,note:item.staff_note || '',assignee:item.assignee_id || null,priority:item.priority || 'normal',targetDate:item.target_date || null,updatedAt:item.updated_at},'PATCH');selected.delete(id);selectionState();if(!await navigate(null,urlFor(null).href,false,true))tell('Stage saved, but the board could not refresh. Retry loading to confirm its current page.');}
-   catch(e){tell(e.name==='AbortError'?'Request timed out. Refresh to confirm the saved stage before retrying.':e.message);const select=board.querySelector<HTMLSelectElement>(`[data-stage-select="${id}"]`);if(select)select.value=item.status;}
-   finally{busy=false;controls();}
+   const item=items.get(id);if(!item || item.status===stage || busy || loading)return;
+   const action=stage==='in_progress'?(item.status==='resolved'?'reopen':'start'):stage==='resolved'?'complete':stage==='approved' && item.status==='pending'?'approve':stage==='rejected'?(item.status==='pending'?'decline':'withdraw'):null;
+   const select=board.querySelector<HTMLSelectElement>(`[data-stage-select="${id}"]`);if(select)select.value=item.status;
+   if(!action){tell('Use Review submissions for review decisions. Work moves forward through guided actions.');return;}
+   document.dispatchEvent(new CustomEvent('sf:review-action',{detail:{id,action,trigger:board.querySelector(`[data-review="${id}"]`)}}));
   }
   board.addEventListener('click',e=>{
    const link=(e.target as HTMLElement).closest<HTMLAnchorElement>('[data-board-page]');

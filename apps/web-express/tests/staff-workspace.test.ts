@@ -8,7 +8,8 @@ import { sameOriginOnly } from '../src/lib/security';
 
 const id = '00000000-0000-4000-8000-000000000001';
 test('exact submission detail requires staff, validates IDs and excludes submitter and tracking fields', async () => {
-  const original=supabaseService.from;
+  const original=supabaseService.from, originalRpc=supabaseService.rpc;
+  supabaseService.rpc=(async(name,args)=>{assert.equal(name,'staff_workflow_context');assert.equal(args.p_submission_id,id);return {data:{mode:'guided',paused:false,allowedActions:['approve','decline'],issues:[],canRepair:false},error:null};}) as any;
   let role:string|null=null, missing=false, failed=false;const selections:string[]=[],ids:string[]=[];
   supabaseService.from=((table)=>{assert.equal(table,'staff_submission_queue');return {
     select(fields:string){selections.push(fields);return this;},eq(key:string,value:string){assert.equal(key,'id');ids.push(value);return this;},
@@ -21,12 +22,12 @@ test('exact submission detail requires staff, validates IDs and excludes submitt
     assert.equal((await fetch(base+id)).status,401);role='student';assert.equal((await fetch(base+id)).status,403);
     role='moderator';assert.equal((await fetch(base+'invalid')).status,400);assert.equal(selections.length,0);
     const response=await fetch(base+id),body=await response.json() as any;assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');
-    assert.deepEqual(Object.keys(body.item).sort(),['id','title','description','status','category','created_at','updated_at','staff_note','assignee_id','priority','target_date'].sort());
+    assert.deepEqual(Object.keys(body.item).sort(),['id','title','description','status','category','created_at','updated_at','staff_note','assignee_id','priority','target_date','started_at','resolved_at','is_blocked','workflow'].sort());
     assert.equal(body.item.category,'Facilities');assert.equal(body.item.staff_note,'');assert.equal(ids[0],id);
     assert.doesNotMatch(selections[0],/\*|user_id|tracking|email/);
     missing=true;assert.equal((await fetch(base+id)).status,404);missing=false;failed=true;
     const unavailable=await fetch(base+id);assert.equal(unavailable.status,503);assert.doesNotMatch(await unavailable.text(),/Database secret/);
-  }finally{supabaseService.from=original;server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
+  }finally{supabaseService.from=original;supabaseService.rpc=originalRpc;server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
 });
 test('staff filters normalize untrusted values and dates reject impossible calendar dates', () => {
   assert.deepEqual(queueFilters({status:'private', assignment:id, priority:'super', overdue:true, search:'  library  '}), {status:'pending', assignment:'all', priority:'all', overdue:'false', search:'library'});

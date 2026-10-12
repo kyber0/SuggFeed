@@ -1,16 +1,28 @@
 <% const labels={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'}; %>
   <dialog class="workspace-dialog staff-review-dialog" id="staff-review-dialog" aria-labelledby="review-title">
     <header class="workspace-dialog-header"><div><span class="workspace-kicker">SUBMISSION REVIEW</span><span id="review-position" class="staff-review-position"></span></div><button type="button" class="workspace-icon-button" data-close-review aria-label="Close review">×</button></header>
-    <div class="staff-review-heading"><span class="workspace-status" id="review-current-status"></span><h2 id="review-title"></h2><p id="review-meta" class="workspace-detail-meta"></p></div>
-    <div class="staff-review-tabs" role="tablist" aria-label="Submission sections"><% for(const [key,name] of [['decision','Review'],['progress','Progress'],['notes','Internal notes'],['history','History']]) { %><button type="button" role="tab" id="review-tab-<%= key %>" aria-controls="review-panel-<%= key %>" aria-selected="<%= key==='decision' %>" tabindex="<%= key==='decision' ? '0' : '-1' %>" data-review-tab="<%= key %>"><%= name %><% if(key==='notes') { %><span class="workspace-tag">Private</span><% } %></button><% } %></div>
+    <div class="staff-review-heading">
+      <div class="staff-review-heading-title"><h2 id="review-title"></h2><span class="workspace-status" id="review-current-status"></span></div>
+      <div class="staff-review-heading-meta"><p id="review-meta" class="workspace-detail-meta"></p><a id="review-clarification-link" class="workspace-text-link" href="/admin/community" title="Request private clarification">Private clarification →</a></div>
+    </div>
+    <div class="staff-review-tabs" role="tablist" aria-label="Submission sections"><% for(const [key,name] of [['decision','Decision'],['progress','Work updates'],['notes','Internal notes'],['history','History']]) { %><button type="button" role="tab" id="review-tab-<%= key %>" aria-controls="review-panel-<%= key %>" aria-selected="<%= key==='decision' %>" tabindex="<%= key==='decision' ? '0' : '-1' %>" data-review-tab="<%= key %>"><%= name %><% if(key==='notes') { %><span class="workspace-tag">Private</span><% } %></button><% } %></div>
     <div class="staff-review-scroll">
       <section role="tabpanel" id="review-panel-decision" aria-labelledby="review-tab-decision" class="staff-review-panel">
-        <section class="staff-review-context" aria-labelledby="review-context-title"><h3 class="workspace-field-label" id="review-context-title">The suggestion</h3><p class="workspace-description" id="review-description"></p><p class="staff-footnote">Read the original suggestion before changing its status or publishing a response.</p></section>
+        <section class="staff-review-context" aria-labelledby="review-context-title"><h3 class="workspace-field-label" id="review-context-title">The suggestion</h3><p class="workspace-description" id="review-description"></p><p class="staff-footnote">Read the original suggestion before changing its status or publishing a response.</p><section class="workflow-guidance" aria-labelledby="workflow-guidance-title"><h3 id="workflow-guidance-title">Next step</h3><p id="workflow-state" role="status"></p><div id="workflow-actions" class="workspace-actions"></div></section>
+          <form id="work-date-repair-form" class="care-form" hidden>
+           <h3>Verify historical work dates</h3><p>Only enter dates supported by a real record. This does not change status or rewrite old updates.</p>
+           <label>Verified work start<input type="date" class="workspace-input" id="repair-start" required/></label>
+           <label id="repair-end-wrap">Verified completion date<input type="date" class="workspace-input" id="repair-end"/></label>
+           <label>Private verification source/reference<textarea id="repair-source" class="workspace-input" maxlength="2000" required></textarea></label>
+           <label>Private audit reason<textarea id="repair-reason" class="workspace-input" maxlength="600" required></textarea></label>
+           <button type="submit" class="workspace-button">Save verified dates</button><p id="repair-message" role="status"></p>
+          </form>
+        </section>
         <form id="staff-review-form" novalidate>
-          <label class="workspace-field-label" for="staff-response-template">Response starter</label><select id="staff-response-template" class="workspace-input"><option value="">Choose an editable template…</option><option value="planned">Approved for planning</option><option value="clarify">Request more information</option><option value="declined">Explain a decline</option></select><p class="staff-footnote">Edit the template before saving. A response template does not send a private clarification request.</p>
+          <div hidden><label class="workspace-field-label" for="staff-response-template">Legacy response starter</label><select id="staff-response-template" class="workspace-input" disabled><option value="">Use a guided action to explain the decision</option></select></div>
           <fieldset id="staff-review-fields">
-            <legend>Your decision</legend>
-            <label class="workspace-field-label" for="review-status">Status</label><select id="review-status" class="workspace-input" required aria-describedby="review-status-hint"><% for(const key of Object.keys(labels).filter(k=>k!=='all')) { %><option value="<%= key %>"><%= labels[key] %></option><% } %></select>
+            <legend>Staff coordination</legend>
+            <input id="review-status" type="hidden"/><p class="staff-footnote">This form saves assignment, priority and target date. Use Next step for decisions and public work changes.</p>
             <p class="workspace-field-hint" id="review-status-hint"></p>
             <div class="staff-review-workflow">
               <div class="staff-assignee-field"><label class="workspace-field-label" for="review-assignee">Assigned staff</label><button type="button" class="workspace-text-link" id="review-assign-me">Assign to me</button><select id="review-assignee" class="workspace-input"><option value="">Unassigned</option><% for(const staff of it.staffMembers || []) { %><option value="<%= staff.id %>"><%= staff.display_name || 'Unnamed staff' %> · <%= staff.role %></option><% } %></select></div>
@@ -18,7 +30,7 @@
               <label for="review-target-date">Target date · optional<input id="review-target-date" class="workspace-input" type="date" min="2000-01-01" max="2100-12-31" aria-describedby="review-date-error"/><span id="review-date-error" class="staff-field-error" role="status"></span></label>
             </div>
             <p class="staff-privacy-hint">Assignment, priority, and target date are visible to staff only.</p>
-            <label class="workspace-field-label" for="review-note">Public response <span>Optional · visible to the submitter and community</span></label><textarea id="review-note" class="workspace-input" rows="5" maxlength="2000" placeholder="Explain the decision and what happens next."></textarea><div class="staff-note-footer"><span>Avoid names and personal information.</span><span id="review-note-count">0 / 2,000</span></div>
+            <label class="workspace-field-label" for="review-note">School decision <span>Read only here · changes are recorded through guided actions</span></label><textarea id="review-note" class="workspace-input" rows="3" readonly maxlength="2000" placeholder="Explain the decision and what happens next."></textarea><div class="staff-note-footer"><span>Avoid names and personal information.</span><span id="review-note-count">0 / 2,000</span></div>
           </fieldset>
         </form>
       </section>
@@ -41,7 +53,7 @@
       <p id="review-message" class="workspace-message" role="status" aria-live="polite" tabindex="-1"></p>
       <button type="button" class="workspace-button" id="review-retry-detail" hidden>Retry loading submission</button>
       <div id="review-discard-warning" class="staff-discard-warning" role="alert" hidden><strong>Leave without saving?</strong><p>Unsaved review, progress, and private-note drafts will be discarded.</p><div><button type="button" class="workspace-button" id="review-keep-editing">Keep editing</button><button type="button" class="workspace-button" id="review-discard-confirm">Discard draft</button></div></div>
-      <div class="workspace-dialog-actions"><span id="review-draft-state" role="status" aria-live="polite">No unsaved changes</span><button type="button" class="workspace-button" id="review-dismiss" data-close-review>Cancel</button><button type="submit" form="staff-review-form" class="workspace-button" id="review-save-next" name="action" value="next">Save & next</button><button type="submit" form="staff-review-form" class="workspace-button workspace-button--primary" id="review-save">Save update</button></div>
+      <div class="workspace-dialog-actions"><span id="review-draft-state" role="status" aria-live="polite">No unsaved changes</span><button type="button" class="workspace-button" id="review-dismiss" data-close-review>Cancel</button><button type="submit" form="staff-review-form" class="workspace-button" id="review-save-next" name="action" value="next">Save & next</button><button type="submit" form="staff-review-form" class="workspace-button workspace-button--primary" id="review-save">Save assignment</button></div>
     </footer>
   </dialog>
 

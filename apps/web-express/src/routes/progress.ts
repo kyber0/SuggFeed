@@ -2,10 +2,11 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { staffRole, UUID } from '../lib/staff-workspace';
 import { listStaffProgress, loadStaffProgressSubmission, postProgress, ProgressError } from '../lib/progress';
 import { invalidateCache } from '../lib/data';
+import {workflowContext} from '../lib/workflow';
 
 const router = Router();
 const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => {
-  fn(req, res).catch(error => error instanceof ProgressError ? res.status(error.status).json({ success: false, error: error.message }) : next(error));
+  fn(req, res).catch(error => error instanceof ProgressError ? res.status(error.status).json({ success: false, error: error.message,code:error.code }) : next(error));
 };
 // Use under the app's verified-identity, same-origin/CSRF, and API rate-limit middleware.
 router.use((req, res, next) => {
@@ -21,7 +22,7 @@ router.param('id', (_req, res, next, id) => {
 router.get(['/:id/updates', '/submissions/:id/updates'], run(async (req, res) => {
   const id = req.params.id as string;
   const [submission, updates] = await Promise.all([loadStaffProgressSubmission(id), listStaffProgress(id, req.session.user!.id)]);
-  return res.json({ success: true, submission, updates, limit: 100 });
+  return res.json({ success: true, submission, updates, limit: 100,workflow:await workflowContext(id,req.session.user!.id) });
 }));
 router.post(['/:id/updates', '/submissions/:id/updates'], run(async (req, res) => {
   const id = req.params.id as string;

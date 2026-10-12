@@ -1,6 +1,6 @@
 interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
 (() => {
-  interface QueueItem { id:string; title:string; description:string; category:string; status:string; created_at:string; updated_at:string; staff_note:string; assignee_id:string; priority:string; target_date:string; }
+  interface QueueItem { id:string; title:string; description:string; category:string; status:string; created_at:string; updated_at:string; staff_note:string; assignee_id:string; priority:string; target_date:string;started_at?:string;resolved_at?:string;workflow?:StaffWorkflowContext; }
   const queueData=document.getElementById('staff-queue-data');
   const isQueue=!!queueData;
   let items:QueueItem[] = JSON.parse(queueData?.textContent || '[]');
@@ -29,6 +29,25 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   let requestedId='', requestedSection='decision';
   let active:QueueItem | undefined;
   let returnFocus:HTMLElement | null=null;
+  let repairRetry:{payload:string;id:string}|undefined;
+  const repairForm=document.getElementById('work-date-repair-form') as HTMLFormElement;
+  function hasRepairDraft(){return !!repairForm && !repairForm.hidden && ['repair-source','repair-reason','repair-start','repair-end'].some(id=>{const input=document.getElementById(id) as HTMLInputElement;return input && input.value!==input.defaultValue;});}
+  function paintWorkflow(context?:StaffWorkflowContext){
+    if(!context || !active)return;active.workflow=context;
+    const state=document.getElementById('workflow-state'),actions=document.getElementById('workflow-actions');if(!state || !actions)return;
+    state.textContent=context.paused?'Work changes are temporarily paused.':context.issues.length?'Work changes require verified historical dates. Reading, assignment and private follow-ups remain available.':context.mode==='preview'?'Guided actions are available. Operator rollout enforcement has not been enabled yet.':'Choose the next action. Saving assignment does not publish an update.';
+    actions.replaceChildren();
+    const names:Record<string,string>={approve:'Approve',decline:'Decline',start:'Start work',update:'Publish update',milestone:'Record milestone',pause:'Pause work',resume:'Resume work',complete:'Complete with evidence',correction:'Correct an update',reopen:'Reopen work',withdraw:'Withdraw public idea'};
+    const more=document.createElement('details'),caption=document.createElement('summary');caption.textContent='Other actions';more.className='workflow-secondary';more.append(caption);
+    const primary=active.status==='pending'?['approve','decline']:active.status==='approved'?['start']:context.allowedActions.includes('resume')?['resume','complete']:active.status==='in_progress'?['update','complete']:['reopen','correction'];
+    for(const action of context.allowedActions){const button=document.createElement('button');button.type='button';button.className='workspace-button';button.textContent=names[action];button.dataset.workflowAction=action;(primary.includes(action)?actions:more).append(button);}
+    if(context.allowedActions.includes('withdraw')){const merge=document.createElement('a');merge.className='workspace-button';merge.textContent='Merge duplicate';merge.href='/admin/community?section=clarifications&task=merge&idea='+encodeURIComponent(active.id);more.append(merge);}
+    if(more.children.length>1)actions.append(more);
+    if(repairForm)repairForm.hidden=!context.canRepair;
+  }
+  document.addEventListener('sf:workflow-context',event=>paintWorkflow((event as CustomEvent).detail));
+  document.addEventListener('click',event=>{const button=(event.target as Element).closest<HTMLElement>('[data-workflow-action]');if(button){selectTab('progress');window.sfStaffProgress?.prepareAction?.(button.dataset.workflowAction!);}});
+  document.addEventListener('sf:review-action',event=>{const {id,action,trigger}=(event as CustomEvent).detail || {};if(typeof id!=='string')return;void openReview(id,trigger).then(()=>{if(active?.id===id){selectTab('progress');window.sfStaffProgress?.prepareAction?.(action);}});});
   const labels:Record<string,string>={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'};
   const hints:Record<string,string>={
     pending:'Keep this suggestion in the private review queue.',
@@ -55,7 +74,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     });
   });
   function hasReviewDraft() {return Boolean(active && !saved && (status.value!==active.status || note.value!==active.staff_note || assignee.value!==active.assignee_id || priority.value!==active.priority || targetDate.value!==active.target_date));}
-  function hasUnsavedChanges() {return Boolean(internalNote.value.trim() || hasReviewDraft() || window.sfStaffProgress?.hasDraft());}
+  function hasUnsavedChanges() {return Boolean(internalNote.value.trim() || hasReviewDraft() || hasRepairDraft() || window.sfStaffProgress?.hasDraft());}
   function updateDraft() {document.getElementById('review-draft-state')!.textContent=hasUnsavedChanges()?'Unsaved changes':saved?'Changes saved':'No unsaved changes';}
   function updateHint(){document.getElementById('review-status-hint')!.textContent=hints[status.value] || '';}
   function updateCount(){document.getElementById('review-note-count')!.textContent=note.value.length.toLocaleString()+' / 2,000';updateDraft();}
@@ -68,7 +87,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     active=item;
     const index=items.findIndex(i=>i.id===item.id);if(index>=0)items[index]=item;
     saved=false; fields.disabled=false; save.disabled=false; save.hidden=false; saveNext.hidden=false; saveNext.disabled=false;
-    save.textContent='Save update'; discardWarning.hidden=true; message.textContent=''; message.classList.remove('is-success');
+    save.textContent='Save assignment'; discardWarning.hidden=true; message.textContent=''; message.classList.remove('is-success');
     document.getElementById('review-dismiss')!.textContent='Cancel';
     document.getElementById('review-title')!.textContent=item.title;
     document.getElementById('review-description')!.textContent=item.description;
@@ -90,7 +109,23 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     dialog.querySelector('.staff-review-scroll')!.scrollTop=0;
     void loadActivity();
     window.sfStaffProgress?.open(item);
+    repairRetry=undefined;
+    if(repairForm){for(const [id,value] of [['repair-start',item.started_at],['repair-end',item.resolved_at],['repair-source',''],['repair-reason','']]){const input=document.getElementById(id) as HTMLInputElement;input.value=value?new Date(Date.parse(value)+8*3600000).toISOString().slice(0,10):'';input.defaultValue=input.value;}
+      document.getElementById('repair-end-wrap')!.hidden=item.status!=='resolved';(document.getElementById('repair-end') as HTMLInputElement).required=item.status==='resolved';}
+    paintWorkflow(item.workflow);
   }
+  repairForm?.addEventListener('submit',async event=>{
+    event.preventDefault();if(!active || busy || noteBusy || window.sfStaffProgress?.isBusy() || !repairForm.reportValidity())return;
+    const value=(id:string)=>(document.getElementById(id) as HTMLInputElement).value;
+    const payload=JSON.stringify({updatedAt:active.updated_at,startedOn:value('repair-start'),completedOn:value('repair-end'),source:value('repair-source'),reason:value('repair-reason')});
+    if(!repairRetry || repairRetry.payload!==payload)repairRetry={payload,id:crypto.randomUUID()};
+    const state=document.getElementById('repair-message')!;busy=true;const button=repairForm.querySelector<HTMLButtonElement>('button[type="submit"]')!;button.disabled=true;state.textContent='Saving verified dates…';
+    try{const data=await request('/api/staff/submissions/'+active.id+'/work-dates','POST',{...JSON.parse(payload),requestId:repairRetry.id});
+      for(const id of ['repair-source','repair-reason','repair-start','repair-end']){const input=document.getElementById(id) as HTMLInputElement;input.defaultValue=input.value;}
+      Object.assign(active,data.submission);paintWorkflow(data.workflow);state.textContent='Verified dates saved.';repairRetry=undefined;busy=false;try{await refreshQueue();await window.sfStaffProgress?.refresh();}catch{state.textContent='Verified dates saved, but the workspace could not refresh.';}
+    }catch(error){state.textContent=error.message || 'Could not confirm the repair. Keep your draft and retry the same request.';}
+    finally{busy=false;button.disabled=false;updateDraft();}
+  });
   async function openReview(id:string, trigger?:HTMLElement, section='decision') {
     if(busy || noteBusy || window.sfStaffProgress?.isBusy())return;
     if(dialog.open && hasUnsavedChanges()){discardWarning.hidden=false;document.getElementById('review-keep-editing')!.focus();return;}
@@ -144,6 +179,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     if(Array.from(assignee.options).some(o=>o.value===currentUser)){assignee.value=currentUser;updateDraft();}
   });
   async function refreshCare(){
+    const focused=document.activeElement instanceof HTMLElement?document.activeElement:null,scrollY=window.scrollY;
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
     try{
       const response=await fetch(window.location.href,{headers:{Accept:'text/html'},cache:'no-store',signal:controller.signal});
@@ -163,6 +199,8 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
         old.replaceChildren(...Array.from(fresh.childNodes));
       }
       const nav=document.querySelector('.care-section-nav'),freshNav=doc.querySelector('.care-section-nav');if(nav && freshNav)nav.replaceChildren(...Array.from(freshNav.childNodes));
+      const pager=document.querySelector('.care-pagination'),freshPager=doc.querySelector('.care-pagination');if(pager && freshPager)pager.replaceChildren(...Array.from(freshPager.childNodes));
+      if(focused?.isConnected)focused.focus({preventScroll:true});window.scrollTo({top:scrollY});
     }finally{clearTimeout(timer);}
   }
   async function refreshQueue() {
@@ -225,7 +263,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     } catch(error) {
       message.textContent=error instanceof Error && error.name!=='AbortError' && !(error instanceof TypeError)?error.message:'We could not confirm the save. Your draft is still here. Refresh the queue before retrying.';
     } finally {
-      clearTimeout(timer);busy=false;fields.disabled=saved;save.disabled=saved;saveNext.disabled=saved;save.textContent='Save update';
+      clearTimeout(timer);busy=false;fields.disabled=saved;save.disabled=saved;saveNext.disabled=saved;save.textContent='Save assignment';
       form.removeAttribute('aria-busy');dialog.querySelectorAll<HTMLButtonElement>('[data-close-review]').forEach(b=>{b.disabled=false;});
       if(nextId)openReview(nextId);else{if(saved)void window.sfStaffProgress?.refresh();message.focus();}
     }
@@ -306,7 +344,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     finally { noteBusy = false; button.disabled = false; internalNote.disabled = false; }
   });
   window.sfStaffProgress?.bind({
-    canPost:()=>!busy && !noteBusy && !hasReviewDraft(),
+    canPost:()=>!busy && !noteBusy && !hasReviewDraft() && !hasRepairDraft(),
     applySnapshot(submission){
       if(!active || active.id!==submission.id || busy)return false;
       if(hasReviewDraft())return active.updated_at===submission.updated_at;

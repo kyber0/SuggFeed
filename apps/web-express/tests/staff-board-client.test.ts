@@ -107,6 +107,8 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
   doc = documentTree(initial);
   doc.addEventListener = (name: string, fn: Function) => listeners.set(name, [...(listeners.get(name) || []), fn]);
   doc.createElement = (tag: string) => element(tag);
+  const workflowEvents:any[]=[];
+  doc.dispatchEvent=(event:any)=>{workflowEvents.push(event.detail);return true;};
   const location: any = { reload: () => { reloads++; }, assign: (url: string) => navigations.push(url) };
   for (const property of ['href', 'origin', 'pathname', 'search']) Object.defineProperty(location, property, { get: () => currentUrl[property] });
   const window: any = {
@@ -132,7 +134,7 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/staff-tools.js'), 'utf8'), {
     document: doc, window, history: window.history, location, fetch, URL, URLSearchParams, AbortController, Map, Set, JSON, Date, Number, String, Array, Error,
-    HTMLElement: Node, HTMLInputElement: Node, HTMLSelectElement: Node, HTMLAnchorElement: Node, Event: class {},
+    HTMLElement: Node, HTMLInputElement: Node, HTMLSelectElement: Node, HTMLAnchorElement: Node, Event: class {}, CustomEvent: class {constructor(public type:string,public options:any){} get detail(){return this.options.detail;}},
     DOMParser: class { parseFromString(marker: string) { return trees.get(marker); } },
     setTimeout: (fn: Function) => { timers.set(++timerId, fn); return timerId; }, clearTimeout: (id: number) => timers.delete(id),
   });
@@ -144,7 +146,7 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
     await flush(); return event;
   };
   return {
-    doc, requests, confirms, navigations, historyActions, flush, emit,
+    doc, requests, confirms, navigations, historyActions, flush, emit, workflowEvents,
     node: (id: string) => doc.getElementById(id), find: (selector: string) => doc.querySelector(selector),
     lane: (stage: string) => doc.querySelector(`[data-drop-stage="${stage}"]`),
     page: async (stage: string) => emit('click', doc.querySelector(`[data-board-page="${stage}"]`)),
@@ -225,15 +227,16 @@ test('native Go forms update only their stage page while preserving other lane s
   assert.equal(h.requests.length, 1);
 });
 
-test('newly paged stage menus retain confirmation and leave current stage intact when cancelled', async () => {
+test('newly paged stage menus open a guided form without writing or changing the card', async () => {
   const h = harness(); await h.page('approved');
   const select = h.lane('approved').querySelector('[data-stage-select]'); select.value = 'in_progress'; h.setConfirm(false);
   await h.emit('change', select);
   assert.equal(select.value, 'approved');
   assert.equal(h.requests.some(request => request.options.method === 'PATCH'), false);
-  assert.equal(h.confirms.length, 1);
+  assert.equal(h.confirms.length, 0);
+  assert.equal(h.workflowEvents[0].action,'start');
   h.setConfirm(true); select.value = 'in_progress'; await h.emit('change', select);
-  assert.equal(h.requests.some(request => request.options.method === 'PATCH'), true);
+  assert.equal(h.requests.some(request => request.options.method === 'PATCH'), false);
 });
 
 test('clear selection resets retained selections and delegated checkboxes enforce the 25-item cap', async () => {
@@ -261,7 +264,7 @@ test('paging is blocked while a confirmed mutation is outstanding', async () => 
   assert.equal(h.reloads, 0);
 });
 
-test('dragging a newly paged card still confirms movement and timeout leaves its existing stage unchanged', async () => {
+test('dragging a newly paged card opens completion and leaves the existing stage unchanged', async () => {
   const h = harness(); await h.page('approved');
   const card = h.lane('approved').querySelector('[data-board-id]');
   const transfer: string[] = [];
@@ -270,12 +273,9 @@ test('dragging a newly paged card still confirms movement and timeout leaves its
   const dropped = await h.emit('drop', h.lane('resolved'));
   assert.equal(dropped.defaultPrevented, true);
   assert.equal(transfer[0], card.dataset.boardId);
-  assert.match(h.confirms[0], /Completed/);
+  assert.equal(h.workflowEvents[0].action,'complete');
   assert.equal(h.lane('approved').querySelector('[data-board-id]'), card);
-  assert.match(h.node('staff-tools-message').textContent, /timed out|timeout/i);
   assert.equal(h.reloads, 0);
-  const mutation = h.requests.find(request => request.options.method === 'PATCH');
-  assert.equal(mutation.body.status, 'resolved');
-  assert.ok(mutation.options.signal instanceof AbortSignal);
+  assert.equal(h.requests.some(request=>request.options.method==='PATCH'),false);
   assert.equal(h.timers.size, 0);
 });

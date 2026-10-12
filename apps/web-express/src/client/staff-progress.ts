@@ -10,6 +10,7 @@ interface StaffProgressHost {
   changed():void;
   posting(busy:boolean):void;
 }
+interface StaffWorkflowContext {mode:string;paused:boolean;allowedActions:string[];issues:string[];canRepair:boolean;}
 interface Window {
   sfStaffProgress?:{
     bind(host:StaffProgressHost):void;
@@ -19,6 +20,7 @@ interface Window {
     isBusy():boolean;
     focusDraft():void;
     close():void;
+    prepareAction?(action:string):void;
   };
 }
 
@@ -55,7 +57,7 @@ interface Window {
   const fileList=document.getElementById('staff-progress-evidence-list')!;
   const fileMessage=document.getElementById('staff-progress-evidence-message')!;
   const previewFiles=document.getElementById('staff-progress-preview-files')!;
-  const labels:Record<string,string>={started:'Work started',update:'Progress update',milestone:'Milestone reached',blocked:'Work is blocked',completed:'Work completed',correction:'Correction'};
+  const labels:Record<string,string>={approve:'Approve suggestion',decline:'Decline suggestion',started:'Start work',update:'Publish work update',milestone:'Record milestone',blocked:'Pause work',completed:'Complete work with evidence',correction:'Publish correction',resumed:'Resume work',reopened:'Reopen work',withdrawn:'Withdraw public idea'};
   const reasons:Record<string,string>={budget:'Budget',parts:'Parts or supplies',approval:'Approval',scheduling:'Scheduling',other:'Other'};
   const hints:Record<string,string>={
     started:'Tell the community that work has begun.',update:'Share what changed. Leave the progress estimate blank to keep it unchanged.',
@@ -63,7 +65,22 @@ interface Window {
     completed:'Confirm the work is finished. A public completion update marks progress as 100%.',correction:'Explain what was incorrect and give the correct information. The original update stays visible.'
   };
   let host:StaffProgressHost | undefined;
-  let active:{id:string;status:string;title:string} | undefined;
+  let active:{id:string;status:string;title:string;workflow?:StaffWorkflowContext} | undefined;
+  let workflow:StaffWorkflowContext | undefined;
+  const actionKind:Record<string,string>={approve:'approve',decline:'decline',start:'started',update:'update',milestone:'milestone',pause:'blocked',resume:'resumed',complete:'completed',correction:'correction',reopen:'reopened',withdraw:'withdrawn'};
+  let prepared:string | undefined;
+  function setWorkflow(value?:StaffWorkflowContext){
+    if(!value)return;workflow=value;
+    const explicit=!!prepared;const selected=prepared? actionKind[prepared]:kind.value;prepared=undefined;
+    const options=value.allowedActions.map(action=>{const option=document.createElement('option');option.value=actionKind[action];option.textContent=labels[option.value];return option;});
+    if(!options.length){const option=document.createElement('option');option.value='';option.textContent=value.paused?'Work changes paused':'No work action available';options.push(option);}
+    if(selected && !options.some(option=>option.value===selected) && (explicit || body.value.trim())){
+      const invalid=document.createElement('option');invalid.value=selected;invalid.textContent=(labels[selected] || selected)+' — no longer available';invalid.disabled=true;options.push(invalid);
+    }
+    kind.replaceChildren(...options);kind.value=options.some(option=>option.value===selected)?selected:options[0].value;
+    visibility.value='public';
+    document.dispatchEvent(new CustomEvent('sf:workflow-context',{detail:value}));
+  }
   let snapshot:StaffProgressSnapshot | undefined;
   let controller:AbortController | undefined;
   let loading=false,posting=false,baseline='',generation=0;
@@ -92,7 +109,7 @@ interface Window {
     }finally{clearTimeout(timer);}
   }
   function evidenceChanged(){
-    post.disabled=posting || !evidenceReady();filePicker.disabled=isBusy() || draftFiles.length>=5;
+    post.disabled=posting || !evidenceReady() || !!workflow && (workflow.paused || !workflow.allowedActions.some(action=>actionKind[action]===kind.value));filePicker.disabled=isBusy() || draftFiles.length>=5 || !!workflow?.paused;
     refresh.disabled=loading || isBusy();
     (document.getElementById('staff-progress-clear') as HTMLButtonElement).disabled=isBusy();
     document.getElementById('staff-progress-evidence-count')!.textContent=draftFiles.length+' / 5 files';
@@ -136,7 +153,7 @@ interface Window {
     const ownGeneration=generation;draftRequestId ||= crypto.randomUUID();file.state='uploading';file.error=undefined;evidenceBusy++;drawEvidence();
     try{
       if(!file.reservationId){
-        const data=await evidenceRequest('/api/staff/progress-upload/reserve','POST',{requestId:draftRequestId,uploadId:file.localId,name:file.file.name,mime:file.file.type,size:file.file.size,alt:file.alt.trim() || null});
+        const data=await evidenceRequest('/api/staff/progress-upload/reserve','POST',{requestId:draftRequestId,submissionId:active?.id,uploadId:file.localId,name:file.file.name,mime:file.file.type,size:file.file.size,alt:file.alt.trim() || null});
         file.reservationId=data.file.id;file.upload=data.upload;file.step='upload';
         if(data.file.state==='ready' && evidenceUrl(data.file.href)){file.evidence=data.file;file.state='ready';fileMessage.textContent='Evidence is ready. It will be attached when you post this update.';return;}
       }
@@ -184,13 +201,16 @@ interface Window {
   function resetDraft(discard=true){
     if(discard)discardEvidence();else {for(const file of draftFiles)if(file.previewUrl)URL.revokeObjectURL(file.previewUrl);draftFiles=[];}
     draftRequestId=undefined;filePicker.value='';fileMessage.textContent='';drawEvidence();
-    form.reset();kind.value='update';visibility.value=published()?'public':'staff';percent.value='';blocked.value='';nextStep.value='';
+    form.reset();kind.value='update';visibility.value=published() || workflow?'public':'staff';percent.value='';blocked.value='';nextStep.value='';
+    if(workflow)setWorkflow(workflow);
     date.value=today();date.max=today();date.min=new Date(Date.parse(today()+'T12:00:00Z')-14*86400000).toISOString().slice(0,10);
     (document.getElementById('staff-progress-advanced') as HTMLDetailsElement).open=false;
     retry=undefined;updateComposer();baseline=value();host?.changed();
   }
   function updateComposer(){
-    const privateOnly=!published();const staffOnly=visibility.value==='staff';
+    const privateOnly=!published() && !workflow;
+    if(workflow){visibility.value=kind.value==='decline'?'staff':'public';visibility.disabled=true;}
+    const staffOnly=visibility.value==='staff';
     visibility.querySelector<HTMLOptionElement>('option[value="public"]')!.disabled=privateOnly;
     document.getElementById('staff-progress-audience-hint')!.textContent=staffOnly
       ?'Only school staff can see this update. It will not change public status, progress, or dates.'
@@ -199,11 +219,17 @@ interface Window {
     document.getElementById('staff-progress-blocked-field')!.hidden=kind.value!=='blocked';
     blocked.required=kind.value==='blocked';blocked.disabled=kind.value!=='blocked';
     const isCompleted=kind.value==='completed';
-    percent.disabled=staffOnly || isCompleted || snapshot?.status==='resolved';
+    if(workflow){
+      document.getElementById('staff-progress-evidence-title')!.textContent=isCompleted?'Evidence · required for completion':'Evidence · optional';
+      (document.getElementById('staff-progress-advanced') as HTMLDetailsElement).open=true;
+      if(kind.value==='decline')document.getElementById('staff-progress-audience-hint')!.textContent='This decision is retained for the submitter’s status tracking. It is not published on the public roadmap.';
+      if(kind.value==='reopened')document.getElementById('staff-progress-percent-hint')!.textContent='Blank resets current progress to not estimated. Previous completion events remain in history.';
+    }
+    percent.disabled=staffOnly || isCompleted || ['approve','decline','withdrawn'].includes(kind.value) || (snapshot?.status==='resolved' && kind.value!=='reopened');
     percent.querySelector<HTMLOptionElement>('option[value="100"]')!.disabled=!isCompleted;
     if(isCompleted && !staffOnly)percent.value='100';
     notify.disabled=staffOnly;document.getElementById('staff-progress-notify-field')!.hidden=staffOnly;
-    document.getElementById('staff-progress-percent-hint')!.textContent=staffOnly?'Staff-only updates do not change public progress.':isCompleted?'Completion sets public progress to 100%.':snapshot?.status==='resolved'?'Completed ideas keep their completion estimate. Reopen the idea in Review to change progress.':'Blank keeps the current estimate. Use increments of 5%.';
+    document.getElementById('staff-progress-percent-hint')!.textContent=kind.value==='reopened'?'Blank resets current progress to not estimated; previous completion history remains.':staffOnly?'Staff-only updates do not change public progress.':isCompleted?'Completion sets public progress to 100% and clears the paused state.':snapshot?.status==='resolved'?'Completed ideas keep their completion estimate. Reopen the idea to change progress.':'Blank keeps the current estimate. Use increments of 5%.';
     document.getElementById('staff-progress-count')!.textContent=body.value.length+' / 600';
     document.getElementById('staff-progress-preview-title')!.textContent=staffOnly?'Staff-only preview':'Public preview';
     const preview=document.getElementById('staff-progress-preview')!;preview.dataset.visibility=visibility.value;
@@ -215,7 +241,7 @@ interface Window {
     if(kind.value==='blocked' && blocked.value)previewMeta.push('Blocked: '+reasons[blocked.value]);
     previewMeta.push(staffOnly?'Staff only':'Posted by the school');
     document.getElementById('staff-progress-preview-meta')!.textContent=previewMeta.join(' · ');
-    post.textContent=posting?'Posting…':staffOnly?'Post staff update':kind.value==='correction'?'Publish correction':'Publish update';
+    post.textContent=posting?'Saving…':workflow?labels[kind.value] || 'Save action':staffOnly?'Post staff update':kind.value==='correction'?'Publish correction':'Publish update';
     evidenceChanged();host?.changed();
   }
   function drawSummary(){
@@ -262,7 +288,7 @@ interface Window {
       const data=await response.json().catch(()=>null);
       if(!response.ok || !data?.success || !data.submission)throw new Error(response.status===401 || response.status===403?'Your staff session expired or access changed. Sign in again.':'Progress could not load. Use Refresh to try again.');
       if(generation!==ownGeneration || controller!==request)return;
-      const hadDraft=hasDraft();snapshot=data.submission;
+      const hadDraft=hasDraft();snapshot=data.submission;setWorkflow(data.workflow);
       const synchronized=host?.applySnapshot(snapshot)!==false;
       const updates:ProgressEvent[]=Array.isArray(data.updates)?data.updates:[];
       const confirmedRetry=retry && updates.some(update=>update.request_id===retry!.requestId);
@@ -291,24 +317,28 @@ interface Window {
   document.getElementById('staff-progress-clear')!.addEventListener('click',()=>{if(!isBusy()){resetDraft();setMessage('Draft cleared.');body.focus();}});
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(isBusy() || loading || !active || !snapshot)return;
+    if(workflow && (workflow.paused || !workflow.allowedActions.some(action=>actionKind[action]===kind.value))){setMessage('This action is not currently available. Refresh the submission; keep your draft.');return;}
+    if(workflow && kind.value==='completed' && !draftFiles.some(file=>file.state==='ready')){fileMessage.textContent='Completion requires at least one ready evidence file. Review its contents for private information before publishing.';fileMessage.focus();return;}
     if(!evidenceReady()){fileMessage.textContent='Upload or remove every selected file before publishing this update.';fileMessage.focus();return;}
     if(host?.canPost()===false){setMessage('Save or discard changes in Review before posting a progress update. Your progress draft is safe here.');message.focus();return;}
     if(!body.value.trim()){body.setCustomValidity('Write a short update before posting.');body.reportValidity();body.setCustomValidity('');return;}
     if(!date.validity.valid)(document.getElementById('staff-progress-advanced') as HTMLDetailsElement).open=true;
     if(!form.reportValidity())return;
-    if(visibility.value==='public' && snapshot.status==='resolved' && !['update','correction'].includes(kind.value)){
+    if(!workflow && visibility.value==='public' && snapshot.status==='resolved' && !['update','correction'].includes(kind.value)){
       setMessage('This idea is completed. Choose Progress update or Correction, or reopen it in Review first.');kind.focus();return;
     }
     const payload={updatedAt:snapshot.updated_at,kind:kind.value,body:body.value.trim(),visibility:visibility.value,
       percent:visibility.value==='staff' || (percent.disabled && kind.value!=='completed')?null:percent.value===''?null:Number(percent.value),
       blockedReason:kind.value==='blocked'?blocked.value:null,nextStep:nextStep.value.trim() || null,occurredOn:date.value,notify:visibility.value==='public' && notify.checked};
     const serialized=JSON.stringify(payload);
+    if(workflow && ['completed','withdrawn','reopened','approve','decline'].includes(kind.value) && !window.confirm((kind.value==='completed'?'Complete this work, publish its outcome and evidence, and clear any paused state?':kind.value==='withdrawn'?'Withdraw this idea from public views? Its tracking record and history will remain.':kind.value==='reopened'?'Reopen this work publicly? Previous completion history remains; the current completion date will be cleared.':labels[kind.value]+'?')+' Check the explanation for private information.'))return;
     if(!retry || retry.payload!==serialized){draftRequestId ||= crypto.randomUUID();retry={payload:serialized,requestId:draftRequestId};}
     const requestId=retry.requestId;const ownGeneration=generation;
     posting=true;fields.disabled=true;refresh.disabled=true;form.setAttribute('aria-busy','true');host?.posting(true);updateComposer();setMessage('Posting update…');
     const request=new AbortController();const timer=setTimeout(()=>request.abort(),20000);
     try{
-      const response=await fetch('/staff/workspace/'+encodeURIComponent(active.id)+'/updates',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({...payload,requestId}),signal:request.signal});
+      const action=Object.keys(actionKind).find(action=>actionKind[action]===kind.value);
+      const response=await fetch(workflow?'/api/staff/submissions/'+encodeURIComponent(active.id)+'/actions':'/staff/workspace/'+encodeURIComponent(active.id)+'/updates',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({...payload,requestId,...workflow?{action}: {}}),signal:request.signal});
       const data=await response.json().catch(()=>null);
       if(!response.ok || !data?.success || !data.submission){
         if(response.status===409)throw new Error('This idea changed before your update was posted. Refresh progress, review the latest information, then retry. Your draft has been kept.');
@@ -317,9 +347,9 @@ interface Window {
         throw new Error('We could not confirm the update. Retry the same draft to safely check and complete this post.');
       }
       if(generation!==ownGeneration)return;
-      snapshot=data.submission;host?.applySnapshot(snapshot);resetDraft(false);drawSummary();
-      try{await host?.afterPost(snapshot);setMessage(payload.visibility==='public'?'Public update posted. The review queue has been refreshed.':'Staff-only update posted. The public roadmap is unchanged.',true);}
-      catch{setMessage('Update posted, but the queue could not refresh. Use Refresh before reviewing another idea.',true);}
+      snapshot=data.submission;setWorkflow(data.workflow);host?.applySnapshot(snapshot);resetDraft(false);drawSummary();
+      try{await host?.afterPost(snapshot);setMessage(workflow?'Action saved. The originating workspace has been refreshed.':payload.visibility==='public'?'Public update posted. The workspace has been refreshed.':'Staff-only update posted. The public roadmap is unchanged.',true);}
+      catch{setMessage('Saved successfully, but the workspace could not refresh. Refresh the list before reviewing another idea.',true);}
     }catch(error){if(generation===ownGeneration)setMessage(error instanceof Error && error.name!=='AbortError' && !(error instanceof TypeError)?error.message:'We could not confirm the update. Your draft is safe. Retry this same draft to avoid a duplicate.');}
     finally{
       clearTimeout(timer);posting=false;host?.posting(false);form.removeAttribute('aria-busy');fields.disabled=!snapshot;refresh.disabled=false;updateComposer();host?.changed();
@@ -328,7 +358,8 @@ interface Window {
   });
   window.sfStaffProgress={
     bind(value){host=value;},
-    open(item){generation++;controller?.abort();active=item;snapshot=undefined;baseline='';history.replaceChildren();summary.hidden=true;fields.disabled=true;setMessage('');resetDraft();void load();},
+    open(item){generation++;controller?.abort();active=item;workflow=(item as typeof active).workflow;snapshot=undefined;baseline='';history.replaceChildren();summary.hidden=true;fields.disabled=true;setMessage('');resetDraft();void load();},
+    prepareAction(action){prepared=action;if(workflow)setWorkflow(workflow);updateComposer();body.focus();},
     refresh:load,hasDraft,isBusy,
     focusDraft(){body.focus();},
     close(){generation++;controller?.abort();discardEvidence();draftRequestId=undefined;active=undefined;snapshot=undefined;baseline='';retry=undefined;loading=false;}

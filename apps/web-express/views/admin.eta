@@ -18,7 +18,7 @@
   <%~ include('partials/staff-sidebar', it) %>
   <div class="staff-main">
     <header class="workspace-heading">
-      <div><p class="workspace-kicker">COMMUNITY / MODERATION</p><h1>Review queue<span class="workspace-title-dot">.</span></h1><p>A clear next step for every suggestion.</p></div>
+      <div><p class="workspace-kicker">WORKSPACE / REVIEW</p><h1>Review submissions<span class="workspace-title-dot">.</span></h1><p>Make a decision on pending suggestions. Delivery and public updates belong in <a href="/admin/board">Manage work</a>.</p></div>
       <div class="workspace-actions"><button class="workspace-button" id="staff-refresh" type="button"><%~ icon('refresh') %> Refresh</button><button class="workspace-button" id="staff-export" type="button" <%= it.submissions.length ? '' : 'disabled' %>><%~ icon('export') %> Export page</button></div>
     </header>
     <div class="staff-overview-caption"><span>School-wide overview</span><span>All submissions · independent of queue filters</span></div>
@@ -31,8 +31,9 @@
     <section class="staff-queue" aria-labelledby="staff-queue-title">
       <div class="staff-queue-heading"><div><h2 id="staff-queue-title" tabindex="-1"><%= labels[status] %></h2><p><%= status==='pending' ? 'Oldest first, so no idea gets left behind.' : 'Most recent submissions first.' %></p></div><span class="workspace-tag" id="staff-result-count"><%= it.totalCount %> matching submissions</span></div>
       <nav class="staff-status-tabs" aria-label="Filter submissions by status">
-        <% for(const key of Object.keys(labels)) { %><a href="<%= urlFor(key) %>" class="<%= status===key ? 'is-active' : '' %>" aria-current="<%= status===key ? 'page' : 'false' %>"><%= labels[key] %><span><%= counts[key] %></span></a><% } %>
+        <% for(const key of ['pending','rejected','all']) { %><a href="<%= urlFor(key) %>" class="<%= status===key ? 'is-active' : '' %>" aria-current="<%= status===key ? 'page' : 'false' %>"><%= labels[key] %><span><%= counts[key] %></span></a><% } %>
       </nav>
+      <% if(['approved','in_progress','resolved'].includes(status)) { %><p class="staff-footnote">This saved or legacy view still works. To manage delivery by stage, open <a href="/admin/board">Manage work</a>. Exact idea links continue to open here.</p><% } %>
       <form action="/admin" method="get" class="staff-search-form" role="search">
         <input type="hidden" name="status" value="<%= status %>"/>
         <label class="workspace-search"><%~ icon('search') %><input class="workspace-search-input" type="search" name="search" maxlength="120" value="<%= filters.search %>" placeholder="Search suggestions…" aria-label="Search titles and descriptions"/></label>
@@ -67,7 +68,7 @@
       </div>
       <footer class="staff-pagination"><span><%= it.totalCount ? (it.page-1)*it.perPage+1 : 0 %>–<%= Math.min(it.page*it.perPage,it.totalCount) %> of <%= it.totalCount %> matching submissions</span><nav aria-label="Submission pages"><% if(it.page>1) { %><a class="workspace-button" href="<%= urlFor(status,it.page-1) %>">← Previous</a><% } %><span>Page <%= it.page %> of <%= it.pageCount %></span><% if(it.page<it.pageCount) { %><a class="workspace-button" href="<%= urlFor(status,it.page+1) %>">Next →</a><% } %></nav></footer>
     </section>
-    <p class="staff-footnote">Only planned, in-progress, and completed ideas appear publicly. Check for private details before publishing. Keyboard: / searches, J and K move between Review buttons. Private clarification requests are in <a href="/admin/community">Community care</a>. Find the submission ID in History or copy it below the review title.</p>
+    <p class="staff-footnote">Only planned, in-progress, and completed ideas appear publicly. Check for private details before publishing. Keyboard: / searches, J and K move between Review buttons. Open private clarifications from a selected suggestion, or use the title picker in <a href="/admin/community">Follow-ups</a>.</p>
   </div>
   <%~ include('partials/staff-review',it) %>
   <dialog class="staff-save-view-dialog" id="staff-save-view-dialog" aria-labelledby="staff-save-view-title"><form id="staff-save-view"><header><h2 id="staff-save-view-title">Save this queue view</h2><button type="button" class="workspace-icon-button" id="staff-close-save-view" aria-label="Close save view">×</button></header><p>Save the currently applied filters. This view is private to you.</p><label class="workspace-field-label" for="staff-view-name">View name</label><input id="staff-view-name" class="workspace-input" required maxlength="60" placeholder="e.g. Urgent facilities"/><p id="staff-view-message" class="workspace-message" role="status"></p><div class="workspace-dialog-actions"><button class="workspace-button workspace-button--primary" type="submit">Save view</button></div></form></dialog>

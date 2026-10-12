@@ -10,7 +10,7 @@
  const meta={filters,totalCount:it.totalCount,lanes:it.lanes.map(({items,...lane})=>lane)};
 %>
 <main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main staff-board-main">
- <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / FLOW</p><h1>Work board</h1><p>Drag to a stage, or use Move. Select cards to assign them together.</p></div><a class="workspace-button" href="/admin">Detailed review</a></header>
+ <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / DELIVERY</p><h1>Manage work</h1><p>Plan → start → publish updates → complete with evidence. Select cards to assign them together.</p></div><a class="workspace-button" href="/admin">Review submissions</a></header>
  <form class="staff-board-toolbar" action="/admin/board" method="get" role="search" id="staff-board-filters">
   <label class="staff-board-search"><span class="visually-hidden">Search the work board</span><input class="workspace-input" type="search" name="search" value="<%= filters.search %>" maxlength="120" placeholder="Search suggestions…" aria-label="Search the work board"/></label>
   <label>Order<select class="workspace-input" name="sort"><option value="oldest" <%= filters.sort==='oldest'?'selected':'' %>>Oldest first</option><option value="newest" <%= filters.sort==='newest'?'selected':'' %>>Newest first</option></select></label>
@@ -28,7 +28,7 @@
  <section class="staff-flow-board" id="staff-flow-board" aria-label="Submission stages">
   <% for(const lane of it.lanes) { %><%~ include('partials/staff-board-lane',{lane,urlFor,pageFields}) %><% } %>
  </section>
- <p class="staff-board-safety">Stage changes require confirmation. Planned, in-progress and completed ideas are public; check private details in the review queue first.</p>
+ <p class="staff-board-safety">Move or drag opens an action form; nothing changes until you save. Needs review and Declined submissions are now in <a href="/admin">Review submissions</a>. Existing links and idea IDs still work.</p>
  <script id="staff-board-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script>
  <script id="staff-board-meta" type="application/json"><%~ JSON.stringify(meta).replace(/</g,'\\u003c') %></script>
  <script src="/js/staff-tools.js?v=20261012-shared-review"></script>

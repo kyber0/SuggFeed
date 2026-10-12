@@ -3,7 +3,7 @@ import express from 'express';
 import path from 'node:path';
 import { Eta } from 'eta';
 import { queueFilters } from '../../src/lib/staff-workspace';
-import { boardFilters, BOARD_STAGES } from '../../src/lib/staff-board';
+import { boardFilters, BOARD_STAGES, WORK_STAGES } from '../../src/lib/staff-board';
 import { roadmapFilters, groupTreeByCategory, groupTimelineByMonth, formatManilaDate, buildWorkTimeline } from '../../src/lib/roadmap';
 
 export function createWorkspacePreview() {
@@ -39,7 +39,7 @@ export function createWorkspacePreview() {
  for(let index=36;index<186;index++) boardItems.push({...boardItems[index%36],id:'00000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),title:titles[index%6]+' · Campus zone '+(index+1),status:BOARD_STAGES[index%5].status,categories:{name:index%2?'Learning':'Facilities'}});
  app.get('/admin/board',(req,res)=>{
   const filters=boardFilters(req.query);
-  const lanes=BOARD_STAGES.map(stage=>{
+  const lanes=WORK_STAGES.map(stage=>{
    const all=req.query.empty?[]:boardItems.filter(item=>item.status===stage.status && (!filters.search || (item.title+' '+item.description).toLowerCase().includes(filters.search.toLowerCase())));
    all.sort((a,b)=>{const comparison=a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id);return filters.sort==='newest'?-comparison:comparison;});
    const count=all.length,pageCount=Math.max(1,Math.ceil(count/filters.pageSize)),page=Math.min(filters.pages[stage.status],pageCount);
@@ -90,10 +90,11 @@ export function createWorkspacePreview() {
  const notes:Array<{id:string;submission_id:string;body:string;created_at:string;actor:{display_name:string}}>=[];
  const history:Array<any>=[];
  const views:Array<any>=[];
- const publicItem=(item:typeof items[number])=>({id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,votes:item.vote_count,comments:item.comment_count,created_at:item.created_at,updated_at:item.updated_at,resolved_at:(item as any).resolved_at || null,resolved_at_estimated:false,progress_percent:item.status==='resolved'?100:item.status==='in_progress'?35:null,started_at:item.status==='resolved'?'2026-09-20T08:00:00Z':item.status==='in_progress'?'2026-09-10T08:00:00Z':null,is_blocked:false,response:item.staff_note});
+ const publicItem=(item:typeof items[number])=>({id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,votes:item.vote_count,comments:item.comment_count,created_at:item.created_at,updated_at:item.updated_at,resolved_at:(item as any).resolved_at || null,resolved_at_estimated:false,progress_percent:item.status==='resolved'?100:item.status==='in_progress'?35:null,started_at:item.status==='resolved'?'2026-09-20T08:00:00Z':item.status==='in_progress'?'2026-09-10T08:00:00Z':null,is_blocked:false,response:item.staff_note,last_public_update:null,outcome:''});
  const progressUpdates:Array<any>=[];
- const progressSnapshot=(item:typeof items[number])=>({...item,progress_percent:item.status==='resolved'?100:null,started_at:null,is_blocked:false});
- app.get('/staff/workspace/:id/updates',(req,res)=>{const item=items.find(i=>i.id===req.params.id);if(!item)return res.status(404).json({success:false});res.json({success:true,submission:progressSnapshot(item),updates:progressUpdates.filter(update=>update.submission_id===item.id),limit:100});});
+ const progressSnapshot=(item:typeof items[number])=>({...item,progress_percent:item.status==='resolved'?100:null,started_at:['in_progress','resolved'].includes(item.status)?'2026-09-10T08:00:00Z':null,is_blocked:false});
+ const previewWorkflow=(item:typeof items[number])=>({mode:'guided',paused:false,issues:[],canRepair:false,allowedActions:item.status==='pending'?['approve','decline']:item.status==='approved'?['start','withdraw']:item.status==='in_progress'?['update','milestone','pause','complete','correction','withdraw']:item.status==='resolved'?['reopen','correction','withdraw']:[]});
+ app.get('/staff/workspace/:id/updates',(req,res)=>{const item=items.find(i=>i.id===req.params.id);if(!item)return res.status(404).json({success:false});res.json({success:true,submission:progressSnapshot(item),workflow:previewWorkflow(item),updates:progressUpdates.filter(update=>update.submission_id===item.id),limit:100});});
  app.post('/staff/workspace/:id/updates',(req,res)=>{
   const item=items.find(i=>i.id===req.params.id);if(!item)return res.status(404).json({success:false});
   const replay=progressUpdates.find(update=>update.request_id===req.body.requestId);
@@ -142,7 +143,7 @@ export function createWorkspacePreview() {
   res.send(eta.render('admin-staff',{currentPath:'/admin/staff',user:{id:staffId,display_name:'Alex Reyes',role:'admin'},counts:{...counts,all:items.length},staffMembers,students,activeSection:'staff'}));
  });
  app.get('/api/staff/members',(_req,res)=>res.json({success:true,members:[{id:staffId,display_name:'Alex Reyes',email:'alex@school.edu.ph',role:'admin'}]}));
- app.get('/api/staff/submissions/:id',(req,res)=>{const item=items.find(i=>i.id===req.params.id);res.status(item?200:404).json(item?{success:true,item:{id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,created_at:item.created_at,updated_at:item.updated_at,staff_note:item.staff_note || '',assignee_id:item.assignee_id || '',priority:item.priority || 'normal',target_date:item.target_date || ''}}:{success:false});});
+ app.get('/api/staff/submissions/:id',(req,res)=>{const item=items.find(i=>i.id===req.params.id);res.status(item?200:404).json(item?{success:true,item:{id:item.id,title:item.title,description:item.description,status:item.status,category:item.category,created_at:item.created_at,updated_at:item.updated_at,staff_note:item.staff_note || '',assignee_id:item.assignee_id || '',priority:item.priority || 'normal',target_date:item.target_date || '',started_at:progressSnapshot(item).started_at,resolved_at:item.resolved_at,is_blocked:false,workflow:previewWorkflow(item)}}:{success:false});});
  app.get('/api/staff/students',(_req,res)=>res.json({success:true,students:[{id:'00000000-0000-4000-8000-000000000030',display_name:'Juan Dela Cruz',email:'juan@school.edu.ph'}]}));
  app.patch('/api/staff/members/:id/role',(_req,res)=>res.json({success:true}));
  app.post('/api/staff/invite',(req,res)=>res.json({success:true,isExisting:false,inviteUrl:'/staff-login?invite='+encodeURIComponent(req.body.email)}));

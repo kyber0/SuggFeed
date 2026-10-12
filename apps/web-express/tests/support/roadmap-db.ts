@@ -60,6 +60,7 @@ export async function createRoadmapDb(): Promise<PGlite> {
       '202610120007_engagement_consistency.sql',
       '202610120008_community_workflows.sql',
       '202610120009_weekly_digests.sql',
+      '202610130010_guided_workflows.sql',
     ]) {
       try { await db.exec(migration(name)); }
       catch (error: any) { const failure = new Error(`${name}: ${error.message} (position ${error.position ?? error.internalPosition ?? 'unknown'}; ${error.internalQuery ?? ''})`); (failure as any).cause = error; throw failure; }

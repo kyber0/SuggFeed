@@ -44,7 +44,7 @@
 .staff-board-selection .workspace-input {min-height:32px;padding:6px 9px;font-size:12px;max-width:200px;}
 .staff-board-selection .workspace-button {min-height:32px;padding:6px 10px;font-size:12px;}
 .staff-board-selection .workspace-text-link {font-size:11px;}
-.staff-flow-board {display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:10px;overflow-x:auto;padding:0 0 4px;scrollbar-width:thin;}
+.staff-flow-board {display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:10px;overflow-x:auto;padding:0 0 4px;scrollbar-width:thin;}
 .staff-flow-lane {display:grid;grid-template-rows:auto minmax(0,1fr) auto;height:clamp(300px,var(--board-height),720px);min-width:0;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;scroll-margin-top:100px;}
 .staff-lane-heading {padding:12px 10px 9px;border-bottom:1px solid var(--line);}
 .staff-lane-heading h2 {display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:12px;margin:0;line-height:1.5;}

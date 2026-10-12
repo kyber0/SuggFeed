@@ -58,9 +58,15 @@ test('new account and staff menu entries have decorative SVGs backed by the shar
   const sidebar=html.match(/<aside class="staff-sidebar"[\s\S]*?<\/aside>/)![0];
   assert.match(sidebar,/href="\/admin\/board"[^>]*><svg[^>]*><use href="#ws-board"/);
   assert.match(sidebar,/href="\/admin\/community"[^>]*><svg[^>]*><use href="#ws-care"/);
-  const care=html.match(/<nav class="care-section-nav"[\s\S]*?<\/nav>/)![0];assert.equal((care.match(/aria-hidden="true"/g)||[]).length,4);
+  const care=html.match(/<nav class="care-section-nav"[\s\S]*?<\/nav>/)![0];assert.equal((care.match(/aria-hidden="true"/g)||[]).length,3);
   for(const [,symbol] of html.matchAll(/<use href="#(ws-[\w-]+)"/g))assert.ok(html.includes('id="'+symbol+'"'),'Missing sprite: '+symbol);
   const board=render('/admin/board');assert.match(board,/href="\/admin\/board" aria-current="page"/);
+});
+test('staff review heading groups title/status and metadata/clarification into two compact rows',()=>{
+  const html=render('/admin/board');assert.match(html,/class="staff-review-heading-title"><h2 id="review-title"><\/h2><span class="workspace-status" id="review-current-status"/);
+  assert.match(html,/class="staff-review-heading-meta"><p id="review-meta"[\s\S]*?id="review-clarification-link"/);
+  assert.equal((html.match(/id="review-clarification-link"/g)||[]).length,1);
+  const css=fs.readFileSync(path.join(__dirname,'../public/css/modules/full-detail.css'),'utf8');assert.match(css,/padding:10px var\(--detail-gutter\) 8px/);assert.match(css,/font-size:22px; max-width:none; margin:0/);
 });
 function contrast(hex1:string,hex2:string){
   const luminance=(hex:string)=>{const c=hex.match(/\w\w/g)!.map(part=>parseInt(part,16)/255).map(n=>n<=.04045?n/12.92:Math.pow((n+.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2];};

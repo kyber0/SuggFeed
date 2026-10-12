@@ -4,7 +4,8 @@ import { supabase } from '../src/lib/supabase';
 import { roadmapFilters, loadRoadmapPage, loadPublicRoadmapIdea, formatManilaDate, publicItem, groupTimelineByMonth } from '../src/lib/roadmap';
 
 test('roadmap paginates each public stage independently and counts matches across all pages', async () => {
- const original=supabase.from;const queries:Array<any>=[];
+ const original=supabase.from,originalRpc=supabase.rpc;const queries:Array<any>=[];
+ supabase.rpc=(async()=>({data:[],error:null})) as any;
  const totals={approved:40,in_progress:9,resolved:2};
  supabase.from=(()=>{
   const state:any={};queries.push(state);const query:any={};
@@ -30,11 +31,12 @@ test('roadmap paginates each public stage independently and counts matches acros
   const selected=await loadRoadmapPage(roadmapFilters({stage:'in_progress',page:'2'}));
   assert.equal(selected.pageCount,2);assert.equal(selected.items.length,1);
   assert.equal(queries.filter(q=>q.range).length,1);
- } finally {supabase.from=original;}
+ } finally {supabase.from=original;supabase.rpc=originalRpc;}
 });
 
 test('shared roadmap links load only public stages and expose only public fields', async () => {
- const original=supabase.from;let allowed:string[]=[];
+ const original=supabase.from,originalRpc=supabase.rpc;let allowed:string[]=[];
+ supabase.rpc=(async()=>({data:[],error:null})) as any;
  supabase.from=(()=>({select(){return this;},eq(){return this;},in(_key,values){allowed=values;return this;},async maybeSingle(){return {error:null,data:{id:'public-id',title:'Public idea',status:'approved',staff_note:'School update',anonymous_tracking_hash:'PRIVATE',user_id:'PRIVATE',assignee_id:'PRIVATE',categories:{name:'Learning'}}};}})) as any;
  try {
   const item=await loadPublicRoadmapIdea('public-id');assert.deepEqual(allowed,['approved','in_progress','resolved']);
@@ -47,7 +49,7 @@ test('shared roadmap links load only public stages and expose only public fields
   assert.equal(roadmapFilters({view:'board'}).view,'board');
   assert.equal(roadmapFilters({view:'invalid'}).view,'board');
   assert.match(formatManilaDate('2026-10-10T14:30:00Z'), /Oct 10, 2026/);
- } finally {supabase.from=original;}
+ } finally {supabase.from=original;supabase.rpc=originalRpc;}
 });
 
 function mockRoadmap(rows: any[]) {
@@ -85,6 +87,7 @@ function mockRoadmap(rows: any[]) {
  }) as any;
  supabase.rpc = (async (name, params: any) => {
   rpcCalls.push({ name, params });
+  if(name==='read_roadmap_activity')return {error:null,data:params.p_ids.map((id:string)=>({id,last_public_update:null,outcome:null}))};
   const matching = rows.filter(row => (params.p_category === 'all' || row.categories.name === params.p_category) &&
     (params.p_stage === 'all' || row.status === params.p_stage));
   return { error: null, data: [...new Set(matching.map(row => row.categories.name))].sort().map(name => {

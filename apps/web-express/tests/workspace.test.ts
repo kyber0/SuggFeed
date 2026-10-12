@@ -14,7 +14,7 @@ test('staff and roadmap render populated, empty, and login screens', async () =>
       return response.text();
     };
     const staff = await get('/admin');
-    assert.match(staff, /Review queue/);
+    assert.match(staff, /Review submissions/);
     assert.match(staff, /page=2/);
     assert.match(staff, /staff-review-dialog/);
     assert.match(staff, /href="\/admin\/analytics"/);
@@ -80,7 +80,7 @@ test('compact work-board rendering exposes bounded stage pages, native controls 
     const metadata = JSON.parse(html.match(/<script id="staff-board-meta"[^>]*>([\s\S]*?)<\/script>/)![1]);
     assert.equal(metadata.filters.sort, 'newest');
     assert.equal(metadata.filters.pageSize, 6);
-    assert.equal(metadata.lanes.length, 5);
+    assert.equal(metadata.lanes.length, 3);
     const cards = JSON.parse(html.match(/<script id="staff-board-data"[^>]*>([\s\S]*?)<\/script>/)![1]);
     assert.ok(cards.length <= 30);
     for (const lane of metadata.lanes) {
@@ -98,7 +98,7 @@ test('compact work-board rendering exposes bounded stage pages, native controls 
       const href = anchor.match(/href="([^"]+)"/)![1].replace(/&amp;|&#38;/g, '&');
       const target = new URL(href, 'https://www.suggfeed.me');
       assert.equal(target.pathname, '/admin/board');
-      assert.equal(target.searchParams.get('pendingPage') || '1', String(metadata.filters.pages.pending));
+      assert.equal(target.searchParams.has('pendingPage'),false);
       assert.equal(target.searchParams.get('sort'), 'newest');
       assert.equal(target.searchParams.get('pageSize'), '6');
       assert.equal(target.hash, '#board-lane-approved');

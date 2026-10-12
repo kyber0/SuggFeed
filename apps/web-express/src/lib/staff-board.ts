@@ -10,6 +10,7 @@ export const BOARD_STAGES = [
 ] as const;
 
 export type BoardStage = typeof BOARD_STAGES[number]['status'];
+export const WORK_STAGES = BOARD_STAGES.filter(stage => !['pending','rejected'].includes(stage.status));
 export type BoardPageSize = 6 | 12 | 24;
 export interface BoardFilters {
   search: string;
@@ -101,8 +102,8 @@ async function loadLane(stage: typeof BOARD_STAGES[number], filters: BoardFilter
   throw new Error('The work board changed while loading. Please refresh and try again.');
 }
 
-export async function loadStaffBoard(filters: BoardFilters) {
-  const lanes = await Promise.all(BOARD_STAGES.map(stage => loadLane(stage, filters)));
+export async function loadStaffBoard(filters: BoardFilters, stages: ReadonlyArray<typeof BOARD_STAGES[number]> = BOARD_STAGES) {
+  const lanes = await Promise.all(stages.map(stage => loadLane(stage, filters)));
   const pages = Object.fromEntries(lanes.map(lane => [lane.status, lane.page])) as Record<BoardStage, number>;
   return {
     items: lanes.flatMap(lane => lane.items),

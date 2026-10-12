@@ -68,14 +68,32 @@ export async function similarIdeas(input: unknown) {
   if (error) throw error;
   return data || [];
 }
-export async function staffCommunity(actor: { id: string; role?: string }) {
+export async function staffCommunity(actor: { id: string; role?: string }, input:Record<string,unknown>={},attempt=0):Promise<any> {
   if (!staffRole(actor.role)) throw new CommunityError(403, 'Staff access required.');
+  const page=(key:string)=>typeof input[key]==='string' && /^\d+$/.test(input[key] as string)?Math.min(100000,Math.max(1,Number(input[key]))):1;
+  const pages={reports:page('reportsPage'),clarifications:page('clarificationsPage'),attention:page('attentionPage')};
+  const section=['reports','clarifications','attention'].includes(String(input.section))?String(input.section):input.idea?'clarifications':'reports';
   const [reports, requests, work] = await Promise.all([
-    supabaseService.from('reports').select('id,reason,submission_id,comment_id,created_at,submission:submissions(title),comment:comments(body,submission_id)').is('resolved_at', null).order('created_at').limit(50),
-    supabaseService.from('idea_clarifications').select('id,submission_id,prompt,reply,created_at,replied_at,submission:submissions(title)').is('closed_at', null).order('created_at').limit(50),
-    supabaseService.from('staff_stale_work').select('id,title,is_blocked,last_public_update,blocked_since').order('last_public_update').limit(50),
+    supabaseService.from('reports').select('id,reason,submission_id,comment_id,created_at,submission:submissions(title),comment:comments(body,submission_id)',{count:'exact'}).is('resolved_at', null).order('created_at').order('id').range((pages.reports-1)*25,pages.reports*25-1),
+    supabaseService.from('idea_clarifications').select('id,submission_id,prompt,reply,created_at,replied_at,submission:submissions(title)',{count:'exact'}).is('closed_at', null).order('created_at').order('id').range((pages.clarifications-1)*25,pages.clarifications*25-1),
+    supabaseService.from('staff_stale_work').select('id,title,is_blocked,last_public_update,blocked_since',{count:'exact'}).order('last_public_update').order('id').range((pages.attention-1)*25,pages.attention*25-1),
   ]);
+  const results=[reports,requests,work], keys=['reports','clarifications','attention'] as const;
+  // Recount an invalid PostgREST range before clamping. Never label page 99 of 1.
+  let retryRange=false;
+  for(let index=0;index<results.length;index++)if(results[index].error?.code==='PGRST103'){
+    const key=keys[index];let query=supabaseService.from(key==='reports'?'reports':key==='clarifications'?'idea_clarifications':'staff_stale_work').select('id',{count:'exact',head:true});
+    if(key!=='attention')query=query.is(key==='reports'?'resolved_at':'closed_at',null);
+    const counted=await query;if(counted.error)throw counted.error;
+    results[index].count=counted.count;results[index].error=null;retryRange ||= !!counted.count;
+  }
+  const clamped=Object.fromEntries(keys.map((key,index)=>[key+'Page',String(Math.min(pages[key],Math.max(1,Math.ceil((results[index].count || 0)/25))))]));
+  if(retryRange || keys.some(key=>String(pages[key])!==clamped[key+'Page'])){
+    if(attempt>=2)throw new CommunityError(503,'Follow-ups changed while loading. Refresh to retry.');
+    return staffCommunity(actor,{...input,...clamped},attempt+1);
+  }
   for (const result of [reports, requests, work]) if (result.error) throw result.error;
   return { reports: reports.data || [], requests: requests.data || [], alerts: (work.data || []).map(s => ({ id: s.id, title: s.title, reason: s.is_blocked && s.blocked_since && Date.parse(s.blocked_since)<Date.now()-14*86400000 ? 'Continuously blocked for more than 14 days' : 'No public update for 30 days' })),
-    coverage: 'Reminders consider all public school updates. Oldest 50 reminders, open reports and open requests shown in each section.' };
+    section,pages,counts:{reports:reports.count || 0,clarifications:requests.count || 0,attention:work.count || 0},
+    coverage: 'Counts cover all matching records. Each view shows up to 25 records per page; reminders use public updates, not private edits.' };
 }

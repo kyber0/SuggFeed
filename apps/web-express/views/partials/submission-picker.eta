@@ -1,0 +1,6 @@
+<div class="submission-picker" data-submission-picker data-public-scope="<%= it.publicOnly?'true':'false' %>">
+ <input type="hidden" name="<%= it.name %>" value="<%= it.value %>" data-picker-value/>
+ <label for="<%= it.id %>"><%= it.label %></label><input id="<%= it.id %>" class="workspace-input" type="search" maxlength="120" autocomplete="off" placeholder="Search by suggestion title (at least 2 characters)" data-picker-search/>
+ <p data-picker-selected role="status"><%= it.value?'Loading selected suggestion…':'No suggestion selected.' %></p>
+ <div data-picker-results aria-label="Matching suggestions"></div>
+</div>

@@ -42,7 +42,7 @@
         link.href = '/roadmap?item=' + encodeURIComponent(notification.submission_id);
         link.textContent = notification.title;
         const meta = document.createElement('p');
-        const kinds: Record<string, string> = { started: 'Work started', milestone: 'Milestone', blocked: 'Work blocked', completed: 'Completed', update: 'Progress update', correction: 'Correction' };
+        const kinds: Record<string, string> = { started: 'Work started', milestone: 'Milestone', blocked: 'Work paused', completed: 'Completed', update: 'Progress update', correction: 'Correction',resumed:'Work resumed',reopened:'Work reopened',withdrawn:'Idea withdrawn' };
         meta.textContent = `${kinds[notification.kind] || 'School update'} · ${notification.office_label} · ${new Date(notification.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' })}`;
         entry.append(link, meta);
         if (!notification.read_at) {

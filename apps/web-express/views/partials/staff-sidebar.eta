@@ -11,9 +11,12 @@
   <a class="staff-brand" href="/admin"><span class="staff-brand-mark" aria-hidden="true">S</span><span>SuggFeed<small>STAFF WORKSPACE</small></span></a>
   <p class="workspace-kicker">WORKSPACE</p>
   <nav aria-label="Staff navigation">
-    <a class="staff-nav-item<%= activeSection === 'board' ? ' is-current' : '' %>" href="/admin/board" aria-current="<%= activeSection === 'board' ? 'page' : 'false' %>"><%~ icon('board') %> Work board</a>
-    <a class="staff-nav-item<%= activeSection === 'community' ? ' is-current' : '' %>" href="/admin/community" aria-current="<%= activeSection === 'community' ? 'page' : 'false' %>"><%~ icon('care') %> Community care</a>
-    <a class="staff-nav-item<%= activeSection === 'queue' && !isFiltered ? ' is-current' : '' %>" href="/admin" <%= activeSection === 'queue' && !isFiltered ? 'aria-current="page"' : '' %>><%~ icon('inbox') %> Review queue <span class="staff-nav-count" id="staff-pending-count"><%= counts.pending || 0 %></span></a>
+    <a class="staff-nav-item<%= activeSection === 'queue' && !isFiltered ? ' is-current' : '' %>" href="/admin" <%= activeSection === 'queue' && !isFiltered ? 'aria-current="page"' : '' %>><%~ icon('inbox') %> Review submissions <span class="staff-nav-count" id="staff-pending-count"><%= counts.pending || 0 %></span></a>
+    <a class="staff-nav-item<%= activeSection === 'board' ? ' is-current' : '' %>" href="/admin/board" aria-current="<%= activeSection === 'board' ? 'page' : 'false' %>"><%~ icon('board') %> Manage work</a>
+    <a class="staff-nav-item<%= activeSection === 'community' ? ' is-current' : '' %>" href="/admin/community" aria-current="<%= activeSection === 'community' ? 'page' : 'false' %>"><%~ icon('care') %> Follow-ups</a>
+  </nav>
+  <p class="workspace-kicker">ADMINISTRATION</p>
+  <nav aria-label="Administration">
     <a class="staff-nav-item<%= activeSection === 'analytics' ? ' is-current' : '' %>" href="/admin/analytics" <%= activeSection === 'analytics' ? 'aria-current="page"' : '' %>><%~ icon('chart') %> Analytics</a>
     <a class="staff-nav-item<%= activeSection === 'staff' ? ' is-current' : '' %>" href="/admin/staff" <%= activeSection === 'staff' ? 'aria-current="page"' : '' %>><%~ icon('users') %> Manage staff</a>
   </nav>

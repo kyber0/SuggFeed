@@ -2,9 +2,12 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { supabaseService } from '../lib/supabase';
 import { invalidateCache, MODERATION_STATUSES } from '../lib/data';
 import { PRIORITIES, UUID, staffRole, validDate, queueFilters, loadStaffMembers, searchStudentProfiles, updateStaffRole, inviteStaffMember, loadAnalyticsData } from '../lib/staff-workspace';
+import {workflowContext,performAction,repairDates,workflowError,WORK_ACTIONS} from '../lib/workflow';
+import {ProgressError} from '../lib/progress';
+import {sanitizeSearch} from '../lib/data';
 
 const router = Router();
-const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { fn(req, res).catch(next); };
+const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { fn(req, res).catch(error=>error instanceof ProgressError?res.status(error.status).json({success:false,error:error.message,code:error.code}):next(error)); };
 router.use((req, res, next) => {
   res.setHeader('Cache-Control', 'private, no-store');
   if (!req.session.user) return res.status(401).json({ success: false, error: 'Sign in to the staff portal.' });
@@ -17,14 +20,28 @@ router.param('id', (_req, res, next, id) => {
 });
 router.get('/submissions/:id', run(async (req, res) => {
   const {data,error}=await supabaseService.from('staff_submission_queue')
-    .select('id,title,description,status,categories,created_at,updated_at,staff_note,assignee_id,priority,target_date')
+    .select('id,title,description,status,categories,created_at,updated_at,staff_note,assignee_id,priority,target_date,started_at,resolved_at,is_blocked')
     .eq('id',req.params.id).maybeSingle();
   if(error) return res.status(503).json({success:false,error:'Submission details could not load. Please try again.'});
   if(!data) return res.status(404).json({success:false,error:'This submission is no longer available.'});
   return res.json({success:true,item:{id:data.id,title:data.title,description:data.description,status:data.status,
     category:(data.categories as {name?:string} | null)?.name || 'Other',created_at:data.created_at,updated_at:data.updated_at,
-    staff_note:data.staff_note || '',assignee_id:data.assignee_id || '',priority:data.priority || 'normal',target_date:data.target_date || ''}});
+    staff_note:data.staff_note || '',assignee_id:data.assignee_id || '',priority:data.priority || 'normal',target_date:data.target_date || '',
+    started_at:data.started_at || null,resolved_at:data.resolved_at || null,is_blocked:!!data.is_blocked,workflow:await workflowContext(data.id,req.session.user!.id)}});
 }));
+router.get('/submission-search',run(async(req,res)=>{
+  const text=typeof req.query.q==='string'?req.query.q.trim().slice(0,120):'';
+  if(text.length<2)return res.json({success:true,items:[]});
+  let query=supabaseService.from('staff_submission_queue').select('id,title,categories,status,updated_at').ilike('title','%'+sanitizeSearch(text)+'%').order('created_at',{ascending:false}).limit(20);
+  if(req.query.public==='true')query=query.in('status',['approved','in_progress','resolved']);
+  const {data,error}=await query;if(error)throw error;return res.json({success:true,items:data || []});
+}));
+router.post('/submissions/:id/actions',run(async(req,res)=>{
+  const began=Date.now(),action=WORK_ACTIONS.includes(req.body?.action)?req.body.action:'invalid';
+  try{const result=await performAction(req.params.id as string,req.session.user!.id,req.body);console.info(JSON.stringify({event:'workflow_action',action,result:result.replayed?'replayed':'saved',durationMs:Date.now()-began}));return res.json({success:true,...result});}
+  catch(error){console.warn(JSON.stringify({event:'workflow_action',action,result:'failed',code:error instanceof ProgressError?error.code || 'INVALID_ACTION':'UNEXPECTED',durationMs:Date.now()-began}));throw error;}
+}));
+router.post('/submissions/:id/work-dates',run(async(req,res)=>res.json({success:true,...await repairDates(req.params.id as string,req.session.user!.id,req.body)})));
 router.get('/analytics', run(async (_req, res) => {
   const data = await loadAnalyticsData();
   return res.json({ success: true, data });
@@ -78,6 +95,7 @@ router.patch('/submissions/:id/review', run(async (req, res) => {
     p_assignee_id: assignee, p_priority: priority, p_target_date: targetDate,
   });
   if (error) {
+    if(error.code?.startsWith('P010'))workflowError(error);
     const code = error.code;
     if (code === '40001') return res.status(409).json({ success: false, error: 'This submission changed. Refresh the queue before saving; copy your draft first.' });
     if (code === 'P0002') return res.status(404).json({ success: false, error: 'Submission not found.' });

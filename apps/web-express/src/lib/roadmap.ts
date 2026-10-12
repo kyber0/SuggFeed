@@ -34,6 +34,8 @@ export function publicItem(row: any) {
     started_at: row.started_at || null,
     is_blocked: row.is_blocked === true,
     response: row.staff_note || '',
+    last_public_update: row.last_public_update || null,
+    outcome: row.outcome || '',
   };
 }
 
@@ -121,6 +123,7 @@ export async function loadRoadmapPage(filters: ReturnType<typeof roadmapFilters>
     items = (data || []).map(publicItem);
     pageCount = Math.max(1, Math.ceil(matchingCount / ROADMAP_TIMELINE_PER_PAGE));
   }
+  await attachActivity(items);
   return { items, counts, totalCount, matchingCount, pageCount, perStage: ROADMAP_PER_STAGE,
     perPage: filters.view === 'done' ? ROADMAP_DONE_PER_PAGE : filters.view === 'timeline' ? ROADMAP_TIMELINE_PER_PAGE : ROADMAP_PER_STAGE,
     treeData, doneData, timelineData: doneData, workTimeline: buildWorkTimeline(items) };
@@ -191,7 +194,16 @@ export async function loadRoadmapCategories() {
 export async function loadPublicRoadmapIdea(id: string) {
   const { data, error } = await supabase.from('submissions').select(`${publicColumns},categories(name)`).eq('id', id).in('status', [...ROADMAP_STAGES]).maybeSingle();
   if (error) throw error;
-  return data ? publicItem(data) : null;
+  if(!data)return null;const item=publicItem(data);await attachActivity([item]);return item;
+}
+async function attachActivity(items:Array<ReturnType<typeof publicItem>>){
+ for(let offset=0;offset<items.length;offset+=100){
+  const chunk=items.slice(offset,offset+100);
+  const {data,error}=await supabase.rpc('read_roadmap_activity',{p_ids:chunk.map(item=>item.id)});
+  if(error)throw error;
+  const records=new Map((data || []).map((row:any)=>[row.id,row]));
+  for(const item of chunk){const record:any=records.get(item.id);item.last_public_update=record?.last_public_update || null;item.outcome=record?.outcome || '';}
+ }
 }
 
 export function groupTreeByCategory(items: Array<ReturnType<typeof publicItem>>, allCategories: string[]) {

@@ -75,6 +75,11 @@ async function authorizedFile(fileId: string, actorId: string | null): Promise<U
 }
 export async function reserveEvidence(actorId: string, body: unknown) {
   const input = validateEvidence(body);
+  const submissionId=(body as any)?.submissionId;
+  if(submissionId!==undefined){
+    if(!UUID.test(submissionId))throw new ProgressError(400,'Choose a valid submission for this evidence.');
+    const bound=await supabaseService.rpc('bind_progress_draft',{p_actor_id:actorId,p_request_id:input.requestId,p_submission_id:submissionId});evidenceError(bound.error);
+  }
   const { data, error } = await supabaseService.rpc('reserve_progress_upload', {
     p_actor_id: actorId, p_request_id: input.requestId, p_name: input.name,
     p_mime: input.mime, p_size: input.size, p_alt: input.alt,

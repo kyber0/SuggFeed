@@ -31,7 +31,8 @@ test('work timeline clips long-running work and does not invent future or invert
   assert.equal(chart.undated.length,2);
 });
 test('timeline has independent twenty-item pagination without forcing completed status', async () => {
-  const original=supabase.from; const queries:any[]=[];
+  const original=supabase.from,originalRpc=supabase.rpc; const queries:any[]=[];
+  supabase.rpc=(async()=>({data:[],error:null})) as any;
   supabase.from=(()=>{
     const state:any={};queries.push(state);const query:any={};
     for(const method of ['select','eq','in','or','order','range'])query[method]=(...args)=>{(state[method]??=[]).push(args);return query;};
@@ -45,5 +46,5 @@ test('timeline has independent twenty-item pagination without forcing completed 
     assert.equal(result.pageCount,3);assert.equal(result.perPage,20);assert.equal(result.doneData.length,0);
     const query=queries.find(query=>query.range);
     assert.deepEqual(query.range[0],[20,39]);assert.deepEqual(query.in[0],['status',['approved']]);
-  } finally {supabase.from=original;}
+  } finally {supabase.from=original;supabase.rpc=originalRpc;}
 });
