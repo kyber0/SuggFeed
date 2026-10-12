@@ -21,7 +21,10 @@
 .work-timeline-months { position:sticky; top:0; z-index:3; background:var(--surface); }
 .work-timeline-scroll.is-panning {cursor:grabbing;user-select:none;}
 .work-timeline-scroll {max-height:70vh;overflow:auto;}
-.timeline-controls {display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.timeline-controls {display:grid;grid-template-columns:minmax(140px,1fr) 44px 44px;gap:8px;align-items:end;flex:0 0 280px;max-width:100%;}
+.timeline-controls > label {margin-bottom:0;min-width:0;}
+.timeline-controls .workspace-input {height:44px;}
+.timeline-controls > .workspace-button {width:44px;height:44px;min-height:44px;padding:0;font-size:18px;}
 .staff-board-main {--board-height:calc(100dvh - 350px);padding:24px clamp(14px,2vw,28px);}
 .visually-hidden {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
 .staff-board-main.is-selecting {--board-height:calc(100dvh - 415px);}
@@ -29,7 +32,7 @@
 .staff-board-main .workspace-heading h1 {font-size:27px;}
 .staff-board-main .workspace-heading p {font-size:12px;line-height:1.5;}
 .staff-board-toolbar {display:flex;align-items:end;gap:10px;flex-wrap:wrap;}
-.staff-board-toolbar label {display:grid;gap:5px;font-size:11px;color:var(--ink-2);}
+.staff-board-toolbar label {display:grid;gap:5px;margin-bottom:0;font-size:11px;color:var(--ink-2);}
 .staff-board-search {flex:1;min-width:180px;}
 .staff-board-toolbar .workspace-input {min-height:36px;padding:8px 10px;font-size:12px;}
 .staff-board-toolbar .workspace-button {min-height:36px;padding:8px 14px;font-size:12px;}

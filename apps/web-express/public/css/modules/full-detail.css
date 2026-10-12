@@ -134,7 +134,7 @@
 [data-picker-results] button { text-align:left; white-space:normal; justify-content:flex-start; }
 .community-care-page [hidden] { display:none !important; }
 @media(max-width:600px) {
- .roadmap-work-timeline .timeline-controls { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:end; width:100%; }
+ .roadmap-work-timeline .timeline-controls { grid-template-columns:minmax(0,1fr) 44px 44px; width:100%; }
  .roadmap-work-timeline .timeline-controls label { min-width:0; }
  .roadmap-work-timeline .timeline-controls select { width:100%; }
 }

@@ -9,6 +9,13 @@ test('roadmap and staff filter toolbars neutralize stacked label spacing and mat
   assert.match(css,/:is\(\.roadmap-controls,\.staff-search-form\) > label \{ margin-bottom:0; \}/);
   assert.match(css,/:is\(\.roadmap-controls,\.staff-search-form\) > \.workspace-button \{ min-height:44px; \}/);
 });
+test('calendar arrows share the scale control row and Manage work removes stacked label offsets',()=>{
+  const css=fs.readFileSync(path.join(__dirname,'../public/css/modules/community.css'),'utf8');
+  assert.match(css,/\.timeline-controls \{display:grid;grid-template-columns:minmax\(140px,1fr\) 44px 44px;gap:8px;align-items:end;/);
+  assert.match(css,/\.timeline-controls > label \{margin-bottom:0;min-width:0;\}/);
+  assert.match(css,/\.timeline-controls > \.workspace-button \{width:44px;height:44px;min-height:44px;/);
+  assert.match(css,/\.staff-board-toolbar label \{display:grid;gap:5px;margin-bottom:0;/);
+});
 
 // Exercise the preview's real Eta rendering without binding a local HTTP port.
 function render(url:string){
