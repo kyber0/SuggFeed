@@ -272,8 +272,6 @@
             if (!checked) {
                 if (window.sfToast)
                     sfToast('Please select a category to continue.', 'warning');
-                else
-                    alert('Please select a category to continue.');
                 return;
             }
             sipCurrentStep = 2;
@@ -294,8 +292,6 @@
                 setTimeout(() => titleInput.classList.remove('sip-input-error'), 1200);
                 if (window.sfToast)
                     sfToast('Title must be at least 10 characters.', 'warning');
-                else
-                    alert('Title must be at least 10 characters.');
                 return;
             }
             if (desc.length < 20) {
@@ -305,8 +301,6 @@
                 setTimeout(() => descInput.classList.remove('sip-input-error'), 1200);
                 if (window.sfToast)
                     sfToast('Description must be at least 20 characters.', 'warning');
-                else
-                    alert('Description must be at least 20 characters.');
                 return;
             }
             // Populate review step
@@ -333,8 +327,6 @@
                 }
                 if (window.sfToast)
                     sfToast('Please accept the community guidelines notice.', 'warning');
-                else
-                    alert('Please accept the community guidelines notice.');
                 return;
             }
             document.getElementById('submit-idea-form').dispatchEvent(new Event('submit', { cancelable: true }));
@@ -406,8 +398,6 @@
             window.sfSubmissionRecovery.failed(err);
             if (window.sfToast)
                 sfToast(err.message || 'Submission failed', 'error');
-            else
-                alert(err.message || 'Submission failed');
         }
         finally {
             sipSending = false;
@@ -511,8 +501,8 @@
             document.getElementById('sip-code-status').textContent = 'Code could not be saved. Copy it to a safe place instead.';
         }
     });
-    document.getElementById('sip-clear-codes')?.addEventListener('click', () => {
-        if (!confirm('Remove all tracking codes saved on this device? Copy any you still need first.'))
+    document.getElementById('sip-clear-codes')?.addEventListener('click', async () => {
+        if (!await window.sfConfirm('Remove all tracking codes saved on this device? Copy any you still need first.', { title: 'Clear saved tracking codes?', confirmLabel: 'Clear codes', danger: true }))
             return;
         try {
             localStorage.removeItem('sf_my_tracking_codes');

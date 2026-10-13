@@ -18,6 +18,18 @@ buttons support keyboard focus; mobile notices sit above the bottom navigation.
 Messages and titles are inserted as text. Routine notices use polite status
 announcements; errors use alerts. Motion follows the reduced-motion preference.
 
+## App confirmations
+
+Submission validation and staff-role errors use the shared toast handler.
+Browser JavaScript alerts and confirmations have been replaced throughout the
+Express client. Saved-search deletion, clearing tracking codes, draft recovery,
+queue removal and staff actions use a themed confirmation dialog. Cancel receives
+initial focus; Escape cancels only this dialog, and focus returns to its trigger.
+Changes still require confirmation before destructive writes. Staff filter forms
+wait for confirmation before navigating; cancellation keeps the selection.
+The browser's own unsaved-work warning when leaving a page remains necessary:
+browsers control that navigation prompt and do not allow custom content there.
+
 ## Existing custom emails
 
 The existing authentication designs live in `supabase/templates`. Review and

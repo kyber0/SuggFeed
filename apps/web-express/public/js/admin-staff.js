@@ -117,14 +117,14 @@
             });
             const data = await res.json();
             if (!res.ok || !data.success) {
-                alert(data.error || 'Failed to update staff role.');
+                window.sfToast?.(data.error || 'Failed to update staff role.', 'error');
                 return false;
             }
             await refreshRoster();
             return true;
         }
         catch (e) {
-            alert(e?.message || 'Network error updating role.');
+            window.sfToast?.(e?.message || 'Network error updating role.', 'error');
             return false;
         }
     }

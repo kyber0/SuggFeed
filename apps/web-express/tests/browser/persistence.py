@@ -113,6 +113,7 @@ with sync_playwright() as p:
     page.locator('#sip-save-code').click()
     assert 'CV-' in page.evaluate("localStorage.getItem('sf_my_tracking_codes')")
     page.locator('#sip-clear-codes').click()
+    page.locator('#sf-confirm-dialog [data-confirm-accept]').click()
     assert page.evaluate("localStorage.getItem('sf_my_tracking_codes')") is None
     assert not page.evaluate("window.sfSubmissionStorage.records().then(rows=>rows.some(row=>row.kind==='operation'))")
     print('PASS: offline queue deduplicates clicks, survives lost response/reload, blocks account changes and recovers a receipt')

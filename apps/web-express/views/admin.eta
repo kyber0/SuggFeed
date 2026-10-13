@@ -82,6 +82,6 @@
 <script id="staff-queue-data" type="application/json"><%~ JSON.stringify(it.submissions.map(s=>({id:s.id,title:s.title,description:s.description,status:s.status,category:s.category || s.categories?.name || 'Other',created_at:s.created_at,updated_at:s.updated_at,staff_note:s.staff_note || '',assignee_id:s.assignee_id || '',priority:s.priority || 'normal',target_date:s.target_date || ''}))).replace(/</g,'\\u003c') %></script>
 <script id="staff-filter-data" type="application/json"><%~ JSON.stringify(filters).replace(/</g,'\\u003c') %></script>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
-<script src="/js/staff-progress.js?v=20261012-evidence"></script>
+<script src="/js/staff-progress.js?v=20261013-custom-dialogs"></script>
 <script src="/js/staff-review.js?v=20261012-shared-review"></script>
-<script src="/js/staff-tools.js?v=20261012-shared-review"></script>
+<script src="/js/staff-tools.js?v=20261013-custom-dialogs"></script>

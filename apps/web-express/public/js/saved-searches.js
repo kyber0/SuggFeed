@@ -193,8 +193,10 @@
                 remove.setAttribute('aria-label', 'Delete ' + item.name);
                 rename.addEventListener('click', () => { if (busy || !loaded)
                     return; closeCreate(); editing = item.id; render(); const input = list.querySelector('.saved-search-rename input'); input?.focus(); input?.select(); });
-                remove.addEventListener('click', () => {
-                    if (busy || !loaded || !confirm('Delete saved search “' + item.name + '”?'))
+                remove.addEventListener('click', async () => {
+                    if (busy || !loaded || !await window.sfConfirm('Delete saved search “' + item.name + '”?', { title: 'Delete saved search?', confirmLabel: 'Delete search', danger: true }))
+                        return;
+                    if (busy || !loaded || !items.includes(item))
                         return;
                     const index = items.indexOf(item);
                     void act(async () => {

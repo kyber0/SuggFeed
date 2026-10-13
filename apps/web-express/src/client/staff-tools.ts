@@ -118,23 +118,48 @@
   document.getElementById('staff-bulk-assign')?.addEventListener('click',async()=>{
    if(busy || loading)return;if(!selected.size){tell('Select at least one idea.');return;}
    const assignee=document.getElementById('staff-bulk-assignee') as HTMLSelectElement;
-   if(!window.confirm(`Assign ${selected.size} selected ideas, including selections on other pages, to ${assignee.selectedOptions[0].textContent}? No statuses or public responses will change. If any selected idea changed, nothing is saved.`))return;
+   const assignment={assigneeId:assignee.value || null,items:Array.from(selected.values()).map(x=>({id:x.id,updatedAt:x.updated_at}))};
+   if(!await window.sfConfirm(`Assign ${selected.size} selected ideas, including selections on other pages, to ${assignee.selectedOptions[0].textContent}? No statuses or public responses will change. If any selected idea changed, nothing is saved.`))return;
+   if(busy || loading || assignment.assigneeId!==(assignee.value || null) || JSON.stringify(assignment.items)!==JSON.stringify(Array.from(selected.values()).map(x=>({id:x.id,updatedAt:x.updated_at}))))return;
    busy=true;controls();tell('Saving assignments…');
-   try {await save('/api/community/staff/bulk_assign',{assigneeId:assignee.value || null,items:Array.from(selected.values()).map(x=>({id:x.id,updatedAt:x.updated_at}))});selected.clear();selectionState();if(!await navigate(null,urlFor(null).href,false,true))tell('Assignments saved, but the board could not refresh. Retry loading.');}
+   try {await save('/api/community/staff/bulk_assign',assignment);selected.clear();selectionState();if(!await navigate(null,urlFor(null).href,false,true))tell('Assignments saved, but the board could not refresh. Retry loading.');}
    catch(e){tell(e.name==='AbortError'?'Request timed out. Refresh to confirm assignments before retrying.':e.message);}finally{busy=false;controls();}
   });
-  document.getElementById('staff-board-filters')?.addEventListener('submit',e=>{if(busy || loading || (selected.size && !window.confirm('Changing the search, order or page size clears your selection. Continue?')))e.preventDefault();});
-  document.querySelector('[data-board-reset]')?.addEventListener('click',e=>{if(busy || loading || (selected.size && !window.confirm('Reset filters and clear your selection?')))e.preventDefault();});
+  let filterConfirmed=false,confirmingFilter=false;
+  document.getElementById('staff-board-filters')?.addEventListener('submit',async e=>{
+   if(busy || loading){e.preventDefault();return;}
+   if(filterConfirmed){filterConfirmed=false;return;}
+   if(!selected.size)return;
+   e.preventDefault();if(confirmingFilter)return;confirmingFilter=true;
+   try{
+    if(!await window.sfConfirm('Changing the search, order or page size clears your selection. Continue?'))return;
+    if(busy || loading)return;
+    filterConfirmed=true;
+    const form=e.target as HTMLFormElement,submitter=(e as SubmitEvent).submitter;
+    if(submitter instanceof HTMLButtonElement || submitter instanceof HTMLInputElement)form.requestSubmit(submitter);else form.requestSubmit();
+    filterConfirmed=false;
+   }finally{confirmingFilter=false;}
+  });
+  document.querySelector<HTMLAnchorElement>('[data-board-reset]')?.addEventListener('click',async e=>{
+   if(busy || loading){e.preventDefault();return;}
+   if(!selected.size)return;
+   e.preventDefault();if(confirmingFilter)return;confirmingFilter=true;
+   const href=(e.currentTarget as HTMLAnchorElement).href;
+   try{if(await window.sfConfirm('Reset filters and clear your selection?') && !busy && !loading)window.location.assign(href);}
+   finally{confirmingFilter=false;}
+  });
   window.addEventListener('popstate',()=>{if(busy || loading){window.history.pushState(null,'',urlFor(null).href);tell('Wait for the current request before changing pages.');return;}void navigate(null,window.location.href,false);});
   selectionState();
   window.sfStaffBoardRefresh=()=>navigate(null,urlFor(null).href,false);
  }
- document.getElementById('staff-response-template')?.addEventListener('change',e=>{
+ document.getElementById('staff-response-template')?.addEventListener('change',async e=>{
   const select=e.target as HTMLSelectElement, note=document.getElementById('review-note') as HTMLTextAreaElement;
   if(!select.value || !note) return;
   const templates:Record<string,string>={planned:'Thank you for raising this idea. We have approved it for planning. We will publish an update when the next step is confirmed.',clarify:'Thank you for your feedback. We need more detail before making a decision. Please check your private School messages for our question.',declined:'Thank you for this suggestion. We are unable to proceed at this time. Reason: [explain the decision]. Alternative or next step: [provide a helpful option].'};
-  if(note.value && !window.confirm('Replace the current draft response with this template?')) {select.value='';return;}
-  note.value=templates[select.value] || '';note.dispatchEvent(new Event('input',{bubbles:true}));note.focus();select.value='';
+  const priorText=note.value,template=select.value;
+  if(note.value && !await window.sfConfirm('Replace the current draft response with this template?')) {select.value='';return;}
+  if(note.value!==priorText || select.value!==template)return;
+  note.value=templates[template] || '';note.dispatchEvent(new Event('input',{bubbles:true}));note.focus();select.value='';
  });
  document.addEventListener('keydown',e=>{
   if(e.altKey || e.ctrlKey || e.metaKey || (e.target as HTMLElement).closest('input,textarea,select,[contenteditable=true]') || document.querySelector('dialog[open]')) return;

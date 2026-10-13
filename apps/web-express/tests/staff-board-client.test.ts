@@ -112,7 +112,7 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
   const location: any = { reload: () => { reloads++; }, assign: (url: string) => navigations.push(url) };
   for (const property of ['href', 'origin', 'pathname', 'search']) Object.defineProperty(location, property, { get: () => currentUrl[property] });
   const window: any = {
-    location, confirm: (text: string) => { confirms.push(text); return confirmed; },
+    location, sfConfirm: async (text: string) => { confirms.push(text); return confirmed; },
     history: { pushState: (_state: any, _title: string, url: string) => { currentUrl = new URL(url, currentUrl); historyActions.push('push'); navigations.push(currentUrl.pathname + currentUrl.search); }, replaceState: (_state: any, _title: string, url: string) => { currentUrl = new URL(url, currentUrl); historyActions.push('replace'); navigations.push(currentUrl.pathname + currentUrl.search); } },
     addEventListener: (name: string, fn: Function) => listeners.set('window:' + name, [...(listeners.get('window:' + name) || []), fn]),
   };

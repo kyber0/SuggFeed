@@ -62,7 +62,8 @@
       const remove=document.createElement('button');remove.type='button';remove.className='workspace-button';remove.textContent='Remove';remove.disabled=busy;
       send.addEventListener('click',()=>void sendQueued(row));
       remove.addEventListener('click',async()=>{
-        if(busy || !confirm('Remove this queued idea? A previous timed-out send may already have been recorded. Check its receipt before removing it.'))return;
+        if(busy || !await window.sfConfirm('Remove this queued idea? A previous timed-out send may already have been recorded. Check its receipt before removing it.'))return;
+        if(busy)return;
         try{await storage.remove(row.key);await renderQueue();tell('Queue item removed.');}catch(e){tell(e.message);}
       });item.append(send,remove);list.append(item);
     }
@@ -91,7 +92,7 @@
   form.addEventListener('input',e=>{if(e.target!==title && e.target!==description && e.target!==anon && !(e.target as HTMLElement).matches('input[name="sip-category"]'))return;dirty=true;void saveDraft();});
   remember.addEventListener('change',async()=>{
     if(remember.checked){
-      if(savedDraft && JSON.stringify(savedDraft.payload)!==JSON.stringify(payload()) && !confirm('Replace the saved draft with this draft?')){remember.checked=false;return;}
+      if(savedDraft && JSON.stringify(savedDraft.payload)!==JSON.stringify(payload()) && !await window.sfConfirm('Replace the saved draft with this draft?')){remember.checked=false;return;}
       dirty=true;void saveDraft();
     }else{
       // Wait for an in-flight write before deleting, preventing late autosave from restoring it.
@@ -99,13 +100,14 @@
       try{await storage.remove('draft');savedDraft=null;savedFingerprint='';await renderQueue();tell('Draft recovery disabled and saved draft removed. Queued ideas remain until you send or remove them.');}catch(e){tell(e.message);}
     }
   });
-  restore.addEventListener('click',()=>{
-    if(!savedDraft)return;if((title.value || description.value) && !confirm('Replace the current text with the saved draft?'))return;
+  restore.addEventListener('click',async()=>{
+    if(!savedDraft)return;if((title.value || description.value) && !await window.sfConfirm('Replace the current text with the saved draft?'))return;
+    if(!savedDraft)return;
     title.value=savedDraft.payload.title;description.value=savedDraft.payload.description;anon.checked=savedDraft.payload.isAnonymous;
     document.querySelectorAll<HTMLInputElement>('input[name="sip-category"]').forEach(radio=>radio.checked=radio.value===savedDraft.payload.category);
     onCategorySelected(savedDraft.payload.category);handleTitleInput();handleDescInput();handleAnonToggle();remember.checked=true;dirty=true;savedFingerprint=JSON.stringify(payload());tell('Draft restored. Review it before sending.');(window as any).sfRestoreSubmissionStep(!!savedDraft.payload.category);
   });
-  discard.addEventListener('click',async()=>{if(!confirm('Discard the saved draft on this device?'))return;try{await storage.remove('draft');savedFingerprint='';remember.checked=false;await renderQueue();tell('Saved draft discarded. Current editable text is unchanged.');}catch(e){tell(e.message);}});
+  discard.addEventListener('click',async()=>{if(!await window.sfConfirm('Discard the saved draft on this device?'))return;try{await storage.remove('draft');savedFingerprint='';remember.checked=false;await renderQueue();tell('Saved draft discarded. Current editable text is unchanged.');}catch(e){tell(e.message);}});
   document.getElementById('sip-queue-btn')?.addEventListener('click',async()=>{
     if(busy)return;
     const value=payload();

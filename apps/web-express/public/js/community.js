@@ -183,7 +183,7 @@
                 notify(fail(error));
         }
     }
-    document.getElementById('private-code-form')?.addEventListener('submit', e => { e.preventDefault(); if (Array.from(messages?.querySelectorAll('textarea') || []).some(el => el.value.trim()) && !window.confirm('Discard your unsent private reply and look up another submission?'))
+    document.getElementById('private-code-form')?.addEventListener('submit', async (e) => { e.preventDefault(); if (Array.from(messages?.querySelectorAll('textarea') || []).some(el => el.value.trim()) && !await window.sfConfirm('Discard your unsent private reply and look up another submission?'))
         return; privateCode = String(new FormData(e.target).get('trackingCode') || '').trim(); void loadInbox(); });
     if (messages)
         window.addEventListener('beforeunload', e => { if (Array.from(messages.querySelectorAll('textarea')).some(el => el.value.trim())) {
@@ -234,7 +234,7 @@
             }
             else if (action === 'resolve')
                 confirmation = `${body.resolution === 'removed' ? 'Remove content from public view' : 'Keep the reported content'}? Your reason is shown privately to the reporter.`;
-            if (!window.confirm(confirmation))
+            if (!await window.sfConfirm(confirmation))
                 return;
             await request('staff/' + action, body);
             notify('Saved. Refresh this page to see the updated queue.');

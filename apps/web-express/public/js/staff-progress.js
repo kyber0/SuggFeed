@@ -602,7 +602,10 @@
             percent: visibility.value === 'staff' || (percent.disabled && kind.value !== 'completed') ? null : percent.value === '' ? null : Number(percent.value),
             blockedReason: kind.value === 'blocked' ? blocked.value : null, nextStep: nextStep.value.trim() || null, occurredOn: date.value, notify: visibility.value === 'public' && notify.checked };
         const serialized = JSON.stringify(payload);
-        if (workflow && ['completed', 'withdrawn', 'reopened', 'approve', 'decline'].includes(kind.value) && !window.confirm((kind.value === 'completed' ? 'Complete this work, publish its outcome and evidence, and clear any paused state?' : kind.value === 'withdrawn' ? 'Withdraw this idea from public views? Its tracking record and history will remain.' : kind.value === 'reopened' ? 'Reopen this work publicly? Previous completion history remains; the current completion date will be cleared.' : labels[kind.value] + '?') + ' Check the explanation for private information.'))
+        const confirmationGeneration = generation, confirmationIdea = active.id;
+        if (workflow && ['completed', 'withdrawn', 'reopened', 'approve', 'decline'].includes(kind.value) && !await window.sfConfirm((kind.value === 'completed' ? 'Complete this work, publish its outcome and evidence, and clear any paused state?' : kind.value === 'withdrawn' ? 'Withdraw this idea from public views? Its tracking record and history will remain.' : kind.value === 'reopened' ? 'Reopen this work publicly? Previous completion history remains; the current completion date will be cleared.' : labels[kind.value] + '?') + ' Check the explanation for private information.'))
+            return;
+        if (isBusy() || loading || !active || active.id !== confirmationIdea || generation !== confirmationGeneration || !snapshot || snapshot.updated_at !== payload.updatedAt)
             return;
         if (!retry || retry.payload !== serialized) {
             draftRequestId || (draftRequestId = crypto.randomUUID());

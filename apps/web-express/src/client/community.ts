@@ -87,7 +87,7 @@
       notify(data.requests.length ? `${data.requests.length} private requests shown.` : 'No clarification requests for these submissions.');
     }catch(error){if(version===inboxVersion) notify(fail(error));}
   }
-  document.getElementById('private-code-form')?.addEventListener('submit',e=>{e.preventDefault();if(Array.from(messages?.querySelectorAll('textarea') || []).some(el=>el.value.trim()) && !window.confirm('Discard your unsent private reply and look up another submission?')) return;privateCode=String(new FormData(e.target as HTMLFormElement).get('trackingCode') || '').trim();void loadInbox();});
+  document.getElementById('private-code-form')?.addEventListener('submit',async e=>{e.preventDefault();if(Array.from(messages?.querySelectorAll('textarea') || []).some(el=>el.value.trim()) && !await window.sfConfirm('Discard your unsent private reply and look up another submission?')) return;privateCode=String(new FormData(e.target as HTMLFormElement).get('trackingCode') || '').trim();void loadInbox();});
   if(messages) window.addEventListener('beforeunload',e=>{if(Array.from(messages.querySelectorAll('textarea')).some(el=>el.value.trim())) {e.preventDefault();e.returnValue='';}});
   if(messages && signedIn) void loadInbox();
   const history=document.getElementById('my-report-history');
@@ -114,7 +114,7 @@
         body.updatedAt=source.idea.updated_at;body.targetUpdatedAt=target.idea.updated_at;
         confirmation=`Merge “${source.idea.title}” into “${target.idea.title}”? The source leaves public lists, followers move, and votes stay separate. This publishes your merge reason. This cannot be undone here.`;
       } else if(action==='resolve') confirmation=`${body.resolution==='removed' ? 'Remove content from public view' : 'Keep the reported content'}? Your reason is shown privately to the reporter.`;
-      if(!window.confirm(confirmation)) return;
+      if(!await window.sfConfirm(confirmation)) return;
       await request('staff/'+action,body);notify('Saved. Refresh this page to see the updated queue.');form.reset();
       if(action==='close' || action==='resolve') form.closest('article')?.remove();
     }catch(error){notify(fail(error));}

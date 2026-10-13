@@ -1,0 +1,7 @@
+<dialog id="sf-confirm-dialog" class="app-confirm-dialog" aria-labelledby="sf-confirm-title" aria-describedby="sf-confirm-message">
+  <div class="app-confirm-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5m0 3h.01M12 3 2 21h20Z"/></svg></div>
+  <h2 id="sf-confirm-title">Confirm this change</h2>
+  <p id="sf-confirm-message"></p>
+  <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>
+</dialog>
+<script src="/js/confirmation.js?v=20261013-custom"></script>

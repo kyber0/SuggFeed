@@ -160,4 +160,4 @@ const feedUrl = (changes = {}) => {
 <div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
 <script src="/js/feed.js?v=20261011-feed"></script>
 
-<script src="/js/saved-searches.js?v=20261013-cards"></script>
+<script src="/js/saved-searches.js?v=20261013-custom-dialogs"></script>

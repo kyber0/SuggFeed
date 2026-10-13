@@ -111,7 +111,9 @@
             remove.disabled = busy;
             send.addEventListener('click', () => void sendQueued(row));
             remove.addEventListener('click', async () => {
-                if (busy || !confirm('Remove this queued idea? A previous timed-out send may already have been recorded. Check its receipt before removing it.'))
+                if (busy || !await window.sfConfirm('Remove this queued idea? A previous timed-out send may already have been recorded. Check its receipt before removing it.'))
+                    return;
+                if (busy)
                     return;
                 try {
                     await storage.remove(row.key);
@@ -188,7 +190,7 @@
         return; dirty = true; void saveDraft(); });
     remember.addEventListener('change', async () => {
         if (remember.checked) {
-            if (savedDraft && JSON.stringify(savedDraft.payload) !== JSON.stringify(payload()) && !confirm('Replace the saved draft with this draft?')) {
+            if (savedDraft && JSON.stringify(savedDraft.payload) !== JSON.stringify(payload()) && !await window.sfConfirm('Replace the saved draft with this draft?')) {
                 remember.checked = false;
                 return;
             }
@@ -211,10 +213,12 @@
             }
         }
     });
-    restore.addEventListener('click', () => {
+    restore.addEventListener('click', async () => {
         if (!savedDraft)
             return;
-        if ((title.value || description.value) && !confirm('Replace the current text with the saved draft?'))
+        if ((title.value || description.value) && !await window.sfConfirm('Replace the current text with the saved draft?'))
+            return;
+        if (!savedDraft)
             return;
         title.value = savedDraft.payload.title;
         description.value = savedDraft.payload.description;
@@ -230,7 +234,7 @@
         tell('Draft restored. Review it before sending.');
         window.sfRestoreSubmissionStep(!!savedDraft.payload.category);
     });
-    discard.addEventListener('click', async () => { if (!confirm('Discard the saved draft on this device?'))
+    discard.addEventListener('click', async () => { if (!await window.sfConfirm('Discard the saved draft on this device?'))
         return; try {
         await storage.remove('draft');
         savedFingerprint = '';

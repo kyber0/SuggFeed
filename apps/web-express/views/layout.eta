@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/styles.css?v=20261013-ui-polish" />
+  <link rel="stylesheet" href="/css/styles.css?v=20261013-custom-dialogs" />
   <script src="/js/events.js?v=20261011-feed"></script>
 
   <script src="/js/preferences.js?v=20261012-features"></script>
@@ -34,6 +34,8 @@
 <%~ include('partials/workspace-icons', it) %>
 <div id="sf-auth-config" hidden data-url="<%= it.supabaseUrl || '' %>" data-key="<%= it.supabaseAnonKey || '' %>" data-user="<%= it.user?.id || '' %>"></div>
 
+<%~ include('partials/toast', it) %>
+<%~ include('partials/confirmation', it) %>
 <%~ include('partials/header', it) %>
 
 <div id="page-content" tabindex="-1"><%~ it.body ?? '' %></div>
@@ -41,7 +43,6 @@
 <%~ include('partials/auth-modal', it) %>
 <%~ include('partials/submit-panel', it) %>
 <%~ include('partials/idea-detail-drawer', it) %>
-<%~ include('partials/toast', it) %>
 <%~ include('partials/report-dialog', it) %>
 <%~ include('partials/mobile-nav', it) %>
 
@@ -51,7 +52,7 @@
 <!-- Theme toggle logic -->
 <script src="/js/theme.js?v=20261012-features"></script>
 <script src="/js/engagement.js?v=20261012-progress"></script>
-<script src="/js/community.js?v=20261012-features"></script>
+<script src="/js/community.js?v=20261013-custom-dialogs"></script>
 
 <script src="/js/public-history.js?v=20261012-features"></script>
 </body>

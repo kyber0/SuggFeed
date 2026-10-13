@@ -107,8 +107,9 @@
         const rename=actionButton('Rename','edit');rename.dataset.rename='';rename.setAttribute('aria-label','Rename '+item.name);
         const remove=actionButton('Delete','trash');remove.classList.add('saved-search-delete');remove.setAttribute('aria-label','Delete '+item.name);
         rename.addEventListener('click',()=>{if(busy || !loaded)return;closeCreate();editing=item.id;render();const input=list.querySelector<HTMLInputElement>('.saved-search-rename input');input?.focus();input?.select();});
-        remove.addEventListener('click',()=>{
-          if(busy || !loaded || !confirm('Delete saved search “'+item.name+'”?'))return;
+        remove.addEventListener('click',async()=>{
+          if(busy || !loaded || !await window.sfConfirm('Delete saved search “'+item.name+'”?', {title:'Delete saved search?', confirmLabel:'Delete search', danger:true}))return;
+          if(busy || !loaded || !items.includes(item))return;
           const index=items.indexOf(item);
           void act(async()=>{
             if(account)await request('/'+item.id,'DELETE');

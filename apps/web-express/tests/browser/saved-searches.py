@@ -43,6 +43,7 @@ with sync_playwright() as p:
   assert errors==[],errors
   page.locator('.saved-searches').screenshot(path=f'/tmp/suggfeed-saved-{width}-{theme}.png')
   page.get_by_role('button',name='Delete Campus library',exact=True).click()
+  page.locator('#sf-confirm-dialog [data-confirm-accept]').click()
   expect(page.locator('#saved-search-count')).to_have_text('0 / 10')
   expect(page.locator('.saved-search-empty')).to_be_visible()
   expect(page.locator('#saved-search-add')).to_be_focused()
