@@ -10,6 +10,13 @@
     const feedback = document.getElementById('auth-reset-feedback')!;
     const submit = document.getElementById('auth-reset-submit') as HTMLButtonElement;
     const cancel = document.getElementById('auth-reset-cancel') as HTMLButtonElement;
+    const codeEntryPage = window.location.pathname === '/auth/recovery';
+    const codeForm = document.getElementById('auth-code-form') as HTMLFormElement;
+    const codeEmail = document.getElementById('auth-code-email') as HTMLInputElement;
+    const codeInput = document.getElementById('auth-recovery-code') as HTMLInputElement;
+    const codeFeedback = document.getElementById('auth-code-feedback')!;
+    const codeSubmit = document.getElementById('auth-code-submit') as HTMLButtonElement;
+    const codeResend = document.getElementById('auth-code-resend') as HTMLButtonElement;
     const recoveryKey = 'sf:password-recovery:v1';
     const query = new URLSearchParams(window.location.search);
     const hash = new URLSearchParams(window.location.hash.slice(1));
@@ -34,12 +41,29 @@
     }
     function showReset(session: AuthSession) {
       recoverySession = session; rememberRecovery(session);
+      codeForm.hidden = true; codeInput.value = '';
       history.replaceState(null, '', '/auth/callback?type=recovery');
       spinner.hidden = true; retry.hidden = true; form.hidden = false;
       title.textContent = 'Choose a new password';
       message.textContent = 'Your reset link is verified. Enter your new password below to finish resetting it.';
       password.focus();
     }
+    codeForm.addEventListener('submit', async event => {
+      event.preventDefault(); if (saving) return;
+      const email = codeEmail.value.trim(), token = codeInput.value.trim();
+      if (!email || !codeEmail.checkValidity()) {codeFeedback.textContent = 'Enter the email address used to request this reset.'; codeEmail.focus(); return;}
+      if (!/^[0-9]{6,10}$/.test(token)) {codeFeedback.textContent = 'Enter the numeric password reset code from your email.'; codeInput.focus(); return;}
+      saving = true; codeSubmit.disabled = true; codeResend.disabled = true; codeEmail.disabled = true; codeInput.disabled = true;
+      codeFeedback.textContent = 'Verifying reset code…';
+      try {
+        const result = await window._sb.auth.verifyOtp({email, token, type:'recovery'});
+        if (result.error || !result.data.session) throw new Error('That reset code could not be verified. Check the email address and code, or request a fresh reset email.');
+        showReset(result.data.session);
+        codeFeedback.textContent = '';
+      } catch (error) {codeFeedback.textContent = error.message || 'The code could not be verified. Please try again.';}
+      finally {saving = false; codeSubmit.disabled = false; codeResend.disabled = false; codeEmail.disabled = false; codeInput.disabled = false;}
+    });
+    codeResend.addEventListener('click', () => {if (!saving) window.openAuthModal('forgot');});
     form.addEventListener('submit', async event => {
       event.preventDefault(); if (saving || !recoverySession) return;
       feedback.textContent = '';
@@ -84,13 +108,19 @@
     try {
       const sb = window._sb;
       if (!sb) throw new Error('Authentication is unavailable. Please try again later.');
-      history.replaceState(null, '', recovery ? '/auth/callback?type=recovery' : '/auth/callback');
+      history.replaceState(null, '', codeEntryPage ? '/auth/recovery' : recovery ? '/auth/callback?type=recovery' : '/auth/callback');
       if (query.has('error') || hash.has('error')) throw new Error('This link was cancelled, expired, or could not be verified. Request a new link and try again.');
       if ((query.has('code') && !query.get('code')) ||
           ((hash.has('access_token') || hash.has('refresh_token')) && (!hash.get('access_token') || !hash.get('refresh_token')))) {
         throw new Error('This link is incomplete. Request a new link and try again.');
       }
       await window.sfAuthReady;
+      if (codeEntryPage && !query.has('code') && !hash.has('access_token')) {
+        spinner.hidden = true; codeForm.hidden = false; retry.hidden = true;
+        title.textContent = 'Use your password reset code';
+        message.textContent = 'Verify the code from your reset email, then choose a new password.';
+        codeEmail.focus(); return;
+      }
       let session: AuthSession | null = null;
       if (query.get('code')) {
         const result = await sb.auth.exchangeCodeForSession(query.get('code')!, query.get('sb_flow_id') ? {flowId:query.get('sb_flow_id')!} : undefined);

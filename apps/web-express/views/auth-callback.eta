@@ -6,6 +6,14 @@
   </div>
   <h1 class="auth-callback-title" id="auth-callback-title">Signing you in…</h1>
   <p class="auth-callback-sub" id="auth-callback-message" role="status" aria-live="polite">Completing your sign-in, please wait a moment.</p>
+  <form id="auth-code-form" class="auth-reset-form am-form" novalidate hidden>
+    <div class="am-field"><label class="am-label" for="auth-code-email">Account email address</label><input class="am-input" id="auth-code-email" type="email" autocomplete="email" required maxlength="254" /></div>
+    <div class="am-field"><label class="am-label" for="auth-recovery-code">Password reset code</label><input class="am-input" id="auth-recovery-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" minlength="6" maxlength="10" required aria-describedby="auth-code-help" /></div>
+    <p id="auth-code-help">Enter the code from your password reset email. Codes expire and can only be used once.</p>
+    <p id="auth-code-feedback" class="auth-reset-feedback" role="alert"></p>
+    <button type="submit" class="am-btn-primary" id="auth-code-submit">Verify reset code</button>
+    <button type="button" class="am-btn-ghost" id="auth-code-resend">Request a new reset email</button>
+  </form>
   <form id="auth-reset-form" class="auth-reset-form am-form" novalidate hidden>
     <div class="am-field"><label class="am-label" for="auth-reset-password">New password</label><input class="am-input" id="auth-reset-password" type="password" autocomplete="new-password" minlength="8" required aria-describedby="auth-reset-help" /></div>
     <div class="am-field"><label class="am-label" for="auth-reset-confirm">Confirm new password</label><input class="am-input" id="auth-reset-confirm" type="password" autocomplete="new-password" minlength="8" required /></div>
@@ -17,4 +25,4 @@
   <a class="btn-primary" id="auth-callback-retry" href="/" hidden>Return home and try again</a>
 </main>
 
-<script src="/js/auth-callback.js?v=20261013-recovery"></script>
+<script src="/js/auth-callback.js?v=20261013-recovery-code"></script>

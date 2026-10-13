@@ -135,6 +135,8 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
 
+        <a href="/auth/recovery" class="am-btn-ghost">Enter a password reset code instead</a>
+
         <button type="button" class="am-btn-ghost btn-back-signin" id="btn-back-signin">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
           Back to sign in
@@ -144,4 +146,4 @@
   </div>
 </div>
 
-<script src="/js/auth-modal.js?v=20261013-polish"></script>
+<script src="/js/auth-modal.js?v=20261013-recovery-code"></script>

@@ -7,7 +7,7 @@ router.use((_req, res, next) => { res.setHeader("Cache-Control", "no-store"); ne
 
 // PKCE verifiers live in the initiating browser. Exchange the code there exactly
 // once, then verify the resulting access token before issuing the server session.
-router.get(["/callback", "/callback/client"], (_req, res) => {
+router.get(["/callback", "/callback/client", "/recovery"], (_req, res) => {
   res.setHeader("Referrer-Policy", "no-referrer");
   res.render("auth-callback", { title: "Signing in… — SuggFeed" });
 });

@@ -76,3 +76,11 @@ expired or incomplete links cannot fall back to an unrelated existing sign-in.
 Reset cancellation signs out. Normal OAuth return navigation is preserved.
 Focused auth checks use mocked Supabase sessions and never send reset emails or
 change production passwords.
+
+The reset email's one-time code is now usable at `/auth/recovery`, linked from
+Forgot password. The page verifies the account email and code through Supabase
+`verifyOtp` with `type: recovery`, then reuses the password form. Codes are not
+stored locally, added to URLs, or sent to the app's server-session endpoint.
+Invalid or expired codes keep the entry form visible and never fall back to a
+pre-existing signed-in session. This code flow does not require the PKCE verifier
+from the browser that originally requested the email.
