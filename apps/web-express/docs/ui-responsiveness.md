@@ -7,7 +7,17 @@ page immediately displays the destination's heading and a responsive skeleton
 instead of looking unchanged during the server wait. No artificial delay, HTML
 replacement or duplicate script initialization is introduced. Keyboard links,
 modified clicks, new tabs, downloads and same-page anchors retain browser behavior.
-GET filter forms use the same loading state. The skeleton supports reduced motion,
+GET filter forms select the destination layout using their submitted parameters.
+
+Skeletons use distinct page geometry: the home hero and form, the feed's three
+columns, profile identity and activity, updates and preferences, private inbox
+conversations, and idea details. Roadmap board, timeline, category tree and
+completed outcomes each have their own template. Staff review, work board,
+analytics charts, member roster, reports, clarification forms and attention queues
+also have separate layouts. Legal documents, email preferences and staff sign-in
+have appropriate document or form placeholders. Templates are inert until selected;
+no template fetch delays navigation. Mobile layouts collapse columns and preserve
+the timeline's scrollable date grid. The skeleton supports reduced motion,
 announces loading, and offers Cancel loading. Browser back/forward and cancelled
 unsaved-work navigation restore the original page; draft inputs are not cleared.
 

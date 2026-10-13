@@ -5,17 +5,75 @@
     const title = document.getElementById('navigation-title');
     const status = document.getElementById('navigation-status');
     const cancel = document.getElementById('navigation-cancel');
-    if (!shell || !content)
+    const body = document.getElementById('navigation-skeleton-body');
+    if (!shell || !content || !title || !status || !body)
         return;
     let timer;
     function reset() { clearTimeout(timer); shell.hidden = true; content.hidden = false; content.removeAttribute('aria-busy'); document.documentElement.classList.remove('is-navigating'); }
-    function show(path) {
-        const section = path.startsWith('/admin') ? 'Staff workspace' : path.startsWith('/feed') ? 'Community ideas' : path.startsWith('/roadmap') ? 'Roadmap' : path.startsWith('/profile') ? 'Your profile' : path.startsWith('/notifications') ? 'School updates' : path.startsWith('/inbox') ? 'School messages' : path.startsWith('/idea/') ? 'Idea details' : 'SuggFeed';
+    function destinationScreen(destination) {
+        const path = destination.pathname.replace(/\/+$/, '') || '/';
+        if (path === '/')
+            return ['home', 'SuggFeed'];
+        if (path === '/feed')
+            return ['feed', 'Community ideas'];
+        if (path === '/roadmap') {
+            const view = destination.searchParams.get('view') || 'board';
+            const views = { board: 'Roadmap board', timeline: 'Work timeline', tree: 'Roadmap categories', done: 'Completed ideas' };
+            return ['roadmap-' + (views[view] ? view : 'board'), views[view] || views.board];
+        }
+        if (path.startsWith('/roadmap/idea/') || path.startsWith('/idea/'))
+            return ['idea', 'Idea details'];
+        if (path === '/profile')
+            return ['profile', 'Your profile'];
+        if (path === '/notifications')
+            return ['updates', 'School updates'];
+        if (path === '/inbox')
+            return ['inbox', 'School messages'];
+        if (path === '/admin/community') {
+            const section = destination.searchParams.get('section') || (destination.searchParams.has('idea') ? 'clarifications' : 'reports');
+            const sections = { reports: 'Community reports', clarifications: 'Private clarifications', attention: 'Ideas needing attention' };
+            return ['staff-' + (sections[section] ? section : 'reports'), sections[section] || sections.reports];
+        }
+        if (path === '/staff-login')
+            return ['login', 'Staff sign in'];
+        if (path === '/admin' || path.startsWith('/admin/')) {
+            if (!document.getElementById('sf-auth-config')?.dataset.user)
+                return ['login', 'Staff sign in'];
+            const view = path === '/admin' ? destination.searchParams.get('view') : path.split('/')[2];
+            if (view === 'analytics')
+                return ['staff-analytics', 'School analytics'];
+            if (view === 'staff')
+                return ['staff-members', 'Manage staff'];
+            if (view === 'board')
+                return ['staff-board', 'Manage work'];
+            if (view === 'login')
+                return ['login', 'Staff sign in'];
+            return ['staff-queue', 'Review submissions'];
+        }
+        if (path.startsWith('/digest/'))
+            return ['digest', 'Email preferences'];
+        if (path === '/privacy')
+            return ['document', 'Privacy policy'];
+        if (path === '/terms')
+            return ['document', 'Terms of use'];
+        return ['document', 'Loading page'];
+    }
+    function canLoad(destination) {
+        return destination.origin === location.origin && destination.protocol === location.protocol
+            && !/^\/(api|auth|staff\/workspace)(\/|$)/.test(destination.pathname);
+    }
+    function show(destination) {
+        const [layout, section] = destinationScreen(destination);
+        const template = document.getElementById('navigation-template-' + layout);
+        if (!(template instanceof HTMLTemplateElement))
+            return;
+        body.replaceChildren(template.content.cloneNode(true));
         const menu = document.getElementById('header-dropdown');
         if (menu)
             menu.hidden = true;
         document.getElementById('header-avatar-btn')?.setAttribute('aria-expanded', 'false');
         shell.dataset.section = section;
+        shell.dataset.layout = layout;
         title.textContent = section;
         status.textContent = 'Loading ' + section.toLowerCase() + '…';
         shell.hidden = false;
@@ -32,25 +90,33 @@
         if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self') || link.closest('[data-no-navigation-loader]'))
             return;
         const destination = new URL(link.href, location.href);
-        if (destination.origin !== location.origin || destination.protocol !== location.protocol || destination.pathname.startsWith('/api/') || destination.pathname.startsWith('/auth/'))
+        if (!canLoad(destination))
             return;
         if (destination.pathname === location.pathname && destination.search === location.search)
             return;
         // Keep ordinary browser navigation: start it in this click, with no fetch or
         // artificial wait. Only the old document's pending visual state changes.
         queueMicrotask(() => { if (!event.defaultPrevented)
-            show(destination.pathname); });
+            show(destination); });
     });
     document.addEventListener('submit', event => {
         if (event.defaultPrevented)
             return;
         const form = event.target;
-        if (form.method.toLowerCase() !== 'get' || (form.target && form.target !== '_self'))
+        const submitter = event.submitter;
+        const button = submitter instanceof HTMLButtonElement || submitter instanceof HTMLInputElement ? submitter : null;
+        if ((button?.formMethod || form.method).toLowerCase() !== 'get' || ((button?.formTarget || form.target) && (button?.formTarget || form.target) !== '_self'))
             return;
-        const destination = new URL(form.action, location.href);
-        if (destination.origin === location.origin && !destination.pathname.startsWith('/auth/'))
+        const destination = new URL(button?.hasAttribute('formaction') ? button.formAction : form.action, location.href);
+        destination.search = '';
+        for (const [key, value] of new FormData(form).entries())
+            if (typeof value === 'string')
+                destination.searchParams.append(key, value);
+        if (button?.name)
+            destination.searchParams.append(button.name, button.value);
+        if (canLoad(destination))
             queueMicrotask(() => { if (!event.defaultPrevented)
-                show(destination.pathname); });
+                show(destination); });
     });
     cancel?.addEventListener('click', () => { window.stop(); reset(); });
     window.addEventListener('pageshow', event => { if (event.persisted)

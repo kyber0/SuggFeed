@@ -1,12 +1,48 @@
+<%
+ // These templates are inert until navigation selects the destination layout.
+ const bar = (kind = '') => '<span class="skeleton-bar '+kind+'"></span>';
+ const lines = () => bar('skeleton-bar--wide') + bar() + bar('skeleton-bar--short');
+ const panel = (body, kind = '') => '<div class="nsk-panel '+kind+'">'+body+'</div>';
+ const avatar = (large = false) => bar('nsk-avatar'+(large?' nsk-avatar--large':''));
+ const buttons = () => '<div class="nsk-actions">'+bar('nsk-button')+bar('nsk-button')+'</div>';
+ const post = () => panel('<div class="nsk-person">'+avatar()+ '<div>'+bar('skeleton-bar--short')+bar()+'</div></div>'+lines()+buttons(), 'nsk-post');
+ const rail = () => panel(bar('skeleton-bar--wide')+Array.from({length:6},()=>bar()).join(''), 'nsk-rail');
+ const toolbar = () => panel('<div class="nsk-actions">'+bar('nsk-input')+bar('nsk-button')+bar('nsk-button')+'</div>', 'nsk-toolbar');
+ const board = () => '<div class="nsk-board">'+Array.from({length:3},()=>'<div class="nsk-lane">'+bar('skeleton-bar--short')+panel(lines())+panel(lines())+'</div>').join('')+'</div>';
+ const staff = body => '<div class="nsk-staff">'+rail()+'<div class="nsk-stack">'+body+'</div></div>';
+ const metrics = count => '<div class="nsk-metrics">'+Array.from({length:count},()=>panel(bar('skeleton-bar--short')+bar('nsk-number'))).join('')+'</div>';
+ const stream = count => '<div class="nsk-stack">'+Array.from({length:count},()=>panel('<div class="nsk-person">'+avatar()+'<div>'+lines()+'</div>'+bar('nsk-badge')+'</div>')).join('')+'</div>';
+ const form = () => panel(bar('skeleton-bar--wide')+bar('nsk-input')+bar('nsk-input')+bar('nsk-textarea')+buttons());
+ const layouts = {
+  home: '<div class="nsk-home-hero">'+bar('nsk-hero-title')+bar('nsk-hero-title skeleton-bar--short')+bar()+buttons()+'</div><div class="nsk-home-form">'+form()+'</div><div class="nsk-two">'+post()+post()+'</div>',
+  feed: '<div class="nsk-feed">'+rail()+'<div class="nsk-stack">'+toolbar()+panel(bar('skeleton-bar--short')+buttons())+post()+post()+post()+'</div><div class="nsk-stack nsk-rail">'+panel(lines())+panel(lines())+'</div></div>',
+  'roadmap-board': toolbar()+board(),
+  'roadmap-timeline': toolbar()+panel('<div class="nsk-timeline"><div class="nsk-timeline-dates">'+Array.from({length:6},()=>bar('nsk-badge')).join('')+'</div>'+Array.from({length:5},(_,i)=>'<div class="nsk-timeline-row">'+bar('skeleton-bar--short')+'<div>'+bar('nsk-work nsk-work--'+i)+'</div></div>').join('')+'</div>'),
+  'roadmap-tree': toolbar()+'<div class="nsk-two">'+Array.from({length:4},()=>panel(bar('skeleton-bar--short')+'<div class="nsk-tree">'+lines()+lines()+'</div>')).join('')+'</div>',
+  'roadmap-done': toolbar()+'<div class="nsk-two">'+Array.from({length:4},()=>panel('<div class="nsk-person">'+bar('nsk-check')+bar('skeleton-bar--short')+'</div>'+lines()+bar('nsk-outcome'))).join('')+'</div>',
+  profile: panel('<div class="nsk-person">'+avatar(true)+'<div>'+bar('skeleton-bar--wide')+bar()+buttons()+'</div></div>'+metrics(4),'nsk-profile-hero')+'<div class="nsk-profile">'+form()+'<div class="nsk-stack">'+toolbar()+'<div class="nsk-two">'+post()+post()+'</div></div></div>',
+  updates: '<div class="nsk-updates">'+stream(5)+panel(bar('skeleton-bar--wide')+Array.from({length:4},()=>'<div class="nsk-person">'+bar()+bar('nsk-toggle')+'</div>').join(''))+'</div>',
+  inbox: '<div class="nsk-inbox-lookup">'+panel(bar('skeleton-bar--short')+bar('nsk-input')+buttons())+'</div><div class="nsk-stack">'+Array.from({length:2},()=>panel(lines()+'<div class="nsk-message">'+lines()+'</div><div class="nsk-message nsk-message--reply">'+lines()+'</div>'+bar('nsk-textarea')+buttons())).join('')+'</div>',
+  idea: panel(bar('nsk-badge')+bar('nsk-hero-title')+'<div class="nsk-person">'+avatar()+bar('skeleton-bar--short')+'</div>')+'<div class="nsk-idea">'+panel(lines()+bar('nsk-textarea')+lines()+buttons())+'<div class="nsk-stack">'+panel(lines())+stream(3)+'</div></div>',
+  'staff-queue': staff(metrics(4)+toolbar()+stream(5)),
+  'staff-board': staff(toolbar()+board()),
+  'staff-analytics': staff(metrics(5)+'<div class="nsk-two">'+panel(bar('skeleton-bar--short')+'<div class="nsk-chart">'+Array.from({length:7},(_,i)=>bar('nsk-column nsk-column--'+i)).join('')+'</div>')+panel(bar('skeleton-bar--short')+bar('nsk-ring')+buttons())+panel(lines())+panel(lines())+'</div>'),
+  'staff-members': staff('<div class="nsk-members">'+panel(toolbar()+Array.from({length:6},()=>'<div class="nsk-table-row">'+avatar()+bar()+bar('nsk-badge')+'</div>').join(''))+form()+'</div>'),
+  'staff-reports': staff(toolbar()+Array.from({length:3},()=>panel('<div class="nsk-person">'+bar('nsk-badge')+bar()+'</div>'+lines()+'<div class="nsk-quote">'+lines()+'</div>'+buttons())).join('')),
+  'staff-clarifications': staff(toolbar()+form()+stream(2)),
+  'staff-attention': staff(metrics(3)+toolbar()+stream(3)),
+  document: '<div class="nsk-document">'+panel(bar('nsk-hero-title')+Array.from({length:5},()=>'<div class="nsk-paragraph">'+lines()+bar()+'</div>').join(''))+'</div>',
+  digest: '<div class="nsk-digest">'+panel(bar('nsk-check')+lines()+bar('nsk-input')+buttons())+'</div>',
+  login: '<div class="nsk-login">'+panel(bar('nsk-hero-title')+lines()+bar('nsk-outcome'))+form()+'</div>',
+ };
+%>
 <section id="navigation-skeleton" class="navigation-skeleton" hidden aria-labelledby="navigation-title" aria-busy="true">
  <div class="navigation-skeleton-inner">
   <div class="navigation-skeleton-heading"><div><p class="workspace-kicker">SUGGFEED</p><h1 id="navigation-title">Loading page</h1><p id="navigation-status" role="status" aria-live="polite">Loading…</p></div><button class="workspace-button" type="button" id="navigation-cancel">Cancel loading</button></div>
-  <div class="navigation-skeleton-layout" aria-hidden="true">
-   <aside class="navigation-skeleton-sidebar"><span class="skeleton-bar skeleton-bar--wide"></span><span class="skeleton-bar"></span><span class="skeleton-bar"></span><span class="skeleton-bar skeleton-bar--short"></span></aside>
-   <div class="navigation-skeleton-cards"><div class="navigation-skeleton-toolbar"><span class="skeleton-bar skeleton-bar--wide"></span></div>
-    <% for(let i=0;i<4;i++){ %><div class="navigation-skeleton-card"><span class="skeleton-bar skeleton-bar--short"></span><span class="skeleton-bar skeleton-bar--wide"></span><span class="skeleton-bar"></span><span class="skeleton-bar skeleton-bar--short"></span></div><% } %>
-   </div>
-  </div>
+  <div id="navigation-skeleton-body" aria-hidden="true"></div>
  </div>
 </section>
-<script defer src="/js/navigation.js?v=20261013-instant"></script>
+<% for (const [key, markup] of Object.entries(layouts)) { %>
+<template id="navigation-template-<%= key %>"><%~ markup %></template>
+<% } %>
+<script defer src="/js/navigation.js?v=20261013-screen-skeletons"></script>

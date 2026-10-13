@@ -16,7 +16,7 @@
   <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/styles.css?v=20261013-responsive" />
+  <link rel="stylesheet" href="/css/styles.css?v=20261013-screen-skeletons" />
   <script defer src="/js/events.js?v=20261011-feed"></script>
 
   <script src="/js/preferences.js?v=20261012-features"></script>
