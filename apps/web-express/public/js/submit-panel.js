@@ -5,6 +5,8 @@
     let sipMaxVisitedStep = 1;
     let sipTrackingCode = '';
     let sipReturnFocusTo = null;
+    let sipOpened = false;
+    let sipSending = false;
     function openSubmitPanel(defaultCat) {
         sipReturnFocusTo = document.activeElement;
         sipCurrentStep = 1;
@@ -16,14 +18,19 @@
             overlay.removeAttribute('hidden');
         if (panel)
             panel.removeAttribute('hidden');
-        if (form)
+        if (form && (!sipOpened || !document.getElementById('sip-success').hidden)) {
             form.reset();
+        }
+        sipOpened = true;
+        document.getElementById('sip-queue-btn').hidden = false;
         document.getElementById('sip-success').hidden = true;
         document.getElementById('sip-footer').classList.remove('sip-footer-hidden');
         document.body.style.overflow = 'hidden';
         // Clear active card states
-        document.querySelectorAll('.sip-cat-card').forEach(c => c.classList.remove('sip-cat-card--selected'));
-        if (defaultCat) {
+        const currentCategory = document.querySelector('input[name="sip-category"]:checked');
+        if (currentCategory)
+            onCategorySelected(currentCategory.value);
+        if (defaultCat && !document.querySelector('input[name="sip-category"]:checked')) {
             const radio = document.querySelector(`input[name="sip-category"][value="${defaultCat}"]`);
             if (radio) {
                 radio.checked = true;
@@ -166,6 +173,7 @@
         }
     }
     function updateSipUI() {
+        document.getElementById('sip-queue-btn').hidden = sipCurrentStep !== 3;
         if (sipCurrentStep > sipMaxVisitedStep) {
             sipMaxVisitedStep = sipCurrentStep;
         }
@@ -188,6 +196,11 @@
             const btn = document.getElementById(`step-btn-${i}`);
             const dot = document.getElementById(`step-dot-${i}`);
             if (btn && dot) {
+                btn.setAttribute('role', 'tab');
+                btn.tabIndex = i === sipCurrentStep ? 0 : -1;
+                btn.setAttribute('aria-selected', String(i === sipCurrentStep));
+                btn.setAttribute('aria-controls', 'sip-step-' + i);
+                btn.disabled = i > sipMaxVisitedStep;
                 btn.classList.remove('sip-step-item--active', 'sip-step-item--done', 'sip-step-item--upcoming');
                 if (i === sipCurrentStep) {
                     btn.classList.add('sip-step-item--active');
@@ -269,6 +282,7 @@
             const step2 = document.getElementById('sip-step-2');
             if (step2)
                 step2.scrollTop = 0;
+            document.getElementById('sip-title')?.focus();
         }
         else if (sipCurrentStep === 2) {
             const title = document.getElementById('sip-title').value.trim();
@@ -307,6 +321,7 @@
             const step3 = document.getElementById('sip-step-3');
             if (step3)
                 step3.scrollTop = 0;
+            document.getElementById('sip-consent')?.focus();
         }
         else if (sipCurrentStep === 3) {
             const consent = document.getElementById('sip-consent').checked;
@@ -331,8 +346,38 @@
             updateSipUI();
         }
     }
+    function sfRestoreSubmissionStep(hasCategory = true) {
+        sipMaxVisitedStep = Math.max(2, sipMaxVisitedStep);
+        sipCurrentStep = hasCategory ? 2 : 1;
+        document.getElementById('sip-success').hidden = true;
+        document.getElementById('sip-footer').classList.remove('sip-footer-hidden');
+        updateSipUI();
+        if (hasCategory)
+            document.getElementById('sip-title').focus();
+        else
+            document.querySelector('input[name="sip-category"]')?.focus();
+    }
+    document.getElementById('sip-stepper')?.addEventListener('keydown', e => {
+        const steps = Array.from(document.querySelectorAll('#sip-stepper button:not([disabled])'));
+        const index = steps.indexOf(e.target);
+        if (index < 0)
+            return;
+        const next = e.key === 'ArrowRight' ? (index + 1) % steps.length : e.key === 'ArrowLeft' ? (index + steps.length - 1) % steps.length : e.key === 'Home' ? 0 : e.key === 'End' ? steps.length - 1 : -1;
+        if (next >= 0) {
+            e.preventDefault();
+            goToStep(Number(steps[next].id.replace('step-btn-', '')));
+            steps[next].focus();
+        }
+    });
     async function handleIdeaSubmit(e) {
         e.preventDefault();
+        if (sipSending)
+            return;
+        if (!document.querySelector('input[name="sip-category"]:checked') || !document.getElementById('sip-consent').checked) {
+            window.sfSubmissionRecovery.tell('Complete the idea and accept the community notice before submitting.');
+            return;
+        }
+        sipSending = true;
         const nextBtn = document.getElementById('sip-next-btn');
         const nextText = document.getElementById('sip-next-text');
         const iconSubmit = document.querySelector('.sip-icon-submit');
@@ -350,47 +395,22 @@
         const description = document.getElementById('sip-description').value.trim();
         const isAnonymous = document.getElementById('sip-anon').checked;
         try {
-            const res = await fetch('/api/submit', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ title, description, category, isAnonymous })
-            });
-            const data = await res.json().catch(() => ({ success: false, error: 'Network response was not valid JSON' }));
-            if (!res.ok || !data.success)
-                throw new Error(data.error || 'Submission failed');
-            sipTrackingCode = data.tracking_code;
-            document.getElementById('sip-success-code').textContent = sipTrackingCode;
-            // Reset copy button state
-            document.getElementById('sip-copy-label').textContent = 'Copy';
-            document.getElementById('sip-copy-confirm').hidden = true;
-            const copyBtn = document.getElementById('sip-copy-btn');
-            if (copyBtn)
-                copyBtn.classList.remove('sip-copy-btn--copied');
-            // Save tracking code in localStorage
-            try {
-                const stored = JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');
-                stored.push(sipTrackingCode);
-                localStorage.setItem('sf_my_tracking_codes', JSON.stringify(stored));
-            }
-            catch (err) { }
-            document.getElementById('sip-step-1').hidden = true;
-            document.getElementById('sip-step-2').hidden = true;
-            document.getElementById('sip-step-3').hidden = true;
-            document.getElementById('sip-footer').classList.add('sip-footer-hidden');
-            const successView = document.getElementById('sip-success');
-            successView.hidden = false;
-            successView.classList.add('sip-step-animate-in');
+            const recovery = window.sfSubmissionRecovery;
+            const value = { title, description, category, isAnonymous };
+            const operation = await recovery.prepare(value);
+            const data = await recovery.request('submit', { ...value, requestId: operation.key, actor: operation.actor });
+            await recovery.finish(data, operation);
+            sfShowSubmissionSuccess(data);
         }
         catch (err) {
+            window.sfSubmissionRecovery.failed(err);
             if (window.sfToast)
                 sfToast(err.message || 'Submission failed', 'error');
             else
                 alert(err.message || 'Submission failed');
         }
         finally {
+            sipSending = false;
             nextBtn.disabled = false;
             nextBtn.classList.remove('sip-btn-action--loading');
             if (nextText)
@@ -400,6 +420,36 @@
             if (iconSpinner)
                 iconSpinner.style.display = 'none';
         }
+    }
+    function sfShowSubmissionSuccess(data) {
+        sipTrackingCode = data.tracking_code || "";
+        document.getElementById('sip-success-code').textContent = sipTrackingCode;
+        // Reset copy button state
+        document.getElementById('sip-copy-label').textContent = 'Copy';
+        document.getElementById('sip-copy-confirm').hidden = true;
+        const copyBtn = document.getElementById('sip-copy-btn');
+        if (copyBtn)
+            copyBtn.classList.remove('sip-copy-btn--copied');
+        document.getElementById('sip-step-1').hidden = true;
+        document.getElementById('sip-step-2').hidden = true;
+        document.getElementById('sip-step-3').hidden = true;
+        document.getElementById('sip-footer').classList.add('sip-footer-hidden');
+        document.querySelectorAll('#sip-stepper button').forEach(button => button.disabled = true);
+        document.getElementById('sip-queue-btn').hidden = true;
+        const successView = document.getElementById('sip-success');
+        successView.hidden = false;
+        successView.classList.add('sip-step-animate-in');
+        const card = document.querySelector('.sip-tracking-card');
+        if (card)
+            card.hidden = !sipTrackingCode;
+        const heading = document.querySelector('.sip-success-title');
+        if (heading) {
+            heading.tabIndex = -1;
+            heading.focus();
+        }
+        const summary = document.querySelector('.sip-success-sub');
+        if (summary)
+            summary.textContent = sipTrackingCode ? 'Your idea is recorded. Copy its private tracking code or choose to remember it on this device.' : 'Your idea is recorded. Sign in to your account to follow its status.';
     }
     function copyTrackingCode() {
         if (!sipTrackingCode)
@@ -448,5 +498,29 @@
         catch (e) { }
         window.getSelection().removeAllRanges();
     }
-    Object.assign(window, { openSubmitPanel, closeSubmitPanel, onCategorySelected, handleTitleInput, handleDescInput, handleAnonToggle, handleConsentChange, goToStep, updateSipUI, sipNextStep, sipPrevStep, handleIdeaSubmit, copyTrackingCode, fallbackCopy });
+    document.getElementById('sip-save-code')?.addEventListener('click', () => {
+        if (!sipTrackingCode)
+            return;
+        try {
+            const data = JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');
+            const codes = Array.isArray(data) ? data.filter(x => typeof x === 'string' && /^CV-[A-F0-9]{32}$/.test(x)) : [];
+            localStorage.setItem('sf_my_tracking_codes', JSON.stringify([...new Set([...codes, sipTrackingCode])].slice(-20)));
+            document.getElementById('sip-code-status').textContent = 'Code saved on this device. Others using this browser can access it.';
+        }
+        catch {
+            document.getElementById('sip-code-status').textContent = 'Code could not be saved. Copy it to a safe place instead.';
+        }
+    });
+    document.getElementById('sip-clear-codes')?.addEventListener('click', () => {
+        if (!confirm('Remove all tracking codes saved on this device? Copy any you still need first.'))
+            return;
+        try {
+            localStorage.removeItem('sf_my_tracking_codes');
+            document.getElementById('sip-code-status').textContent = 'Saved codes cleared.';
+        }
+        catch {
+            document.getElementById('sip-code-status').textContent = 'Saved codes could not be cleared.';
+        }
+    });
+    Object.assign(window, { sfRestoreSubmissionStep, sfShowSubmissionSuccess, openSubmitPanel, closeSubmitPanel, onCategorySelected, handleTitleInput, handleDescInput, handleAnonToggle, handleConsentChange, goToStep, updateSipUI, sipNextStep, sipPrevStep, handleIdeaSubmit, copyTrackingCode, fallbackCopy });
 })();

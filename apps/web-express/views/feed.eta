@@ -43,6 +43,13 @@ const feedUrl = (changes = {}) => {
   </aside>
 
   <main class="community-feed-main" aria-labelledby="feed-heading">
+    <details class="care-card saved-searches">
+      <summary>Saved searches</summary>
+      <p>Save the filters currently applied to this feed. Up to ten searches; no keyword alerts are enabled.</p>
+      <form id="saved-search-form" class="workspace-actions"><label>Search name<input class="workspace-input" name="name" required maxlength="40"/></label><button class="workspace-button" type="submit">Save current search</button></form>
+      <p id="saved-search-status" role="status"></p><button id="saved-search-retry" type="button" class="workspace-button">Reload searches</button>
+      <ul id="saved-search-list" aria-label="Saved searches"></ul>
+    </details>
     <header class="community-feed-header">
       <div class="feed-title-bar">
         <div class="feed-heading-group">
@@ -148,3 +155,5 @@ const feedUrl = (changes = {}) => {
 </div>
 <div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
 <script src="/js/feed.js?v=20261011-feed"></script>
+
+<script src="/js/saved-searches.js?v=20261012-features"></script>

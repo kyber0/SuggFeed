@@ -1,10 +1,9 @@
-// Browser source extracted from views/layout.eta.
-(function () {
-function sfToggleTheme() {
-    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    var next = isDark ? 'light' : 'dark';
-    localStorage.setItem('sf-theme', next);
-    document.documentElement.setAttribute('data-theme', next);
+(() => {
+  function sfToggleTheme() {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    const saved = (window as any).sfPreferences?.write('theme',next);
+    document.documentElement.setAttribute('data-theme',next);
+    if (saved === false) window.sfToast?.('Theme changed for this visit. Browser storage is unavailable.');
   }
-Object.assign(window, { sfToggleTheme });
+  Object.assign(window,{sfToggleTheme});
 })();

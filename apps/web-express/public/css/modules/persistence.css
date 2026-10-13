@@ -1,0 +1,20 @@
+/* Shared feedback and persistence controls use the existing design tokens. */
+.saved-searches { margin-block: 12px; }
+.saved-searches ul, #sip-queue-list { list-style: none; padding: 0; }
+.saved-searches li, #sip-queue-list li { padding-block: 12px; border-bottom: 1px solid var(--border); }
+.saved-searches label { display: grid; gap: 6px; min-width: 0; }
+.saved-searches input { max-width: 100%; }
+.submission-recovery { flex: 0 0 auto; margin: 10px 16px; padding: 12px; max-height: 35vh; overflow: auto; }
+.submission-recovery p { font-size: .8rem; line-height: 1.5; margin-block: 8px; }
+#sip-queue-btn { flex: 0 0 auto; margin: 8px 16px; }
+.public-history-list { padding-left: 24px; }
+.public-history-list li { margin-block: 16px; }
+.public-history-list p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.digest-kinds { display: grid; gap: 8px; border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.digest-kinds label { display: flex; align-items: center; gap: 8px; }
+.care-card summary { cursor: pointer; }
+.care-card :focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+ .sip-step-animate-in, .sip-success-ripple, .sip-icon-spinner { animation: none !important; }
+ .submission-recovery, .public-history-list { scroll-behavior: auto; }
+}

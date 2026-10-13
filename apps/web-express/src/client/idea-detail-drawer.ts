@@ -132,6 +132,7 @@ let sfCurrentIdea = null;
     // Title & Description
     (document.getElementById('drawer-title') as HTMLElement).textContent = idea.title;
     (document.getElementById('drawer-description') as HTMLElement).textContent = idea.description;
+    const history=document.getElementById('drawer-public-history');if(history)(window as any).sfLoadPublicHistory?.(history,idea.id);
 
     // Status Banner
     const banner = (document.getElementById('drawer-status-banner') as HTMLElement);

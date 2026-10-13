@@ -68,6 +68,11 @@
       </div>
       <footer class="staff-pagination"><span><%= it.totalCount ? (it.page-1)*it.perPage+1 : 0 %>–<%= Math.min(it.page*it.perPage,it.totalCount) %> of <%= it.totalCount %> matching submissions</span><nav aria-label="Submission pages"><% if(it.page>1) { %><a class="workspace-button" href="<%= urlFor(status,it.page-1) %>">← Previous</a><% } %><span>Page <%= it.page %> of <%= it.pageCount %></span><% if(it.page<it.pageCount) { %><a class="workspace-button" href="<%= urlFor(status,it.page+1) %>">Next →</a><% } %></nav></footer>
     </section>
+    <details class="care-card"><summary>Queue presets and keyboard help</summary>
+      <nav class="workspace-actions" aria-label="Review queue presets"><a class="workspace-button" href="/admin?status=pending&assignment=mine">My pending reviews</a><a class="workspace-button" href="/admin?status=pending&assignment=unassigned">Unassigned reviews</a><a class="workspace-button" href="/admin?status=all&priority=high">High priority</a><a class="workspace-button" href="/admin?status=all&overdue=true">Overdue work</a></nav>
+      <p>Press / to search, J for the next Review button, K for the previous one, and Escape to close a dialog. Shortcuts are inactive while typing. Save your configured filters as a personal view using the existing view controls.</p>
+      <p>Private notes stay private. Conflicting edits retain your draft. Review the audit history before correcting a saved change.</p>
+    </details>
     <p class="staff-footnote">Only planned, in-progress, and completed ideas appear publicly. Check for private details before publishing. Keyboard: / searches, J and K move between Review buttons. Open private clarifications from a selected suggestion, or use the title picker in <a href="/admin/community">Follow-ups</a>.</p>
   </div>
   <%~ include('partials/staff-review',it) %>

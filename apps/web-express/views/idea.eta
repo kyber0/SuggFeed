@@ -220,6 +220,7 @@
 
           <div class="workspace-actions"><button type="button" class="care-report" data-report-idea="<%= it.submission.id %>">Report this idea</button><a href="/inbox">Private school messages</a></div>
           <section data-merge-history="<%= it.submission.id %>" aria-label="Duplicate merge history"></section>
+          <section class="care-card" data-public-history="<%= it.submission.id %>" aria-label="Public submission history"></section>
           <!-- Proposal Description Section -->
           <div class="detail-description-section">
             <div class="detail-section-header">

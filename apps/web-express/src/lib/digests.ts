@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { supabaseService } from './supabase';
 import { ENGAGEMENT_UUID } from './engagement';
+import { digestConsent, filterDigestEntries } from './digest-preferences';
 
 export function digestEnabled() {
   return process.env.WEEKLY_DIGEST_ENABLED==='true' && !!process.env.RESEND_API_KEY && !!process.env.RESEND_FROM_EMAIL &&
@@ -30,9 +31,9 @@ export async function deliverWeeklyDigests(transport:typeof fetch=fetch) {
   for(const job of claimed.data || []) {
     let state='cancelled';
     try {
-      const preference=await supabaseService.from('notification_preferences').select('weekly_digest').eq('user_id',job.user_id).maybeSingle();
+      const preference=await supabaseService.from('notification_preferences').select('weekly_digest,digest_paused,digest_kinds').eq('user_id',job.user_id).maybeSingle();
       if(preference.error) throw preference.error;
-      if(preference.data?.weekly_digest) {
+      if(digestConsent(preference.data)) {
         const start=new Date(job.week_start+'T00:00:00+08:00'),end=new Date(start.getTime()+7*86400000);
         const notifications=await supabaseService.from('idea_notifications').select('title,kind,office_label,submission_id,submission:submissions!inner(status),update:idea_updates!inner(visibility,deleted_at)')
           .eq('user_id',job.user_id).gte('created_at',start.toISOString()).lt('created_at',end.toISOString()).in('submission.status',['approved','in_progress','resolved'])
@@ -50,18 +51,21 @@ export async function deliverWeeklyDigests(transport:typeof fetch=fetch) {
           if(user?.email && user.email_confirmed_at) {
             // Re-check consent immediately before network delivery. Account email
             // comes from verified Auth, never from caller-supplied addresses.
-            const consent=await supabaseService.from('notification_preferences').select('weekly_digest').eq('user_id',job.user_id).maybeSingle();
+            const consent=await supabaseService.from('notification_preferences').select('weekly_digest,digest_paused,digest_kinds').eq('user_id',job.user_id).maybeSingle();
             if(consent.error) throw consent.error;
-            if(consent.data?.weekly_digest) {
+            if(digestConsent(consent.data)) {
+              const eligible=filterDigestEntries(entries,consent.data);
+              if(!eligible.length) {state='empty';} else {
               const origin=process.env.APP_ORIGIN!,token=unsubscribeToken(job.user_id);
               const unsubscribe=new URL('/digest/unsubscribe',origin);unsubscribe.searchParams.set('token',token);
               const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
               state='uncertain';
               try {
                 const response=await transport('https://api.resend.com/emails',{method:'POST',signal:controller.signal,headers:{Authorization:'Bearer '+process.env.RESEND_API_KEY,'Content-Type':'application/json','Idempotency-Key':'weekly-digest-'+job.id},
-                  body:JSON.stringify({from:process.env.RESEND_FROM_EMAIL,to:[user.email],subject:'Your weekly SuggFeed school updates',text:digestText(entries,origin,unsubscribe.href),headers:{'List-Unsubscribe':`<${unsubscribe.href}>`}})});
+                  body:JSON.stringify({from:process.env.RESEND_FROM_EMAIL,to:[user.email],subject:'Your weekly SuggFeed school updates',text:digestText(eligible,origin,unsubscribe.href),headers:{'List-Unsubscribe':`<${unsubscribe.href}>`}})});
                 state=response.ok ? 'delivered' : 'failed';
               }finally{clearTimeout(timer);}
+              }
             }
           }
         }

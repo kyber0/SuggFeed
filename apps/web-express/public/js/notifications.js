@@ -6,10 +6,17 @@
     const preferences = document.getElementById('notification-preferences');
     if (preferences) {
         const mode = preferences.elements.namedItem('update_mode'), digest = preferences.elements.namedItem('weekly_digest'), save = preferences.querySelector('button[type=submit]'), status = document.getElementById('preferences-status');
+        const paused = preferences.elements.namedItem('digest_paused');
+        const kindControls = Array.from(preferences.querySelectorAll('input[name=digest_kinds]'));
+        preferences.querySelectorAll('input,select').forEach(control => control.disabled = true);
         void fetch('/api/notifications/preferences', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) }).then(async (response) => {
             const data = await response.json();
             if (!response.ok || !data.success)
                 throw new Error();
+            preferences.querySelectorAll('input,select').forEach(control => control.disabled = false);
+            paused.checked = data.preferences.digest_paused === true;
+            kindControls.forEach(control => control.checked = !data.preferences.digest_kinds || data.preferences.digest_kinds.includes(control.value));
+            document.getElementById('digest-window').textContent = 'Weekly scheduler window: after ' + new Date(data.nextDigestWindow).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }) + ' Manila time. Delivery depends on your school’s configured scheduler.';
             mode.value = data.preferences.update_mode;
             digest.checked = data.preferences.weekly_digest;
             digest.disabled = !data.digestAvailable && !data.preferences.weekly_digest;
@@ -18,14 +25,16 @@
         }).catch(() => { status.textContent = 'Preferences could not load. Refresh to retry.'; });
         preferences.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (save.disabled)
+                return;
             save.disabled = true;
             status.textContent = 'Saving…';
             try {
-                const response = await fetch('/api/notifications/preferences', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ update_mode: mode.value, weekly_digest: digest.disabled ? false : digest.checked }) });
+                const response = await fetch('/api/notifications/preferences', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ update_mode: mode.value, weekly_digest: digest.checked, digest_paused: paused.checked, digest_kinds: kindControls.filter(control => control.checked).map(control => control.value) }) });
                 const data = await response.json();
                 if (!response.ok || !data.success)
                     throw new Error(data.error || 'Preferences not saved.');
-                status.textContent = 'Saved. Applies to new school updates; existing notifications are retained.';
+                status.textContent = paused.checked ? 'Saved. Weekly emails are paused until you resume them. In-app updates still follow your chosen mode.' : 'Saved. Weekly email uses these update types and your current follows. In-app settings apply to new updates.';
             }
             catch (e) {
                 status.textContent = e.name === 'TimeoutError' ? 'Saving timed out. Refresh to confirm preferences.' : e.message;

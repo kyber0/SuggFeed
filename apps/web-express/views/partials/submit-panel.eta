@@ -74,6 +74,15 @@
   </div>
 
   <form id="submit-idea-form" data-sf-submit="action-115" class="sip-form">
+    <details class="submission-recovery care-card">
+      <summary>Draft recovery and queued ideas</summary>
+      <p>Your idea text may become public after review. Anonymous mode hides your identity, not the content. Avoid names and personal details.</p>
+      <label><input id="sip-remember-draft" type="checkbox"/> Remember text and category on this device for seven days</label>
+      <p>Anyone using this browser may see saved drafts. Attachments, private replies, and tracking codes are excluded. Queued ideas are sent only when you choose Send now.</p>
+      <div class="workspace-actions"><button type="button" id="sip-restore-draft" class="workspace-button" hidden>Restore draft</button><button type="button" id="sip-discard-draft" class="workspace-button" hidden>Discard saved draft</button><button type="button" id="sip-check-receipt" class="workspace-button" disabled>Check previous submission</button></div>
+      <p id="sip-recovery-status" role="status" aria-live="polite">Draft · device recovery is off.</p>
+      <ul id="sip-queue-list" aria-label="Queued ideas"></ul>
+    </details>
     <!-- Step 1: Category Selection -->
     <div id="sip-step-1" class="sip-step-content sip-step-body" role="tabpanel" aria-labelledby="step-btn-1">
       <div class="sip-step-intro">
@@ -309,6 +318,7 @@
       </label>
     </div>
 
+    <button type="button" id="sip-queue-btn" class="workspace-button">Queue this idea on this device</button>
     <!-- Success View -->
     <div id="sip-success" class="sip-step-content sip-success-view" hidden>
       <div class="sip-success-header">
@@ -355,6 +365,8 @@
           Tracking code copied to clipboard!
         </div>
 
+        <div class="workspace-actions"><button type="button" id="sip-save-code" class="workspace-button">Remember this code on this device</button><button type="button" id="sip-clear-codes" class="workspace-button">Clear saved codes</button></div>
+        <p id="sip-code-status" role="status">This code grants private access. It is saved only if you choose Remember.</p>
         <div class="sip-tracking-footer-tip">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
@@ -405,4 +417,6 @@
   </form>
 </aside>
 
-<script src="/js/submit-panel.js?v=20261010-ts"></script>
+<script src="/js/submission-storage.js?v=20261012-features"></script>
+<script src="/js/submission-recovery.js?v=20261012-features"></script>
+<script src="/js/submit-panel.js?v=20261012-features"></script>

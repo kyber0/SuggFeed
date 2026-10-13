@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { supabaseService } from '../lib/supabase';
 import { ENGAGEMENT_UUID, loadFollowing, loadNotifications, parseNotificationCursor } from '../lib/engagement';
 import { digestEnabled } from '../lib/digests';
+import { DEFAULT_DIGEST_KINDS, digestPreferenceFields, nextDigestWindow } from '../lib/digest-preferences';
 
 const router = Router();
 router.use(['/follows', '/notifications'], (req, res, next) => {
@@ -36,10 +37,12 @@ router.post('/follows/:id', async (req, res, next) => {
 });
 
 router.get('/notifications/preferences',async(req,res,next)=>{
-  try {const {data,error}=await supabaseService.from('notification_preferences').select('update_mode,weekly_digest').eq('user_id',req.session.user!.id).maybeSingle();if(error) throw error;res.json({success:true,preferences:data || {update_mode:'all',weekly_digest:false},digestAvailable:digestEnabled()});}catch(e){next(e);}
+  try {const {data,error}=await supabaseService.from('notification_preferences').select('update_mode,weekly_digest,digest_paused,digest_kinds').eq('user_id',req.session.user!.id).maybeSingle();if(error) throw error;res.json({success:true,preferences:data || {update_mode:'all',weekly_digest:false,digest_paused:false,digest_kinds:DEFAULT_DIGEST_KINDS},digestAvailable:digestEnabled(),nextDigestWindow:nextDigestWindow()});}catch(e){next(e);}
 });
 router.post('/notifications/preferences',async(req,res,next)=>{
   if(!['all','milestones'].includes(req.body.update_mode) || typeof req.body.weekly_digest!=='boolean') return res.status(400).json({success:false,error:'Choose valid notification preferences.'});
+  let digestFields:ReturnType<typeof digestPreferenceFields>;
+  try{digestFields=digestPreferenceFields(req.body);}catch(e){return res.status(400).json({success:false,error:(e as Error).message});}
   try {
     if(req.body.weekly_digest) {
       const previous=await supabaseService.from('notification_preferences').select('weekly_digest').eq('user_id',req.session.user!.id).maybeSingle();if(previous.error) throw previous.error;
@@ -47,7 +50,7 @@ router.post('/notifications/preferences',async(req,res,next)=>{
       const identity=await supabaseService.auth.admin.getUserById(req.session.user!.id);if(identity.error) throw identity.error;
       if(!identity.data.user?.email_confirmed_at) return res.status(400).json({success:false,error:'Verify your account email before enabling weekly delivery.'});
     }
-    const {error}=await supabaseService.from('notification_preferences').upsert({user_id:req.session.user!.id,update_mode:req.body.update_mode,weekly_digest:req.body.weekly_digest,updated_at:new Date().toISOString()});if(error) throw error;return res.json({success:true});
+    const {error}=await supabaseService.from('notification_preferences').upsert({user_id:req.session.user!.id,update_mode:req.body.update_mode,weekly_digest:req.body.weekly_digest,...digestFields,updated_at:new Date().toISOString()});if(error) throw error;return res.json({success:true});
   }catch(e){next(e);}
 });
 router.get('/notifications', async (req, res, next) => {

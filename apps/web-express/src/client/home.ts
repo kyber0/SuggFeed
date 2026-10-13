@@ -298,7 +298,7 @@ let activeCategory = 'All';
     (document.getElementById('track-result') as HTMLElement).hidden = true;
 
     try {
-      const res = await fetch(`/api/track/${encodeURIComponent(code)}`);
+      const res = await fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({code}),signal:AbortSignal.timeout(15000)});
       const data = await res.json();
       if (!data.success || !data.data) {
         throw new Error(data.error || 'Tracking code not found');

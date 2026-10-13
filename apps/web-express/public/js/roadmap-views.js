@@ -4,6 +4,18 @@
     const disclosure = document.querySelector('.roadmap-other-views');
     if (!disclosure)
         return;
+    const preferences = window.sfPreferences;
+    document.querySelectorAll('[data-roadmap-view]').forEach(link => link.addEventListener('click', () => {
+        preferences?.write('roadmapView', new URL(link.href).searchParams.get('view') || 'board');
+    }));
+    const preferred = preferences?.read('roadmapView');
+    if (preferred && !new URLSearchParams(location.search).has('view')) {
+        const link = document.createElement('a');
+        link.className = 'workspace-button';
+        link.href = '/roadmap?' + new URLSearchParams({ view: preferred });
+        link.textContent = 'Open your preferred ' + ({ tree: 'category', done: 'completed', board: 'board', timeline: 'timeline' }[preferred]) + ' view';
+        disclosure.after(link);
+    }
     const trigger = disclosure.querySelector('summary');
     const links = Array.from(disclosure.querySelectorAll('[data-roadmap-view]'));
     document.addEventListener('click', event => { if (disclosure.open && !disclosure.contains(event.target))

@@ -28,7 +28,8 @@
     <section class="staff-progress-evidence" aria-labelledby="staff-progress-evidence-title">
       <div class="staff-progress-evidence-heading"><h4 id="staff-progress-evidence-title">Evidence · optional</h4><span id="staff-progress-evidence-count">0 / 5 files</span></div>
       <p id="staff-progress-evidence-hint" class="workspace-field-hint">Add photos or PDF documents, up to 10 MB each. Describe each image, then upload it. Files stay private until this update is published; staff-only evidence stays private.</p>
-      <label class="staff-progress-file-picker" for="staff-progress-files">Choose evidence<input type="file" id="staff-progress-files" multiple accept="image/jpeg,image/png,image/webp,application/pdf" aria-describedby="staff-progress-evidence-hint"/></label>
+      <p class="staff-privacy-hint">Evidence remains private until an approved public update is published. Avoid student names, faces, and personal information. Alternative text describes images for people using screen readers.</p>
+<label class="staff-progress-file-picker" for="staff-progress-files">Choose evidence<input type="file" id="staff-progress-files" multiple accept="image/jpeg,image/png,image/webp,application/pdf" aria-describedby="staff-progress-evidence-hint"/></label>
       <p id="staff-progress-evidence-message" class="workspace-message" role="status" aria-live="polite" tabindex="-1"></p>
       <ul id="staff-progress-evidence-list" class="staff-progress-evidence-list" aria-label="Evidence for this draft"></ul>
       <p class="staff-progress-evidence-note">Photos are processed on the server to remove metadata. Check the image itself and PDF contents for names or other private information. Draft files are temporary; leaving this page does not save your draft.</p>

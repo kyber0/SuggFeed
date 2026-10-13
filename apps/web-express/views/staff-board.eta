@@ -11,6 +11,7 @@
 %>
 <main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main staff-board-main">
  <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / DELIVERY</p><h1>Manage work</h1><p>Plan → start → publish updates → complete with evidence. Select cards to assign them together.</p></div><a class="workspace-button" href="/admin">Review submissions</a></header>
+ <details class="care-card"><summary>Board controls and recovery</summary><p>Use the stage menu on each card with a keyboard, or drag a card with a pointer. Each stage pages independently. Selection can include other pages and is kept only during this visit.</p><p>Assignments save together: if any selected version changed, none are saved. After a timeout, refresh to confirm before retrying. Published history is corrected with a new update; merges require an operator to review the audit for recovery.</p></details>
  <form class="staff-board-toolbar" action="/admin/board" method="get" role="search" id="staff-board-filters">
   <label class="staff-board-search"><span class="visually-hidden">Search the work board</span><input class="workspace-input" type="search" name="search" value="<%= filters.search %>" maxlength="120" placeholder="Search suggestions…" aria-label="Search the work board"/></label>
   <label>Order<select class="workspace-input" name="sort"><option value="oldest" <%= filters.sort==='oldest'?'selected':'' %>>Oldest first</option><option value="newest" <%= filters.sort==='newest'?'selected':'' %>>Newest first</option></select></label>

@@ -119,6 +119,9 @@
         // Title & Description
         document.getElementById('drawer-title').textContent = idea.title;
         document.getElementById('drawer-description').textContent = idea.description;
+        const history = document.getElementById('drawer-public-history');
+        if (history)
+            window.sfLoadPublicHistory?.(history, idea.id);
         // Status Banner
         const banner = document.getElementById('drawer-status-banner');
         banner.className = `detail-status-banner ${idea.status || 'pending'}`;

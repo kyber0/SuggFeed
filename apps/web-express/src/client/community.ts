@@ -135,8 +135,8 @@
         similar.replaceChildren();
         if(!data.ideas.length) return;
         const heading=document.createElement('h4');heading.textContent='Related public ideas';
-        const help=document.createElement('p');help.textContent='Support an existing idea if it describes the same change. Links open a new tab so your draft stays here.';similar.append(heading,help);
-        for(const idea of data.ideas) {const link=document.createElement('a');link.href='/idea/'+encodeURIComponent(idea.id);link.target='_blank';link.rel='noopener';link.textContent=`${idea.title} · ${idea.vote_count} supporters ↗`;similar.append(link);}
+        const help=document.createElement('p');help.textContent='These public titles share words with your idea. Support one if it describes the same change. Links open a new tab so your draft stays here.';similar.append(heading,help);
+        for(const idea of data.ideas) {const link=document.createElement('a');link.href='/idea/'+encodeURIComponent(idea.id);link.target='_blank';link.rel='noopener';link.textContent=`${idea.title} · ${idea.vote_count} supporters ↗`;link.setAttribute('aria-label',`${idea.title}, related by title keywords, opens in a new tab`);similar.append(link);}
       }catch{if(version===searchVersion && similar) similar.textContent='Related ideas are temporarily unavailable. You can still submit.';}
     },450);
   });

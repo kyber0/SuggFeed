@@ -57,7 +57,7 @@ router.post("/signout", sameOriginOnly, (req, res, next) => {
     if (err) return next(err);
     res.clearCookie("connect.sid", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
     if (req.is("application/json")) return res.json({ success: true });
-    return res.redirect("/");
+    return res.redirect(303, "/");
   });
 });
 

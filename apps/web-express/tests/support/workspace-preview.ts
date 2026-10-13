@@ -1,3 +1,4 @@
+import { DEFAULT_DIGEST_KINDS, nextDigestWindow } from '../../src/lib/digest-preferences';
 // Local-only visual harness with in-memory fixtures. Never mounted in production.
 import express from 'express';
 import path from 'node:path';
@@ -26,7 +27,7 @@ export function createWorkspacePreview() {
  const privateRequests=[{id:'50000000-0000-4000-8000-000000000001',submission_id:items[0].id,title:items[0].title,prompt:'Which campus zone would benefit most from shaded seating?',reply:null as string|null,created_at:'2026-10-01T10:00:00Z',replied_at:null as string|null,closed_at:null as string|null}];
  app.get('/inbox',(_req,res)=>res.send(eta.render('private-inbox',{currentPath:'/inbox',user:{id:staffId,display_name:'Preview member',role:'student'}})));
  app.get('/notifications',(_req,res)=>res.send(eta.render('notifications',{currentPath:'/notifications',user:{id:staffId,display_name:'Preview member',role:'student'},signedIn:true})));
- app.get('/api/notifications/preferences',(_req,res)=>res.json({success:true,preferences:{update_mode:'all',weekly_digest:false},digestAvailable:false}));
+ app.get('/api/notifications/preferences',(_req,res)=>res.json({success:true,preferences:{update_mode:'all',weekly_digest:false,digest_paused:false,digest_kinds:DEFAULT_DIGEST_KINDS},digestAvailable:false,nextDigestWindow:nextDigestWindow()}));
  app.post('/api/notifications/preferences',(_req,res)=>res.json({success:true}));
  app.get('/api/notifications',(_req,res)=>res.json({success:true,notifications:[],unreadCount:0,nextCursor:null}));
  app.get('/api/community/report-history',(_req,res)=>res.json({success:true,reports:[{reason:'A comment included personal details.',resolution:'removed',resolution_reason:'Removed to protect student privacy.'}]}));

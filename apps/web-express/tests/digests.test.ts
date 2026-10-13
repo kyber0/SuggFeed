@@ -48,3 +48,21 @@ test('digest delivery uses verified email, current consent and public filters; n
   processed=false;optedIn=false;const cancelled=await deliverWeeklyDigests(async()=>{throw new Error('Must not send when consent is withdrawn');});assert.equal(cancelled.skipped,1);assert.equal(states.at(-1),'cancelled');
  }finally{supabaseService.from=from;supabaseService.rpc=rpc;supabaseService.auth.admin.getUserById=identity;for(const key of Object.keys(process.env)) if(!(key in previous)) delete process.env[key];Object.assign(process.env,previous);}
 });
+
+test('digest delivery rechecks pause and chosen kinds immediately before sending',async()=>{
+ const previous={...process.env},from=supabaseService.from,rpc=supabaseService.rpc,identity=supabaseService.auth.admin.getUserById;
+ Object.assign(process.env,{WEEKLY_DIGEST_ENABLED:'true',RESEND_API_KEY:'test-only',RESEND_FROM_EMAIL:'updates@example.test',DIGEST_UNSUBSCRIBE_SECRET:'s'.repeat(40),APP_ORIGIN:'https://www.suggfeed.me',CRON_SECRET:'c'.repeat(40)});
+ let reads=0,paused=false,state='',text='',calls=0;
+ supabaseService.rpc=(async()=>({error:null,data:[{id:crypto.randomUUID(),user_id:USER_ID,week_start:'2026-10-05'}]})) as any;
+ supabaseService.auth.admin.getUserById=(async()=>({error:null,data:{user:{email:'verified@example.test',email_confirmed_at:'2026-10-01'}}})) as any;
+ supabaseService.from=((table:string)=>{
+   const q:any={then(resolve:any){resolve({error:null,data:table==='idea_follows'?[{submission_id:'idea'}]:table==='idea_notifications'?[{title:'Completed only',kind:'completed',office_label:'School',submission_id:'idea'},{title:'Unselected update',kind:'update',office_label:'School',submission_id:'idea'}]:null});},async maybeSingle(){reads++;return {error:null,data:{weekly_digest:true,digest_paused:reads>1 && paused,digest_kinds:reads>1?['completed']:['update','completed']}};}};
+   for(const method of ['select','eq','gte','lt','in','is','order','limit'])q[method]=()=>q;
+   q.update=(value:any)=>{state=value.state;return q;};return q;
+ }) as any;
+ try {
+   const transport=async(_url:any,options:any)=>{calls++;text=JSON.parse(options.body).text;return new Response('{}',{status:200});};
+   assert.equal((await deliverWeeklyDigests(transport)).delivered,1);assert.equal(calls,1);assert.match(text,/Completed only/);assert.doesNotMatch(text,/Unselected update/);
+   reads=0;paused=true;assert.equal((await deliverWeeklyDigests(transport)).skipped,1);assert.equal(state,'cancelled');assert.equal(calls,1,'Pause enabled during preparation prevents delivery');
+ }finally{supabaseService.from=from;supabaseService.rpc=rpc;supabaseService.auth.admin.getUserById=identity;for(const key of Object.keys(process.env))if(!(key in previous))delete process.env[key];Object.assign(process.env,previous);}
+});

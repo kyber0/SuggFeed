@@ -1,5 +1,8 @@
 # Express deployment and authentication
 
+See [Persistent workflows](docs/persistent-workflows.md) for the saved-search,
+draft/queue, receipt, public-history, digest-control and PRG rollout requirements.
+
 ## Community care upgrade (October 12)
 
 New screens: `/admin/community` (reports, private clarification, duplicate merges,

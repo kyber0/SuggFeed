@@ -14,10 +14,14 @@ router.get('/digest/unsubscribe',(req,res)=>{
   res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','no-referrer');
   res.render('digest-unsubscribe',{title:'Stop weekly emails — SuggFeed',token:unsubscribeUser(req.query.token) ? req.query.token : '',valid:!!unsubscribeUser(req.query.token)});
 });
+router.get('/digest/unsubscribed',(_req,res)=>{
+  res.setHeader('Cache-Control','private, no-store');
+  res.render('digest-unsubscribe',{title:'Weekly emails stopped',done:true,token:'',valid:true});
+});
 router.post('/digest/unsubscribe',async(req,res,next)=>{
   res.setHeader('Cache-Control','private, no-store');
   const id=unsubscribeUser(req.body.token);
   if(!id) return res.status(400).render('digest-unsubscribe',{title:'Stop weekly emails',token:'',valid:false});
-  try {const {error}=await supabaseService.from('notification_preferences').update({weekly_digest:false,updated_at:new Date().toISOString()}).eq('user_id',id);if(error) throw error;res.render('digest-unsubscribe',{title:'Weekly emails stopped',done:true,token:'',valid:true});}catch(e){next(e);}
+  try {const {error}=await supabaseService.from('notification_preferences').update({weekly_digest:false,updated_at:new Date().toISOString()}).eq('user_id',id);if(error) throw error;res.redirect(303,'/digest/unsubscribed');}catch(e){next(e);}
 });
 export default router;

@@ -9,7 +9,7 @@ function harness(){
   let focused:any;
   const trigger={focus(){focused=trigger;}},links=[0,1,2].map(index=>({index,focus(){focused=this;}}));
   const disclosure={open:false,contains:(node:any)=>node===trigger || links.includes(node),querySelector:()=>trigger,querySelectorAll:()=>links,addEventListener:(name:string,fn:Function)=>handlers.set(name,fn)};
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../public/js/roadmap-views.js'),'utf8'),{document:{querySelector:()=>disclosure,addEventListener:(name:string,fn:Function)=>documentHandlers.set(name,fn)}});
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../public/js/roadmap-views.js'),'utf8'),{window:{},document:{querySelector:()=>disclosure,querySelectorAll:()=>[],addEventListener:(name:string,fn:Function)=>documentHandlers.set(name,fn)}});
   const key=(target:any,value:string)=>{const event={target,key:value,preventDefault(){},stopPropagation(){}};handlers.get('keydown')!(event);};
   return {trigger,links,disclosure,key,documentHandlers,get focused(){return focused;}};
 }

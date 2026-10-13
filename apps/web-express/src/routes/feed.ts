@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { loadPublishedSubmissions, DEFAULT_CATEGORIES } from "../lib/data";
 
+import { feedFilters } from '../lib/feed-filters';
+
 const router = Router();
 
 function asyncHandler(
@@ -14,11 +16,8 @@ function asyncHandler(
 router.get(
   "/",
   asyncHandler(async (req: Request, res: Response) => {
-    const page = Math.max(1, Number(req.query["page"]) || 1);
-    const sortBy = (req.query["sort"] as string) || "all";
-    const category = (req.query["category"] as string) || "All";
-    const search = (req.query["search"] as string) || "";
-    const following = req.query.scope === 'following';
+    const { page, sort: sortBy, category, search, scope } = feedFilters(req.query);
+    const following = scope === 'following';
     if (following && !req.session.user) return res.redirect('/notifications');
     if (following) res.setHeader('Cache-Control','private, no-store');
 

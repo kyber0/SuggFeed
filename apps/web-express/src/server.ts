@@ -12,6 +12,7 @@ import rateLimit from "express-rate-limit";
 import { randomBytes } from "crypto";
 import { SupabaseSessionStore } from "./lib/session-store";
 import { sameOriginOnly } from "./lib/security";
+import { safeRequestPath } from "./lib/request-path";
 import { validateIdentity } from "./lib/identity";
 import "./types"; // session augmentation
 import { supabase as publicSupabase, supabaseService, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
@@ -133,7 +134,7 @@ app.use(compression());
 
 /* ── Request logging ─────────────────────────────────────────────────────── */
 // OAuth and tracking codes must not enter request logs.
-morgan.token("safe-path", req => (req.url ?? "/").split("?")[0]);
+morgan.token("safe-path", req => safeRequestPath(req.url ?? "/"));
 app.use(morgan(":method :safe-path :status :response-time ms"));
 
 /* ── Rate limiters ───────────────────────────────────────────────────────── */
@@ -253,7 +254,7 @@ app.use((_req: Request, res: Response) => {
 // Must have 4 parameters for Express to treat it as an error handler.
 // Returns a generic message — never leaks stack traces or file paths.
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-  console.error(`[error] ${req.method} ${req.path}: ${err.name}`);
+  console.error(`[error] ${req.method} ${safeRequestPath(req.path)}: ${err.name}`);
   const isJson = req.path.startsWith("/api/") || req.path.startsWith("/auth/") || req.path.startsWith('/roadmap/idea/') || req.headers.accept?.includes("application/json") || req.xhr;
   if (isJson) {
     const status = (err as any).status === 400 ? 400 : (err as any).status === 413 ? 413 : 500;

@@ -4,6 +4,8 @@ let sipCurrentStep = 1;
   let sipMaxVisitedStep = 1;
   let sipTrackingCode = '';
   let sipReturnFocusTo = null;
+  let sipOpened = false;
+  let sipSending = false;
 
   function openSubmitPanel(defaultCat) {
     sipReturnFocusTo = (document.activeElement as HTMLElement);
@@ -16,16 +18,19 @@ let sipCurrentStep = 1;
     
     if (overlay) overlay.removeAttribute('hidden');
     if (panel) panel.removeAttribute('hidden');
-    if (form) form.reset();
+    if (form && (!sipOpened || !(document.getElementById('sip-success') as HTMLElement).hidden)) { form.reset(); }
+    sipOpened = true;
+    (document.getElementById('sip-queue-btn') as HTMLButtonElement).hidden=false;
     
     (document.getElementById('sip-success') as HTMLElement).hidden = true;
     (document.getElementById('sip-footer') as HTMLElement).classList.remove('sip-footer-hidden');
     document.body.style.overflow = 'hidden';
 
     // Clear active card states
-    document.querySelectorAll<HTMLElement>('.sip-cat-card').forEach(c => c.classList.remove('sip-cat-card--selected'));
+    const currentCategory = document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked');
+    if(currentCategory) onCategorySelected(currentCategory.value);
     
-    if (defaultCat) {
+    if (defaultCat && !document.querySelector('input[name="sip-category"]:checked')) {
       const radio = document.querySelector<HTMLInputElement>(`input[name="sip-category"][value="${defaultCat}"]`);
       if (radio) {
         radio.checked = true;
@@ -169,6 +174,7 @@ let sipCurrentStep = 1;
   }
 
   function updateSipUI() {
+    (document.getElementById('sip-queue-btn') as HTMLButtonElement).hidden = sipCurrentStep !== 3;
     if (sipCurrentStep > sipMaxVisitedStep) {
       sipMaxVisitedStep = sipCurrentStep;
     }
@@ -193,6 +199,8 @@ let sipCurrentStep = 1;
       const dot = (document.getElementById(`step-dot-${i}`) as HTMLElement);
       
       if (btn && dot) {
+        btn.setAttribute('role','tab');btn.tabIndex=i === sipCurrentStep ? 0 : -1;btn.setAttribute('aria-selected',String(i === sipCurrentStep));btn.setAttribute('aria-controls','sip-step-'+i);
+        (btn as HTMLButtonElement).disabled = i > sipMaxVisitedStep;
         btn.classList.remove('sip-step-item--active', 'sip-step-item--done', 'sip-step-item--upcoming');
         if (i === sipCurrentStep) {
           btn.classList.add('sip-step-item--active');
@@ -262,6 +270,7 @@ let sipCurrentStep = 1;
       // Scroll to top of step 2
       const step2 = (document.getElementById('sip-step-2') as HTMLElement);
       if (step2) step2.scrollTop = 0;
+      (document.getElementById('sip-title') as HTMLInputElement)?.focus();
     } else if (sipCurrentStep === 2) {
       const title = (document.getElementById('sip-title') as HTMLInputElement).value.trim();
       const desc = (document.getElementById('sip-description') as HTMLTextAreaElement).value.trim();
@@ -298,6 +307,7 @@ let sipCurrentStep = 1;
       updateSipUI();
       const step3 = (document.getElementById('sip-step-3') as HTMLElement);
       if (step3) step3.scrollTop = 0;
+      (document.getElementById('sip-consent') as HTMLInputElement)?.focus();
     } else if (sipCurrentStep === 3) {
       const consent = (document.getElementById('sip-consent') as HTMLInputElement).checked;
       if (!consent) {
@@ -321,8 +331,28 @@ let sipCurrentStep = 1;
     }
   }
 
+  function sfRestoreSubmissionStep(hasCategory = true) {
+    sipMaxVisitedStep = Math.max(2,sipMaxVisitedStep);
+    sipCurrentStep = hasCategory ? 2 : 1;
+    (document.getElementById('sip-success') as HTMLElement).hidden = true;
+    (document.getElementById('sip-footer') as HTMLElement).classList.remove('sip-footer-hidden');
+    updateSipUI();
+    if(hasCategory)(document.getElementById('sip-title') as HTMLInputElement).focus();
+    else document.querySelector<HTMLInputElement>('input[name="sip-category"]')?.focus();
+  }
+  document.getElementById('sip-stepper')?.addEventListener('keydown',e=>{
+    const steps=Array.from(document.querySelectorAll<HTMLButtonElement>('#sip-stepper button:not([disabled])'));
+    const index=steps.indexOf(e.target as HTMLButtonElement);
+    if(index<0)return;
+    const next=e.key==='ArrowRight'?(index+1)%steps.length:e.key==='ArrowLeft'?(index+steps.length-1)%steps.length:e.key==='Home'?0:e.key==='End'?steps.length-1:-1;
+    if(next>=0){e.preventDefault();goToStep(Number(steps[next].id.replace('step-btn-','')));steps[next].focus();}
+  });
+
   async function handleIdeaSubmit(e) {
     e.preventDefault();
+    if (sipSending) return;
+    if(!document.querySelector('input[name="sip-category"]:checked') || !(document.getElementById('sip-consent') as HTMLInputElement).checked){(window as any).sfSubmissionRecovery.tell('Complete the idea and accept the community notice before submitting.');return;}
+    sipSending = true;
     const nextBtn = (document.getElementById('sip-next-btn') as HTMLButtonElement);
     const nextText = (document.getElementById('sip-next-text') as HTMLElement);
     const iconSubmit = document.querySelector<HTMLElement>('.sip-icon-submit');
@@ -340,18 +370,30 @@ let sipCurrentStep = 1;
     const isAnonymous = (document.getElementById('sip-anon') as HTMLInputElement).checked;
 
     try {
-      const res = await fetch('/api/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ title, description, category, isAnonymous })
-      });
-      const data = await res.json().catch(() => ({ success: false, error: 'Network response was not valid JSON' }));
-      if (!res.ok || !data.success) throw new Error(data.error || 'Submission failed');
+      const recovery=(window as any).sfSubmissionRecovery;
+      const value={title,description,category,isAnonymous};
+      const operation=await recovery.prepare(value);
+      const data=await recovery.request('submit',{...value,requestId:operation.key,actor:operation.actor});
+      await recovery.finish(data,operation);
+      sfShowSubmissionSuccess(data);
 
-      sipTrackingCode = data.tracking_code;
+
+    } catch (err) {
+      (window as any).sfSubmissionRecovery.failed(err);
+      if (window.sfToast) sfToast(err.message || 'Submission failed', 'error');
+      else alert(err.message || 'Submission failed');
+    } finally {
+      sipSending = false;
+      nextBtn.disabled = false;
+      nextBtn.classList.remove('sip-btn-action--loading');
+      if (nextText) nextText.textContent = 'Submit idea';
+      if (iconSubmit) iconSubmit.style.display = 'inline-block';
+      if (iconSpinner) iconSpinner.style.display = 'none';
+    }
+  }
+
+  function sfShowSubmissionSuccess(data) {
+      sipTrackingCode = data.tracking_code || "";
       (document.getElementById('sip-success-code') as HTMLElement).textContent = sipTrackingCode;
 
       // Reset copy button state
@@ -360,32 +402,19 @@ let sipCurrentStep = 1;
       const copyBtn = (document.getElementById('sip-copy-btn') as HTMLButtonElement);
       if (copyBtn) copyBtn.classList.remove('sip-copy-btn--copied');
 
-      // Save tracking code in localStorage
-      try {
-        const stored = JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');
-        stored.push(sipTrackingCode);
-        localStorage.setItem('sf_my_tracking_codes', JSON.stringify(stored));
-      } catch (err) {}
-
       (document.getElementById('sip-step-1') as HTMLElement).hidden = true;
       (document.getElementById('sip-step-2') as HTMLElement).hidden = true;
       (document.getElementById('sip-step-3') as HTMLElement).hidden = true;
       (document.getElementById('sip-footer') as HTMLElement).classList.add('sip-footer-hidden');
       
+      document.querySelectorAll<HTMLButtonElement>('#sip-stepper button').forEach(button=>button.disabled=true);
+      (document.getElementById('sip-queue-btn') as HTMLButtonElement).hidden=true;
       const successView = (document.getElementById('sip-success') as HTMLElement);
       successView.hidden = false;
       successView.classList.add('sip-step-animate-in');
-
-    } catch (err) {
-      if (window.sfToast) sfToast(err.message || 'Submission failed', 'error');
-      else alert(err.message || 'Submission failed');
-    } finally {
-      nextBtn.disabled = false;
-      nextBtn.classList.remove('sip-btn-action--loading');
-      if (nextText) nextText.textContent = 'Submit idea';
-      if (iconSubmit) iconSubmit.style.display = 'inline-block';
-      if (iconSpinner) iconSpinner.style.display = 'none';
-    }
+      const card=document.querySelector<HTMLElement>('.sip-tracking-card');if(card)card.hidden=!sipTrackingCode;
+      const heading=document.querySelector<HTMLElement>('.sip-success-title');if(heading){heading.tabIndex=-1;heading.focus();}
+      const summary=document.querySelector<HTMLElement>('.sip-success-sub');if(summary)summary.textContent=sipTrackingCode?'Your idea is recorded. Copy its private tracking code or choose to remember it on this device.':'Your idea is recorded. Sign in to your account to follow its status.';
   }
 
   function copyTrackingCode() {
@@ -429,5 +458,13 @@ let sipCurrentStep = 1;
     } catch (e) {}
     window.getSelection().removeAllRanges();
   }
-Object.assign(window, { openSubmitPanel, closeSubmitPanel, onCategorySelected, handleTitleInput, handleDescInput, handleAnonToggle, handleConsentChange, goToStep, updateSipUI, sipNextStep, sipPrevStep, handleIdeaSubmit, copyTrackingCode, fallbackCopy });
+  document.getElementById('sip-save-code')?.addEventListener('click',()=>{
+    if(!sipTrackingCode)return;
+    try{const data=JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');const codes=Array.isArray(data)?data.filter(x=>typeof x==='string' && /^CV-[A-F0-9]{32}$/.test(x)):[];localStorage.setItem('sf_my_tracking_codes',JSON.stringify([...new Set([...codes,sipTrackingCode])].slice(-20)));(document.getElementById('sip-code-status') as HTMLElement).textContent='Code saved on this device. Others using this browser can access it.';}catch{(document.getElementById('sip-code-status') as HTMLElement).textContent='Code could not be saved. Copy it to a safe place instead.';}
+  });
+  document.getElementById('sip-clear-codes')?.addEventListener('click',()=>{
+    if(!confirm('Remove all tracking codes saved on this device? Copy any you still need first.'))return;
+    try{localStorage.removeItem('sf_my_tracking_codes');(document.getElementById('sip-code-status') as HTMLElement).textContent='Saved codes cleared.';}catch{(document.getElementById('sip-code-status') as HTMLElement).textContent='Saved codes could not be cleared.';}
+  });
+Object.assign(window, { sfRestoreSubmissionStep, sfShowSubmissionSuccess, openSubmitPanel, closeSubmitPanel, onCategorySelected, handleTitleInput, handleDescInput, handleAnonToggle, handleConsentChange, goToStep, updateSipUI, sipNextStep, sipPrevStep, handleIdeaSubmit, copyTrackingCode, fallbackCopy });
 })();

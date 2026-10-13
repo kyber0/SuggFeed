@@ -2,6 +2,8 @@ import crypto from "crypto";
 import { Router, Request, Response, NextFunction } from "express";
 import { supabase, supabaseService } from "../lib/supabase";
 import engagementRouter from './engagement';
+import savedSearchesRouter from './saved-searches';
+import publicHistoryRouter from './public-history';
 import { ENGAGEMENT_UUID } from '../lib/engagement';
 import {
   lookupTrackingCode,
@@ -13,8 +15,12 @@ import {
   type SortMode,
 } from "../lib/data";
 
+import { feedFilters } from '../lib/feed-filters';
+import { submissionContext, submissionHash, receiptTrackingCode } from '../lib/submission-context';
 const router = Router();
 router.use(engagementRouter);
+router.use(publicHistoryRouter);
+router.use('/saved-searches',savedSearchesRouter);
 
 /** Wraps async route handlers so thrown errors reach the Express error middleware. */
 function asyncHandler(
@@ -67,20 +73,35 @@ router.post(
 );
 
 /* ── Track submission by code ─────────────────────────────────────────────── */
-router.get(
-  "/track/:code",
-  asyncHandler(async (req: Request, res: Response) => {
-    const code = (req.params["code"] as string).trim().toUpperCase();
+const trackHandler=asyncHandler(async(req:Request,res:Response)=>{
+  res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','no-referrer');
+  const raw=req.method==='POST'?req.body?.code:req.params.code;
+  if(typeof raw!=='string')return res.status(400).json({success:false,error:'Enter a private tracking code.'});
+  const code=raw.trim().toUpperCase();
+  if(!/^CV-[0-9A-F]{32}$/.test(code))return res.status(400).json({success:false,error:'Invalid tracking code format.'});
+  const result=await lookupTrackingCode(code);
+  res.json({success:true,data:result});
+});
+router.post('/track',trackHandler);
+// Preserve older clients; logs redact the capability in this legacy URL.
+router.get('/track/:code',trackHandler);
 
-    // Only accept the expected CV-XXXXX format — never bare UUIDs
-    if (!/^CV-[0-9A-F]{32}$/.test(code)) {
-      return res.status(400).json({ success: false, error: "Invalid tracking code format." });
-    }
-
-    const result = await lookupTrackingCode(code);
-    res.json({ success: true, data: result });
-  })
-);
+// Issue the private device cookie before writes, so losing a POST response does not lose its receipt.
+router.get('/submission-context',(req,res)=>{
+  res.setHeader('Cache-Control','private, no-store');
+  const context=submissionContext(req,res,true)!;
+  return res.json({success:true,actor:context.actor,signedIn:context.signedIn});
+});
+router.post('/submission-receipt',asyncHandler(async(req,res)=>{
+  res.setHeader('Cache-Control','private, no-store');
+  const context=submissionContext(req,res);
+  if(!context || req.body.actor!==context.actor)return res.status(409).json({success:false,error:'The account or browser changed. Return to the original browser and account to check this submission.'});
+  if(typeof req.body.requestId!=='string' || !ENGAGEMENT_UUID.test(req.body.requestId))return res.status(400).json({success:false,error:'Invalid submission receipt.'});
+  const {data,error}=await supabaseService.rpc('read_submission_receipt',{p_owner_hash:context.actor,p_request_id:req.body.requestId.toLowerCase()});
+  if(error?.code==='P0004')return res.status(410).json({success:false,error:'This receipt expired or the submission was removed. It cannot be sent again with this receipt.'});
+  if(error)throw error;
+  return res.json({success:true,found:!!data,...(data?{id:data.id,tracking_code:data.is_anonymous?receiptTrackingCode(context.device,context.actor,req.body.requestId):null,replayed:true}:{})});
+}));
 
 /* ── Submit a new idea ────────────────────────────────────────────────────── */
 router.post(
@@ -118,44 +139,37 @@ router.post(
       return res.status(401).json({ success: false, error: "Sign in to submit a non-anonymous idea." });
     }
 
+    const context=submissionContext(req,res);
+    if(!context || req.body.actor!==context.actor)return res.status(409).json({success:false,error:'Your account or browser changed. Confirm the current account before submitting.',code:'ACCOUNT_CHANGED'});
+    if(typeof req.body.requestId!=='string' || !ENGAGEMENT_UUID.test(req.body.requestId))return res.status(400).json({success:false,error:'A submission receipt is required. Reload before submitting.'});
+    const requestId=req.body.requestId.toLowerCase();
+
     // Resolve category name → UUID
-    const { data: catRow } = await supabaseService
+    const { data: catRow, error: categoryError } = await supabaseService
       .from("categories")
       .select("id")
       .eq("name", (category as Category).trim())
       .eq("is_active", true)
       .maybeSingle();
 
+    if(categoryError)throw categoryError;
     if (!catRow) {
       return res.status(400).json({ success: false, error: "That category is no longer available." });
     }
 
-    // Generate tracking code and store only its hash (no plain code in DB)
-    const trackingCode = anonymous
-      ? `CV-${crypto.randomUUID().replace(/-/g, "").toUpperCase()}`
-      : null;
-    const trackingHash = trackingCode ? sha256(trackingCode) : null;
-
-    const { data, error } = await supabaseService
-      .from("submissions")
-      .insert({
-        title: title.trim(),
-        description: description.trim(),
-        category_id: catRow.id,
-        user_id: anonymous ? null : (user?.id ?? null),
-        anonymous_tracking_hash: trackingHash,
-        status: "pending",
-      })
-      .select("id")
-      .single();
-
-    if (error) {
-      console.error("[api/submit] Insert failed:", error.code);
-      return res.status(500).json({ success: false, error: "Could not create your submission. Please try again." });
-    }
-
-    invalidateCache("feed_");
-    res.json({ success: true, id: data.id, tracking_code: trackingCode });
+    const trackingCode=anonymous?receiptTrackingCode(context.device,context.actor,requestId):null;
+    const payloadHash=submissionHash(JSON.stringify({title:title.trim(),description:description.trim(),category,isAnonymous:anonymous}));
+    const {data,error}=await supabaseService.rpc('create_submission_once',{
+      p_owner_hash:context.actor,p_request_id:requestId,p_payload_hash:payloadHash,
+      p_title:title.trim(),p_description:description.trim(),p_category_id:catRow.id,
+      p_user_id:anonymous?null:user!.id,p_tracking_hash:trackingCode?sha256(trackingCode):null,
+    });
+    if(error?.code==='23505')return res.status(409).json({success:false,error:'This receipt belongs to different content. Check the previous submission before starting another.'});
+    if(error?.code==='P0004')return res.status(410).json({success:false,error:'This receipt expired or its submission was removed.'});
+    if(error)throw error;
+    invalidateCache('feed_');
+    res.setHeader('Cache-Control','private, no-store');
+    res.status(data.replayed?200:201).json({success:true,id:data.id,tracking_code:trackingCode,replayed:data.replayed});
   })
 );
 
@@ -208,13 +222,8 @@ router.patch(
 router.get(
   "/feed",
   asyncHandler(async (req: Request, res: Response) => {
-    const page = Math.max(1, Number(req.query["page"]) || 1);
-    const sortBy = (req.query["sort"] as any) || "all";
-    const category = (req.query["category"] as string) || "All";
-    const rawSearch = (req.query["search"] as string) || "";
-    const search = rawSearch ? sanitizeSearch(rawSearch) : "";
-
-    const following = req.query.scope === 'following';
+    const { page, sort: sortBy, category, search, scope } = feedFilters(req.query);
+    const following = scope === 'following';
     if (following && !req.session.user) return res.status(401).json({success:false,error:'Sign in to see followed ideas.'});
     if (following) res.setHeader('Cache-Control','private, no-store');
     const result = await loadPublishedSubmissions({ page, sortBy, category, search, followingUserId: following ? req.session.user!.id : undefined });
@@ -368,26 +377,6 @@ router.get(
       return res.status(404).json({ success: false, error: "Idea not found." });
     }
     res.json({ success: true, submission, comments });
-  })
-);
-
-/* ── Community feed (for infinite scroll / lazy loading) ───────────────── */
-router.get(
-  "/feed",
-  asyncHandler(async (req: Request, res: Response) => {
-    const page = Math.max(1, Number(req.query["page"]) || 1);
-    const sortBy = ((req.query["sort"] as string) || "latest") as SortMode;
-    const category = (req.query["category"] as string) || "All";
-    const search = (req.query["search"] as string) || "";
-
-    const { data: feed, count, hasMore } = await loadPublishedSubmissions({
-      page,
-      sortBy,
-      category,
-      search,
-    });
-
-    res.json({ success: true, feed, totalCount: count, hasMore, page });
   })
 );
 
