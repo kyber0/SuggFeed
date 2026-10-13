@@ -1,11 +1,12 @@
 # Persistent workflows
 
-This implementation applies to `apps/web-express`. The Next.js and mobile apps
-have not been migrated. Production has not been changed by this task.
+This implementation applies to `apps/web-express`. The retained Next.js app
+has not been migrated; the standalone Expo app is retired. Production has not
+been changed by this task.
 
 ## Setup and release
 
-Use Node 22.x and install from the existing lockfile with `npm ci --include=dev`.
+Use Node 22.x and install from the existing lockfile with `npm ci --workspaces=false --include=dev`.
 Run `npm run typecheck`, `npm test`, and `npm run build`. For machines with limited
 resources, after building browser assets and checking test types, run the same
 Node suite with two workers:

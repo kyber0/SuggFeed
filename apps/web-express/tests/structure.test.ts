@@ -43,7 +43,7 @@ test('strict browser cohort stays enforced by development, build and typecheck',
   assert.match(pkg.scripts['build:client'], /typecheck:client:strict/);
   assert.match(pkg.scripts.typecheck, /typecheck:client:strict/);
   assert.match(pkg.scripts.predev, /build:client/);
-  for (const file of ['theme-init.ts', 'theme.ts', 'toast.ts']) {
+  for (const file of ['preferences.ts', 'theme-init.ts', 'theme.ts', 'toast.ts']) {
     assert.ok(config.include.includes('src/client/' + file));
   }
 });

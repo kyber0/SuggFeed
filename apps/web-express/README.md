@@ -50,12 +50,13 @@ dates are not claimed as photo capture times or matching viewpoints.
 
 ### Migration and release requirements
 
-Rehearse pending migrations in order through `202610130010_guided_workflows.sql`
+Rehearse pending migrations in order through `202610130014_public_submission_history.sql`
 in a separate staging project **before deploying this build**. New pages depend on
 the new tables/functions. Back up production and validate hosted Auth/Storage,
 existing retention policies and old-code compatibility before production changes.
 Local builds do not apply hosted migrations or deploy anything. Migration 010
-adds the central rollout control, initially disabled; follow the release runbook
+adds the central rollout control, initially disabled; 011–014 add persistent
+student workflows. Follow both linked release runbooks
 for inventory, date repairs, compatible deployment, staff acceptance and explicit
 operator enforcement. Do not enable it automatically.
 
@@ -129,7 +130,7 @@ data passed through HTML attributes or a non-executable JSON script. UI event
 bindings are in `src/client/events.ts`, including newly loaded feed cards.
 The larger migrated browser scripts still retain permissive parameter/null
 settings. `tsconfig.client.strict.json` enforces full strict checks for theme
-initialization, theme switching and toast contracts on every build/typecheck.
+preferences, theme initialization, theme switching and toast contracts on every build/typecheck.
 Expand that cohort incrementally; server and Vercel code use strict checks.
 Before starting development, run `npm run build:client` (or
 `npx tsc -p tsconfig.client.json --watch` in another terminal when editing UI code).
@@ -137,7 +138,7 @@ Before starting development, run `npm run build:client` (or
 ## Production setup for suggfeed.me
 
 1. Verify the linked project and installed migration versions. Rehearse all
-   pending forward migrations through 010 in staging using the release runbook;
+   pending forward migrations through 014 in staging using both release runbooks;
    do not paste an already-applied migration into SQL Editor. Migration 001
    stores encrypted sessions,
    is protected by RLS, and has no browser-role permissions. The second migration
@@ -262,7 +263,7 @@ dependencies during the build, because TypeScript is a build dependency.
 
 Progress/evidence prerequisites include the reviewed migrations through
 `202610120007_engagement_consistency.sql`; the current application also requires
-008–010 as described above. Rehearse the complete pending sequence in staging.
+008–014 as described above. Rehearse the complete pending sequence in staging.
 In particular:
 
 - `202610110001`: original completion-date support.

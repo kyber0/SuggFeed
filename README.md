@@ -62,7 +62,7 @@ Authored Express code is TypeScript; Eta files are server-rendered views.
 `dist/`, `public/js/`, and `public/sw.js` are build artifacts. Next.js builds to
 `.next/`. Turbo declares both artifact sets; build/test/typecheck cache reuse
 is disabled until environment and generated-file inputs have a verified cache
-policy. Credentials are process environment only, never artifact outputs.
+policy. Server-only credentials must never be included in browser artifact outputs.
 
 See [Express architecture](apps/web-express/docs/architecture.md) for route,
 feature-service, database, browser and test ownership. This is an incremental
@@ -89,7 +89,8 @@ verification. Do not deploy from a successful local build alone.
 
 Use the [guided workflow rollout](apps/web-express/docs/guided-workflows.md):
 inventory remote migration versions, rehearse through migration
-`202610130010_guided_workflows.sql` in a separate staging project, verify staff
+`202610130014_public_submission_history.sql` in a separate staging project
+(including the [persistent-workflow runbook](apps/web-express/docs/persistent-workflows.md)), verify staff
 acceptance, deploy compatible code/database functions, then enable the central
 rollout control explicitly. Preserve audit/history data during rollback. No
 production migration or enforcement change is performed by local scripts.

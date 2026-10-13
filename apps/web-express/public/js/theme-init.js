@@ -6,7 +6,7 @@
         try {
             if (theme === 'system') {
                 const old = localStorage.getItem('sf-theme');
-                if (['light', 'dark'].includes(old))
+                if (old === 'light' || old === 'dark')
                     theme = old;
             }
         }

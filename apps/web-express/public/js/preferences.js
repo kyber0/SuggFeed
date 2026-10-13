@@ -7,7 +7,8 @@
             return null;
         try {
             const value = JSON.parse(localStorage.getItem('sf:preferences:v1:' + name) || 'null');
-            if (value?.version === 1 && choices[name].includes(value.value))
+            if (value && typeof value === 'object' && 'version' in value && value.version === 1 &&
+                'value' in value && typeof value.value === 'string' && choices[name].includes(value.value))
                 return value.value;
         }
         catch { /* Storage is optional. */ }

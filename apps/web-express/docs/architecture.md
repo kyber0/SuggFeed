@@ -1,5 +1,13 @@
 # Express maintenance boundaries
 
+## Application ownership
+
+Express is the primary website for ongoing production features and workflows.
+Next.js is retained as a secondary compatibility/reference app, not a second
+feature-parity target. Keep its explicit commands and checks working. Removing
+it requires a separate inventory of hosting, shared consumers and retained
+functionality; this cleanup does not remove or redirect an existing deployment.
+
 ## Runtime and build
 
 The server entry is `src/server.ts`; Vercel's `api/index.ts` imports the compiled
@@ -37,8 +45,8 @@ Do not create a generic repository abstraction that hides RLS or transactional R
 ## Browser typing migration
 
 The main browser config remains a compatibility config for large legacy scripts.
-`tsconfig.client.strict.json` adds a full-strict, no-emit gate for `theme-init`,
-`theme`, `toast` and global contracts. Both build and typecheck run this gate;
+`tsconfig.client.strict.json` adds a full-strict, no-emit gate for `preferences`,
+`theme-init`, `theme`, `toast` and global contracts. Both build and typecheck run this gate;
 `predev` also reaches it. Newly migrated scripts should join the explicit cohort
 only after fixing implicit parameters, nullable DOM references and unknown catch
 values without blanket `any` or non-null assertions to silence errors.

@@ -5,6 +5,10 @@ interface Window {
   sfRecordShare: (id: string) => Promise<void>;
   sfPasswordRecovery?: boolean;
   sfConfirm: (message: string, options?: AppConfirmationOptions) => Promise<boolean>;
+  sfPreferences?: {
+    read: (name: string) => string | null;
+    write: (name: string, value: string) => boolean;
+  };
   sfSwitchAuthTab: (tab: string) => void;
   supabase: typeof import("@supabase/supabase-js");
   _sb: import("@supabase/supabase-js").SupabaseClient;
