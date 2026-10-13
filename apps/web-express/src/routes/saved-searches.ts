@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { supabaseService } from '../lib/supabase';
 import { savedSearchFilters } from '../lib/feed-filters';
 import { ENGAGEMENT_UUID } from '../lib/engagement';
+import { loadSavedSearches } from '../lib/feed-account';
+import { invalidateCache } from '../lib/data';
 const router=Router();
 router.use((req,res,next)=>{
   res.setHeader('Cache-Control','private, no-store');
@@ -10,9 +12,7 @@ router.use((req,res,next)=>{
 });
 router.get('/',async(req,res,next)=>{
   try {
-    const {data,error}=await supabaseService.from('student_saved_searches').select('id,name,filters').eq('user_id',req.session.user!.id).order('created_at');
-    if(error) throw error;
-    res.json({success:true,searches:data || []});
+    res.json({success:true,searches:await loadSavedSearches(req.session.user!.id)});
   }catch(e){next(e);}
 });
 router.post('/',async(req,res,next)=>{
@@ -22,6 +22,7 @@ router.post('/',async(req,res,next)=>{
     if(error?.code==='54000')return res.status(409).json({success:false,error:'You can save up to ten searches. Remove one first.'});
     if(error?.code==='23505')return res.status(409).json({success:false,error:'A search already uses that name.'});
     if(error)throw error;
+    invalidateCache('account_searches_'+req.session.user!.id);
     res.status(201).json({success:true,search:data});
   }catch(e){next(e);}
 });
@@ -32,6 +33,7 @@ router.patch('/:id',async(req,res,next)=>{
     if(error?.code==='23505')return res.status(409).json({success:false,error:'A search already uses that name.'});
     if(error)throw error;
     if(!data)return res.status(404).json({success:false,error:'Search unavailable.'});
+    invalidateCache('account_searches_'+req.session.user!.id);
     res.json({success:true});
   }catch(e){next(e);}
 });
@@ -41,6 +43,7 @@ router.delete('/:id',async(req,res,next)=>{
     const {data,error}=await supabaseService.from('student_saved_searches').delete().eq('id',req.params.id).eq('user_id',req.session.user!.id).select('id').maybeSingle();
     if(error)throw error;
     if(!data)return res.status(404).json({success:false,error:'Search unavailable.'});
+    invalidateCache('account_searches_'+req.session.user!.id);
     res.json({success:true});
   }catch(e){next(e);}
 });

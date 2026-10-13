@@ -23,6 +23,7 @@ let sipCurrentStep = 1;
       try {const choice=localStorage.getItem('sf_anon_default');const signedIn=!!document.getElementById('sf-auth-config')?.dataset.user;(document.getElementById('sip-anon') as HTMLInputElement).checked=!signedIn || choice!=='false';}catch{}
     }
     sipOpened = true;
+    window.dispatchEvent(new CustomEvent('sf:submission-open'));
     (document.getElementById('sip-queue-btn') as HTMLButtonElement).hidden=false;
     
     (document.getElementById('sip-success') as HTMLElement).hidden = true;

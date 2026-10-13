@@ -3,6 +3,7 @@ import { loadUserProfile, loadUserSubmissions, loadUserBookmarks } from "../lib/
 
 import { supabaseService } from '../lib/supabase';
 import { sameOriginOnly } from '../lib/security';
+import { loadBookmarkIds } from '../lib/feed-account';
 const router = Router();
 router.use((_req,res,next)=>{res.setHeader('Cache-Control','no-store');next();});
 
@@ -52,9 +53,8 @@ router.get(
 
 router.get('/bookmarks',asyncHandler(async(req,res)=>{
  if(!req.session.user)return res.status(401).json({success:false,error:'Sign in to load account bookmarks.'});
- const {data,error}=await supabaseService.from('bookmarks').select('submission_id').eq('user_id',req.session.user.id);
- if(error)throw new Error('Account bookmarks could not load.');
- return res.json({success:true,ids:(data || []).map(row=>row.submission_id)});
+ const ids=await loadBookmarkIds(req.session.user.id);
+ return res.json({success:true,ids});
 }));
 router.post('/preferences',sameOriginOnly,asyncHandler(async(req,res)=>{
  const user=req.session.user;if(!user)return res.status(401).json({success:false,error:'Sign in to update account preferences.'});

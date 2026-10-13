@@ -28,6 +28,7 @@
             catch { }
         }
         sipOpened = true;
+        window.dispatchEvent(new CustomEvent('sf:submission-open'));
         document.getElementById('sip-queue-btn').hidden = false;
         document.getElementById('sip-success').hidden = true;
         document.getElementById('sip-footer').classList.remove('sip-footer-hidden');

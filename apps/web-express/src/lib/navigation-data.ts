@@ -1,19 +1,19 @@
 import type { Request, Response, NextFunction } from 'express';
-import { loadPublishedSubmissions } from './data';
+import { loadPublishedSubmissions, type CacheStatus } from './data';
 import { feedFilters } from './feed-filters';
 import { roadmapFilters, loadRoadmapPage, loadRoadmapCategories, loadRecentlyCompleted } from './roadmap';
 
 /** Only public, anon/RLS-filtered data. No session, profile, tracking or staff reads. */
-export function preloadPublicNavigation(path: string, input: Record<string, unknown>): Promise<unknown> | null {
+export function preloadPublicNavigation(path: string, input: Record<string, unknown>,reportCache?:(status:CacheStatus)=>void): Promise<unknown> | null {
   if(path==='/' || path==='/feed' || path==='/feed/'){
     const filters=path==='/'?feedFilters({sort:'latest'}):feedFilters(input);
     if(filters.scope==='following')return null;
-    return loadPublishedSubmissions({page:filters.page,sortBy:filters.sort,category:filters.category,search:filters.search});
+    return loadPublishedSubmissions({page:filters.page,sortBy:filters.sort,category:filters.category,search:filters.search,reportCache});
   }
   if(path==='/roadmap' || path==='/roadmap/'){
     const filters=roadmapFilters(input);
     return Promise.all([
-      loadRoadmapPage(filters),loadRoadmapCategories(),
+      loadRoadmapPage(filters,reportCache),loadRoadmapCategories(),
       filters.view==='board' && filters.stage==='all' && !filters.search && filters.category==='all'
         ? loadRecentlyCompleted():Promise.resolve([]),
     ]);
@@ -22,11 +22,11 @@ export function preloadPublicNavigation(path: string, input: Record<string, unkn
 }
 
 /** Start public reads before session I/O; the route joins the same cache promise. */
-export function startPublicNavigation(req: Request, _res: Response, next: NextFunction) {
+export function startPublicNavigation(req: Request, res: Response, next: NextFunction) {
   if(req.method==='GET'){
     // Errors remain visible through the actual route's loader. Handle this branch
     // as well so an early failure cannot become an unhandled promise rejection.
-    const pending=preloadPublicNavigation(req.path,req.query);
+    const pending=preloadPublicNavigation(req.path,req.query,status=>{res.locals.publicNavigationCache=status;});
     if(pending)void pending.catch(()=>undefined);
   }
   next();

@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { sanitizeSearch, fetchWithCache } from './data';
+import { sanitizeSearch, fetchWithCache, type CacheStatus } from './data';
 
 export const ROADMAP_STAGES = ['approved', 'in_progress', 'resolved'] as const;
 export const ROADMAP_PER_STAGE = 8;
@@ -50,10 +50,10 @@ export function formatManilaDate(dateStr: string | null | undefined, options?: I
   });
 }
 
-export function loadRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
+export function loadRoadmapPage(filters: ReturnType<typeof roadmapFilters>,reportCache?:(status:CacheStatus)=>void) {
   // Public lists only. Detail routes retain fresh publication checks.
   const key='roadmap_page_'+JSON.stringify(filters);
-  return fetchWithCache(key,()=>readRoadmapPage(filters),15_000);
+  return fetchWithCache(key,()=>readRoadmapPage(filters),15_000,reportCache);
 }
 async function readRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
   const results = await Promise.all(ROADMAP_STAGES.map(async stage => {

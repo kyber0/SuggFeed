@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { loadPublishedSubmissions, DEFAULT_CATEGORIES } from "../lib/data";
 
 import { feedFilters } from '../lib/feed-filters';
+import { verifiedFeedAccountState } from '../lib/feed-account';
 
 const router = Router();
 
@@ -22,13 +23,14 @@ router.get(
     if (following) res.setHeader('Cache-Control','private, no-store');
 
     const dataStarted=performance.now();
-    const { data: feed, count, hasMore } = await loadPublishedSubmissions({
+    const [result, accountState] = await Promise.all([loadPublishedSubmissions({
       page,
       sortBy: sortBy as any,
       category,
       search,
       followingUserId: following ? req.session.user!.id : undefined,
-    });
+    }),verifiedFeedAccountState(req,res)]);
+    const {data:feed,count,hasMore}=result;
 
     res.append('Server-Timing',`data;dur=${(performance.now()-dataStarted).toFixed(1)}`);
     res.render("feed", {
@@ -43,6 +45,7 @@ router.get(
       search,
       categories: DEFAULT_CATEGORIES,
       following,
+      accountState,
     });
   })
 );

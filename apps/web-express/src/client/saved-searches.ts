@@ -130,11 +130,18 @@
     }
     controls();
   }
-  async function load(){
+  async function load(useInitial=false){
     if(busy)return;busy=true;retry.hidden=true;feedback('Loading saved searches…');controls();
     try{
       let values:any;
-      if(account){values=(await request()).searches;if(!Array.isArray(values))throw new Error('Invalid search response.');}
+      if(account){
+        const initial=document.getElementById('sf-feed-account-state');
+        if(useInitial && initial?.dataset.user===document.getElementById('sf-auth-config')?.dataset.user){
+          try{values=JSON.parse(initial.dataset.searches || 'null');}catch{}
+        }
+        if(!Array.isArray(values))values=(await request()).searches;
+        if(!Array.isArray(values))throw new Error('Invalid search response.');
+      }
       else{const data=JSON.parse(localStorage.getItem(key) || 'null');values=data?.version===1 && Array.isArray(data.items)?data.items:[];}
       items=values.map(normalize).filter((item:any):item is Search=>!!item).slice(0,10);loaded=true;editing=null;render();feedback('');
     }catch{loaded=false;retry.hidden=false;feedback('Saved searches could not load. Try again or check browser storage.',true);}
@@ -168,5 +175,5 @@
     },'Search saved.',()=>list.querySelector<HTMLAnchorElement>('.saved-search-item:last-child .saved-search-link'));
   });
   retry.addEventListener('click',()=>void load());
-  void load();
+  void load(true);
 })();

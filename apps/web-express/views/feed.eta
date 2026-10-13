@@ -157,7 +157,10 @@ const feedUrl = (changes = {}) => {
     </div>
   </aside>
 </div>
+<% if(it.accountState && it.user?.id===it.accountState.userId){ %>
+<div id="sf-feed-account-state" hidden data-user="<%= it.accountState.userId %>" data-bookmarks="<%= JSON.stringify(it.accountState.bookmarks) %>" data-searches="<%= JSON.stringify(it.accountState.searches) %>"></div>
+<% } %>
 <div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
-<script defer src="/js/feed.js?v=20261013-responsive"></script>
+<script defer src="/js/feed.js?v=20261013-feed-bootstrap"></script>
 
-<script defer src="/js/saved-searches.js?v=20261013-custom-dialogs"></script>
+<script defer src="/js/saved-searches.js?v=20261013-feed-bootstrap"></script>

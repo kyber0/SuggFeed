@@ -14,6 +14,7 @@ import { SupabaseSessionStore } from "./lib/session-store";
 import { sameOriginOnly } from "./lib/security";
 import { safeRequestPath } from "./lib/request-path";
 import { validateIdentity } from "./lib/identity";
+import { startFeedAccountState } from "./lib/feed-account";
 import { startPublicNavigation, warmPublicNavigation } from "./lib/navigation-data";
 import "./types"; // session augmentation
 import { supabase as publicSupabase, supabaseService, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
@@ -198,7 +199,13 @@ app.use(
 );
 
 app.use((_req,res,next)=>{res.append("Server-Timing",`session;dur=${(performance.now()-res.locals.sessionStarted).toFixed(1)}`);delete res.locals.sessionStarted;next();});
+app.use(startFeedAccountState);
 app.use(validateIdentity);
+app.use((_req,res,next)=>{
+  const status=res.locals.publicNavigationCache;
+  if(['hit','pending','miss'].includes(status))res.append('Server-Timing',`public-cache;desc="${status}"`);
+  next();
+});
 // HTML and API responses can contain account-specific data.
 app.use((_req, res, next) => { res.setHeader("Cache-Control", "private, no-store"); next(); });
 

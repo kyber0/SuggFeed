@@ -347,6 +347,7 @@ router.post(
       if(result.error)throw new Error("Bookmark could not be saved.");
     }
 
+    invalidateCache("account_bookmarks_"+user.id);
     res.json({ success: true, bookmarked: action === "add" });
   })
 );

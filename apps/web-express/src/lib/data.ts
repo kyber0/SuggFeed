@@ -47,15 +47,18 @@ export function invalidateCache(prefix: string): void {
   }
 }
 
+export type CacheStatus = "hit" | "pending" | "miss";
 const inFlight=new Map<string,Promise<unknown>>();
 export async function fetchWithCache<T>(
   key: string,
   fetcher: () => Promise<T>,
-  ttlMs = 60_000
+  ttlMs = 60_000,
+  report?: (status:CacheStatus)=>void
 ): Promise<T> {
   const cached = getCache<T>(key);
-  if (cached !== undefined) return cached;
-  const running=inFlight.get(key);if(running)return running as Promise<T>;
+  if (cached !== undefined) {report?.("hit");return cached;}
+  const running=inFlight.get(key);if(running){report?.("pending");return running as Promise<T>;}
+  report?.("miss");
   if(inFlight.size>=MAX_CACHE_ENTRIES)return fetcher();
   const request=fetcher().then(value=>{if(inFlight.get(key)===request)setCache(key,value,ttlMs);return value;});
   inFlight.set(key,request);
@@ -105,6 +108,7 @@ export async function loadPublishedSubmissions(opts: {
   category?: string;
   search?: string;
   followingUserId?: string;
+  reportCache?: (status:CacheStatus)=>void;
 } = {}) {
   const { page = 1, sortBy = "all", category = "All", search = "", followingUserId } = opts;
 
@@ -168,7 +172,7 @@ export async function loadPublishedSubmissions(opts: {
   // Public requests share pending queries as well as the existing TTL cache.
   return followingUserId
     ? fetchFeed()
-    : fetchWithCache(cacheKey, fetchFeed, page === 1 ? 30_000 : 120_000);
+    : fetchWithCache(cacheKey, fetchFeed, page === 1 ? 30_000 : 120_000,opts.reportCache);
 }
 
 /* ─── Single submission ───────────────────────────────────────────────── */

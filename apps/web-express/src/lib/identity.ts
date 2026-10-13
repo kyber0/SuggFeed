@@ -7,9 +7,20 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
   const started=performance.now();
   const expectedUserId=req.session.user.id;
   const profilePage=['GET','HEAD'].includes(req.method) && /^\/profile\/?$/.test(req.path);
-  const readProfile=()=>profilePage
-    ? supabaseService.from('profiles').select('*').eq('id',expectedUserId).maybeSingle()
-    : supabaseService.from('profiles').select('role, display_name').eq('id',expectedUserId).maybeSingle();
+  const readProfile=async()=>{
+    const began=performance.now();
+    const result=await (profilePage
+      ? supabaseService.from('profiles').select('*').eq('id',expectedUserId).maybeSingle()
+      : supabaseService.from('profiles').select('role, display_name').eq('id',expectedUserId).maybeSingle());
+    res.append?.('Server-Timing',`permissions;dur=${(performance.now()-began).toFixed(1)}`);
+    return result;
+  };
+  const verifyToken=async(token:string,label='auth-user')=>{
+    const began=performance.now();
+    const result=await supabaseService.auth.getUser(token);
+    res.append?.('Server-Timing',`${label};dur=${(performance.now()-began).toFixed(1)}`);
+    return result;
+  };
   const readOnly=['GET','HEAD'].includes(req.method);
   const pageRead=/^(?:\/$|\/(?:feed|roadmap|idea|profile|notifications|inbox)(?:\/|$)|\/api\/(?:idea|feed|categories)(?:\/|$))/.test(req.path);
   // Public/self-owned page reads can overlap independent checks. Mutations and
@@ -17,7 +28,7 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
   const profilePromise=readOnly && pageRead?Promise.resolve(readProfile()):Promise.resolve(null);
   void (async () => {
     let token = req.session.accessToken;
-    const [verification,profileResult]=await Promise.all([supabaseService.auth.getUser(token ?? ""),profilePromise]);
+    const [verification,profileResult]=await Promise.all([verifyToken(token ?? ""),profilePromise]);
     let {data:{user},error}=verification;
     if (error && req.session.refreshToken && (error.status === 401 || error.status === 403)) {
       const result = await createAuthClient().auth.refreshSession({ refresh_token: req.session.refreshToken });
@@ -28,7 +39,7 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
         token = result.data.session.access_token;
         req.session.accessToken = token;
         req.session.refreshToken = result.data.session.refresh_token;
-        const verified = await supabaseService.auth.getUser(token);
+        const verified = await verifyToken(token,'auth-refreshed');
         user = verified.data.user;
         error = verified.error;
       }

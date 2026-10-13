@@ -234,7 +234,7 @@
         }
         controls();
     }
-    async function load() {
+    async function load(useInitial = false) {
         if (busy)
             return;
         busy = true;
@@ -244,7 +244,15 @@
         try {
             let values;
             if (account) {
-                values = (await request()).searches;
+                const initial = document.getElementById('sf-feed-account-state');
+                if (useInitial && initial?.dataset.user === document.getElementById('sf-auth-config')?.dataset.user) {
+                    try {
+                        values = JSON.parse(initial.dataset.searches || 'null');
+                    }
+                    catch { }
+                }
+                if (!Array.isArray(values))
+                    values = (await request()).searches;
                 if (!Array.isArray(values))
                     throw new Error('Invalid search response.');
             }
@@ -341,5 +349,5 @@
         }, 'Search saved.', () => list.querySelector('.saved-search-item:last-child .saved-search-link'));
     });
     retry.addEventListener('click', () => void load());
-    void load();
+    void load(true);
 })();

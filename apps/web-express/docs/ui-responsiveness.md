@@ -92,12 +92,43 @@ These caches do not remove cold starts or database network distance. Unchanged
 sessions already avoid rewrites with `resave: false`; the store is unchanged.
 Durations contain no tokens, account identifiers or profile data.
 
+## Feed account startup
+
+The supplied production screenshots confirm commit `28cdb89` was live, static
+assets were served from the worker in roughly 4–27 ms, and `/feed` took 2.39 s:
+2.11 s waiting for the server and 278.67 ms downloading. Server timings were
+316.50 ms for session, 707.70 ms for identity and 741.90 ms for remaining data.
+These timings show several contributors; they do not isolate cold starts or
+regional latency. The document/fetch rows are the navigation and its worker fetch,
+not evidence of two separate page downloads.
+
+Feed bookmarks and saved searches now load while the request's identity is being
+verified, then join the public feed loader. The results enter the private HTML
+response only when the same account was verified. Each list has a 10-second
+server cache keyed by owner; mutations invalidate that owner's list. Other
+instances can retain a snapshot until that short TTL expires. Roles, tokens and
+sessions are not cached by this mechanism. Optional section failures fall back to
+the existing verified endpoints instead of failing the feed. The route waits at
+most 120 ms for still-pending account metadata after identity checks, and large
+bookmark snapshots use the existing endpoint instead of bloating the HTML.
+
+Feed scripts hydrate these lists from escaped HTML attributes rather than starting
+new bookmark/search requests (previously 1.99 s and 1.72 s in the screenshot).
+Submission context is now fetched when the submit panel opens, not automatically
+on every page (previously 2.70 s); submission, queue and receipt actions still
+check fresh context before proceeding. Account snapshot wait is reported as
+`account` in Server-Timing. Public preload reports `public-cache` as `hit`,
+`pending` or `miss`, making instance-local cache reuse observable in the browser.
+Identity timings now also separate `auth-user` from `permissions` (and a refreshed
+token verification when needed) so the 708 ms aggregate can be traced further.
+
 ## Validation and release
 
 Compilation uses the Express build and TypeScript checks. Automated tests were
 not run for this refinement. These changes remove identified waits and add immediate
 feedback; no measured production latency reduction is claimed. Read-only live
 site/database timing attempts were blocked by this workspace’s network access, so
-cold-start and regional latency remain unmeasured. Deployment is
+cold-start and regional latency remain unmeasured. The supplied browser screenshots
+provide the production timings documented above. Deployment is
 required to publish them. Slow database requests or cold server instances can still
 delay the final content, with the skeleton remaining visible during that wait.

@@ -324,7 +324,8 @@
     } });
     window.addEventListener('online', () => { void renderQueue().catch(e => tell(e.message)); tell('Connection restored. Review queued ideas and choose Send now.'); });
     window.addEventListener('offline', () => { void renderQueue().catch(e => tell(e.message)); tell('Offline. Save your draft here; reconnect before sending.'); });
-    void getContext().catch(() => { });
+    window.addEventListener('sf:submission-open', () => { if (navigator.onLine)
+        void getContext().catch(() => { }); });
     void renderQueue(true).catch(e => tell(e.message));
     Object.assign(window, { sfSubmissionRecovery: { prepare, finish, failed, request, tell } });
 })();

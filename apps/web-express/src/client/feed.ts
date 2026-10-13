@@ -153,7 +153,17 @@
     }finally{button.disabled=false;pendingBookmarks.delete(id);}
   }
 
-  if(savedOnAccount)void fetch('/profile/bookmarks',{cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)}).then(response=>response.json()).then(data=>{if(!data.success)throw new Error();accountSaved=new Set(data.ids);accountBookmarksLoaded=true;sfInitLocalStates();}).catch(()=>window.sfToast?.('Account bookmarks could not load. Refresh to check saved state.','error'));
+  let hydratedBookmarks=false;
+  const initialAccountState=document.getElementById('sf-feed-account-state');
+  if(savedOnAccount && initialAccountState?.dataset.user===document.getElementById('sf-auth-config')?.dataset.user){
+    try{
+      const ids=JSON.parse(initialAccountState.dataset.bookmarks || 'null');
+      if(Array.isArray(ids) && ids.every(id=>typeof id==='string')){
+        accountSaved=new Set(ids);accountBookmarksLoaded=true;hydratedBookmarks=true;
+      }
+    }catch{}
+  }
+  if(savedOnAccount && !hydratedBookmarks)void fetch('/profile/bookmarks',{cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)}).then(response=>response.json()).then(data=>{if(!data.success)throw new Error();accountSaved=new Set(data.ids);accountBookmarksLoaded=true;sfInitLocalStates();}).catch(()=>window.sfToast?.('Account bookmarks could not load. Refresh to check saved state.','error'));
   function sfInitLocalStates() {
     const votes = sfGetVotedSet();
     const saved = sfGetSavedSet();
