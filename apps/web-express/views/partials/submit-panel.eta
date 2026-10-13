@@ -417,6 +417,6 @@
   </form>
 </aside>
 
-<script src="/js/submission-storage.js?v=20261012-features"></script>
-<script src="/js/submission-recovery.js?v=20261013-custom-dialogs"></script>
-<script src="/js/submit-panel.js?v=20261013-connected"></script>
+<script defer src="/js/submission-storage.js?v=20261012-features"></script>
+<script defer src="/js/submission-recovery.js?v=20261013-custom-dialogs"></script>
+<script defer src="/js/submit-panel.js?v=20261013-connected"></script>

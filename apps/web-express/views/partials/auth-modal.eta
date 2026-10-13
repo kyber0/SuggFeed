@@ -146,4 +146,4 @@
   </div>
 </div>
 
-<script src="/js/auth-modal.js?v=20261013-recovery-code"></script>
+<script defer src="/js/auth-modal.js?v=20261013-recovery-code"></script>

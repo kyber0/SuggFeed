@@ -33,6 +33,6 @@
    <div class="workspace-actions"><a href="/feed?scope=following">Browse ideas you follow →</a><a href="/inbox">Private school messages →</a></div>
   </details>
   </div>
-  <script src="/js/notifications.js?v=20261012-features"></script>
+  <script defer src="/js/notifications.js?v=20261012-features"></script>
  <% } %>
 </main>

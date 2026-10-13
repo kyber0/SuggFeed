@@ -41,11 +41,13 @@ export function setCache<T>(key: string, value: T, ttlMs: number): void {
 }
 
 export function invalidateCache(prefix: string): void {
+  for(const key of inFlight.keys())if(key.startsWith(prefix))inFlight.delete(key);
   for (const key of _cache.keys()) {
     if (key.startsWith(prefix)) _cache.delete(key);
   }
 }
 
+const inFlight=new Map<string,Promise<unknown>>();
 export async function fetchWithCache<T>(
   key: string,
   fetcher: () => Promise<T>,
@@ -53,9 +55,11 @@ export async function fetchWithCache<T>(
 ): Promise<T> {
   const cached = getCache<T>(key);
   if (cached !== undefined) return cached;
-  const value = await fetcher();
-  setCache(key, value, ttlMs);
-  return value;
+  const running=inFlight.get(key);if(running)return running as Promise<T>;
+  if(inFlight.size>=MAX_CACHE_ENTRIES)return fetcher();
+  const request=fetcher().then(value=>{if(inFlight.get(key)===request)setCache(key,value,ttlMs);return value;});
+  inFlight.set(key,request);
+  try{return await request;}finally{if(inFlight.get(key)===request)inFlight.delete(key);}
 }
 
 /* ─── Search sanitization ──────────────────────────────────────────────── */

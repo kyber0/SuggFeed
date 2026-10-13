@@ -1,0 +1,12 @@
+<section id="navigation-skeleton" class="navigation-skeleton" hidden aria-labelledby="navigation-title" aria-busy="true">
+ <div class="navigation-skeleton-inner">
+  <div class="navigation-skeleton-heading"><div><p class="workspace-kicker">SUGGFEED</p><h1 id="navigation-title">Loading page</h1><p id="navigation-status" role="status" aria-live="polite">Loading…</p></div><button class="workspace-button" type="button" id="navigation-cancel">Cancel loading</button></div>
+  <div class="navigation-skeleton-layout" aria-hidden="true">
+   <aside class="navigation-skeleton-sidebar"><span class="skeleton-bar skeleton-bar--wide"></span><span class="skeleton-bar"></span><span class="skeleton-bar"></span><span class="skeleton-bar skeleton-bar--short"></span></aside>
+   <div class="navigation-skeleton-cards"><div class="navigation-skeleton-toolbar"><span class="skeleton-bar skeleton-bar--wide"></span></div>
+    <% for(let i=0;i<4;i++){ %><div class="navigation-skeleton-card"><span class="skeleton-bar skeleton-bar--short"></span><span class="skeleton-bar skeleton-bar--wide"></span><span class="skeleton-bar"></span><span class="skeleton-bar skeleton-bar--short"></span></div><% } %>
+   </div>
+  </div>
+ </div>
+</section>
+<script defer src="/js/navigation.js?v=20261013-instant"></script>

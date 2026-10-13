@@ -25,7 +25,7 @@
  </section>
 </div><%~ include('partials/staff-review',{...it,staffMembers:it.members}) %></main>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
-<script src="/js/staff-progress.js?v=20261013-custom-dialogs"></script>
-<script src="/js/staff-review.js?v=20261012-shared-review"></script>
-<script src="/js/staff-tools.js?v=20261013-custom-dialogs"></script>
+<script defer src="/js/staff-progress.js?v=20261013-custom-dialogs"></script>
+<script defer src="/js/staff-review.js?v=20261012-shared-review"></script>
+<script defer src="/js/staff-tools.js?v=20261013-custom-dialogs"></script>
 <section class="staff-mobile-notice"><h1>Staff workspace</h1><p>Use a desktop or larger screen to review community care.</p><a class="workspace-button" href="/roadmap">Explore the roadmap</a></section>

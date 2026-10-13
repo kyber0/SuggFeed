@@ -1,6 +1,7 @@
 // Browser source extracted from views/partials/idea-detail-drawer.eta.
 (function () {
 let sfCurrentIdea = null;
+  let drawerRequest:AbortController|null=null;
   let sfDrawerActiveReplyId = null;
   let sfDrawerOriginalPath = null;
   let sfTouchStartY = 0;
@@ -55,6 +56,8 @@ let sfCurrentIdea = null;
   const SF_LIFECYCLE_ORDER = ["pending", "approved", "in_progress", "resolved"];
 
   async function sfOpenIdeaDetail(ideaId, initialTab = 'details') {
+    drawerRequest?.abort();const request=new AbortController();drawerRequest=request;sfCurrentIdea=null;
+    const timeout=window.setTimeout(()=>request.abort(),15000);
     if (!sfDrawerOriginalPath) {
       sfDrawerOriginalPath = window.location.pathname + window.location.search;
     }
@@ -65,7 +68,7 @@ let sfCurrentIdea = null;
     const columns = (document.getElementById('drawer-columns') as HTMLElement);
 
     overlay.removeAttribute('hidden');
-    drawer.removeAttribute('hidden');
+    drawer.removeAttribute('hidden');drawer.setAttribute('aria-busy','true');
     document.body.style.overflow = 'hidden';
 
     // Update URL history without full reload
@@ -78,20 +81,22 @@ let sfCurrentIdea = null;
     sfSetDrawerMobileTab(initialTab);
 
     try {
-      const res = await fetch(`/api/idea/${ideaId}`);
+      const res = await fetch(`/api/idea/${encodeURIComponent(ideaId)}`,{signal:request.signal,headers:{Accept:'application/json'}});
       if (!res.ok) throw new Error('Idea not found');
       const data = await res.json();
       if (!data.success || !data.submission) throw new Error(data.error || 'Failed to load idea');
 
+      if(drawerRequest!==request || drawer.hidden)return;
       sfCurrentIdea = data.submission;
       sfPopulateDrawerUI(data.submission, data.comments || []);
 
       skeleton.style.display = 'none';
-      columns.style.display = 'flex';
+      columns.style.display = 'flex';drawer.setAttribute('aria-busy','false');
     } catch (err) {
-      if (window.sfToast) sfToast(err.message || 'Failed to load idea details', 'error');
+      if(drawerRequest!==request || drawer.hidden)return;
+      if (window.sfToast) sfToast(err.name==='AbortError'?'Idea details took too long. Please try again.':err.message || 'Failed to load idea details', 'error');
       sfCloseIdeaDrawer();
-    }
+    }finally{clearTimeout(timeout);}
   }
 
   function sfPopulateDrawerUI(idea, comments) {
@@ -305,6 +310,7 @@ let sfCurrentIdea = null;
   }
 
   function sfCloseIdeaDrawer() {
+    drawerRequest?.abort();drawerRequest=null;sfCurrentIdea=null;document.getElementById('idea-detail-drawer')?.setAttribute('aria-busy','false');
     const overlay = (document.getElementById('idea-drawer-overlay') as HTMLElement);
     const drawer = (document.getElementById('idea-detail-drawer') as HTMLElement);
     if (overlay) overlay.setAttribute('hidden', '');

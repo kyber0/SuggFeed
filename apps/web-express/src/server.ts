@@ -174,6 +174,7 @@ app.use(sameOriginOnly);
 app.use(express.static(publicDir, { maxAge: isProd ? "7d" : 0 }));
 
 /* ── Session ─────────────────────────────────────────────────────────────── */
+app.use((_req,res,next)=>{res.locals.sessionStarted=performance.now();next();});
 app.use(
   session({
     secret: sessionSecret,
@@ -189,6 +190,7 @@ app.use(
   })
 );
 
+app.use((_req,res,next)=>{res.append("Server-Timing",`session;dur=${(performance.now()-res.locals.sessionStarted).toFixed(1)}`);delete res.locals.sessionStarted;next();});
 app.use(validateIdentity);
 // HTML and API responses can contain account-specific data.
 app.use((_req, res, next) => { res.setHeader("Cache-Control", "private, no-store"); next(); });

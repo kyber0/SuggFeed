@@ -46,6 +46,12 @@ router.get(
 );
 
 
+router.get('/bookmarks',asyncHandler(async(req,res)=>{
+ if(!req.session.user)return res.status(401).json({success:false,error:'Sign in to load account bookmarks.'});
+ const {data,error}=await supabaseService.from('bookmarks').select('submission_id').eq('user_id',req.session.user.id);
+ if(error)throw new Error('Account bookmarks could not load.');
+ return res.json({success:true,ids:(data || []).map(row=>row.submission_id)});
+}));
 router.post('/preferences',sameOriginOnly,asyncHandler(async(req,res)=>{
  const user=req.session.user;if(!user)return res.status(401).json({success:false,error:'Sign in to update account preferences.'});
  const {display_name,email_notifications_enabled}=req.body || {};

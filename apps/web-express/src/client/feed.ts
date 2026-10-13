@@ -153,7 +153,7 @@
     }finally{button.disabled=false;pendingBookmarks.delete(id);}
   }
 
-  if(savedOnAccount)void fetch('/profile/activity',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({}),signal:AbortSignal.timeout(15000)}).then(response=>response.json()).then(data=>{if(!data.success)throw new Error();accountSaved=new Set(data.bookmarks.map(row=>row.id));accountBookmarksLoaded=true;sfInitLocalStates();}).catch(()=>window.sfToast?.('Account bookmarks could not load. Refresh to check saved state.','error'));
+  if(savedOnAccount)void fetch('/profile/bookmarks',{cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)}).then(response=>response.json()).then(data=>{if(!data.success)throw new Error();accountSaved=new Set(data.ids);accountBookmarksLoaded=true;sfInitLocalStates();}).catch(()=>window.sfToast?.('Account bookmarks could not load. Refresh to check saved state.','error'));
   function sfInitLocalStates() {
     const votes = sfGetVotedSet();
     const saved = sfGetSavedSet();

@@ -412,4 +412,4 @@
 </main>
 
 <div id="sf-idea-config" hidden data-id="<%= it.submission.id %>" data-status="<%= it.submission.status %>"></div>
-<script src="/js/idea.js?v=20261013-connected"></script>
+<script defer src="/js/idea.js?v=20261013-connected"></script>

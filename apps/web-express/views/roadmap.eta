@@ -358,6 +358,7 @@
    <p id="roadmap-detail-meta" class="workspace-detail-meta"></p>
    <p id="roadmap-detail-error" class="workspace-message" role="status"></p>
    <button type="button" class="workspace-button" id="roadmap-detail-retry" hidden>Try again</button>
+   <div id="roadmap-detail-skeleton" class="detail-loading-skeleton" hidden aria-hidden="true"><span class="skeleton-bar skeleton-bar--short"></span><span class="skeleton-bar skeleton-bar--wide"></span><span class="skeleton-bar"></span><span class="skeleton-bar skeleton-bar--wide"></span></div>
    <div id="roadmap-detail-content">
     <div class="roadmap-detail-overview">
     <div id="roadmap-detail-blocked-alert" class="roadmap-detail-blocked-alert" hidden>
@@ -392,6 +393,7 @@
     </div>
     <section class="roadmap-public-history" aria-labelledby="roadmap-history-title">
      <h3 id="roadmap-history-title">Work updates and evidence</h3>
+     <div id="roadmap-history-skeleton" class="detail-loading-skeleton" hidden aria-hidden="true"><span class="skeleton-bar skeleton-bar--wide"></span><span class="skeleton-bar"></span><span class="skeleton-bar skeleton-bar--short"></span></div>
      <p id="roadmap-history-status" role="status"></p>
      <ol id="roadmap-history-list" class="roadmap-history-list"></ol>
     </section>
@@ -412,5 +414,5 @@
  </dialog>
 </main>
 <script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items || []).replace(/</g, '\\u003c') %></script>
-<script src="/js/roadmap.js?v=20261012-drawer"></script>
-<script src="/js/roadmap-views.js?v=20261012-features"></script>
+<script defer src="/js/roadmap.js?v=20261013-responsive"></script>
+<script defer src="/js/roadmap-views.js?v=20261012-features"></script>

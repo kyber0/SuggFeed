@@ -1,7 +1,7 @@
 {
   "name": "suggfeed-express",
   "version": "2.0.0",
-  "description": "SuggFeed – Express + Eta + TypeScript",
+  "description": "SuggFeed \u2013 Express + Eta + TypeScript",
   "main": "dist/server.js",
   "engines": {
     "node": "22.x"
@@ -13,10 +13,11 @@
     "dev": "node --watch --use-system-ca -r ts-node/register src/server.ts",
     "build:server": "tsc -p tsconfig.json",
     "build:sw": "tsc -p tsconfig.sw.json",
-    "build:client": "tsc -p tsconfig.client.json",
+    "build:client": "npm run build:vendor && tsc -p tsconfig.client.json",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.sw.json --noEmit && tsc -p tsconfig.client.json --noEmit && tsc -p tsconfig.api.json && tsc -p tsconfig.tests.json",
     "build": "npm run build:server && npm run build:sw && npm run build:client && tsc -p tsconfig.api.json",
-    "start": "node --use-system-ca dist/server.js"
+    "start": "node --use-system-ca dist/server.js",
+    "build:vendor": "node scripts/build-vendor.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10",

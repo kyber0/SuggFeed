@@ -290,4 +290,4 @@
   </div>
 </aside>
 
-<script src="/js/idea-detail-drawer.js?v=20261013-connected"></script>
+<script defer src="/js/idea-detail-drawer.js?v=20261013-responsive"></script>

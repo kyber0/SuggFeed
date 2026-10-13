@@ -269,6 +269,9 @@
       window.history.pushState(null, '', url);
     }
     const item = items.find(i => i.id === id);
+    dialog.setAttribute('aria-busy','true');
+    document.getElementById('roadmap-detail-skeleton')!.hidden=!!item;
+    document.getElementById('roadmap-history-skeleton')!.hidden=false;
     if (item) {
       show(item);
     } else {
@@ -283,6 +286,7 @@
     document.getElementById('roadmap-history-list')!.replaceChildren();
     document.getElementById('roadmap-history-status')!.textContent = 'Loading school updates…';
     if (!uuid.test(id)) {
+      dialog.setAttribute('aria-busy','false');document.getElementById('roadmap-detail-skeleton')!.hidden=true;document.getElementById('roadmap-history-skeleton')!.hidden=true;
       document.getElementById('roadmap-detail-title')!.textContent = 'Idea unavailable';
       document.getElementById('roadmap-detail-error')!.textContent = 'This link does not contain a valid idea ID.';
       return;
@@ -306,13 +310,15 @@
       }
     } catch (error) {
       if (dialog.open && detailRequest === controller) {
-        document.getElementById('roadmap-detail-title')!.textContent = 'Idea unavailable';
+        dialog.setAttribute('aria-busy','false');document.getElementById('roadmap-detail-skeleton')!.hidden=true;document.getElementById('roadmap-history-skeleton')!.hidden=true;
+      document.getElementById('roadmap-detail-title')!.textContent = 'Idea unavailable';
         document.getElementById('roadmap-detail-content')!.hidden = true;
         drawerState(false, true);
         document.getElementById('roadmap-detail-error')!.textContent = error instanceof Error && error.name !== 'AbortError' ? error.message : 'Loading timed out. Please try again.';
       }
     } finally {
       clearTimeout(timer);
+      if(detailRequest===controller){dialog.setAttribute('aria-busy','false');document.getElementById('roadmap-detail-skeleton')!.hidden=true;document.getElementById('roadmap-history-skeleton')!.hidden=true;}
     }
   }
 

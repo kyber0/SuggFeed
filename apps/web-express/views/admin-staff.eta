@@ -224,4 +224,4 @@
 </section>
 <script id="staff-roster-data" type="application/json"><%~ JSON.stringify(it.staffMembers || []).replace(/</g, '\\u003c') %></script>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({ id: it.user?.id || '', role: it.user?.role || '' }).replace(/</g, '\\u003c') %></script>
-<script src="/js/admin-staff.js?v=20261013-custom-dialogs"></script>
+<script defer src="/js/admin-staff.js?v=20261013-custom-dialogs"></script>

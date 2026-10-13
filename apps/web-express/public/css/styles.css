@@ -15,7 +15,7 @@
    ========================================================================== */
 
 /* ── 1. Design Tokens & CSS Reset ── */
-@import url('./modules/tokens.css');
+@import url('./modules/tokens.css?v=20261013-local-font');
 @import url('./modules/reset.css');
 
 /* ── 2. Core UI Components & Global Shell ── */
@@ -37,4 +37,4 @@
 
 @import url("./modules/persistence.css?v=20261013-cards");
 
-@import url("./modules/ui-polish.css?v=20261013-recovery");
+@import url("./modules/ui-polish.css?v=20261013-responsive");

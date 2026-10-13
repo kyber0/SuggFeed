@@ -14,9 +14,8 @@ router.get('/idea/:id', async (req, res, next) => {
   try {
     const id = req.params.id;
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return res.status(400).json({ success: false, error: 'Invalid idea ID.' });
-    const item = await loadPublicRoadmapIdea(id);
+    const [item,updates]=await Promise.all([loadPublicRoadmapIdea(id),listPublicProgress(id)]);
     if (!item) return res.status(404).json({ success: false, error: 'This idea is no longer on the public roadmap.' });
-    const updates = await listPublicProgress(id);
     return res.json({ success: true, item, updates });
   } catch (error) { next(error); }
 });

@@ -338,4 +338,4 @@
   </div>
 </main>
 
-<script src="/js/profile.js?v=20261013-connected"></script>
+<script defer src="/js/profile.js?v=20261013-connected"></script>

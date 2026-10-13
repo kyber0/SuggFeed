@@ -1,0 +1,11 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const root=path.join(__dirname,'..');
+const packageRoot=path.dirname(require.resolve('@supabase/supabase-js/package.json'));
+const target=path.join(root,'public/js/vendor');fs.mkdirSync(target,{recursive:true});
+const sdk=fs.readFileSync(path.join(packageRoot,'dist/umd/supabase.js'));
+fs.writeFileSync(path.join(target,'supabase.js'),sdk);
+fs.copyFileSync(path.join(packageRoot,'LICENSE'),path.join(target,'supabase.LICENSE'));
+const metadata={version:JSON.parse(fs.readFileSync(path.join(packageRoot,'package.json'),'utf8')).version,sha256:crypto.createHash('sha256').update(sdk).digest('hex')};
+fs.writeFileSync(path.join(target,'supabase-version.json'),JSON.stringify(metadata,null,2)+'\n');
