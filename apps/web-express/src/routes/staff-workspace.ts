@@ -97,7 +97,7 @@ router.patch('/submissions/:id/review', run(async (req, res) => {
   if (error) {
     if(error.code?.startsWith('P010'))workflowError(error);
     const code = error.code;
-    if (code === '40001') return res.status(409).json({ success: false, error: 'This submission changed. Refresh the queue before saving; copy your draft first.' });
+    if (code === 'PT409' || code === '40001') return res.status(409).json({ success: false, error: 'This submission changed. Refresh the queue before saving; copy your draft first.' });
     if (code === 'P0002') return res.status(404).json({ success: false, error: 'Submission not found.' });
     if (code === '42501') return res.status(403).json({ success: false, error: 'Staff access required.' });
     if (code === '22023') return res.status(400).json({ success: false, error: 'Choose an active staff assignee and valid review values.' });

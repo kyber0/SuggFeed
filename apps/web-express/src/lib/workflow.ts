@@ -9,7 +9,7 @@ export class WorkflowError extends ProgressError {constructor(status:number,mess
 export function workflowError(error:any):never {
   const known:Record<string,[number,string,string]>={P0101:[409,'Use an available guided action for this submission.','WORKFLOW_ACTION_REQUIRED'],P0102:[409,'An administrator must verify the missing work dates first.','WORK_DATES_REQUIRED'],P0103:[503,'Work changes are temporarily paused. Reading and private follow-ups remain available.','LIFECYCLE_PAUSED'],P0104:[400,'Completion requires ready evidence attached to this update.','COMPLETION_EVIDENCE_REQUIRED'],
     '40001':[409,'This submission changed. Refresh its details; keep your draft.','VERSION_CONFLICT'],'23505':[409,'This request ID was already used. Keep your draft and refresh.','REQUEST_CONFLICT'],P0002:[404,'Submission not found.','NOT_FOUND'],'42501':[403,'Your current role cannot perform this action.','FORBIDDEN'],'22023':[400,'Check the action, dates, explanation and evidence.','INVALID_ACTION']};
-  const mapped=known[error?.code];if(mapped)throw new WorkflowError(...mapped);
+  const mapped=known[error?.code==='PT409'?'40001':error?.code];if(mapped)throw new WorkflowError(...mapped);
   throw error;
 }
 export async function workflowContext(id:string,actor:string):Promise<WorkflowContext>{

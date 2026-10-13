@@ -109,7 +109,7 @@ export async function postProgress(id: string, staffId: string, body: unknown) {
   if (error) {
     const workflowCodes:Record<string,[number,string]>={P0101:[409,'Use an available guided action.'],P0102:[409,'An administrator must verify missing work dates first.'],P0103:[503,'Work changes are temporarily paused.'],P0104:[400,'Completion requires ready evidence attached to this update.']};
     if(workflowCodes[error.code])throw new ProgressError(...workflowCodes[error.code],error.code);
-    if (error.code === '40001') throw new ProgressError(409, 'This submission changed. Refresh it before posting; keep your draft.');
+    if (error.code === 'PT409' || error.code === '40001') throw new ProgressError(409, 'This submission changed. Refresh it before posting; keep your draft.');
     if (error.code === '23505') throw new ProgressError(409, 'This request was already used for a different update. Refresh and try again.');
     if (error.code === 'P0002') throw new ProgressError(404, 'Submission not found.');
     if (error.code === '42501') throw new ProgressError(403, 'Staff access required.');

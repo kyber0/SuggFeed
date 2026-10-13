@@ -171,9 +171,55 @@ During that interval, the PostgREST request-context `set_config` statement gaine
 request-context setup, but its own execution time does not explain a continuously
 saturated CPU; traffic sources and unsampled work still need investigation. The
 sampled tables showed little dead-row accumulation. No production
-schema changes, compute changes or test records were made for this diagnosis.
+schema changes, compute changes or test records were made during that preliminary diagnosis.
 If CPU remains high, inspect query plans and activity over time before selecting
 a database change or compute upgrade.
+
+## Database retry incident: 13 October 2026
+
+The subsequent API usage screenshot showed only 2,878 gateway requests over
+approximately 24 hours. The PostgreSQL log screenshot showed 2.6 million entries,
+repeatedly reporting SQLSTATE `40001` with "Submission changed" and "Review has
+changed". All 1,000 entries in the supplied CSV had that code: 435 submission
+conflicts and 565 review conflicts. A live database sample recorded 23,416
+additional transaction rollbacks in 9.58 seconds (about 2,400 per second).
+Aborted PostgREST statements called `save_staff_review` and `post_idea_update`;
+the request setup statements ran as `service_role`.
+
+The application used `40001` for optimistic concurrency conflicts, although
+that SQLSTATE means a retryable serialization failure. The deployed PostgREST
+14.5 transaction runner uses Hasql transactions, which retry `40001` without a
+limit. Repeating the original stale input cannot satisfy these checks. The
+database consequently retried inside a small number of HTTP requests, explaining
+why the gateway request count was much smaller than the database failure count.
+The source checks are
+[PostgREST MainTx](https://github.com/PostgREST/postgrest/blob/v14.5/src/PostgREST/MainTx.hs)
+and
+[Hasql transaction retries](https://github.com/nikita-volkov/hasql-transaction/blob/1.1.0.1/library/Hasql/Transaction/Private/Sessions.hs).
+
+Migration `202610130015_nonretryable_application_conflicts.sql` changes explicit
+application conflict exceptions in six existing functions to `PT409`. PostgREST
+returns HTTP 409 for that code instead of retrying the transaction. The migration
+preserves the existing function bodies except for those exception assignments,
+as well as signatures, ownership, grants, and security settings. The Express
+review, progress, workflow, and community handlers accept `PT409` and retain
+compatibility with the older code, preserving the refresh instructions and drafts.
+True PostgreSQL serialization failures are unaffected.
+
+The migration was applied to production and recorded in migration history.
+Before/after catalog comparison confirmed the six definitions differed only in
+the intended error code replacements, with ownership, grants, and settings
+unchanged. Three post-migration samples over 19.29 seconds recorded **zero**
+additional rollbacks, **zero** additional request setup calls, and **zero**
+aborted PostgREST connections. A further check approximately two minutes after
+the first sample still showed the same rollback count, no aborted connections,
+no remaining explicit application `40001` exceptions, and one migration history
+entry. Direct database Prometheus CPU counter deltas showed approximately **1.3%
+busy CPU** after the fix (idle and I/O wait excluded). The metrics endpoint caches
+scrapes, so that percentage describes its counter refresh interval rather than
+an instantaneous nine-second sample or the dashboard's chart. These observations
+confirm the sampled retry storm stopped; signed-in navigation speed remains
+unmeasured. No disposable production records or compute upgrade were used.
 
 ## Validation and release
 
