@@ -40,7 +40,7 @@ test('callback failure shows a retry message and does not navigate', async () =>
   let onReady;
   let navigated = false;
   const nodes = new Map();
-  const node = id => { if (!nodes.has(id)) nodes.set(id, {}); return nodes.get(id); };
+  const node = id => { if (!nodes.has(id)) nodes.set(id, { addEventListener() {}, focus() {} }); return nodes.get(id); };
   const context = {
     document: { addEventListener(_event, fn) { onReady = fn; }, querySelector: node, getElementById: node },
     history: { replaceState() {} }, URLSearchParams, setTimeout, clearTimeout,

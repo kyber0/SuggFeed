@@ -2,6 +2,7 @@ interface AppConfirmationOptions { title?: string; confirmLabel?: string; danger
 type AuthSession = import("@supabase/supabase-js").Session;
 interface AuthSyncResult { success: boolean; user: { id: string }; }
 interface Window {
+  sfPasswordRecovery?: boolean;
   sfConfirm: (message: string, options?: AppConfirmationOptions) => Promise<boolean>;
   sfSwitchAuthTab: (tab: string) => void;
   supabase: typeof import("@supabase/supabase-js");

@@ -92,6 +92,7 @@
   // The callback page owns code exchange and navigation. Events never reload it.
   // Keep this callback synchronous; run I/O after Supabase releases its auth lock.
   sb.auth.onAuthStateChange(function (event, session) {
+    if (event === 'PASSWORD_RECOVERY') window.sfPasswordRecovery = true;
     if (event === 'TOKEN_REFRESHED' && session && !callbackPage) {
       setTimeout(function () { window.sfSyncSession(session).catch(function () {}); }, 0);
     }

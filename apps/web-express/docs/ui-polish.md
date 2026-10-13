@@ -59,3 +59,20 @@ scheduler, email opt-in, or a new delivery provider.
 
 Compilation: `npm run build` in `apps/web-express`. Automated tests were not run
 for this UI refinement.
+
+## Password recovery callback
+
+The Express callback reads Supabase's PKCE recovery intent or the implicit
+`type=recovery` fragment and shows a new-password form. Recovery sessions do not
+enter the normal profile redirect or server-session sync until the password has
+been updated. The update verifies the current account, confirms matching inputs,
+and keeps failures on the form. A successful update offers a link to the profile;
+a subsequent cookie-sync error is reported separately from password-update errors.
+
+Callback credentials are removed from browser history. The PKCE flow identifier
+is passed to code exchange before URL cleanup can lose it. A short-lived,
+account-bound session-storage marker lets the reset form resume after a reload;
+expired or incomplete links cannot fall back to an unrelated existing sign-in.
+Reset cancellation signs out. Normal OAuth return navigation is preserved.
+Focused auth checks use mocked Supabase sessions and never send reset emails or
+change production passwords.

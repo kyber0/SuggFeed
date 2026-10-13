@@ -64,3 +64,9 @@ html::-webkit-scrollbar-track { background:var(--scroll-track); }
 .app-confirm-actions button:focus-visible { outline:3px solid var(--muted); outline-offset:3px; }
 @media(max-width:480px) { .app-confirm-dialog { padding:24px 20px; }.app-confirm-actions button { flex:1; } }
 @media(forced-colors:active) { .app-confirm-dialog { border:1px solid CanvasText; }.app-confirm-actions .app-confirm-accept { background:ButtonFace; color:ButtonText; border-color:ButtonText; } }
+
+.auth-reset-form { width:min(100%,400px); margin:24px auto 0; text-align:left; }
+.auth-reset-form .am-input { padding:12px 14px; }
+.auth-reset-form p { font-size:13px; line-height:1.6; }
+.auth-reset-feedback:not(:empty) { padding:12px; border:1px solid var(--error); border-radius:8px; background:var(--error-bg); color:var(--error); }
+.auth-reset-form .am-btn-primary { justify-content:center; }
