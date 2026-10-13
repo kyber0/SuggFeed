@@ -46,7 +46,11 @@ Applied feed filters and pagination stay in URLs. Unsupported query values are
 normalized to public defaults. Saved searches contain only sort, category, search,
 and following scope, with pagination restarting at one. They never enable alerts.
 Signed-in users can create, rename and remove up to ten account-owned searches.
-Guest searches are saved explicitly on the current device. Theme preferences use
+Guest searches are saved explicitly on the current device. Saved views appear as
+compact cards with filter chips and a current-view marker. A short, cancellable
+save form and an on-demand rename form keep management controls out of the way.
+Duplicate views are recognized, the ten-search count stays visible, and uncertain
+account writes require a reload before retrying. Theme preferences use
 versioned, validated storage with an in-memory fallback. The roadmap remembers an
 explicitly chosen layout and offers it on a default visit; shared URL state wins.
 
@@ -120,6 +124,7 @@ The documented fixture can exercise the interfaces without database writes:
 node -r ts-node/register/transpile-only tests/support/workspace-preview.ts
 # In another terminal (Python Playwright + system Chromium required):
 python tests/browser/persistence.py
+python tests/browser/saved-searches.py
 ```
 
 The browser checks use local API fixtures and real Chromium/IndexedDB. HTTP tests

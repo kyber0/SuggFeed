@@ -43,13 +43,6 @@ const feedUrl = (changes = {}) => {
   </aside>
 
   <main class="community-feed-main" aria-labelledby="feed-heading">
-    <details class="care-card saved-searches">
-      <summary>Saved searches</summary>
-      <p>Save the filters currently applied to this feed. Up to ten searches; no keyword alerts are enabled.</p>
-      <form id="saved-search-form" class="workspace-actions"><label>Search name<input class="workspace-input" name="name" required maxlength="40"/></label><button class="workspace-button" type="submit">Save current search</button></form>
-      <p id="saved-search-status" role="status"></p><button id="saved-search-retry" type="button" class="workspace-button">Reload searches</button>
-      <ul id="saved-search-list" aria-label="Saved searches"></ul>
-    </details>
     <header class="community-feed-header">
       <div class="feed-title-bar">
         <div class="feed-heading-group">
@@ -92,6 +85,17 @@ const feedUrl = (changes = {}) => {
         <span class="feed-sort-note"><%= popular ? 'Most supported first' : sort === 'oldest' ? 'Oldest first' : 'Newest first' %></span>
       </div>
     </header>
+    <details class="saved-searches" id="saved-search-panel">
+      <summary class="saved-search-summary"><span class="saved-search-summary-title"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><strong>Saved searches</strong><span id="saved-search-count" class="saved-search-count">— / 10</span></span><svg class="saved-search-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+      <div class="saved-search-body">
+        <div class="saved-search-current"><div><p class="saved-search-eyebrow">CURRENT VIEW</p><div id="saved-search-current-filters"></div><p id="saved-search-current-note" class="saved-search-help">Save the filters applied above, starting at page one.</p></div><button class="saved-search-primary" type="button" id="saved-search-add" aria-expanded="false" aria-controls="saved-search-form" disabled>Save this view</button></div>
+        <form id="saved-search-form" class="saved-search-create" hidden><label for="saved-search-name">Give this view a name<input id="saved-search-name" class="saved-search-input" name="name" required maxlength="40" autocomplete="off" placeholder="e.g. Library improvements"/></label><div class="saved-search-form-actions"><button class="saved-search-primary" type="submit">Save search</button><button class="saved-search-action" type="button" id="saved-search-cancel">Cancel</button></div></form>
+        <p id="saved-search-status" class="saved-search-status" role="status" aria-live="polite"></p><button id="saved-search-retry" type="button" class="saved-search-action" hidden>Reload searches</button>
+        <ul id="saved-search-list" class="saved-search-list" aria-label="Saved searches" aria-busy="true"></ul>
+        <footer class="saved-search-footer"><strong id="saved-search-storage"></strong><p id="saved-search-storage-note"></p></footer>
+      </div>
+    </details>
+
 
     <div class="post-cards-stream">
       <div id="feed-posts-container" class="feed-posts-list">
@@ -156,4 +160,4 @@ const feedUrl = (changes = {}) => {
 <div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
 <script src="/js/feed.js?v=20261011-feed"></script>
 
-<script src="/js/saved-searches.js?v=20261012-features"></script>
+<script src="/js/saved-searches.js?v=20261013-cards"></script>

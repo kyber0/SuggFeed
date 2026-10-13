@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/styles.css?v=20261013-persistent-workflows" />
+  <link rel="stylesheet" href="/css/styles.css?v=20261013-saved-search-cards" />
   <script src="/js/events.js?v=20261011-feed"></script>
 
   <script src="/js/preferences.js?v=20261012-features"></script>
