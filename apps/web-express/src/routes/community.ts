@@ -1,8 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
-import { CommunityError, textField, idField, communityAction, privateInbox, replyToClarification, similarIdeas, staffCommunity } from '../lib/community';
+import { CommunityError, textField, idField, communityAction, privateInbox, replyToClarification, similarIdeas, staffCommunity, loadReportDecisions, loadPublicMergeHistory, loadCommunityStaffIdea } from '../lib/community';
 import { staffRole, loadStaffMembers } from '../lib/staff-workspace';
-import { supabaseService } from '../lib/supabase';
 import { invalidateCache } from '../lib/data';
 import { boardFilters, loadStaffBoard, WORK_STAGES } from '../lib/staff-board';
 
@@ -23,18 +22,10 @@ communityRouter.post('/report', run(async (req,res) => {
 }));
 communityRouter.get('/report-history',run(async(req,res)=>{
   if(!req.session.user) throw new CommunityError(401,'Sign in to see report decisions.');
-  const {data,error}=await supabaseService.from('reports').select('id,reason,resolution,resolution_reason,created_at,resolved_at').eq('user_id',req.session.user.id).order('created_at',{ascending:false}).limit(50);
-  if(error) throw error;
-  return res.json({success:true,reports:data || []});
+  return res.json({success:true,reports:await loadReportDecisions(req.session.user.id)});
 }));
 communityRouter.get('/merges/:id', run(async(req,res)=>{
-  const id=idField(req.params.id);
-  const publicIdea=await supabaseService.from('submissions').select('id').eq('id',id).in('status',['approved','in_progress','resolved']).maybeSingle();
-  if(publicIdea.error) throw publicIdea.error;
-  if(!publicIdea.data) throw new CommunityError(404,'Idea unavailable.');
-  const {data,error}=await supabaseService.from('idea_merges').select('source_title,reason,created_at').eq('target_id',id).order('created_at').limit(50);
-  if(error) throw error;
-  return res.json({success:true,merges:data || []});
+  return res.json({success:true,merges:await loadPublicMergeHistory(req.params.id)});
 }));
 communityRouter.post('/staff/:action',run(async(req,res)=>{
   const user=req.session.user;
@@ -62,9 +53,7 @@ communityRouter.post('/staff/:action',run(async(req,res)=>{
 }));
 communityRouter.get('/staff/idea/:id',run(async(req,res)=>{
   if(!req.session.user || !staffRole(req.session.user.role)) throw new CommunityError(403,'Staff access required.');
-  const {data,error}=await supabaseService.from('submissions').select('id,title,status,updated_at').eq('id',idField(req.params.id)).maybeSingle();
-  if(error) throw error;if(!data) throw new CommunityError(404,'Idea unavailable.');
-  return res.json({success:true,idea:data});
+  return res.json({success:true,idea:await loadCommunityStaffIdea(req.session.user,req.params.id)});
 }));
 communityRouter.get('/staff/board',run(async(req,res)=>{
   const user=req.session.user;

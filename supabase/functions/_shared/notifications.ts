@@ -159,28 +159,13 @@ export async function notifyReview(
   if (!submission.user_id) return;
   const { data: profile } = await client
     .from("profiles")
-    .select("expo_push_token,email_notifications_enabled")
+    .select("email_notifications_enabled")
     .eq("id", submission.user_id)
     .maybeSingle();
 
   const formattedStatus = status.replace("_", " ").toUpperCase();
   const text = `Your feedback “${submission.title}” is now ${status.replace("_", " ")}.${note ? ` Staff note: ${note}` : ""}`;
   const jobs: Promise<Response>[] = [];
-
-  if (profile?.expo_push_token) {
-    jobs.push(
-      fetch("https://exp.host/--/api/v2/push/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: profile.expo_push_token,
-          title: "SuggFeed Status Update",
-          body: text,
-          data: { submissionId: submission.id },
-        }),
-      })
-    );
-  }
 
   if (profile?.email_notifications_enabled && Deno.env.get("RESEND_API_KEY") && Deno.env.get("RESEND_FROM_EMAIL")) {
     const { data } = await client.auth.admin.getUserById(submission.user_id);
@@ -264,7 +249,7 @@ export async function notifyComment(
   if (!submission.user_id) return;
   const { data: profile } = await client
     .from("profiles")
-    .select("expo_push_token,email_notifications_enabled")
+    .select("email_notifications_enabled")
     .eq("id", submission.user_id)
     .maybeSingle();
 
@@ -272,21 +257,6 @@ export async function notifyComment(
   const commentSnippet = comment.body.length > 80 ? comment.body.slice(0, 80) + "..." : comment.body;
   const text = `${authorName} commented on your idea “${submission.title}”: "${commentSnippet}"`;
   const jobs: Promise<Response>[] = [];
-
-  if (profile?.expo_push_token) {
-    jobs.push(
-      fetch("https://exp.host/--/api/v2/push/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: profile.expo_push_token,
-          title: "New Comment on SuggFeed",
-          body: text,
-          data: { submissionId: submission.id },
-        }),
-      })
-    );
-  }
 
   if (profile?.email_notifications_enabled && Deno.env.get("RESEND_API_KEY") && Deno.env.get("RESEND_FROM_EMAIL")) {
     const { data } = await client.auth.admin.getUserById(submission.user_id);

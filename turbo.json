@@ -3,11 +3,17 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**"],
-      "env": ["SENTRY_ORG", "SENTRY_PROJECT", "SENTRY_AUTH_TOKEN"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "cache": false,
+      "passThroughEnv": ["*"]
     },
-    "lint": { "dependsOn": ["^lint"] },
-    "typecheck": { "dependsOn": ["^typecheck"] },
-    "test": { "dependsOn": ["^test"] }
+    "suggfeed-express#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "public/js/**", "public/sw.js"],
+      "cache": false,
+      "passThroughEnv": ["*"]
+    },
+    "typecheck": { "dependsOn": ["^typecheck"], "cache": false, "passThroughEnv": ["*"] },
+    "test": { "dependsOn": ["^test"], "cache": false, "passThroughEnv": ["*"] }
   }
 }

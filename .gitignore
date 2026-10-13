@@ -13,3 +13,6 @@ coverage/
 .turbo/
 *.tsbuildinfo
 *.code-workspace
+
+# Local retirement backups may contain environment secrets. Never commit them.
+.local-backups/

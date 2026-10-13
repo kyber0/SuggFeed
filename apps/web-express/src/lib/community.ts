@@ -12,6 +12,38 @@ export function idField(value: unknown): string {
   if (typeof value !== 'string' || !ENGAGEMENT_UUID.test(value)) throw new CommunityError(400, 'Choose a valid idea or request.');
   return value;
 }
+
+// Routes own HTTP/session handling; feature readers own field selection,
+// visibility rules and database access. Never return private tracking fields.
+export async function loadReportDecisions(actorId: string) {
+  const { data, error } = await supabaseService.from('reports')
+    .select('id,reason,resolution,resolution_reason,created_at,resolved_at')
+    .eq('user_id', actorId).order('created_at', { ascending: false }).limit(50);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function loadPublicMergeHistory(input: unknown) {
+  const id = idField(input);
+  const publicIdea = await supabaseService.from('submissions').select('id')
+    .eq('id', id).in('status', ['approved', 'in_progress', 'resolved']).maybeSingle();
+  if (publicIdea.error) throw publicIdea.error;
+  if (!publicIdea.data) throw new CommunityError(404, 'Idea unavailable.');
+  const { data, error } = await supabaseService.from('idea_merges')
+    .select('source_title,reason,created_at').eq('target_id', id).order('created_at').limit(50);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function loadCommunityStaffIdea(actor: { role?: string }, input: unknown) {
+  if (!staffRole(actor.role)) throw new CommunityError(403, 'Staff access required.');
+  const id = idField(input);
+  const { data, error } = await supabaseService.from('submissions')
+    .select('id,title,status,updated_at').eq('id', id).maybeSingle();
+  if (error) throw error;
+  if (!data) throw new CommunityError(404, 'Idea unavailable.');
+  return data;
+}
 export function trackingHashes(value: unknown): string[] {
   if (typeof value !== 'string' || !/^CV-[A-F0-9]{32}$/i.test(value.trim())) throw new CommunityError(400, 'Enter the full private tracking code.');
   const code = value.trim().toUpperCase();

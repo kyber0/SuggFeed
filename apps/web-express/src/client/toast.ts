@@ -1,6 +1,7 @@
 (() => {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
+  const element = document.getElementById('toast-container');
+  if (!element) return;
+  const container: HTMLElement = element;
   type Kind = 'info' | 'success' | 'warning' | 'error';
   interface Notice { message: string; title: string; kind: Kind; }
   const pending: Notice[] = [];

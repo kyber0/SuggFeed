@@ -1,4 +1,19 @@
-# Express deployment and authentication
+# SuggFeed Express website
+
+This is the production-facing Express + Eta + TypeScript website. Root `pnpm dev`,
+`pnpm build`, `pnpm test`, and `pnpm start` target this app. The separate Next.js
+app remains available through explicit `:next` commands. Use Node **22.x** and
+the pinned pnpm version from the root `package.json`.
+
+From the repository root, run `pnpm install --frozen-lockfile`, copy this app's
+`.env.example` to `.env`, configure local credentials, then `pnpm dev`. Use
+`pnpm dev:client` in a second terminal for browser edits. The local default is
+port 3001. For independent deployment from this app directory, use
+`npm ci --workspaces=false --include=dev` and `npm run build`; its package lock remains supported.
+
+See [architecture and maintenance boundaries](docs/architecture.md) and the
+[guided workflow release runbook](docs/guided-workflows.md). Local commands do
+not apply production migrations or enable lifecycle enforcement.
 
 See [Persistent workflows](docs/persistent-workflows.md) for the saved-search,
 draft/queue, receipt, public-history, digest-control and PRG rollout requirements.
@@ -9,7 +24,8 @@ New screens: `/admin/community` (reports, private clarification, duplicate merge
 30-day stale-work and 14-day continuous-blocker reminders), `/admin/board` (confirmed stage moves and bulk
 assignment), `/inbox` (private replies and report decisions), `/feed?scope=following`,
 and notification preferences on `/notifications`. Staff queue shortcuts are `/`
-for search and `J`/`K` for Review buttons. Response starters remain editable drafts.
+for search and `J`/`K` for Review buttons. Decisions use guided actions with
+required explanations; the legacy response-starter control is hidden and disabled.
 The board pages every stage independently, with exact matching totals and 6,
 12 or 24 cards per stage. Search and oldest/newest order apply before pagination;
 there is no 200-submission cutoff. Previous/next and page-jump controls preserve
@@ -18,8 +34,10 @@ only appear when something is selected. Selection survives inline page changes
 in memory (not browser storage), including the original review version; changing
 filters or leaving the page clears it. Bulk assignment supports 1–25 selected
 ideas, rolls back completely if any version is stale, and does not change public
-responses or stages. Community-care sections show the oldest 50
-open records each, not fabricated school-wide totals.
+responses or stages. Follow-ups separates Reports, Clarifications and Needs
+attention, defaults to Reports, and shows up to 25 records per view/page with
+exact matching counts. This is distinct from the bounded private report-history
+and inbox API windows.
 
 The composer suggests up to five related public titles using bounded keyword
 matches, not an AI score or automatic duplicate rejection. Timeline week/month/
@@ -32,12 +50,17 @@ dates are not claimed as photo capture times or matching viewpoints.
 
 ### Migration and release requirements
 
-Apply pending migrations in order through `202610120009_weekly_digests.sql` in a
-separate staging project **before deploying this build**. New pages depend on
+Rehearse pending migrations in order through `202610130010_guided_workflows.sql`
+in a separate staging project **before deploying this build**. New pages depend on
 the new tables/functions. Back up production and validate hosted Auth/Storage,
 existing retention policies and old-code compatibility before production changes.
-Local builds do not apply hosted migrations or deploy anything.
+Local builds do not apply hosted migrations or deploy anything. Migration 010
+adds the central rollout control, initially disabled; follow the release runbook
+for inventory, date repairs, compatible deployment, staff acceptance and explicit
+operator enforcement. Do not enable it automatically.
 
+With enforcement enabled, only administrators can merge/withdraw an entire
+public idea; moderators can resolve reports and remove reported comments.
 Merging accepts two independent published ideas. The source leaves public lists,
 while its original owner, tracking record, clarification and votes remain intact.
 Followers move without duplicates; votes are deliberately not summed. The source
@@ -104,17 +127,19 @@ files are generated runtime assets; browsers do not execute TypeScript directly.
 Eta templates contain markup and server-side template expressions, with page
 data passed through HTML attributes or a non-executable JSON script. UI event
 bindings are in `src/client/events.ts`, including newly loaded feed cards.
-The migrated browser code retains permissive parameter/null settings while DOM,
-Supabase and auth contracts are checked; server and Vercel code use strict checks.
+The larger migrated browser scripts still retain permissive parameter/null
+settings. `tsconfig.client.strict.json` enforces full strict checks for theme
+initialization, theme switching and toast contracts on every build/typecheck.
+Expand that cohort incrementally; server and Vercel code use strict checks.
 Before starting development, run `npm run build:client` (or
 `npx tsc -p tsconfig.client.json --watch` in another terminal when editing UI code).
 
 ## Production setup for suggfeed.me
 
-1. Apply `supabase/migrations/202610100001_web_sessions.sql` and
-   `supabase/migrations/202610100002_staff_feedback.sql` to the same Supabase
-   project used by this app. Run these migrations in the SQL Editor if older
-   migrations have already been applied. The new table stores encrypted sessions,
+1. Verify the linked project and installed migration versions. Rehearse all
+   pending forward migrations through 010 in staging using the release runbook;
+   do not paste an already-applied migration into SQL Editor. Migration 001
+   stores encrypted sessions,
    is protected by RLS, and has no browser-role permissions. The second migration
    adds public staff notes and a server-only transactional moderation function,
    so status, reviewer and status-history entries commit together.
@@ -142,7 +167,7 @@ Before starting development, run `npm run build:client` (or
 
 ## Verification
 
-Run `npm ci`, `npm run build`, `npm test`, then `npm start`. Tests mock the auth
+Run `npm ci --workspaces=false --include=dev`, `npm run build`, `npm test`, then `npm start`. Tests mock the auth
 provider/database and require no account credentials. On the deployed custom
 domain, test Google login, password login, refresh, a second tab and logout.
 Login should return to the originating domain and page. A failed code exchange
@@ -190,7 +215,7 @@ History shows the latest 100 workflow events, 100 status changes, and 100 privat
 notes. Internal notes are append-only; correct mistakes with a follow-up note.
 Private records cascade when their submission is deleted through retention.
 
-Review, Internal notes, and History have separate keyboard-accessible tabs. Save
+Decision, Work updates, Internal notes, and History have separate keyboard-accessible tabs. Save
 controls stay visible while the drawer body scrolls. "Assign to me" selects the
 current staff profile. Saving refreshes the queue and school-wide counts without
 reloading the page. "Save & next" advances through remaining unreviewed items on
@@ -207,8 +232,9 @@ Test the migration and privileges in a staging Supabase project before productio
 The staff portal opens the oldest pending submissions first. Dashboard counts
 cover all submissions, while search, status filters, and pagination apply to
 the queue. CSV exports contain only the displayed page and protect against
-spreadsheet formula execution. Staff review the full suggestion before saving
-a status and public response. Failed saves retain the draft; leaving an unsaved
+spreadsheet formula execution. Staff review the full suggestion before submitting
+a guided decision/action. Metadata saves cannot bypass the enforced lifecycle.
+Failed saves retain the draft; leaving an unsaved
 review asks for confirmation. The portal UI is desktop-only at widths above 800px.
 
 The public roadmap uses actual database statuses: approved → Planned,
@@ -227,15 +253,17 @@ author IDs and tracking-code fields and is never service-worker cached.
 
 ### Progress, evidence and notification rollout
 
-Use Node **22.x**. From `apps/web-express`, run `npm ci --include=dev`,
+Use Node **22.x**. From `apps/web-express`, run `npm ci --workspaces=false --include=dev`,
 `npm run typecheck`, `npm test`, and `npm run build`. The development server uses
 Node's built-in watcher (`npm run dev`); run `npm run dev:client` separately when
 editing browser TypeScript. The native Sharp package must be installed for the
 deployment platform, not copied from Windows to Linux. Do not omit development
 dependencies during the build, because TypeScript is a build dependency.
 
-Apply the reviewed migrations through `202610120007_engagement_consistency.sql`
-in order **before deploying these application changes**. In particular:
+Progress/evidence prerequisites include the reviewed migrations through
+`202610120007_engagement_consistency.sql`; the current application also requires
+008–010 as described above. Rehearse the complete pending sequence in staging.
+In particular:
 
 - `202610110001`: original completion-date support.
 - `202610110002`: completion provenance, all-writer consistency and exact Tree aggregates.
@@ -252,14 +280,18 @@ staging/production before applying anything; if a remote project already records
 004, compare its installed function definition rather than blindly repairing its
 migration history. No local test/build applies migrations to a hosted project.
 
-Staff select **Progress** in the submission drawer to publish a Started, Update,
-Milestone, Blocked, Completed or Correction event. They must save unsent Review
+Staff select **Decision** for approval/decline or administrator-only withdrawal
+and **Work updates** for start, update/milestone, pause, resume and completion.
+Reopening completed work is administrator-only. They must save unsent metadata
 changes first. Updates have explicit Public/Staff-only audiences, literal-text
 previews, conflict protection and retry-safe request IDs. Staff-only events do
 not alter public progress, stage or follower notifications. Public events are
 immutable; append a Correction rather than rewriting history. Decreasing an
-estimate requires Correction; completed work must be explicitly reopened in
-Review. Backdated state changes cannot overwrite newer recorded progress.
+estimate requires Correction. New completion requires a public outcome,
+verified event date and at least one ready evidence file belonging to the same
+request. Historical missing dates block public lifecycle work until an
+administrator verifies and repairs them privately; no guessed-date override.
+Backdated state changes cannot overwrite newer recorded progress.
 `SCHOOL_OFFICE_LABEL` controls public attribution (default: School administration).
 
 Evidence supports up to five JPEG/PNG/WebP/PDF files per update, each up to 10 MB.
@@ -292,7 +324,8 @@ to the signed-in user and hide unpublished/private events; pagination and unread
 counts use those same visibility rules. Unfollowing prevents future fanout.
 
 Tests include mocked HTTP/browser flows, real Sharp processing, and in-memory
-PostgreSQL (PGlite) execution of migrations 002–007/RPC/RLS lifecycle cases.
+PostgreSQL (PGlite) execution of progress, community and guided-workflow
+migrations/RPC/RLS lifecycle cases, including migration 010.
 They do not verify hosted Storage URLs, Supabase extensions or a live deployment.
 Before release, test signed uploads/download expiry, role revocation, concurrent
 staff edits, follow/unfollow, notification ownership and cleanup against a separate

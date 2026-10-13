@@ -1,6 +1,6 @@
 # Guided workflows: staged release runbook
 
-This additive release is on `codex/systematic-workflows`. Local tests are not a production approval. Do not enable enforcement before staging rehearsal and staff acceptance. No database, storage or account mutation is required to inspect this document.
+This runbook covers the additive guided-workflow release (migration 010). Local tests are not a production approval. Do not enable enforcement before staging rehearsal and staff acceptance. No database, storage or account mutation is required to inspect this document.
 
 ## Preflight (read only)
 
@@ -32,7 +32,7 @@ Do not export titles, descriptions, identity or tracking hashes. Assign an admin
 
 After database and all clients are deployed compatibly, an authorized operator may enable `enabled=true` using the database console. Never expose this switch as a web preference. Keep a written release record; the code does not toggle it automatically.
 
-`deploy.yml` now requires manual dispatch from main, successful Express checks and the production environment gate. Configure **required reviewers** on GitHub's `production` environment and branch protection; YAML alone cannot create reviewers. Verify Vercel's Git auto-deploy settings separately: GitHub workflow gates do not prevent independent Vercel auto-deploys. Existing Vercel/mobile deployment commands must be verified against the intended projects before release.
+`deploy.yml` now requires manual dispatch from main, successful Express checks and the production environment gate. Configure **required reviewers** on GitHub's `production` environment and branch protection; YAML alone cannot create reviewers. Verify Vercel's Git auto-deploy settings separately: GitHub workflow gates do not prevent independent Vercel auto-deploys. Verify the Vercel deployment command against the intended project before release. The standalone Expo app and its EAS deployment job have been retired.
 
 ## Monitoring and rollback
 

@@ -86,14 +86,15 @@ Deno.test("decodeAttachment rejects missing fields", () => {
   assertEquals(threw, true);
 });
 
-Deno.test("requireTurnstile allows mobile app when MOBILE_APP_SECRET matches", async () => {
+Deno.test("retired mobile credentials cannot bypass Turnstile", async () => {
   Deno.env.set("MOBILE_APP_SECRET", "super-secret-mobile-token-12345");
   try {
     const req = new Request("https://example.com", {
       headers: { "x-mobile-secret": "super-secret-mobile-token-12345" },
     });
-    // Should resolve without error
-    await requireTurnstile("test-token", req);
+    Deno.env.delete("TURNSTILE_SECRET_KEY");
+    await assertRejects(()=>requireTurnstile("test-token", req),Error,"Turnstile is not configured");
+    await assertRejects(()=>requireTurnstile("super-secret-mobile-token-12345", req),Error,"Turnstile is not configured");
   } finally {
     Deno.env.delete("MOBILE_APP_SECRET");
   }
@@ -110,5 +111,20 @@ Deno.test("requireTurnstile rejects when Turnstile is not configured and no mobi
     Error,
     "Turnstile is not configured"
   );
+});
+
+Deno.test("website Turnstile still verifies with Cloudflare; old mobile headers do not skip verification",async()=>{
+  const original=globalThis.fetch,previous=Deno.env.get('TURNSTILE_SECRET_KEY');let calls=0;
+  Deno.env.set('TURNSTILE_SECRET_KEY','test-only-turnstile-secret');
+  globalThis.fetch=((input,init)=>{
+    assertEquals(String(input),'https://challenges.cloudflare.com/turnstile/v0/siteverify');
+    assertEquals(init?.method,'POST');calls++;
+    assertEquals((init?.body as FormData).get('response'),'verified-website-token-long-enough');
+    return Promise.resolve(Response.json({success:true}));
+  }) as typeof fetch;
+  try{
+    await requireTurnstile('verified-website-token-long-enough',new Request('https://school.example.test',{headers:{'x-mobile-secret':'retired-native-secret'}}));
+    assertEquals(calls,1);
+  }finally{globalThis.fetch=original;previous===undefined?Deno.env.delete('TURNSTILE_SECRET_KEY'):Deno.env.set('TURNSTILE_SECRET_KEY',previous);}
 });
 

@@ -16,11 +16,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    # Expo SDK pins specific native packages (e.g. react-native-screens, expo-router).
-    # Upgrades should be performed via `npx expo install --check` during SDK upgrades.
-    ignore:
-      - dependency-name: "expo*"
-      - dependency-name: "react-native*"
 
   # GitHub Actions CI/CD workflows
   - package-ecosystem: "github-actions"

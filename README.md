@@ -1,183 +1,99 @@
 # SuggFeed
 
-> A safer, anonymous way for students to share feedback, follow its progress, and see the changes their community is shaping.
+A school suggestion and feedback system backed by Supabase.
 
----
+## Applications
 
-## Project structure
+- `apps/web-express`: production-facing Express, Eta and TypeScript website.
+- `apps/web`: separate Next.js application, retained with explicit commands.
+- `supabase/functions`: Deno Edge Functions, including compatibility endpoints.
+- `supabase/migrations`: immutable forward PostgreSQL migrations and policies.
 
-```
-SuggFeed/
-├── apps/
-│   ├── web/          # Next.js 15 web app (Vercel)
-│   └── mobile/       # Expo managed-workflow React Native app (EAS)
-├── packages/
-│   └── shared/       # Shared TypeScript types (future use)
-└── supabase/
-    ├── migrations/   # PostgreSQL schema + RLS policies
-    └── functions/    # Deno Edge Functions
-```
+The standalone Expo/React Native app is retired. The responsive website is not
+removed or replaced. See [the retirement runbook](docs/expo-retirement.md) for
+the separate hosted rollout. Existing database token fields are retained for
+compatibility; updated functions no longer read/write Expo tokens or deliver Expo push.
 
----
+## Local development
 
-## Features
+Use Node **22.x** (`.nvmrc`) and **pnpm 9.15.0**, pinned by `packageManager`.
+From this repository's root:
 
-| Feature | Web | Mobile |
-|---|---|---|
-| Submit feedback (anonymous or named) | ✅ | ✅ |
-| File attachments (JPEG/PNG/WebP/PDF) | ✅ | — |
-| Turnstile spam protection | ✅ | — |
-| Upstash rate limiting | ✅ edge | ✅ edge |
-| Offline queue + auto-sync (Dexie) | ✅ | — |
-| Live public feed with voting | ✅ | ✅ (read-only) |
-| Track submission by code | ✅ | ✅ |
-| Push notifications (Expo) | — | ✅ |
-| Email notifications (Resend) | ✅ edge | ✅ edge |
-| Admin/moderator review dashboard | ✅ | — |
-| Retention/archival cron | ✅ edge | — |
-| PWA (installable, offline shell) | ✅ | n/a |
-| Sentry error monitoring | ✅ | ✅ |
-| CI/CD (GitHub Actions) | ✅ | ✅ EAS |
-
----
-
-## Quick start
-
-### Prerequisites
-
-- [pnpm](https://pnpm.io/) ≥ 9
-- [Node.js](https://nodejs.org/) ≥ 22
-- [Supabase CLI](https://supabase.com/docs/guides/cli)
-- [Deno](https://deno.land/) ≥ 2 (for Edge Function tests)
-- [Expo CLI + EAS CLI](https://docs.expo.dev/) (mobile only)
-
-### 1. Clone and install
-
-```bash
-git clone https://github.com/your-org/sugg-feed
-cd sugg-feed
-pnpm install
+```sh
+pnpm install --frozen-lockfile
 ```
 
-### 2. Configure environment
+Copy `apps/web-express/.env.example` to `apps/web-express/.env` and configure
+local values. Do not commit secrets. The Express [README](apps/web-express/README.md)
+describes environment, authentication, storage, optional email jobs and deployment.
 
-```bash
-cp .env.example apps/web/.env.local
-# Edit apps/web/.env.local and fill in all required values
+```sh
+pnpm dev          # Express, default port 3001
+pnpm dev:client   # second terminal: rebuild browser scripts on edits
+pnpm typecheck   # both applications, including the strict browser cohort
+pnpm test        # Express suite
+pnpm build       # Express server, browser, service worker and API checks
+pnpm start       # start the already-built Express server
 ```
 
-See [`.env.example`](./.env.example) for a full list of variables with setup links.
+Next.js remains independently available:
 
-### 3. Set up Supabase
-
-```bash
-# Link to your project
-supabase link --project-ref your-project-ref
-
-# Push migrations (schema + RLS)
-supabase db push
-
-# Deploy edge functions
-supabase functions deploy
-
-# Set secrets (repeat for each secret from .env.example)
-supabase secrets set TURNSTILE_SECRET_KEY=... UPSTASH_REDIS_REST_URL=... ...
+```sh
+pnpm dev:next
+pnpm test:next
+pnpm build:next
+pnpm test:coverage:next
 ```
 
-### 4. Run locally
+Configure `apps/web/.env.local` for that app's environment, not the Express file.
+All-app checks are `pnpm test:all` and `pnpm build:all`. They execute both apps;
+they do not launch either website or deploy anything. There is no root lint
+claim: the existing Next.js lint script is a placeholder, not a real linter.
 
-```bash
-# Web
-pnpm dev
+The root workspace declarations agree on both apps. The independent Express
+`package-lock.json` remains supported for Vercel/CI installing from that app
+directory with `npm ci --workspaces=false --include=dev` (also configured in
+Vercel/CI). Root workspace installs use only pnpm
+and `pnpm-lock.yaml`; do not create an additional root npm lockfile.
 
-# Mobile
-pnpm mobile:start
+## Build and maintenance boundaries
+
+Authored Express code is TypeScript; Eta files are server-rendered views.
+`dist/`, `public/js/`, and `public/sw.js` are build artifacts. Next.js builds to
+`.next/`. Turbo declares both artifact sets; build/test/typecheck cache reuse
+is disabled until environment and generated-file inputs have a verified cache
+policy. Credentials are process environment only, never artifact outputs.
+
+See [Express architecture](apps/web-express/docs/architecture.md) for route,
+feature-service, database, browser and test ownership. This is an incremental
+cleanup, not a framework rewrite or a claim of complete client strictness.
+
+## Edge Function tests
+
+Install Deno 2, then run the mocked security/notification suite:
+
+```sh
+deno test --allow-env --config supabase/functions/deno.json supabase/functions/_shared/security.test.ts supabase/functions/_shared/notifications.test.ts
 ```
 
----
+Local fixture/mocked tests do not prove hosted Auth, Storage, RLS, concurrency,
+mail delivery, backups or production settings.
 
-## Edge functions
+## Release safety
 
-| Function | Auth | Rate limit | Purpose |
-|---|---|---|---|
-| `submit-feedback` | optional | 5/hour per IP | Create a submission with optional attachments |
-| `lookup-by-tracking-code` | none | 10/15 min per IP | Anonymous status lookup |
-| `review-submission` | moderator/admin | — | Change submission status + notify |
-| `vote-submission` | optional | 10/hour per IP | Cast a vote on a public idea |
-| `register-push-token` | required | — | Save Expo push token for notifications |
-| `archive-old-submissions` | cron secret | — | Anonymise resolved/rejected submissions per retention policy |
+`ci.yml` checks Express and Next.js independently and runs Deno tests.
+`deploy.yml` requires manual dispatch from `main`, release checks and the
+configured GitHub production environment approval before hosted changes.
+Environment reviewers and Vercel auto-deploy settings require separate operator
+verification. Do not deploy from a successful local build alone.
 
-### Setting the archive cron
+Use the [guided workflow rollout](apps/web-express/docs/guided-workflows.md):
+inventory remote migration versions, rehearse through migration
+`202610130010_guided_workflows.sql` in a separate staging project, verify staff
+acceptance, deploy compatible code/database functions, then enable the central
+rollout control explicitly. Preserve audit/history data during rollback. No
+production migration or enforcement change is performed by local scripts.
 
-Schedule `archive-old-submissions` to run daily using any cron service (Supabase Cron, GitHub Actions scheduled workflow, etc.):
-
-```
-POST https://your-project.supabase.co/functions/v1/archive-old-submissions
-Authorization: Bearer YOUR_ARCHIVE_CRON_SECRET
-```
-
----
-
-## Testing
-
-```bash
-# Web unit tests (Vitest + jsdom)
-pnpm test
-
-# Web with coverage
-pnpm test:coverage
-
-# Deno edge function tests
-deno test --allow-env supabase/functions/_shared/security.test.ts
-
-# TypeScript check (all packages)
-pnpm typecheck
-```
-
----
-
-## Deployment
-
-Deployment is fully automated via GitHub Actions:
-
-- **`ci.yml`** — runs on every push and PR: typecheck → lint → test → build
-- **`deploy.yml`** — runs on merge to `main`: migrations → edge functions → Vercel → EAS build
-
-### Required GitHub repository secrets
-
-| Secret | Where to get it |
-|---|---|
-| `SUPABASE_ACCESS_TOKEN` | [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) |
-| `SUPABASE_DB_PASSWORD` | Supabase project settings |
-| `SUPABASE_PROJECT_ID` | Supabase project reference ID |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile dashboard |
-| `NEXT_PUBLIC_SENTRY_DSN` | Sentry → Project → Settings → Client Keys |
-| `SENTRY_AUTH_TOKEN` | Sentry → Settings → Auth Tokens |
-| `SENTRY_ORG` | Your Sentry organisation slug |
-| `SENTRY_PROJECT` | Your Sentry project slug |
-| `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
-| `VERCEL_ORG_ID` | Vercel project settings |
-| `VERCEL_PROJECT_ID` | Vercel project settings |
-| `EXPO_TOKEN` | [expo.dev/accounts/.../settings/access-tokens](https://expo.dev) |
-
----
-
-## Security
-
-- All write operations go through Edge Functions using the service role key — no direct client writes
-- Turnstile verifies every submission and vote at the server side
-- Upstash sliding-window rate limits prevent brute force
-- RLS policies enforce read access rules for every table
-- Attachments are validated by magic-byte signature before storage
-- Anonymous tracking codes are stored as SHA-256 hashes
-- Retention policy anonymises old resolved/rejected submissions automatically
-
----
-
-## PWA installation
-
-The web app is installable as a PWA. Browsers that support `beforeinstallprompt` will show an install prompt. On iOS, use **Safari → Share → Add to Home Screen**.
-
-The service worker caches static assets for offline use and queues feedback submissions locally when the device is offline.
+For Vercel, select `apps/web-express` as the project root for the Express website,
+not `apps/web`. Configure environment values in the hosting platform; never
+place a service-role key in public browser configuration.

@@ -2,16 +2,21 @@
   "name": "suggfeed",
   "private": true,
   "packageManager": "pnpm@9.15.0",
+  "engines": { "node": "22.x" },
   "scripts": {
-    "dev": "pnpm --filter web dev",
-    "build": "pnpm --filter web build",
-    "lint": "pnpm --filter web lint",
+    "dev": "pnpm dev:express",
+    "dev:express": "pnpm --filter suggfeed-express dev",
+    "dev:client": "pnpm --filter suggfeed-express dev:client",
+    "dev:next": "pnpm --filter web dev",
+    "build": "turbo run build --filter=suggfeed-express",
+    "build:next": "turbo run build --filter=web",
+    "build:all": "turbo run build",
+    "start": "pnpm --filter suggfeed-express start",
     "typecheck": "turbo typecheck",
-    "test": "pnpm --filter web exec vitest run",
-    "test:coverage": "pnpm --filter web exec vitest run --coverage",
-    "mobile:start": "pnpm --filter mobile start",
-    "mobile:android": "pnpm --filter mobile android",
-    "mobile:ios": "pnpm --filter mobile ios"
+    "test": "pnpm --filter suggfeed-express test",
+    "test:next": "pnpm --filter web test",
+    "test:all": "turbo run test",
+    "test:coverage:next": "pnpm --filter web test:coverage"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
@@ -19,7 +24,7 @@
   },
   "workspaces": [
     "apps/web",
-    "apps/mobile",
+    "apps/web-express",
     "packages/*"
   ]
 }

@@ -1,8 +1,9 @@
 "use strict";
 (() => {
-    const container = document.getElementById('toast-container');
-    if (!container)
+    const element = document.getElementById('toast-container');
+    if (!element)
         return;
+    const container = element;
     const pending = [];
     const visible = new Map();
     const icons = {

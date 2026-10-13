@@ -26,7 +26,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: apps/web-express/package-lock.json
-      - run: npm ci --include=dev
+      - run: npm ci --workspaces=false --include=dev
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
@@ -93,53 +93,3 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-
-  # ── Expo EAS mobile build ────────────────────────────────────────────────────
-  deploy-mobile:
-    name: Build mobile → EAS
-    runs-on: ubuntu-latest
-    environment: production
-    needs: supabase-migrate
-
-    steps:
-      - name: Check Expo Token
-        id: check_token
-        run: |
-          if [ -z "$EXPO_TOKEN" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "EXPO_TOKEN secret not configured — skipping EAS mobile build."
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-
-      - uses: actions/checkout@v4
-        if: steps.check_token.outputs.skip != 'true'
-
-      - uses: pnpm/action-setup@v4
-        if: steps.check_token.outputs.skip != 'true'
-
-      - uses: actions/setup-node@v4
-        if: steps.check_token.outputs.skip != 'true'
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        if: steps.check_token.outputs.skip != 'true'
-        run: pnpm install --frozen-lockfile
-
-      - uses: expo/expo-github-action@v8
-        if: steps.check_token.outputs.skip != 'true'
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Build (all platforms)
-        if: steps.check_token.outputs.skip != 'true'
-        run: eas build --platform all --non-interactive --no-wait
-        working-directory: apps/mobile
-        env:
-          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}

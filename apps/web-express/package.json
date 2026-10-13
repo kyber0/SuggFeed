@@ -13,8 +13,9 @@
     "dev": "node --watch --use-system-ca -r ts-node/register src/server.ts",
     "build:server": "tsc -p tsconfig.json",
     "build:sw": "tsc -p tsconfig.sw.json",
-    "build:client": "npm run build:vendor && tsc -p tsconfig.client.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.sw.json --noEmit && tsc -p tsconfig.client.json --noEmit && tsc -p tsconfig.api.json && tsc -p tsconfig.tests.json",
+    "build:client": "npm run build:vendor && npm run typecheck:client:strict && tsc -p tsconfig.client.json",
+    "typecheck:client:strict": "tsc -p tsconfig.client.strict.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.sw.json --noEmit && tsc -p tsconfig.client.json --noEmit && npm run typecheck:client:strict && tsc -p tsconfig.api.json && tsc -p tsconfig.tests.json",
     "build": "npm run build:server && npm run build:sw && npm run build:client && tsc -p tsconfig.api.json",
     "start": "node --use-system-ca dist/server.js",
     "build:vendor": "node scripts/build-vendor.cjs"

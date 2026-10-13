@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.client.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "useUnknownInCatchVariables": true
+  },
+  "include": [
+    "src/client/globals.d.ts",
+    "src/client/theme-init.ts",
+    "src/client/theme.ts",
+    "src/client/toast.ts"
+  ]
+}

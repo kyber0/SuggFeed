@@ -24,7 +24,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: apps/web-express/package-lock.json
-      - run: npm ci --include=dev
+      - run: npm ci --workspaces=false --include=dev
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
@@ -84,29 +84,4 @@ jobs:
           deno-version: v2.x
 
       - name: Run shared utility tests
-        run: deno test --allow-env --config supabase/functions/deno.json supabase/functions/_shared/security.test.ts
-
-  # ── Mobile: typecheck ────────────────────────────────────────────────────────
-  mobile:
-    name: Mobile — typecheck
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: .
-
-      - name: Typecheck
-        run: npx tsc --noEmit
+        run: deno test --allow-env --config supabase/functions/deno.json supabase/functions/_shared/security.test.ts supabase/functions/_shared/notifications.test.ts
