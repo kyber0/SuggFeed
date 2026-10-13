@@ -21,6 +21,7 @@
 /* ── 2. Core UI Components & Global Shell ── */
 @import url('./modules/components.css?v=20261011-feed');
 @import url('./modules/auth.css');
+@import url('./modules/branding.css?v=20261013-sf');
 @import url('./modules/submit.css');
 
 /* ── 3. Page & Feature Modules ── */

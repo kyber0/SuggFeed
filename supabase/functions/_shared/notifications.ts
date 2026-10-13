@@ -73,9 +73,7 @@ function renderSuggFeedEmail({
               <table role="presentation" border="0" cellspacing="0" cellpadding="0" align="center">
                 <tr>
                   <td style="vertical-align: middle; padding-right: 10px;">
-                    <div style="width: 36px; height: 36px; background-color: #f59e0b; border-radius: 8px; text-align: center; line-height: 36px; font-weight: 900; color: #0b3857; font-size: 19px;">
-                      S
-                    </div>
+                    <img src="${escapeHtml(getSiteUrl().replace(/\/$/, ''))}/branding/sf-monogram.png" width="66" height="44" alt="SF" style="display:block;border:0;" />
                   </td>
                   <td style="vertical-align: middle; text-align: left;">
                     <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; line-height: 1.1;">

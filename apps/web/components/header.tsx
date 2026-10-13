@@ -7,6 +7,7 @@ import { useAuth } from "./auth-context";
 import { AuthModal } from "./auth-modal";
 import { ProfilePanel } from "./profile-panel";
 import { ThemeToggle } from "./theme-toggle";
+import { BrandLogo } from "./brand-logo";
 
 export function Header() {
   const { user, isStaff, signOut, openAuthModal } = useAuth();
@@ -113,7 +114,7 @@ export function Header() {
   return (
     <>
       <header className="site-header">
-        <a className="brand" href="/">Sugg<span>Feed</span></a>
+        <a className="brand" href="/" aria-label="SuggFeed home"><BrandLogo /><span className="sf-wordmark">Sugg<span>Feed</span></span></a>
         <nav>
           <Link href="/" className={`nav-link-hide-mobile ${pathname === "/" ? "active" : ""}`}>Home</Link>
           <Link href="/feed" className={`nav-link-hide-mobile ${pathname === "/feed" ? "active" : ""}`}>Community ideas</Link>

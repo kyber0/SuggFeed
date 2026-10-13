@@ -6,6 +6,7 @@ import { useToast } from "./toast";
 import { getStoredPreference, setStoredPreference } from "../lib/cache-manager";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, X, KeyRound, ArrowLeft } from "lucide-react";
 import { useSwipeDismiss } from "../hooks/use-swipe-dismiss";
+import { BrandLogo } from "./brand-logo";
 
 /* ── Google G logo (full-color inline SVG) ── */
 function GoogleLogo() {
@@ -342,10 +343,7 @@ export function AuthModal() {
                 {/* ── Brand header ── */}
                 <div className="am-brand">
                   <div className="am-brand-icon" aria-hidden="true">
-                    <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
-                      <rect width="32" height="32" rx="10" fill="var(--navy)" />
-                      <path d="M8 12h16M8 16h10M8 20h12" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
-                    </svg>
+                    <BrandLogo className="sf-auth-logo" />
                   </div>
                   <div>
                     <h1 className="am-heading">

@@ -8,13 +8,14 @@
 (() => {
   const worker = self as unknown as ServiceWorkerGlobalScope;
 
-  const CACHE_VERSION = "cv-v11-navigation-assets";
+  const CACHE_VERSION = "cv-v12-sf-navigation-assets";
   const STATIC_CACHE = `${CACHE_VERSION}-static`;
   const MAX_STATIC_ENTRIES = 200;
 
   const STATIC_ASSETS: string[] = [
     "/offline.html",
     "/manifest.json",
+    "/branding/sf-monogram.png",
   ];
 
   // ── Install ──────────────────────────────────────────────────────────────────

@@ -53,7 +53,7 @@ test('idea drawer hides stale actions on failure and retries without adding brow
   }
   const ids = ['detail-content', 'detail-error', 'detail-status', 'detail-title', 'detail-description', 'report-idea',
     'detail-category', 'detail-meta', 'detail-response', 'detail-hint', 'detail-estimate', 'detail-link', 'follow',
-    'detail-footer', 'detail-retry', 'history-list', 'history-status', 'close'];
+    'detail-footer', 'detail-retry', 'history-list', 'history-status', 'detail-skeleton', 'history-skeleton', 'close'];
   const nodes = new Map<string, any>(ids.map(id => ['roadmap-' + id, new Element()]));
   const dialog = Object.assign(new Element(), { open: false, showModal() { this.open = true; } });
   nodes.set('roadmap-dialog', dialog);
@@ -72,12 +72,16 @@ test('idea drawer hides stale actions on failure and retries without adding brow
   assert.equal(nodes.get('roadmap-detail-content').hidden, true);
   assert.equal(nodes.get('roadmap-detail-footer').hidden, true);
   assert.equal(nodes.get('roadmap-detail-retry').hidden, false);
+  assert.equal(nodes.get('roadmap-detail-skeleton').hidden, true);
+  assert.equal(nodes.get('roadmap-history-skeleton').hidden, true);
   nodes.get('roadmap-detail-retry').listeners.get('click')();
   await new Promise<void>(resolve => setImmediate(resolve));
   assert.equal(nodes.get('roadmap-detail-title').textContent, item.title);
   assert.equal(nodes.get('roadmap-detail-category').textContent, 'Facilities');
   assert.equal(nodes.get('roadmap-detail-footer').hidden, false);
   assert.equal(nodes.get('roadmap-detail-retry').hidden, true);
+  assert.equal(nodes.get('roadmap-detail-skeleton').hidden, true);
+  assert.equal(nodes.get('roadmap-history-skeleton').hidden, true);
   assert.equal(nodes.get('roadmap-history-status').textContent, 'The school has not posted a progress update yet.');
   assert.equal(pushes, 0);
 });

@@ -1,0 +1,13 @@
+/* Supplied SF artwork: explicit dimensions prevent layout shifts. */
+.site-header .brand { display:inline-flex; align-items:center; gap:6px; line-height:1; }
+.sf-brand-logo { display:block; width:54px; height:36px; object-fit:contain; flex-shrink:0; }
+.sf-auth-logo { display:block; width:66px; height:44px; object-fit:contain; }
+.site-header .brand .sf-wordmark { color:inherit; }
+.staff-brand .sf-brand-logo { width:54px; height:36px; }
+.sf-login-logo { width:120px; height:80px; display:block; object-fit:contain; margin-bottom:12px; }
+[data-theme="dark"] .site-header .brand .sf-wordmark { color:var(--ink); }
+[data-theme="dark"] .sf-brand-logo,[data-theme="dark"] .sf-auth-logo { background:#f8fafc; border-radius:7px; }
+@media(max-width:800px) {
+  .site-header .brand { gap:2px; }
+  .site-header .sf-brand-logo { width:42px; height:28px; }
+}

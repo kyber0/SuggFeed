@@ -11,17 +11,17 @@ import { SubmitIdeaPanel } from "../components/submit-idea-panel";
 export const metadata: Metadata = {
   title: "SuggFeed",
   description: "A safer way to make your school better. Share feedback anonymously and follow its progress.",
-  manifest: "/manifest.json",
+  manifest: "/manifest.json?v=20261013-sf",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "SuggFeed" },
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/branding/favicon.ico", sizes: "any" },
+      { url: "/branding/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/branding/icon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/branding/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-    shortcut: ["/favicon.ico"],
+    apple: [{ url: "/branding/icon-180.png", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/branding/favicon.ico"],
   },
 };
 

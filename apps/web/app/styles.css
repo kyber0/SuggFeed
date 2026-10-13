@@ -182,7 +182,13 @@ main { max-width: 1200px; margin: auto; }
 .site-header.header-reveal {
   animation: header-slide-down 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.site-header .brand { font-size: 22px; font-weight: 800; color: var(--navy); flex-shrink: 0; }
+.site-header .brand { display:inline-flex; align-items:center; gap:6px; font-size: 22px; font-weight: 800; color: var(--navy); flex-shrink: 0; }
+.sf-brand-logo { display:block; width:54px; height:36px; object-fit:contain; flex-shrink:0; }
+.sf-auth-logo { display:block; width:66px; height:44px; object-fit:contain; }
+.site-header .brand .sf-wordmark { color:inherit; }
+[data-theme="dark"] .site-header .brand .sf-wordmark { color:var(--ink); }
+[data-theme="dark"] .sf-brand-logo,[data-theme="dark"] .sf-auth-logo { background:#f8fafc; border-radius:7px; }
+@media(max-width:800px) { .site-header .brand { gap:2px; } .site-header .sf-brand-logo { width:42px; height:28px; } }
 .site-header .brand span { color: var(--accent); }
 .site-header nav { display: flex; align-items: center; gap: var(--sp-5); margin-left: auto; }
 .site-header nav a, .site-header nav button {

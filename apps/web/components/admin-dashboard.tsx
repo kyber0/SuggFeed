@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState, useMemo, useRef, useCallback } from "re
 import { supabase } from "../lib/supabase";
 import { useToast } from "./toast";
 import { useAuth } from "./auth-context";
+import { BrandLogo } from "./brand-logo";
 import { loadAttachments, type AttachmentFile } from "../lib/feedback-api";
 import {
   getStoredPreference,
@@ -1102,7 +1103,7 @@ export function AdminDashboard({
       <>
         <header className="site-header">
           <a className="brand" href="/">
-            Sugg<span>Feed</span>
+            <BrandLogo /><span className="sf-wordmark">Sugg<span>Feed</span></span>
           </a>
           <nav>
             <a href="/">← Public Site</a>
@@ -1153,7 +1154,7 @@ export function AdminDashboard({
       <>
         <header className="site-header">
           <a className="brand" href="/">
-            Sugg<span>Feed</span>
+            <BrandLogo /><span className="sf-wordmark">Sugg<span>Feed</span></span>
           </a>
           <nav>
             <a href="/">← Back to Campus Site</a>
@@ -1234,7 +1235,7 @@ export function AdminDashboard({
       <>
         <header className="site-header">
           <a className="brand" href="/">
-            Sugg<span>Feed</span>
+            <BrandLogo /><span className="sf-wordmark">Sugg<span>Feed</span></span>
           </a>
           <nav>
             <a href="/">← Public Site</a>
@@ -1345,7 +1346,7 @@ export function AdminDashboard({
     <>
       <header className="site-header">
         <a className="brand" href="/">
-          Sugg<span>Feed</span>
+          <BrandLogo /><span className="sf-wordmark">Sugg<span>Feed</span></span>
         </a>
         <nav>
           <a href="/" className="nav-link-hide-mobile">

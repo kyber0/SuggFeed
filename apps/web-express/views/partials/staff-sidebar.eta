@@ -8,7 +8,7 @@
   const isFiltered = !!filters.search || filters.assignment !== 'all' || filters.priority !== 'all' || filters.overdue === 'true';
 %>
 <aside class="staff-sidebar" aria-label="Staff workspace">
-  <a class="staff-brand" href="/admin"><span class="staff-brand-mark" aria-hidden="true">S</span><span>SuggFeed<small>STAFF WORKSPACE</small></span></a>
+  <a class="staff-brand" href="/admin"><img class="sf-brand-logo" src="/branding/sf-monogram.png" width="54" height="36" alt="" /><span>SuggFeed<small>STAFF WORKSPACE</small></span></a>
   <p class="workspace-kicker">WORKSPACE</p>
   <nav aria-label="Staff navigation">
     <a class="staff-nav-item<%= activeSection === 'queue' && !isFiltered ? ' is-current' : '' %>" href="/admin" <%= activeSection === 'queue' && !isFiltered ? 'aria-current="page"' : '' %>><%~ icon('inbox') %> Review submissions <span class="staff-nav-count" id="staff-pending-count"><%= counts.pending || 0 %></span></a>

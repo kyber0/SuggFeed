@@ -4,7 +4,7 @@
 //   - Supabase API / Edge Functions: Network-first, fallback to cache
 //   - Navigation (HTML): Network-first, fallback to offline shell
 
-const CACHE_VERSION = "cv-v4";
+const CACHE_VERSION = "cv-v5-sf-brand";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
@@ -12,6 +12,7 @@ const STATIC_ASSETS = [
   "/",
   "/offline.html",
   "/manifest.json",
+  "/branding/sf-monogram.png",
 ];
 
 // ── Install ──────────────────────────────────────────────────────────────────
