@@ -132,25 +132,24 @@
          <% for (const row of workTimeline.rows) { const item = row.item; %>
           <article class="work-timeline-row" data-status="<%= item.is_blocked ? 'blocked' : item.status %>" style="--work-left:<%= row.left %>%;--work-width:<%= row.width %>%">
            <span class="work-timeline-rail" aria-hidden="true"></span>
-           <button type="button" class="work-timeline-card" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog" aria-label="<%= item.title %>. <%= item.status === 'resolved' ? 'Completed' : item.is_blocked ? 'Blocked' : 'In progress' %>. <%= row.dateLabel %>. <%= item.progress_percent === null ? 'Progress not estimated' : item.progress_percent + ' percent complete, school estimate' %>">
-            <span class="work-timeline-card-top"><span class="workspace-tag"><%= item.category %></span><span class="work-timeline-card-percent"><%= item.progress_percent === null ? 'Not estimated' : item.progress_percent + '%' %><span class="work-timeline-status-dot" aria-hidden="true"></span></span></span>
+           <button type="button" class="work-timeline-card" data-timeline-open="<%= item.id %>" aria-haspopup="dialog" aria-label="Open work record: <%= item.title %>. <%= item.status === 'resolved' ? 'Completed' : item.is_blocked ? 'Paused' : 'In progress' %>. <%= row.dateLabel %>. <%= item.progress_percent === null ? 'Progress not estimated' : item.progress_percent + ' percent complete, school estimate' %>">
+            <span class="work-timeline-card-top"><span class="work-timeline-card-state"><%= item.status === 'resolved' ? 'Completed' : item.is_blocked ? 'Paused' : 'In progress' %></span><span class="work-timeline-card-percent"><%= item.progress_percent === null ? '—' : item.progress_percent + '%' %></span></span>
             <strong><%= item.title %></strong>
             <span class="work-timeline-card-dates"><%= row.clipped ? '← ' : '' %><%= row.dateLabel %></span>
-            <% if (item.is_blocked) { %><span class="work-timeline-card-state">Work blocked</span><% } %>
            </button>
           </article>
          <% } %>
         </div>
        </div>
       </div>
-      <p class="work-timeline-scroll-hint">Scroll across the calendar · Select an idea for school updates and evidence.</p>
+      <p class="work-timeline-scroll-hint">Scroll across the calendar · Select a card to open its work record.</p>
      <% } else { %>
       <div class="roadmap-lane-empty"><h3>No work dates recorded yet</h3><p>When the school posts a Started update, its recorded work will appear on this calendar.</p></div>
      <% } %>
      <% if (workTimeline.undated.length) { %>
       <section class="work-timeline-unscheduled" aria-labelledby="work-unscheduled-title">
        <h3 id="work-unscheduled-title">Not scheduled or outside this window</h3>
-       <ul><% for (const { item, reason } of workTimeline.undated) { %><li><button type="button" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button><span><%= reason %></span></li><% } %></ul>
+       <ul><% for (const { item, reason } of workTimeline.undated) { %><li><button type="button" data-timeline-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button><span><%= reason %></span></li><% } %></ul>
       </section>
      <% } %>
     </section>
@@ -296,26 +295,11 @@
        </div>
        <div class="roadmap-timeline-cards">
         <% for (const item of monthGroup.items) { %>
-         <article class="roadmap-timeline-card" data-roadmap-id="<%= item.id %>">
-          <div class="roadmap-timeline-you-said">
-           <div class="roadmap-timeline-tag-row">
-            <span class="roadmap-timeline-side-label">You said</span>
-            <span class="workspace-tag"><%= item.category %></span>
-           </div>
-           <h4><button type="button" data-roadmap-open="<%= item.id %>" aria-haspopup="dialog"><%= item.title %></button></h4>
-           <p><%= item.description %></p>
-           <div class="roadmap-timeline-meta">
-            <span>↑ <%= item.votes %> votes</span> · <time datetime="<%= item.created_at %>">Suggested <%= formatManilaDate(item.created_at) %></time>
-           </div>
-          </div>
-          <div class="roadmap-timeline-we-did">
-           <div class="roadmap-timeline-tag-row">
-            <span class="roadmap-timeline-side-label roadmap-timeline-side-label--school">We did</span>
-            <span class="workspace-status" data-status="resolved">Completed</span>
-           </div>
-           <p class="roadmap-timeline-response"><%= item.outcome || 'Marked completed; an outcome summary has not been posted.' %></p>
-           <span class="roadmap-timeline-completed-date"><%= completionLabel(item) %></span>
-          </div>
+         <article class="roadmap-timeline-card roadmap-completion-card" data-roadmap-id="<%= item.id %>">
+          <div class="roadmap-completion-tags"><span class="workspace-tag"><%= item.category %></span><span class="workspace-status" data-status="resolved">Completed</span></div>
+          <h4><button type="button" data-timeline-open="<%= item.id %>" aria-haspopup="dialog" aria-label="Open completion record: <%= item.title %>"><%= item.title %></button></h4>
+          <p class="roadmap-completion-outcome"><%= item.outcome || 'Marked completed; an outcome summary has not been posted.' %></p>
+          <div class="roadmap-completion-meta"><span><%= completionLabel(item) %></span><span>View record →</span></div>
          </article>
         <% } %>
        </div>
@@ -353,7 +337,7 @@
    <button type="button" class="workspace-icon-button" id="roadmap-close" aria-label="Close idea details">×</button>
   </header>
   <div class="workspace-dialog-body">
-   <div class="roadmap-detail-tags"><span class="workspace-status" id="roadmap-detail-status"></span><span id="roadmap-detail-category"></span></div>
+   <div class="roadmap-detail-tags"><span class="workspace-detail-meta">Current stage</span><span class="workspace-status" id="roadmap-detail-status"></span><span id="roadmap-detail-category"></span></div>
    <h2 id="roadmap-detail-title"></h2>
    <p id="roadmap-detail-meta" class="workspace-detail-meta"></p>
    <p id="roadmap-detail-error" class="workspace-message" role="status"></p>
@@ -363,7 +347,7 @@
     <div class="roadmap-detail-overview">
     <div id="roadmap-detail-blocked-alert" class="roadmap-detail-blocked-alert" hidden>
      <strong>⚠️ Work is currently paused</strong>
-     <p id="roadmap-detail-blocked-reason">The school is waiting on external dependencies.</p>
+     <p id="roadmap-detail-blocked-reason">Check the latest school update for the reason.</p>
     </div>
     <div id="roadmap-detail-progress-wrap" class="roadmap-detail-progress-bar-wrap" hidden>
      <div class="roadmap-detail-progress-bar-header">
@@ -412,7 +396,9 @@
     <p class="workspace-detail-meta">Follow for <a href="/notifications">in-app updates</a>. No email or push alerts.</p>
   </footer>
  </dialog>
+ <%~ include('partials/work-record', it) %>
 </main>
 <script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items || []).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/roadmap.js?v=20261013-responsive"></script>
+<script defer src="/js/roadmap.js?v=20261013-work-record"></script>
+<script defer src="/js/roadmap-timeline.js?v=20261013-work-record"></script>
 <script defer src="/js/roadmap-views.js?v=20261012-features"></script>

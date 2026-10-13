@@ -9,6 +9,9 @@
 %>
 <aside class="staff-sidebar" aria-label="Staff workspace">
   <a class="staff-brand" href="/admin"><img class="sf-brand-logo" src="/branding/sf-monogram.png" width="54" height="36" alt="" /><span>SuggFeed<small>STAFF WORKSPACE</small></span></a>
+  <details class="staff-navigation-disclosure" open>
+  <summary>Workspace menu</summary>
+  <div class="staff-navigation-body">
   <p class="workspace-kicker">WORKSPACE</p>
   <nav aria-label="Staff navigation">
     <a class="staff-nav-item<%= activeSection === 'queue' && !isFiltered ? ' is-current' : '' %>" href="/admin" <%= activeSection === 'queue' && !isFiltered ? 'aria-current="page"' : '' %>><%~ icon('inbox') %> Review submissions <span class="staff-nav-count" id="staff-pending-count"><%= counts.pending || 0 %></span></a>
@@ -33,4 +36,6 @@
   <% } %><% if(!it.savedViews?.length) { %><p class="staff-sidebar-hint">Save a filter combination for quick access. Your views are private to you.</p><% } %></div>
   <% } %>
   <div class="staff-identity"><span class="staff-brand-mark" aria-hidden="true"><%= (it.user?.display_name || 'S').slice(0,1).toUpperCase() %></span><div><strong><%= it.user?.display_name || 'School staff' %></strong><small><%= it.user?.role==='admin' ? 'Administrator' : 'Moderator' %></small></div></div>
+  </div>
+  </details>
 </aside>

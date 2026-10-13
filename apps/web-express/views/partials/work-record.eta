@@ -1,0 +1,26 @@
+<dialog id="work-record-dialog" class="work-record-dialog" aria-labelledby="work-record-title">
+ <header class="work-record-header">
+  <div><span class="workspace-kicker" id="work-record-context-label">WORK CALENDAR</span><p id="work-record-panel-label">Work record</p></div>
+  <button type="button" class="workspace-icon-button" id="work-record-close" aria-label="Close work record" autofocus>×</button>
+ </header>
+ <div class="work-record-body">
+  <div class="roadmap-detail-tags"><span class="workspace-status" id="work-record-stage"></span><span id="work-record-category"></span></div>
+  <h2 id="work-record-title">Work record</h2>
+  <p id="work-record-message" role="status" aria-live="polite"></p>
+  <button type="button" id="work-record-retry" class="workspace-button" hidden>Try again</button>
+  <div id="work-record-skeleton" class="detail-loading-skeleton" hidden aria-hidden="true"><span class="skeleton-bar skeleton-bar--wide"></span><span class="skeleton-bar"></span><span class="skeleton-bar skeleton-bar--short"></span></div>
+  <div id="work-record-content" hidden>
+   <section class="work-record-summary" aria-labelledby="work-record-summary-title">
+    <h3 id="work-record-summary-title">Current stage</h3>
+    <ol class="work-record-stages" id="work-record-stages"><li data-work-stage="approved">Planned</li><li data-work-stage="in_progress">In progress</li><li data-work-stage="resolved">Completed</li></ol>
+    <dl class="work-record-dates"><div><dt>Recorded start</dt><dd id="work-record-start"></dd></div><div><dt>Recorded completion</dt><dd id="work-record-end"></dd></div><div><dt>School estimate</dt><dd id="work-record-percent"></dd></div><div><dt>Latest public update</dt><dd id="work-record-updated"></dd></div></dl>
+    <p class="workspace-detail-meta">Work dates reflect school records. Estimates may change.</p>
+   </section>
+   <section class="work-record-latest" id="work-record-outcome-section" aria-labelledby="work-record-outcome-title" hidden><h3 id="work-record-outcome-title">School outcome</h3><p id="work-record-outcome"></p></section>
+   <section class="work-record-latest" aria-labelledby="work-record-latest-title"><h3 id="work-record-latest-title">Latest school update</h3><p id="work-record-latest-body"></p><p id="work-record-next" hidden></p></section>
+   <section aria-labelledby="work-record-history-title"><div class="work-record-section-heading"><h3 id="work-record-history-title">Work history &amp; evidence</h3><span id="work-record-history-count"></span></div><p id="work-record-empty" hidden>No public work updates have been posted yet.</p><ol class="work-record-history" id="work-record-history"></ol></section>
+   <details class="work-record-context"><summary>Original idea</summary><p id="work-record-description"></p></details>
+  </div>
+ </div>
+ <footer class="work-record-footer"><a id="work-record-discussion" class="workspace-button workspace-button--primary" href="/roadmap" hidden>Open idea &amp; discussion →</a><span class="workspace-detail-meta">Public school records</span></footer>
+</dialog>
