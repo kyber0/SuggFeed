@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { supabaseService } from './supabase';
 import { ENGAGEMENT_UUID } from './engagement';
 import { digestConsent, filterDigestEntries } from './digest-preferences';
+import { digestHtml } from './digest-email';
 
 export function digestEnabled() {
   return process.env.WEEKLY_DIGEST_ENABLED==='true' && !!process.env.RESEND_API_KEY && !!process.env.RESEND_FROM_EMAIL &&
@@ -62,7 +63,7 @@ export async function deliverWeeklyDigests(transport:typeof fetch=fetch) {
               state='uncertain';
               try {
                 const response=await transport('https://api.resend.com/emails',{method:'POST',signal:controller.signal,headers:{Authorization:'Bearer '+process.env.RESEND_API_KEY,'Content-Type':'application/json','Idempotency-Key':'weekly-digest-'+job.id},
-                  body:JSON.stringify({from:process.env.RESEND_FROM_EMAIL,to:[user.email],subject:'Your weekly SuggFeed school updates',text:digestText(eligible,origin,unsubscribe.href),headers:{'List-Unsubscribe':`<${unsubscribe.href}>`}})});
+                  body:JSON.stringify({from:process.env.RESEND_FROM_EMAIL,to:[user.email],subject:'Your weekly SuggFeed school updates',text:digestText(eligible,origin,unsubscribe.href),html:digestHtml(eligible,origin,unsubscribe.href),headers:{'List-Unsubscribe':`<${unsubscribe.href}>`}})});
                 state=response.ok ? 'delivered' : 'failed';
               }finally{clearTimeout(timer);}
               }

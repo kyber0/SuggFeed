@@ -150,22 +150,7 @@
   });
 
   function sfToast(msg, type) {
-    var r = (document.getElementById('sf-toast-region') as HTMLElement);
-    if (!r) {
-      alert(msg);
-      return;
-    }
-    var t = document.createElement('div');
-    t.className = 'sf-toast sf-toast--' + (type || 'info');
-    var body = document.createElement('div');
-    body.className = 'sf-toast__body';
-    var message = document.createElement('div');
-    message.className = 'sf-toast__message';
-    message.textContent = msg;
-    body.appendChild(message);
-    t.appendChild(body);
-    r.appendChild(t);
-    setTimeout(function () { t.remove(); }, 5000);
+    window.sfToast?.(msg, type);
   }
 
   // Google OAuth

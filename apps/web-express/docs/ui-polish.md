@@ -1,0 +1,49 @@
+# Scrollbars, notifications and email presentation
+
+## Scrollbars
+
+The shared UI stylesheet sets rounded scrollbar thumbs for the page and nested
+scroll areas, with separate light and dark colors. The page reserves scrollbar
+space to reduce shifts when opening a dialog. System colors take over in forced
+color mode. The auth card now shows a scrollbar when its content overflows.
+
+## Toast notifications
+
+All Express toast callers, including sign-in, use the same notification stack.
+Three notices are shown at once; further notices wait, and exact duplicates are
+ignored while visible or queued. Information and success notices last six
+seconds, warnings last nine seconds, and errors remain until dismissed. Timers
+and progress pause on hover, keyboard focus, or a hidden browser tab. Dismiss
+buttons support keyboard focus; mobile notices sit above the bottom navigation.
+Messages and titles are inserted as text. Routine notices use polite status
+announcements; errors use alerts. Motion follows the reduced-motion preference.
+
+## Existing custom emails
+
+The existing authentication designs live in `supabase/templates`. Review and
+comment notifications share `supabase/functions/_shared/notifications.ts`.
+These designs now include inbox preview text, responsive spacing, dark-mode
+styles where supported by the mail client, and a solid header color fallback.
+Authentication links and Supabase template variables are preserved.
+
+Weekly digests now send matching HTML alongside their existing plain text.
+The renderer escapes public notification fields and requires HTTPS links.
+Delivery still uses the existing opt-in, pause, kind filters, verified addresses,
+claiming and idempotency controls. The footer links to email preferences and the
+existing signed unsubscribe flow.
+
+[Open the sample weekly digest](email-previews/weekly-digest.html). It contains
+fictional school updates and no real account data. Its unsubscribe link points
+to preferences so opening the preview cannot unsubscribe anyone.
+
+## Publishing
+
+The web changes take effect with the next Express app deployment. Shared review
+and comment email changes require deployment of the Edge Functions that import
+the shared notification helper. Authentication template changes must be published
+under Supabase Authentication email templates; committing these files does not
+update hosted Auth settings. This change does not send messages or enable a
+scheduler, email opt-in, or a new delivery provider.
+
+Compilation: `npm run build` in `apps/web-express`. Automated tests were not run
+for this UI refinement.

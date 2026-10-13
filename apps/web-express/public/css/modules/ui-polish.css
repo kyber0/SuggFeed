@@ -1,0 +1,50 @@
+/* Shared scroll surfaces and notification presentation. */
+:root { --scroll-thumb:#829ab1; --scroll-thumb-hover:#627d98; --scroll-track:#f0f4f8; }
+[data-theme="dark"] { --scroll-thumb:#52677c; --scroll-thumb-hover:#829ab1; --scroll-track:#15202d; }
+html { scrollbar-gutter:stable; scrollbar-color:var(--scroll-thumb) var(--scroll-track); }
+* { scrollbar-color:var(--scroll-thumb) transparent; }
+html::-webkit-scrollbar { width:12px; height:12px; }
+::-webkit-scrollbar { width:8px; height:8px; }
+::-webkit-scrollbar-track { background:transparent; }
+html::-webkit-scrollbar-track { background:var(--scroll-track); }
+::-webkit-scrollbar-thumb { background:var(--scroll-thumb); border:2px solid transparent; background-clip:padding-box; border-radius:999px; }
+::-webkit-scrollbar-thumb:hover { background-color:var(--scroll-thumb-hover); }
+::-webkit-scrollbar-corner { background:transparent; }
+/* Override older per-page colors while retaining their scroll sizing. */
+:is(.detail-col,.detail-comments-scrollable,.staff-lane-cards,.staff-flow-board,.community-feed-sidebar,.community-feed-right,.work-timeline-scroll,.staff-review-scroll,.workspace-dialog-body,.am-card) { scrollbar-color:var(--scroll-thumb) transparent; }
+:is(.detail-col,.detail-comments-scrollable,.staff-lane-cards,.staff-flow-board)::-webkit-scrollbar-thumb { background-color:var(--scroll-thumb); }
+.toast-region { bottom:calc(24px + env(safe-area-inset-bottom)); max-width:400px; }
+.sf-toast { background:var(--surface); color:var(--ink); border:1px solid var(--line); border-inline-start:4px solid var(--toast-accent); box-shadow:var(--shadow-lg); backdrop-filter:none; padding:16px 12px 18px 16px; animation:sf-toast-in .2s ease-out both; }
+.sf-toast--info { --toast-accent:#2563eb; }
+.sf-toast--success { --toast-accent:#11845b; }
+.sf-toast--warning { --toast-accent:#9c6500; }
+.sf-toast--error { --toast-accent:#c2412c; }
+[data-theme="dark"] .sf-toast--info { --toast-accent:#93c5fd; }
+[data-theme="dark"] .sf-toast--success { --toast-accent:#6ee7b7; }
+[data-theme="dark"] .sf-toast--warning { --toast-accent:#fcd34d; }
+[data-theme="dark"] .sf-toast--error { --toast-accent:#fca5a5; }
+.sf-toast .sf-toast__icon { color:var(--toast-accent); padding:5px; background:var(--bg-2); border-radius:8px; }
+.sf-toast__body { min-width:0; align-self:center; }
+.sf-toast__title { color:var(--ink); font-size:13px; }
+.sf-toast__message { color:var(--ink-2); overflow-wrap:anywhere; font-size:13px; line-height:1.5; }
+.sf-toast .sf-toast__progress { background:var(--toast-accent); height:3px; }
+.sf-toast__close { color:var(--muted); width:36px; height:36px; justify-content:center; border-radius:8px; margin-top:0; }
+.sf-toast__close:hover { color:var(--ink); background:var(--bg-2); }
+.sf-toast__close:focus-visible { outline:2px solid var(--toast-accent); outline-offset:2px; }
+.sf-toast--leaving { animation:sf-toast-out .2s ease both; pointer-events:none; }
+@media(max-width:768px) {
+  .toast-region { left:12px; right:12px; width:auto; max-width:none; bottom:calc(80px + env(safe-area-inset-bottom)); }
+  .sf-toast__close { width:44px; height:44px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  html { scroll-behavior:auto; }
+  .sf-toast,.sf-toast--leaving { animation:none; }
+}
+@media(forced-colors:active) {
+  html,* { scrollbar-color:auto; }
+  .sf-toast { border:1px solid CanvasText; background:Canvas; color:CanvasText; }
+  .sf-toast .sf-toast__icon,.sf-toast__title,.sf-toast__message,.sf-toast__close { color:CanvasText; }
+}
+
+.am-card { scrollbar-width:thin; }
+.am-card::-webkit-scrollbar { display:block; width:8px; }

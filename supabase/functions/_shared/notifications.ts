@@ -42,16 +42,34 @@ function renderSuggFeedEmail({
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <style>
+    @media (max-width: 600px) {
+      .email-shell { padding: 16px 8px !important; }
+      .email-content { padding: 26px 20px !important; }
+      .email-card a { overflow-wrap: anywhere; }
+    }
+    @media (prefers-color-scheme: dark) {
+      body, .email-shell { background-color: #101923 !important; }
+      .email-card { background-color: #182535 !important; border-color: #34465b !important; }
+      .email-content h1 { color: #edf2f7 !important; }
+      .email-content > p { color: #b9c9da !important; }
+      .email-footer { background-color: #13202e !important; border-color: #34465b !important; }
+      .email-footer p { color: #b9c9da !important; }
+    }
+  </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #0f172a;">
-  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 36px 12px;">
+  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; mso-hide: all;">${escapeHtml(title)}. Open SuggFeed to see the details.</div>
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="email-shell" style="background-color: #f1f5f9; padding: 36px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 540px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 16px rgba(11, 56, 87, 0.06);">
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="email-card" style="max-width: 540px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 16px rgba(11, 56, 87, 0.06);">
           
           <!-- Header Banner -->
           <tr>
-            <td style="background: linear-gradient(135deg, #0b3857 0%, #1e40af 100%); padding: 28px 24px; text-align: center;">
+            <td style="background-color: #0b3857; background: linear-gradient(135deg, #0b3857 0%, #1e40af 100%); padding: 28px 24px; text-align: center;">
               <table role="presentation" border="0" cellspacing="0" cellpadding="0" align="center">
                 <tr>
                   <td style="vertical-align: middle; padding-right: 10px;">
@@ -74,7 +92,7 @@ function renderSuggFeedEmail({
 
           <!-- Main Body -->
           <tr>
-            <td style="padding: 32px 28px;">
+            <td class="email-content" style="padding: 32px 28px;">
               ${
                 badgeText
                   ? `<div style="display: inline-block; padding: 4px 12px; background-color: ${badgeBg}; color: ${badgeColor}; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 14px;">
@@ -101,7 +119,7 @@ function renderSuggFeedEmail({
                   ? `<table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 16px;">
                       <tr>
                         <td align="center" style="border-radius: 8px; background: #0b3857;">
-                          <a href="${ctaUrl}" target="_blank" style="display: inline-block; padding: 12px 24px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 8px; letter-spacing: 0.01em;">
+                          <a href="${escapeHtml(ctaUrl)}" target="_blank" style="display: inline-block; padding: 12px 24px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 8px; letter-spacing: 0.01em;">
                             ${escapeHtml(ctaText)} &rarr;
                           </a>
                         </td>
@@ -114,7 +132,7 @@ function renderSuggFeedEmail({
 
           <!-- Footer -->
           <tr>
-            <td style="padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+            <td class="email-footer" style="padding: 20px 28px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
               <p style="margin: 0 0 4px; font-size: 12px; color: #64748b;">
                 ${footerNote || "You received this email because email notifications are enabled for your SuggFeed account."}
               </p>
