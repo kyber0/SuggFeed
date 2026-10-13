@@ -1,4 +1,5 @@
 import {supabaseService} from './supabase';
+import {invalidateCache} from './data';
 import {ProgressError, validateProgress, manilaToday} from './progress';
 import {UUID,validDate} from './staff-workspace';
 export const WORK_ACTIONS=['approve','decline','start','update','milestone','pause','resume','complete','correction','reopen','withdraw'] as const;
@@ -27,6 +28,7 @@ export async function performAction(id:string,actor:string,body:unknown){
     p_action:action,p_body:input.body,p_occurred_on:input.occurredOn,p_percent:input.percent,p_blocked_reason:input.blockedReason,p_next_step:input.nextStep,
     p_office_label:(process.env.SCHOOL_OFFICE_LABEL || 'School administration').slice(0,80),p_notify:input.notify});
   if(error)workflowError(error);
+  invalidateCache(`submission_${id}`);invalidateCache('feed_');invalidateCache('roadmap_');
   return {replayed:data?.replayed===true,submission:data.submission,workflow:data.workflow};
 }
 export function validateRepair(body:any){
@@ -38,5 +40,7 @@ export function validateRepair(body:any){
 }
 export async function repairDates(id:string,actor:string,body:any){
   const b=validateRepair(body);const {data,error}=await supabaseService.rpc('repair_work_dates',{p_submission_id:id,p_actor_id:actor,p_request_id:b.requestId,p_expected_updated_at:b.updatedAt,p_started_on:b.startedOn,p_completed_on:b.completedOn,p_source:b.source,p_reason:b.reason});
-  if(error)workflowError(error);return {replayed:data?.replayed===true,submission:data.submission,workflow:data.workflow};
+  if(error)workflowError(error);
+  invalidateCache(`submission_${id}`);invalidateCache('feed_');invalidateCache('roadmap_');
+  return {replayed:data?.replayed===true,submission:data.submission,workflow:data.workflow};
 }

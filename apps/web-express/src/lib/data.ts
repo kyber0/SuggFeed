@@ -79,27 +79,17 @@ export function sanitizeSearch(term: string): string {
 }
 
 /* ─── Category ID cache ────────────────────────────────────────────────── */
-let _categoryIdMap: Map<string, string> | null = null;
-
-export async function getCategoryIdMap(): Promise<Map<string, string>> {
-  if (_categoryIdMap) return _categoryIdMap;
-  try {
-    const { data, error } = await supabase
-      .from("categories")
-      .select("id,name")
-      .eq("is_active", true);
-    if (error) throw error;
-    const map = new Map<string, string>();
-    (data ?? []).forEach((c: { id: string; name: string }) => {
-      map.set(c.name, c.id);
-      map.set(c.name.toLowerCase(), c.id);
-    });
-    _categoryIdMap = map;
-    return _categoryIdMap;
-  } catch (err) {
-    console.error("Failed to fetch categories:", err);
-    return new Map();
-  }
+export function getCategoryIdMap(): Promise<Map<string, string>> {
+  return fetchWithCache('categories_ids',async()=>{
+    const { data, error } = await supabase.from('categories').select('id,name').eq('is_active', true);
+    if(error)throw error;
+    const map=new Map<string,string>();
+    for(const category of data ?? []){
+      map.set(category.name,category.id);
+      map.set(category.name.toLowerCase(),category.id);
+    }
+    return map;
+  },300_000).catch(()=>new Map());
 }
 
 /* ─── Select fragments ─────────────────────────────────────────────────── */

@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { sanitizeSearch } from './data';
+import { sanitizeSearch, fetchWithCache } from './data';
 
 export const ROADMAP_STAGES = ['approved', 'in_progress', 'resolved'] as const;
 export const ROADMAP_PER_STAGE = 8;
@@ -50,7 +50,12 @@ export function formatManilaDate(dateStr: string | null | undefined, options?: I
   });
 }
 
-export async function loadRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
+export function loadRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
+  // Public lists only. Detail routes retain fresh publication checks.
+  const key='roadmap_page_'+JSON.stringify(filters);
+  return fetchWithCache(key,()=>readRoadmapPage(filters),15_000);
+}
+async function readRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
   const results = await Promise.all(ROADMAP_STAGES.map(async stage => {
     const visible = filters.stage === 'all' || filters.stage === stage;
     const categoryJoin = filters.category === 'all' ? 'categories(name)' : 'categories!inner(name)';
@@ -173,7 +178,10 @@ export function buildWorkTimeline(items: Array<ReturnType<typeof publicItem>>, n
     todayLabel: formatManilaDate(now.toISOString()), weekWidth: 7 / totalDays * 100 };
 }
 
-export async function loadRecentlyCompleted(): Promise<Array<ReturnType<typeof publicItem>>> {
+export function loadRecentlyCompleted(): Promise<Array<ReturnType<typeof publicItem>>> {
+  return fetchWithCache('roadmap_recent',readRecentlyCompleted,15_000).catch(()=>[]);
+}
+async function readRecentlyCompleted(): Promise<Array<ReturnType<typeof publicItem>>> {
   const { data, error } = await supabase
     .from('submissions')
     .select(`${publicColumns},categories(name)`)
@@ -181,14 +189,16 @@ export async function loadRecentlyCompleted(): Promise<Array<ReturnType<typeof p
     .order('resolved_at', { ascending: false, nullsFirst: false })
     .order('vote_count', { ascending: false })
     .limit(3);
-  if (error) return [];
+  if (error) throw error;
   return (data || []).map(publicItem);
 }
 
-export async function loadRoadmapCategories() {
-  const { data, error } = await supabase.from('categories').select('name').order('name');
-  if (error) throw error;
-  return (data || []).map(c => c.name as string);
+export function loadRoadmapCategories() {
+  return fetchWithCache('categories_roadmap',async()=>{
+    const { data, error } = await supabase.from('categories').select('name').order('name');
+    if (error) throw error;
+    return (data || []).map(c => c.name as string);
+  },300_000);
 }
 
 export async function loadPublicRoadmapIdea(id: string) {

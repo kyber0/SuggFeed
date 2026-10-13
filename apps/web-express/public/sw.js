@@ -1,166 +1,161 @@
+"use strict";
+/// <reference lib="webworker" />
 // SuggFeed Service Worker
 // Cache strategy:
-//   - Static assets (JS/CSS/images): Cache-first, fallback to network
-//   - Supabase API / Edge Functions: Network-first, fallback to cache
+//   - Versioned static assets: Cache-first
+//   - Other static assets: Stale-while-revalidate
 //   - Navigation (HTML): Network-first, fallback to offline shell
-
-const CACHE_VERSION = "cv-v5";
-const STATIC_CACHE = `${CACHE_VERSION}-static`;
-const API_CACHE = `${CACHE_VERSION}-api`;
-
-const STATIC_ASSETS = [
-  "/offline.html",
-  "/manifest.json",
-];
-
-// ── Install ──────────────────────────────────────────────────────────────────
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) =>
-      cache.addAll(STATIC_ASSETS).catch(() => {
-        // Non-fatal: offline.html may not exist yet on first deploy
-      })
-    ).then(() => self.skipWaiting())
-  );
-});
-
-// ── Activate ─────────────────────────────────────────────────────────────────
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key.startsWith("cv-") && key !== STATIC_CACHE && key !== API_CACHE)
-          .map((key) => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
-  );
-});
-
-// ── Fetch ─────────────────────────────────────────────────────────────────────
-self.addEventListener("fetch", (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests, the sw.js file itself, and range requests (streaming/video)
-  if (request.method !== "GET") return;
-  if (url.pathname === "/sw.js") return;
-  if (request.headers.has("range")) return;
-
-  // ⚠️  IMPORTANT: Never intercept cross-origin requests (e.g. Google Fonts, Sentry CDN).
-  // The CSP connect-src directive blocks the SW from re-fetching external origins,
-  // which causes a flood of "Failed to fetch" / CSP violation errors.
-  if (url.origin !== self.location.origin) return;
-  // Never cache login callbacks, session state, private pages or API responses.
-  if (/^\/(auth|api|admin|profile)(\/|$)/.test(url.pathname)) return;
-
-  // Supabase / edge function calls — network-first
-  if (url.hostname.endsWith(".supabase.co") || url.pathname.startsWith("/functions/")) {
-    event.respondWith(networkFirst(request, API_CACHE));
-    return;
-  }
-
-  // Next.js _next/static — cache-first (long-lived hashed filenames)
-  if (url.pathname.startsWith("/_next/static/")) {
-    event.respondWith(cacheFirst(request, STATIC_CACHE));
-    return;
-  }
-
-  // HTML navigation — network-first with offline fallback
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request).catch(() =>
-        caches.match("/offline.html").then((r) => r ?? new Response("You are offline.", { headers: { "Content-Type": "text/plain" } }))
-      )
-    );
-    return;
-  }
-
-  // Everything else (same-origin assets) — stale-while-revalidate
-  event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
-});
-
-// ── Push notifications ────────────────────────────────────────────────────────
-self.addEventListener("push", (event) => {
-  if (!event.data) return;
-  const data = event.data.json();
-  event.waitUntil(
-    self.registration.showNotification(data.title ?? "SuggFeed", {
-      body: data.body ?? "",
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      data: data.data ?? {},
-      tag: data.data?.submissionId ?? "sugg-feed",
-    })
-  );
-});
-
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  const submissionId = event.notification.data?.submissionId;
-  const url = submissionId ? `/?track=${submissionId}` : "/";
-  event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
-      for (const client of windowClients) {
-        if (client.url.includes(self.location.origin) && "focus" in client) {
-          client.navigate(url);
-          return client.focus();
-        }
-      }
-      return clients.openWindow(url);
-    })
-  );
-});
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-// Cache API only supports complete responses (HTTP 200).
-// Partial content (206), redirects, and opaque (0) responses throw TypeError on cache.put().
-function isCacheable(response) {
-  return response && response.status === 200 && response.type !== "opaque";
-}
-
-// Safe wrapper — swallows any TypeError thrown by cache.put (e.g. for 206 partial responses).
-async function safeCachePut(cache, request, response) {
-  try {
-    await cache.put(request, response);
-  } catch (e) {
-    // Ignore — likely a 206 partial content response that the Cache API cannot store
-  }
-}
-
-async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  const response = await fetch(request);
-  if (isCacheable(response)) {
-    const cache = await caches.open(cacheName);
-    await safeCachePut(cache, request, response.clone());
-  }
-  return response;
-}
-
-async function networkFirst(request, cacheName) {
-  try {
-    const response = await fetch(request);
-    if (isCacheable(response)) {
-      const cache = await caches.open(cacheName);
-      await safeCachePut(cache, request, response.clone());
-    }
-    return response;
-  } catch {
-    return caches.match(request) ?? new Response(JSON.stringify({ error: "You are offline" }), {
-      status: 503,
-      headers: { "Content-Type": "application/json" },
+(() => {
+    const worker = self;
+    const CACHE_VERSION = "cv-v11-navigation-assets";
+    const STATIC_CACHE = `${CACHE_VERSION}-static`;
+    const MAX_STATIC_ENTRIES = 200;
+    const STATIC_ASSETS = [
+        "/offline.html",
+        "/manifest.json",
+    ];
+    // ── Install ──────────────────────────────────────────────────────────────────
+    worker.addEventListener("install", (event) => {
+        event.waitUntil(caches
+            .open(STATIC_CACHE)
+            .then((cache) => cache.addAll(STATIC_ASSETS).catch(() => {
+            // Non-fatal: offline.html may not exist yet on first deploy
+        }))
+            .then(() => worker.skipWaiting()));
     });
-  }
-}
-
-async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  const networkPromise = fetch(request).then(async (response) => {
-    if (isCacheable(response)) await safeCachePut(cache, request, response.clone());
-    return response;
-  }).catch(() => cached);
-  return cached ?? networkPromise;
-}
+    // ── Activate ─────────────────────────────────────────────────────────────────
+    worker.addEventListener("activate", (event) => {
+        event.waitUntil(caches
+            .keys()
+            .then((keys) => Promise.all(keys
+            .filter((key) => key.startsWith("cv-") &&
+            key !== STATIC_CACHE)
+            .map((key) => caches.delete(key))))
+            .then(() => worker.clients.claim()));
+    });
+    // ── Fetch ─────────────────────────────────────────────────────────────────────
+    worker.addEventListener("fetch", (event) => {
+        const { request } = event;
+        const url = new URL(request.url);
+        // Skip non-GET requests, the sw.js file itself, and range requests (streaming/video)
+        if (request.method !== "GET")
+            return;
+        if (url.pathname === "/sw.js")
+            return;
+        if (request.headers.has("range"))
+            return;
+        // ⚠️  IMPORTANT: Never intercept cross-origin requests (e.g. Google Fonts, Sentry CDN).
+        // The CSP connect-src directive blocks the SW from re-fetching external origins,
+        // which causes a flood of "Failed to fetch" / CSP violation errors.
+        if (url.origin !== worker.location.origin)
+            return;
+        // Never cache login callbacks, session state, private pages or API responses.
+        if (/^\/(auth|api|admin|profile|notifications|staff|internal|inbox|digest)(\/|$)/.test(url.pathname))
+            return;
+        if (url.pathname === '/feed' && url.searchParams.get('scope') === 'following')
+            return;
+        // Public detail JSON must reflect moderation changes and unpublished ideas immediately.
+        if (url.pathname.startsWith("/roadmap/idea/"))
+            return;
+        // HTML navigation — network-first with offline fallback
+        if (request.mode === "navigate") {
+            event.respondWith(fetch(request).catch(() => caches
+                .match("/offline.html")
+                .then((r) => r !== null && r !== void 0 ? r : new Response("You are offline.", {
+                headers: { "Content-Type": "text/plain" },
+            }))));
+            return;
+        }
+        // Only actual static assets may enter the persistent cache. Unknown GETs,
+        // account data, JSON endpoints and authorization responses stay on the network.
+        const staticPath = url.pathname.startsWith('/_next/static/') || /^\/(?:css|js|fonts|icons|images|img)\//.test(url.pathname)
+            || /^\/(?:offline\.html|manifest\.json|logo\.png|favicon(?:-\d+x\d+)?\.(?:ico|png)|apple-touch-icon\.png)$/.test(url.pathname);
+        if (!staticPath)
+            return;
+        if (url.searchParams.has('v') || url.pathname.startsWith('/_next/static/')) {
+            event.respondWith(cacheFirst(request, STATIC_CACHE));
+        }
+        else {
+            event.respondWith(staleWhileRevalidate(request, STATIC_CACHE, event));
+        }
+    });
+    // ── Push notifications ────────────────────────────────────────────────────────
+    worker.addEventListener("push", (event) => {
+        var _a, _b, _c, _d, _e;
+        if (!event.data)
+            return;
+        const data = event.data.json();
+        event.waitUntil(worker.registration.showNotification((_a = data.title) !== null && _a !== void 0 ? _a : "SuggFeed", {
+            body: (_b = data.body) !== null && _b !== void 0 ? _b : "",
+            icon: "/icons/icon-192.png",
+            badge: "/icons/icon-192.png",
+            data: (_c = data.data) !== null && _c !== void 0 ? _c : {},
+            tag: (_e = (_d = data.data) === null || _d === void 0 ? void 0 : _d.submissionId) !== null && _e !== void 0 ? _e : "sugg-feed",
+        }));
+    });
+    worker.addEventListener("notificationclick", (event) => {
+        var _a;
+        event.notification.close();
+        const submissionId = (_a = event.notification.data) === null || _a === void 0 ? void 0 : _a.submissionId;
+        const url = submissionId ? `/?track=${submissionId}` : "/";
+        event.waitUntil(worker.clients
+            .matchAll({ type: "window", includeUncontrolled: true })
+            .then((windowClients) => {
+            for (const client of windowClients) {
+                if (client.url.includes(worker.location.origin) &&
+                    "focus" in client) {
+                    client.navigate(url);
+                    return client.focus();
+                }
+            }
+            return worker.clients.openWindow(url);
+        }));
+    });
+    // ── Helpers ───────────────────────────────────────────────────────────────────
+    // Cache API only supports complete responses (HTTP 200).
+    // Partial content (206), redirects, and opaque (0) responses throw TypeError on cache.put().
+    function isCacheable(response) {
+        return response.status === 200 && response.type !== "opaque" && !response.redirected
+            && !/(?:^|,)\s*(?:no-store|private)\b/i.test(response.headers.get('Cache-Control') || '');
+    }
+    // Safe wrapper — swallows any TypeError thrown by cache.put (e.g. for 206 partial responses).
+    async function safeCachePut(cache, request, response) {
+        try {
+            await cache.put(request, response);
+            const keys = await cache.keys();
+            if (keys.length > MAX_STATIC_ENTRIES) {
+                await Promise.all(keys.filter(key => !STATIC_ASSETS.includes(new URL(key.url).pathname))
+                    .slice(0, keys.length - MAX_STATIC_ENTRIES).map(key => cache.delete(key)));
+            }
+        }
+        catch {
+            // Ignore — likely a 206 partial content response that the Cache API cannot store
+        }
+    }
+    async function cacheFirst(request, cacheName) {
+        const cache = await caches.open(cacheName);
+        const cached = await cache.match(request);
+        if (cached)
+            return cached;
+        const response = await fetch(request);
+        if (isCacheable(response)) {
+            await safeCachePut(cache, request, response.clone());
+        }
+        return response;
+    }
+    async function staleWhileRevalidate(request, cacheName, event) {
+        const cache = await caches.open(cacheName);
+        const cached = await cache.match(request);
+        const networkPromise = fetch(request, { cache: 'no-cache' })
+            .then(async (response) => {
+            if (isCacheable(response))
+                await safeCachePut(cache, request, response.clone());
+            return response;
+        })
+            .catch(() => cached);
+        // Keep background revalidation alive after serving a cached response.
+        event.waitUntil(networkPromise.then(() => undefined));
+        const response = cached !== null && cached !== void 0 ? cached : await networkPromise;
+        return response !== null && response !== void 0 ? response : new Response('Asset unavailable.', { status: 503 });
+    }
+})();

@@ -50,19 +50,54 @@ replace the selected idea, and loading has a timeout.
   are unchanged, cache invalidation detaches pending reads, and failed reads are
   removed rather than retained as cached promises.
 
+## Navigation caches
+
+| Data | Lifetime | Refresh rules |
+| --- | --- | --- |
+| Public feed | 30 seconds for page 1; 2 minutes for later pages | Existing vote, comment, submission and review invalidation |
+| Public roadmap pages and recent completions | 15 seconds | Review, lifecycle actions, work-date repair, progress, vote, comment and moderation invalidation |
+| Public categories and category IDs | 5 minutes | Expire and share concurrent loads; failed reads are not cached |
+| Versioned JS/CSS/assets | Browser service worker cache | Change the `v` query value when changing that file |
+| Other static assets | Browser cache with background revalidation | Revalidate against the network; do not retain failed/private responses |
+
+Public home, feed and roadmap reads begin before session storage and identity
+validation. Routes join the same pending cache loads, overlapping these formerly
+sequential waits. Following feeds, private messages, account HTML, staff data,
+permissions, authorization results and session payloads are not placed in shared
+navigation caches. Roadmap detail publication checks and evidence access stay fresh.
+
+Hover or keyboard focus on a public home/feed/roadmap link warms its data through
+`GET /api/navigation-cache`. The response is empty and contains no account HTML;
+the fetch sends no cookies. Only recognized public filter fields are copied.
+Prefetch waits 120 ms to avoid flyovers, allows two concurrent requests and eight
+attempts per document, has a four-second timeout, and is disabled offline, in
+hidden tabs, on 2G connections and with Save-Data. The endpoint has its own rate
+limit. Prefetch failure never blocks native navigation or the skeleton.
+
+Static asset caching is registered after window load. The worker is compiled as a
+classic script; the old `export {}` caused the `module: none` build to leave the
+checked-in worker unchanged despite reporting success. Its cache holds at most 200
+entries. Only recognized static paths are eligible; HTML, API results, callbacks,
+private pages, redirects and no-store/private responses are never persisted.
+Unversioned assets revalidate in the service worker's lifetime. Bump asset query
+versions on changes and the worker cache version for a cache reset on release.
+
 `Server-Timing` reports session loading, identity checks, and data-loading durations
-on home, feed, profile and roadmap pages, so browser network traces can distinguish
-the sequential backend waits. A full signed-in navigation still requires a session
-read, verified identity, and page data before server-rendered HTML is returned.
-In-memory caches are instance-local and do not eliminate serverless cold starts or
-network distance between the function and database. Unchanged sessions already
-avoid rewrites with `resave: false`; the store has not been changed. Durations contain
-no tokens, account identifiers or profile data.
+on home, feed, profile and roadmap pages. Data duration now reports any remaining
+wait after the public preload, not total database query time. Identity and session
+verification still complete before account-aware HTML is returned. In-memory data
+caches are per instance, so prefetch is best effort across serverless instances;
+changes handled in another instance can take up to the relevant TTL to appear.
+These caches do not remove cold starts or database network distance. Unchanged
+sessions already avoid rewrites with `resave: false`; the store is unchanged.
+Durations contain no tokens, account identifiers or profile data.
 
 ## Validation and release
 
 Compilation uses the Express build and TypeScript checks. Automated tests were
 not run for this refinement. These changes remove identified waits and add immediate
-feedback; no measured production latency reduction is claimed. Deployment is
+feedback; no measured production latency reduction is claimed. Read-only live
+site/database timing attempts were blocked by this workspace’s network access, so
+cold-start and regional latency remain unmeasured. Deployment is
 required to publish them. Slow database requests or cold server instances can still
 delay the final content, with the skeleton remaining visible during that wait.

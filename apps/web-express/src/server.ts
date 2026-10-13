@@ -14,6 +14,7 @@ import { SupabaseSessionStore } from "./lib/session-store";
 import { sameOriginOnly } from "./lib/security";
 import { safeRequestPath } from "./lib/request-path";
 import { validateIdentity } from "./lib/identity";
+import { startPublicNavigation, warmPublicNavigation } from "./lib/navigation-data";
 import "./types"; // session augmentation
 import { supabase as publicSupabase, supabaseService, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
 
@@ -171,7 +172,13 @@ app.use(express.urlencoded({ extended: true, limit: "512kb" }));
 app.use(cookieParser());
 app.use(sameOriginOnly);
 // Assets do not need session DB reads.
-app.use(express.static(publicDir, { maxAge: isProd ? "7d" : 0 }));
+app.use(express.static(publicDir, {
+  maxAge: isProd ? "7d" : 0,
+  setHeaders(res,filePath){if(path.basename(filePath)==='sw.js')res.setHeader('Cache-Control','no-cache');},
+}));
+// Public prefetch does not need a session read. Rate-limit it independently.
+app.get('/api/navigation-cache',rateLimit({windowMs:60_000,limit:30,standardHeaders:'draft-7',legacyHeaders:false}),warmPublicNavigation);
+app.use(startPublicNavigation);
 
 /* ── Session ─────────────────────────────────────────────────────────────── */
 app.use((_req,res,next)=>{res.locals.sessionStarted=performance.now();next();});

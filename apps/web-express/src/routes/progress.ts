@@ -27,7 +27,7 @@ router.get(['/:id/updates', '/submissions/:id/updates'], run(async (req, res) =>
 router.post(['/:id/updates', '/submissions/:id/updates'], run(async (req, res) => {
   const id = req.params.id as string;
   const result = await postProgress(id, req.session.user!.id, req.body);
-  invalidateCache(`submission_${id}`); invalidateCache('feed_'); invalidateCache('roadmap_submissions');
+  invalidateCache(`submission_${id}`); invalidateCache('feed_'); invalidateCache('roadmap_');
   return res.status(result.replayed ? 200 : 201).json({ success: true, ...result });
 }));
 export default router;

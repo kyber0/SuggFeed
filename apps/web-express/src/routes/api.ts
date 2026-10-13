@@ -68,6 +68,7 @@ router.post(
     if (error) throw error;
     invalidateCache(`submission_${id}`);
     invalidateCache("feed_");
+    invalidateCache("roadmap_");
     return res.json({ success: true, vote_count: data.vote_count, already_voted: data.already_voted });
   })
 );
@@ -212,7 +213,7 @@ router.patch(
 
     invalidateCache(`submission_${id}`);
     invalidateCache("feed_");
-    invalidateCache("roadmap_submissions");
+    invalidateCache("roadmap_");
 
     res.json({ success: true });
   })
@@ -308,6 +309,7 @@ router.post(
     invalidateCache(`comments_${submissionId}`);
     invalidateCache(`submission_${submissionId}`);
     invalidateCache("feed_");
+    invalidateCache("roadmap_");
 
     res.json({ success: true, data });
   })
