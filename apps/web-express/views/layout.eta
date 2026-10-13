@@ -36,6 +36,7 @@
 
 <%~ include('partials/toast', it) %>
 <%~ include('partials/confirmation', it) %>
+<script src="/js/activity.js?v=20261013-connected"></script>
 <%~ include('partials/header', it) %>
 
 <div id="page-content" tabindex="-1"><%~ it.body ?? '' %></div>

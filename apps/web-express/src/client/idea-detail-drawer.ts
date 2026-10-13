@@ -346,10 +346,10 @@ let sfCurrentIdea = null;
     }
   }
 
-  function sfDrawerShare() {
+  async function sfDrawerShare() {
     if (!sfCurrentIdea) return;
     const url = `${window.location.origin}/idea/${sfCurrentIdea.id}`;
-    navigator.clipboard.writeText(url);
+    try{await navigator.clipboard.writeText(url);}catch{window.sfToast?.('The link could not be copied.','error');return;}
 
     const btn = (document.getElementById('drawer-share-btn') as HTMLButtonElement);
     const origHtml = btn.innerHTML;
@@ -357,6 +357,7 @@ let sfCurrentIdea = null;
     setTimeout(() => { btn.innerHTML = origHtml; }, 2000);
 
     if (window.sfToast) sfToast('Link copied to clipboard!', 'success');
+    await window.sfRecordShare(sfCurrentIdea.id);
   }
 
   async function sfDrawerVote() {

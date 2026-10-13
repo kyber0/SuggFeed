@@ -20,6 +20,12 @@
             panel.removeAttribute('hidden');
         if (form && (!sipOpened || !document.getElementById('sip-success').hidden)) {
             form.reset();
+            try {
+                const choice = localStorage.getItem('sf_anon_default');
+                const signedIn = !!document.getElementById('sf-auth-config')?.dataset.user;
+                document.getElementById('sip-anon').checked = !signedIn || choice !== 'false';
+            }
+            catch { }
         }
         sipOpened = true;
         document.getElementById('sip-queue-btn').hidden = false;

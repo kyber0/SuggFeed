@@ -11,7 +11,8 @@ import { useToast } from "./toast";
 import { fileToPayload, submitFeedback } from "../lib/feedback-api";
 import { invalidateCache } from "../lib/cache-manager";
 import { getDeviceFingerprint } from "../lib/device-fingerprint";
-import { addDraft } from "../lib/offline-queue";
+import { anonymousDraftDefault } from "../lib/profile-preferences";
+import { addDraft, drafts, queuedDrafts, type Draft } from "../lib/offline-queue";
 import { FileDropzone } from "./file-dropzone";
 import { TurnstileWidget } from "./turnstile-widget";
 import { Confetti } from "./confetti";
@@ -54,7 +55,7 @@ const emptySubmission = {
 /* ── Main component ── */
 export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   const { isOpen, closeSubmitPanel } = useSubmitIdea();
-  const { toast } = useToast();
+  const { toast, confirm } = useToast();
   const panelRef = useSwipeDismiss<HTMLElement>({ onDismiss: closeSubmitPanel });
 
   const [step, setStep] = useState<Step>(1);
@@ -65,6 +66,8 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
   const [turnstileToken, setTurnstileToken] = useState("");
   const [captchaKey, setCaptchaKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [offlineDrafts,setOfflineDrafts]=useState<Draft[]>([]);
+  const [restoredOfflineId,setRestoredOfflineId]=useState<string|null>(null);
   const [confetti, setConfetti] = useState(false);
 
   /* ── Draft persistence ── */
@@ -74,6 +77,7 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
         localStorage.getItem("sf_draft_submission") ??
         localStorage.getItem("cv_draft_submission");
       if (saved) setSubmission(JSON.parse(saved));
+      else setSubmission({...emptySubmission,isAnonymous:anonymousDraftDefault()});
     } catch { /* ignore */ }
     setDraftLoaded(true);
     setOnline(navigator.onLine);
@@ -90,14 +94,32 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
 
   useEffect(() => {
     if (!draftLoaded) return;
+    try{
     if (submission === emptySubmission) {
       localStorage.removeItem("sf_draft_submission");
       localStorage.removeItem("cv_draft_submission");
     } else {
       localStorage.setItem("sf_draft_submission", JSON.stringify(submission));
     }
+    }catch{}
   }, [submission, draftLoaded]);
 
+  useEffect(()=>{
+    if(!isOpen)return;
+    setSubmission(current=>!current.title && !current.description && !current.category?{...current,isAnonymous:anonymousDraftDefault()}:current);
+    void queuedDrafts().then(rows=>setOfflineDrafts(rows.slice(0,100))).catch(()=>toast('Saved offline drafts could not load.','error'));
+  },[isOpen,toast]);
+  async function recoverDraft(draft:Draft){
+    if(submitting)return;
+    if((submission.title || submission.description || files.length) && !await confirm({title:'Replace the current draft?',message:'Load this saved draft into the editor? Current unsaved changes will be replaced.',confirmLabel:'Load draft'}))return;
+    setSubmission({title:draft.title,description:draft.description,category:draft.category,isAnonymous:draft.isAnonymous,consent:false});
+    setFiles((draft.attachments || []).map(file=>new File([file.blob],file.name,{type:file.type})));setRestoredOfflineId(draft.id);setStep(1);setTurnstileToken('');setCaptchaKey(key=>key+1);
+    toast('Draft restored. Review it, accept the notice and complete the spam check before sending.','info');
+  }
+  async function discardOfflineDraft(draft:Draft){
+    if(submitting || !await confirm({title:'Discard saved draft?',message:'Remove this draft and its attachments from this device? Text already loaded into the editor stays there.',confirmLabel:'Discard draft',danger:true}))return;
+    try{await drafts.delete(draft.id);setOfflineDrafts(rows=>rows.filter(row=>row.id!==draft.id));if(restoredOfflineId===draft.id)setRestoredOfflineId(null);}catch{toast('The saved draft could not be removed.','error');}
+  }
   /* ── Body scroll lock + back-button history ── */
   useEffect(() => {
     if (isOpen) {
@@ -156,11 +178,14 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
     if (!body.consent) { toast("Please accept the privacy notice before sending.", "error"); return; }
 
     if (!online) {
-      await addDraft({ ...body, consent: true, attachments: files.map((f) => ({ name: f.name, type: f.type, blob: f })) });
-      setSubmission(emptySubmission); setFiles([]);
-      toast("Saved on this device. It will send automatically when you're back online.", "info");
-      closeSubmitPanel();
-      return;
+      if(submitting)return;setSubmitting(true);
+      try{
+        const saved={...body,consent:true as const,attachments:files.map(file=>({name:file.name,type:file.type,blob:file}))};
+        if(restoredOfflineId){const updated=await drafts.update(restoredOfflineId,saved);if(!updated)await addDraft(saved);}else await addDraft(saved);
+        setSubmission(emptySubmission);setFiles([]);setRestoredOfflineId(null);
+        toast('Draft saved on this device. Reopen Share feedback to recover, review and send it when connected. Nothing is sent automatically.','info');closeSubmitPanel();
+      }catch{toast('This draft could not be saved. Keep the editor open and copy your text.','error');}
+      finally{setSubmitting(false);}return;
     }
 
     if (!turnstileToken) { toast("Complete the spam check before sending.", "error"); return; }
@@ -193,6 +218,7 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
         toast("Submitted for review. Thank you for speaking up! 🙌", "success");
       }
 
+      if(restoredOfflineId){try{await drafts.delete(restoredOfflineId);setOfflineDrafts(rows=>rows.filter(row=>row.id!==restoredOfflineId));}catch{toast('Submitted, but local draft cleanup failed. Discard the saved copy to avoid sending it twice.','warning');}setRestoredOfflineId(null);}
       setConfetti(true);
       setTimeout(() => {
         setConfetti(false);
@@ -233,7 +259,7 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
               <div className="sip-header-title">Share your idea</div>
               {online
                 ? <div className="sip-header-sub sip-online">● Online</div>
-                : <div className="sip-header-sub sip-offline">◌ Offline — will queue</div>}
+                : <div className="sip-header-sub sip-offline">◌ Offline — save a draft</div>}
             </div>
           </div>
           <button className="panel-close-btn" onClick={closeSubmitPanel} aria-label="Close">
@@ -241,6 +267,7 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
           </button>
         </div>
 
+        {offlineDrafts.length>0 && <details style={{padding:"16px"}}><summary>Saved drafts on this device ({offlineDrafts.length})</summary><p>These drafts are never sent automatically. Others using this browser may see them.</p><ul>{offlineDrafts.map(draft=><li key={draft.id}><strong>{draft.title}</strong><div><button type="button" disabled={submitting} className="btn-ghost" onClick={()=>void recoverDraft(draft)}>Load draft</button><button type="button" disabled={submitting} className="btn-ghost" onClick={()=>void discardOfflineDraft(draft)}>Discard saved draft</button></div></li>)}</ul></details>}
         {/* ── Stepper ── */}
         <div className="sip-stepper" role="list">
           {STEPS.map(({ num, label }, i) => {
@@ -444,8 +471,8 @@ export function SubmitIdeaPanel({ turnstileSiteKey }: { turnstileSiteKey?: strin
                     disabled={submitting || !submission.consent}
                   >
                     {submitting
-                      ? <><span className="sip-spinner" />Sending…</>
-                      : <><Send size={15} strokeWidth={2} />Send for review</>}
+                      ? <><span className="sip-spinner" />{online?'Sending…':'Saving draft…'}</>
+                      : <><Send size={15} strokeWidth={2} />{online?'Send for review':'Save offline draft'}</>}
                   </button>
                 </div>
               </div>

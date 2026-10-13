@@ -112,13 +112,18 @@
     rememberedVotes.add(id);
     try { localStorage.setItem('sf_voted_ideas', JSON.stringify([...sfGetVotedSet()])); } catch {}
   }
-  function sfGetSavedSet(): Set<string> { return readLocalSet('sf_saved_ideas'); }
+  const savedOnAccount=!!document.getElementById('sf-auth-config')?.dataset.user;
+  let accountSaved=new Set<string>();
+  let accountBookmarksLoaded=!savedOnAccount;
+  const pendingBookmarks=new Set<string>();
+  function sfGetSavedSet(): Set<string> { return savedOnAccount?accountSaved:readLocalSet('sf_saved_ideas'); }
 
   function setSavedState(button: HTMLElement, saved: boolean) {
+    (button as HTMLButtonElement).disabled=!accountBookmarksLoaded;
     button.classList.toggle('active', saved);
     button.setAttribute('aria-pressed', String(saved));
-    button.setAttribute('title', saved ? 'Remove from saved ideas on this device' : 'Save this idea on this device');
-    button.setAttribute('aria-label', saved ? 'Remove saved idea from this device' : 'Save idea on this device');
+    button.setAttribute('title', saved ? 'Remove saved idea' : savedOnAccount?'Save this idea to your account':'Save this idea on this device');
+    button.setAttribute('aria-label', saved ? 'Remove saved idea' : savedOnAccount?'Save idea to your account':'Save idea on this device');
     const label = button.querySelector<HTMLElement>('.action-label');
     if (label) label.textContent = saved ? 'Saved' : 'Save';
   }
@@ -130,22 +135,25 @@
     if (label) label.textContent = supported ? 'Supported' : 'Support';
   }
 
-  function sfBookmarkPost(id: string, button: HTMLButtonElement, event?: Event) {
+  async function sfBookmarkPost(id: string, button: HTMLButtonElement, event?: Event) {
+    if(button.disabled || !accountBookmarksLoaded || pendingBookmarks.has(id))return;button.disabled=true;pendingBookmarks.add(id);
     event?.stopPropagation();
-    const saved = sfGetSavedSet();
+    const saved = new Set(sfGetSavedSet());
     const willSave = !saved.has(id);
     if (willSave) saved.add(id); else saved.delete(id);
     try {
-      localStorage.setItem('sf_saved_ideas', JSON.stringify([...saved]));
+      if(savedOnAccount){const response=await fetch('/api/bookmarks/'+encodeURIComponent(id),{method:'POST',signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json'},body:JSON.stringify({action:willSave?'add':'remove'})});const data=await response.json();if(!response.ok || !data.success)throw new Error('Account bookmark could not be confirmed.');accountSaved=saved;}
+      else localStorage.setItem('sf_saved_ideas', JSON.stringify([...saved]));
       document.querySelectorAll<HTMLElement>('.action-bookmark[data-id]').forEach(other => {
         if (other.dataset.id === id) setSavedState(other, willSave);
       });
-      if (window.sfToast) window.sfToast(willSave ? 'Idea saved on this device.' : 'Idea removed from saved ideas on this device.', willSave ? 'success' : 'info');
+      if (window.sfToast) window.sfToast(willSave ? savedOnAccount?'Idea saved to your account.':'Idea saved on this device.' : 'Idea removed from saved ideas.', willSave ? 'success' : 'info');
     } catch {
-      if (window.sfToast) window.sfToast('Your browser could not save this idea. Check its storage settings and try again.', 'error');
-    }
+      if (window.sfToast) window.sfToast('This bookmark could not be confirmed. Refresh to check before retrying.', 'error');
+    }finally{button.disabled=false;pendingBookmarks.delete(id);}
   }
 
+  if(savedOnAccount)void fetch('/profile/activity',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({}),signal:AbortSignal.timeout(15000)}).then(response=>response.json()).then(data=>{if(!data.success)throw new Error();accountSaved=new Set(data.bookmarks.map(row=>row.id));accountBookmarksLoaded=true;sfInitLocalStates();}).catch(()=>window.sfToast?.('Account bookmarks could not load. Refresh to check saved state.','error'));
   function sfInitLocalStates() {
     const votes = sfGetVotedSet();
     const saved = sfGetSavedSet();
@@ -212,6 +220,7 @@
         }
         if (window.sfToast) window.sfToast('Idea link copied.', 'success');
       }
+      await window.sfRecordShare(id);
     } catch (error) {
       if ((error as any)?.name !== 'AbortError' && window.sfToast) window.sfToast('Could not share this idea. Open it to copy the page address.', 'error');
     }

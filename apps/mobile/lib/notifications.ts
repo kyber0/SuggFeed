@@ -49,6 +49,9 @@ export async function registerForPushNotifications(): Promise<void> {
       return;
     }
 
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const projectId = (require("expo-constants").default?.expoConfig?.extra?.eas?.projectId ?? "") as string;
     const isRealProjectId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(projectId);
@@ -59,12 +62,9 @@ export async function registerForPushNotifications(): Promise<void> {
 
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
     const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
     const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
-    await fetch(`${supabaseUrl}/functions/v1/register-push-token`, {
+    const response = await fetch(`${supabaseUrl}/functions/v1/register-push-token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -73,7 +73,7 @@ export async function registerForPushNotifications(): Promise<void> {
       },
       body: JSON.stringify({ expoPushToken: token }),
     });
-    console.log("[Notifications] Push token registered:", token);
+    if (!response.ok) throw new Error("Push token registration was rejected.");
   } catch (error) {
     console.warn("[Notifications] Registration failed (non-fatal):", error);
   }

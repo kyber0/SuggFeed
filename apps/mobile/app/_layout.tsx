@@ -3,8 +3,6 @@ initSentry();
 
 import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { registerForPushNotifications } from "../lib/notifications";
 import { Platform, View } from "react-native";
 
 // Simple SVG-free icon placeholders using text — swapped to proper icons below
@@ -25,12 +23,6 @@ const ACCENT = "#e86e4a";
 const INACTIVE = "#6b8fa7";
 
 export default function RootLayout() {
-  useEffect(() => {
-    // Silently skip if native push infra isn't ready (Expo Go / missing EAS project ID)
-    void registerForPushNotifications().catch((err) =>
-      console.warn("[Layout] Push registration skipped:", err)
-    );
-  }, []);
 
   return (
     <>

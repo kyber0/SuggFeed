@@ -9007,3 +9007,9 @@ input.feed-search {
 .sp-staff-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .sp-staff-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.auth-flow-card { max-width:440px; margin:64px auto; padding:28px; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
+.auth-flow-card h1 { font-size:28px; line-height:1.25; margin-bottom:16px; }
+.auth-flow-card form { margin-top:20px; }
+.auth-flow-card label { display:grid; gap:8px; }
+.auth-flow-card p[role="alert"] { color:var(--error); margin-block:16px; }
+@media(max-width:480px) { .auth-flow-card { margin:32px 16px; } }

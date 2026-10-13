@@ -84,3 +84,13 @@ stored locally, added to URLs, or sent to the app's server-session endpoint.
 Invalid or expired codes keep the entry form visible and never fall back to a
 pre-existing signed-in session. This code flow does not require the PKCE verifier
 from the browser that originally requested the email.
+
+## Connected profile and activity
+
+Profile account settings now save display name and status/comment email consent
+to the authenticated account. Fresh-draft anonymity stays on the device. Account
+bookmarks and public Shared/Supported activity are loaded instead of hard-coded
+empty grids. Guest bookmarks stay on the device; signed-in bookmarks use the
+existing account API. Device activity queries return public titles and metadata
+only. See [the audit resolution report](disconnected-feature-audit.md) for the
+related Next, mobile and email changes and publication requirements.

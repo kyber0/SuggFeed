@@ -18,7 +18,10 @@ let sipCurrentStep = 1;
     
     if (overlay) overlay.removeAttribute('hidden');
     if (panel) panel.removeAttribute('hidden');
-    if (form && (!sipOpened || !(document.getElementById('sip-success') as HTMLElement).hidden)) { form.reset(); }
+    if (form && (!sipOpened || !(document.getElementById('sip-success') as HTMLElement).hidden)) {
+      form.reset();
+      try {const choice=localStorage.getItem('sf_anon_default');const signedIn=!!document.getElementById('sf-auth-config')?.dataset.user;(document.getElementById('sip-anon') as HTMLInputElement).checked=!signedIn || choice!=='false';}catch{}
+    }
     sipOpened = true;
     (document.getElementById('sip-queue-btn') as HTMLButtonElement).hidden=false;
     

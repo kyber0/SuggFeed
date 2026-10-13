@@ -56,9 +56,15 @@
             cols.setAttribute('data-mobile-tab', tab);
         }
     }
-    function sfShareIdea() {
+    async function sfShareIdea() {
         const url = window.location.href;
-        navigator.clipboard.writeText(url);
+        try {
+            await navigator.clipboard.writeText(url);
+        }
+        catch {
+            window.sfToast?.('The link could not be copied.', 'error');
+            return;
+        }
         const btn = document.getElementById('share-btn');
         if (btn) {
             const orig = btn.innerHTML;
@@ -67,6 +73,7 @@
         }
         if (window.sfToast)
             sfToast('Link copied to clipboard!', 'success');
+        await window.sfRecordShare(document.getElementById('sf-idea-config').dataset.id);
     }
     function sfCommentInputChanged(textarea) {
         const len = textarea.value.length;

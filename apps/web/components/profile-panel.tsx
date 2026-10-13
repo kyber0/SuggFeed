@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X, User, EyeOff, LogIn, LogOut, Save, Check, Bell } from "lucide-react";
+import { useToast } from "./toast";
 import { useAuth } from "./auth-context";
+import { saveProfilePreferences, anonymousDraftDefault } from "../lib/profile-preferences";
 import { supabase } from "../lib/supabase";
 import { useSwipeDismiss } from "../hooks/use-swipe-dismiss";
 import { usePanelHistory } from "../hooks/use-panel-history";
@@ -13,6 +15,7 @@ interface Props {
 
 export function ProfilePanel({ onClose }: Props) {
   const { user, signOut, openAuthModal } = useAuth();
+  const {toast}=useToast();
 
   const [displayName, setDisplayName] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -25,6 +28,7 @@ export function ProfilePanel({ onClose }: Props) {
 
   // Load persisted prefs from localStorage after mount
   useEffect(() => {
+    try{
     setDisplayName(
       localStorage.getItem("sf_display_name") ??
       localStorage.getItem("cv_display_name") ??
@@ -33,6 +37,8 @@ export function ProfilePanel({ onClose }: Props) {
     setIsAnonymous(
       (localStorage.getItem("sf_anon_pref") ?? localStorage.getItem("cv_anon_pref")) === "true"
     );
+    }catch{}
+    setIsAnonymous(anonymousDraftDefault());
   }, []);
 
   // Seed display name from auth profile when signed in
@@ -41,18 +47,16 @@ export function ProfilePanel({ onClose }: Props) {
       const name =
         user.user_metadata?.full_name ??
         user.user_metadata?.display_name ??
-        localStorage.getItem("sf_display_name") ??
-        localStorage.getItem("cv_display_name") ??
         "";
       setDisplayName(name);
       // Fetch email_notifications_enabled from profiles
       supabase
         .from("profiles")
-        .select("email_notifications_enabled")
+        .select("display_name,email_notifications_enabled")
         .eq("id", user.id)
         .maybeSingle()
         .then(({ data }) => {
-          if (data) setEmailNotifications(data.email_notifications_enabled ?? false);
+          if (data) {setEmailNotifications(data.email_notifications_enabled ?? false);setDisplayName(data.display_name || "");}
         });
     }
   }, [user]);
@@ -71,25 +75,13 @@ export function ProfilePanel({ onClose }: Props) {
   }, []);
 
   async function handleSave() {
-    setSaving(true);
-    // Always persist to localStorage (quick + works for anon)
-    localStorage.setItem("sf_display_name", displayName.trim());
-    localStorage.setItem("sf_anon_pref", String(isAnonymous));
-
-    // If signed in, also update the profiles table
-    if (user) {
-      await supabase
-        .from("profiles")
-        .update({ 
-          display_name: displayName.trim() || null,
-          email_notifications_enabled: emailNotifications
-        })
-        .eq("id", user.id);
-    }
-
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    if(saving)return;setSaving(true);setSaved(false);
+    try{const result=await saveProfilePreferences(user?.id,displayName,emailNotifications,isAnonymous);
+      setSaved(result.deviceSaved);
+      toast(result.deviceSaved?'Preferences saved.':'Account preferences saved, but browser defaults could not be saved.',result.deviceSaved?'success':'warning');
+      if(result.deviceSaved)setTimeout(()=>setSaved(false),2200);
+    }catch(error){toast(error instanceof Error?error.message:'Preferences could not be saved.','error');}
+    finally{setSaving(false);}
   }
 
   const initial = displayName?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "?";
@@ -175,12 +167,13 @@ export function ProfilePanel({ onClose }: Props) {
           <div className="field">
             <label htmlFor="profile-display-name">
               Display name
-              <span className="field-hint">Shown on your comments</span>
+              <span className="field-hint">{user?'Shown on your posts and comments':'Sign in to set your account display name'}</span>
             </label>
             <input
               id="profile-display-name"
               type="text"
               value={displayName}
+                disabled={!user || saving}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g. Student, Alex, or leave blank"
               maxLength={60}
@@ -196,7 +189,7 @@ export function ProfilePanel({ onClose }: Props) {
             />
             <span className="anon-toggle-label">
               <EyeOff size={13} strokeWidth={2} style={{ verticalAlign: "middle", marginRight: 4 }} />
-              Post comments anonymously by default
+              Submit new ideas anonymously by default
             </span>
           </label>
           <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 6, lineHeight: 1.6 }}>

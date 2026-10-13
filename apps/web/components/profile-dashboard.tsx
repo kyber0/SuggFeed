@@ -34,6 +34,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { readableStatus } from "../lib/format";
+import { saveProfilePreferences, anonymousDraftDefault } from "../lib/profile-preferences";
 import { supabase } from "../lib/supabase";
 
 const STATUS_COLOR: Record<string, string> = {
@@ -148,8 +149,8 @@ export function ProfileDashboard() {
 
   // Load display name preferences
   useEffect(() => {
-    const name = localStorage.getItem("sf_display_name") ?? localStorage.getItem("cv_display_name") ?? "";
-    const anon = (localStorage.getItem("sf_anon_pref") ?? localStorage.getItem("cv_anon_pref")) === "true";
+    let name="";try{name=localStorage.getItem("sf_display_name") ?? localStorage.getItem("cv_display_name") ?? "";}catch{}
+    const anon = anonymousDraftDefault();
     setDisplayName(name);
     setIsAnonymous(anon);
 
@@ -162,11 +163,11 @@ export function ProfileDashboard() {
 
       supabase
         .from("profiles")
-        .select("email_notifications_enabled")
+        .select("display_name,email_notifications_enabled")
         .eq("id", user.id)
         .maybeSingle()
         .then(({ data }) => {
-          if (data) setEmailNotifs(data.email_notifications_enabled ?? false);
+          if (data) {setEmailNotifs(data.email_notifications_enabled ?? false);setDisplayName(data.display_name || "");}
         });
     }
   }, [user]);
@@ -225,23 +226,13 @@ export function ProfileDashboard() {
   }
 
   async function handleSave() {
-    setSaving(true);
-    localStorage.setItem("sf_display_name", displayName.trim());
-    localStorage.setItem("sf_anon_pref", String(isAnonymous));
-
-    if (user) {
-      await supabase
-        .from("profiles")
-        .update({
-          display_name: displayName.trim() || null,
-          email_notifications_enabled: emailNotifs,
-        })
-        .eq("id", user.id);
-    }
-
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    if(saving)return;setSaving(true);setSaved(false);
+    try{const result=await saveProfilePreferences(user?.id,displayName,emailNotifs,isAnonymous);
+      setSaved(result.deviceSaved);
+      toast(result.deviceSaved?'Preferences saved.':'Account preferences saved, but browser defaults could not be saved.',result.deviceSaved?'success':'warning');
+      if(result.deviceSaved)setTimeout(()=>setSaved(false),2200);
+    }catch(error){toast(error instanceof Error?error.message:'Preferences could not be saved.','error');}
+    finally{setSaving(false);}
   }
 
   const initial =
@@ -362,13 +353,14 @@ export function ProfileDashboard() {
             <div className="prof-field">
               <label htmlFor="prof-display-name" className="prof-field-label">
                 Display name
-                <span className="prof-field-hint">Shown on your posts & comments</span>
+                <span className="prof-field-hint">{user?'Shown on your posts and comments':'Sign in to set your account display name'}</span>
               </label>
               <input
                 id="prof-display-name"
                 type="text"
                 className="prof-input"
                 value={displayName}
+                disabled={!user || saving}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="e.g. Alex, Campus Resident, or leave blank"
                 maxLength={60}
@@ -383,7 +375,7 @@ export function ProfileDashboard() {
               />
               <span className="prof-toggle-label">
                 <EyeOff size={13} strokeWidth={2} />
-                Post anonymously by default
+                Submit new ideas anonymously by default
               </span>
             </label>
             <p className="prof-field-hint" style={{ marginTop: 4 }}>

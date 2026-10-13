@@ -65,6 +65,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [syncRole]);
 
   useEffect(() => {
+    const query=new URLSearchParams(window.location.search),hash=new URLSearchParams(window.location.hash.slice(1));
+    if(!window.location.pathname.startsWith('/auth/callback') && window.location.pathname!=='/auth/recovery' && (query.has('code') || query.has('error') || hash.has('access_token') || hash.has('error'))){window.location.replace('/auth/callback'+window.location.search+window.location.hash);return;}
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
@@ -86,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // When Supabase delivers a password-recovery token, open the reset modal
-      if (event === "PASSWORD_RECOVERY") {
+      if (event === "PASSWORD_RECOVERY" && !window.location.pathname.startsWith("/auth/callback") && window.location.pathname!=="/auth/recovery") {
         setAuthModalTab("reset");
         setAuthModalOpen(true);
       }

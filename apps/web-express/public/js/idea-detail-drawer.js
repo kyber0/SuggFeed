@@ -321,17 +321,24 @@
             cols.setAttribute('data-mobile-tab', tab);
         }
     }
-    function sfDrawerShare() {
+    async function sfDrawerShare() {
         if (!sfCurrentIdea)
             return;
         const url = `${window.location.origin}/idea/${sfCurrentIdea.id}`;
-        navigator.clipboard.writeText(url);
+        try {
+            await navigator.clipboard.writeText(url);
+        }
+        catch {
+            window.sfToast?.('The link could not be copied.', 'error');
+            return;
+        }
         const btn = document.getElementById('drawer-share-btn');
         const origHtml = btn.innerHTML;
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
         setTimeout(() => { btn.innerHTML = origHtml; }, 2000);
         if (window.sfToast)
             sfToast('Link copied to clipboard!', 'success');
+        await window.sfRecordShare(sfCurrentIdea.id);
     }
     async function sfDrawerVote() {
         if (!sfCurrentIdea)

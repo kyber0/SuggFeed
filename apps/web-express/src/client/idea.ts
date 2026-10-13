@@ -54,9 +54,9 @@ let activeReplyingToId = null;
     }
   }
 
-  function sfShareIdea() {
+  async function sfShareIdea() {
     const url = window.location.href;
-    navigator.clipboard.writeText(url);
+    try{await navigator.clipboard.writeText(url);}catch{window.sfToast?.('The link could not be copied.','error');return;}
     const btn = (document.getElementById('share-btn') as HTMLButtonElement);
     if (btn) {
       const orig = btn.innerHTML;
@@ -64,6 +64,7 @@ let activeReplyingToId = null;
       setTimeout(() => { btn.innerHTML = orig; }, 2000);
     }
     if (window.sfToast) sfToast('Link copied to clipboard!', 'success');
+    await window.sfRecordShare(document.getElementById('sf-idea-config')!.dataset.id);
   }
 
   function sfCommentInputChanged(textarea) {

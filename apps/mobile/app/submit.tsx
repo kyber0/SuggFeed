@@ -59,7 +59,7 @@ export default function SubmitScreen() {
   const [title, setTitle]           = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory]     = useState(CATEGORIES[0].label);
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const isAnonymous = true;
   const [consent, setConsent]       = useState(false);
   const [busy, setBusy]             = useState(false);
 
@@ -107,7 +107,7 @@ export default function SubmitScreen() {
               <Text style={s.cardSubtitle}>Be constructive and avoid including personal or sensitive information.</Text>
             </View>
             <View style={s.onlineBadge}>
-              <Text style={s.onlineBadgeText}>● Online</Text>
+              <Text style={s.onlineBadgeText}>Guest submission</Text>
             </View>
           </View>
 
@@ -160,17 +160,18 @@ export default function SubmitScreen() {
             <CharCounter value={description} max={2000} />
           </View>
 
-          {/* Anonymous toggle — mirrors web .switch-row */}
+          {/* Mobile currently supports guest submissions only. */}
           <View style={s.switchRow}>
             <Switch
+              accessibilityLabel="Anonymous guest submission"
               value={isAnonymous}
-              onValueChange={setIsAnonymous}
+              disabled
               trackColor={{ true: C.success, false: C.line2 }}
               thumbColor={C.surface}
               style={{ flexShrink: 0 }}
             />
             <View style={{ flex: 1 }}>
-              <Text style={s.switchLabel}>Submit anonymously</Text>
+              <Text style={s.switchLabel}>Anonymous guest submission</Text>
               <Text style={s.switchHint}>
                 {isAnonymous
                   ? "Your name won't be attached. Save the tracking code shown after submitting."

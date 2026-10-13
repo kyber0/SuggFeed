@@ -6,7 +6,9 @@ Source audit of `apps/web-express` (views, client controllers, routes and persis
 
 The Express delegated-event scan found no missing action bindings or missing `sf*` function definitions. A placeholder `href="#"` in the detail drawer is populated with a real permalink after loading, so it is not counted as broken. Digest availability switches, staged rollout controls and disabled buttons during loading have explicit operational conditions and are not counted as dead features.
 
-## Findings
+## Original findings
+
+The table below records the initial audit. Current resolutions are listed afterward.
 
 | Priority | Feature | Evidence and effect | Next action |
 | --- | --- | --- | --- |
@@ -32,4 +34,34 @@ The Express delegated-event scan found no missing action bindings or missing `sf
 4. Fix the older Next app callback and offline delivery claim before using that frontend in production.
 5. Resolve the remaining email-code promises and mobile account-dependent features.
 
-Only the Express recovery-code flow and its email instructions are implemented in this audit change. The other rows remain open findings; they have not been silently removed or advertised as fixed. Hosted Supabase email content must be published separately to show the new instructions, while existing reset codes can be used on the new page after the Express app deploys.
+## Resolution status
+
+All thirteen findings now have a code or UI resolution. This is source completion;
+production acceptance and publication remain separate.
+
+| Finding | Resolution |
+| --- | --- |
+| Reset email code | Email plus recovery-code entry in both Express and Next, followed by password selection. |
+| Express display name | Validated account-profile save, account-scoped server write, updated session name and immediate heading refresh. Guests are asked to sign in to set a public identity. |
+| Express email toggle | Saves and hydrates `profiles.email_notifications_enabled`; separate from weekly-digest opt-in. Failure no longer reports Saved. |
+| Fresh-draft anonymity | Both frontends read the device preference only when starting an empty draft; existing drafts keep their selection. Guests remain anonymous until signed in. |
+| Shared/Supported tabs | Load real account and device activity using public-only projections. Supported reads the actual vote key; successful shares are recorded. Lists show up to 200 recent items. |
+| Bookmarks | Signed-in feed Save uses the account bookmark API; guests keep device bookmarks. Both appear in their matching profile view and can be removed. Database errors are checked. |
+| Next offline promise | Saved drafts have Load and Discard controls, including attachment recovery. Sending remains a deliberate online action with renewed consent and spam check. No automatic sender or retry is promised. Existing records are preserved until discarded or a successful send cleans them up. |
+| Next callback | Real browser PKCE/implicit exchange, credential cleanup, safe same-origin return, recovery detection and password form. Both callback and code entry have dedicated pages. |
+| Next profile Save | Shared helper checks database errors, guarantees saving-state cleanup and distinguishes account success from unavailable device storage. Hydration reads the stored profile display name. |
+| Other email codes | Removed unusable confirmation, invite, magic-link and email-change code panels. Their authentication links remain. Password-reset codes remain supported. |
+| Mobile account-dependent paths | Mobile is explicitly limited to guest submission until sign-in is implemented. The ineffective named switch is disabled, automatic push permission requests are removed, and future push-registration failures are checked. No account/push support is advertised as ready. |
+| Mobile Online badge | Replaced the unconditional connection claim with a truthful guest-submission label. |
+| Profile settings shortcut | Links to the actual settings panel and opens it on mobile. |
+
+## Compilation and release
+
+- Express build and TypeScript compilation are used for this refinement.
+- Next and mobile TypeScript compilation are used for the frontend changes.
+- Automated tests were not run for this refinement.
+- No new database migrations are required. Existing profile, bookmark, vote and share tables are used.
+- No production test records or emails are created.
+- Deploy the Express and Next updates and rebuild mobile to publish their changes.
+- The four unused confirmation, magic-link, invitation and email-change code panels were removed from the hosted Supabase Auth templates and verified through the Management API. Existing hosted designs and links were preserved. Recovery-code instructions and other repository template styling remain separate publication work after the application is deployed.
+- This workspace has no Vercel deployment token/project binding. Pushing source does not prove that a production app deployment occurred.

@@ -102,7 +102,7 @@ export function AuthModal() {
     if (!email) { toast("Enter your email address first.", "error"); return; }
     setBusy(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/`,
+      redirectTo: `${window.location.origin}/auth/callback`,
     });
     setBusy(false);
     if (error) { toast(error.message, "error"); return; }
@@ -247,8 +247,9 @@ export function AuthModal() {
                 <div className="am-magic-icon" aria-hidden="true">📬</div>
                 <h2 className="am-magic-heading">Check your inbox</h2>
                 <p className="am-magic-body">
-                  We sent password reset instructions to <strong>{email}</strong>. Click the link in the email to set a new password.
+                  We sent password reset instructions to <strong>{email}</strong>. Click the link in the email to set a new password, or enter the reset code.
                 </p>
+                <a className="am-btn-ghost" href="/auth/recovery">Enter a password reset code instead</a>
                 <button type="button" className="am-btn-ghost" onClick={() => { setResetSent(false); switchTab("signin"); }}>
                   ← Back to sign in
                 </button>
@@ -261,7 +262,7 @@ export function AuthModal() {
                   </div>
                   <div>
                     <h1 className="am-heading">Reset password</h1>
-                    <p className="am-subtext">We'll email you a secure reset link</p>
+                    <p className="am-subtext">We'll email you a secure reset link</p><a href="/auth/recovery" className="am-btn-ghost">Enter a password reset code instead</a>
                   </div>
                 </div>
 

@@ -330,17 +330,19 @@ router.post(
     }
 
     if (action === "remove") {
-      await supabaseService
+      const result = await supabaseService
         .from("bookmarks")
         .delete()
         .match({ user_id: user.id, submission_id: submissionId });
+      if(result.error)throw new Error("Bookmark could not be removed.");
     } else {
-      await supabaseService
+      const result = await supabaseService
         .from("bookmarks")
         .upsert(
           { user_id: user.id, submission_id: submissionId },
           { onConflict: "user_id,submission_id" }
         );
+      if(result.error)throw new Error("Bookmark could not be saved.");
     }
 
     res.json({ success: true, bookmarked: action === "add" });
