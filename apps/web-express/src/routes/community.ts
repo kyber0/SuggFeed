@@ -48,7 +48,7 @@ communityRouter.post('/staff/:action',run(async(req,res)=>{
     })};
   } else throw new CommunityError(404,'Unknown action.');
   await communityAction(user.id,action,data);
-  invalidateCache('submission_');invalidateCache('feed_');invalidateCache('comments_');invalidateCache('roadmap');
+  invalidateCache('submission_');invalidateCache('feed_');invalidateCache('published_count_');invalidateCache('comments_');invalidateCache('roadmap');
   return res.json({success:true});
 }));
 communityRouter.get('/staff/idea/:id',run(async(req,res)=>{

@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { loadPublishedSubmissions, type CacheStatus } from './data';
+import { loadPublishedSubmissions, loadPublishedTotal, publishedTotalMaxAge, type CacheStatus } from './data';
 import { feedFilters } from './feed-filters';
 import { roadmapFilters, loadRoadmapPage, loadRoadmapCategories, loadRecentlyCompleted } from './roadmap';
 
@@ -8,7 +8,7 @@ export function preloadPublicNavigation(path: string, input: Record<string, unkn
   if(path==='/' || path==='/feed' || path==='/feed/'){
     const filters=path==='/'?feedFilters({sort:'latest'}):feedFilters(input);
     if(filters.scope==='following')return null;
-    return loadPublishedSubmissions({page:filters.page,sortBy:filters.sort,category:filters.category,search:filters.search,reportCache});
+    return loadPublishedSubmissions({page:filters.page,sortBy:filters.sort,category:filters.category,search:filters.search,reportCache,includeTotal:false});
   }
   if(path==='/roadmap' || path==='/roadmap/'){
     const filters=roadmapFilters(input);
@@ -42,4 +42,19 @@ export async function warmPublicNavigation(req: Request, res: Response, next: Ne
     await pending;
     return res.status(204).end();
   } catch(error){next(error);}
+}
+
+/** No session/cookies or account state; only a public count may enter CDN cache. */
+export async function publicFeedTotal(req:Request,res:Response,next:NextFunction){
+  const filters=feedFilters(req.query);
+  if(filters.scope==='following'){
+    res.setHeader('Cache-Control','no-store');
+    return res.status(400).json({success:false,error:'This count is only available for public ideas.'});
+  }
+  try{
+    const count=await loadPublishedTotal(filters.category,filters.search);
+    const maxAge=publishedTotalMaxAge(filters.category,filters.search);
+    res.setHeader('Cache-Control',`public, max-age=${maxAge}, s-maxage=${maxAge}`);
+    return res.json({success:true,count});
+  }catch(error){res.setHeader('Cache-Control','no-store');next(error);}
 }

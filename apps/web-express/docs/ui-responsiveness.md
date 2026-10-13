@@ -54,7 +54,8 @@ replace the selected idea, and loading has a timeout.
 
 | Data | Lifetime | Refresh rules |
 | --- | --- | --- |
-| Public feed | 30 seconds for page 1; 2 minutes for later pages | Existing vote, comment, submission and review invalidation |
+| Public feed rows | 30 seconds for page 1; 2 minutes for later pages | Vote, comment, submission and review invalidation |
+| Public feed exact totals | 30 seconds, shared across sorts/pages for each category/search | Publication/content, review and workflow invalidation; votes/comments preserve totals |
 | Public roadmap pages and recent completions | 15 seconds | Review, lifecycle actions, work-date repair, progress, vote, comment and moderation invalidation |
 | Public categories and category IDs | 5 minutes | Expire and share concurrent loads; failed reads are not cached |
 | Versioned JS/CSS/assets | Browser service worker cache | Change the `v` query value when changing that file |
@@ -122,13 +123,66 @@ check fresh context before proceeding. Account snapshot wait is reported as
 Identity timings now also separate `auth-user` from `permissions` (and a refreshed
 token verification when needed) so the 708 ms aggregate can be traced further.
 
+## Function and database placement
+
+The supplied settings screenshots show the existing Vercel region as `iad1`
+(US East / Washington, D.C.) and Supabase's primary database as
+`ap-northeast-2` (Seoul), on `t4g.nano`. The database CPU indicator read 100%.
+That confirms distant regions and a high CPU snapshot, not the duration or exact
+cause of sustained CPU saturation.
+
+`apps/web-express/vercel.json` now pins the function to `icn1` (Seoul). This single
+region fits the current Vercel Hobby limit. It applies to a new deployment and
+should be verified in that deployment's function region, not just the project's
+older dashboard default. The database stays in its existing region.
+
+Public feed rows and exact totals now use separate caches. Totals are keyed by
+category/search and reused across sorts and pages for 30 seconds. The public total loads after initial HTML through `/api/feed-total`, so a slow
+count does not block the first cards. Home/feed renders and current load-more
+requests use cached totals when available, otherwise show the number of ideas
+actually loaded. Following feeds keep fresh private totals. The scalar public
+endpoint runs before session I/O, sends no account fields or cookies, rejects
+following scope, and permits browser/CDN caching only for the remaining server
+count TTL, avoiding stacked cache lifetimes. Legacy API callers still get an
+exact total unless explicitly opting out with `total=skip`. Count reads
+select only the parent IDs (an inner category join is used only for the filter
+fallback); row reads avoid an exact count and use 16 rows to return 15 plus a
+reliable `hasMore`. Row and count reads run concurrently for callers that require an exact total. Following feeds retain their
+fresh owner-filtered exact count and never enter public caches. A deterministic
+ID tie-breaker stabilizes equal-date/vote pagination. Totals are not authoritative
+for pagination and may reflect their short cache window.
+
+Content/publication changes invalidate total caches on the handling instance;
+votes/comments refresh row/ranking caches without repeating unchanged totals.
+Other instances refresh at expiry. Moving the function should reduce network
+round trips, while total reuse reduces redundant queries; neither is a measured
+post-deployment latency or CPU result.
+
+Read-only Management API diagnostics succeeded after using Node's workspace
+proxy and system CA settings (`--use-env-proxy --use-system-ca`). Historical
+`pg_stat_statements` showed 4,498 calls for the feed rows-plus-count query at
+924.32 ms mean / 2,864.35 ms maximum, and 1,113 calls for a status-filtered exact
+count at 4,293.10 ms mean / 7,989.15 ms maximum. These cumulative measurements
+confirm expensive application queries, but do not identify the current CPU spike
+by themselves. Three live activity samples over approximately 20 seconds caught
+no sustained running query (one connection was briefly waiting for client input).
+During that interval, the PostgREST request-context `set_config` statement gained
+45,754 calls and 721.41 ms of cumulative execution time. That indicates frequent
+request-context setup, but its own execution time does not explain a continuously
+saturated CPU; traffic sources and unsampled work still need investigation. The
+sampled tables showed little dead-row accumulation. No production
+schema changes, compute changes or test records were made for this diagnosis.
+If CPU remains high, inspect query plans and activity over time before selecting
+a database change or compute upgrade.
+
 ## Validation and release
 
 Compilation uses the Express build and TypeScript checks. Automated tests were
 not run for this refinement. These changes remove identified waits and add immediate
 feedback; no measured production latency reduction is claimed. Read-only live
-site/database timing attempts were blocked by this workspace’s network access, so
-cold-start and regional latency remain unmeasured. The supplied browser screenshots
+site/database timing attempts initially failed; Management API query statistics
+are now accessible through the workspace proxy. Cold-start and post-change
+regional latency remain unmeasured. The supplied browser screenshots
 provide the production timings documented above. Deployment is
 required to publish them. Slow database requests or cold server instances can still
 delay the final content, with the skeleton remaining visible during that wait.

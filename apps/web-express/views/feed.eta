@@ -4,7 +4,7 @@ const sort = it.sortBy || 'all';
 const category = it.category || 'All';
 const search = it.search || '';
 const filtered = category !== 'All' || !!search;
-const total = it.totalCount ?? feed.length;
+const total = typeof it.totalCount==='number'?it.totalCount:null;
 const popular = ['popular', 'top'].includes(sort);
 const slug = value => String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-');
 const feedUrl = (changes = {}) => {
@@ -81,7 +81,7 @@ const feedUrl = (changes = {}) => {
         </div>
       <% } %>
       <div class="feed-results-bar">
-        <p id="feed-result-summary" data-total="<%= total %>">Showing <%= feed.length %> of <%= total %> <%= filtered ? 'matching ' : '' %>idea<%= total === 1 ? '' : 's' %></p>
+        <p id="feed-result-summary" data-total="<%= total ?? '' %>">Showing <%= feed.length %><% if(total!==null){ %> of <%= total %><% } %> <%= filtered ? 'matching ' : '' %>idea<%= (total ?? feed.length) === 1 ? '' : 's' %></p>
         <span class="feed-sort-note"><%= popular ? 'Most supported first' : sort === 'oldest' ? 'Oldest first' : 'Newest first' %></span>
       </div>
     </header>
@@ -160,7 +160,7 @@ const feedUrl = (changes = {}) => {
 <% if(it.accountState && it.user?.id===it.accountState.userId){ %>
 <div id="sf-feed-account-state" hidden data-user="<%= it.accountState.userId %>" data-bookmarks="<%= JSON.stringify(it.accountState.bookmarks) %>" data-searches="<%= JSON.stringify(it.accountState.searches) %>"></div>
 <% } %>
-<div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
-<script defer src="/js/feed.js?v=20261013-feed-bootstrap"></script>
+<div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total ?? '' %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
+<script defer src="/js/feed.js?v=20261013-seoul-count"></script>
 
 <script defer src="/js/saved-searches.js?v=20261013-feed-bootstrap"></script>

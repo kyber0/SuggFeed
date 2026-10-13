@@ -47,6 +47,11 @@ export function invalidateCache(prefix: string): void {
   }
 }
 
+export function publishedTotalMaxAge(category='All',search=''){
+  const entry=_cache.get(`published_count_${JSON.stringify([category,search.trim()])}`);
+  return entry?Math.max(0,Math.floor((entry.expiresAt-Date.now())/1000)):0;
+}
+
 export type CacheStatus = "hit" | "pending" | "miss";
 const inFlight=new Map<string,Promise<unknown>>();
 export async function fetchWithCache<T>(
@@ -101,6 +106,23 @@ const SUBMISSION_SELECT =
   "user_id,category_id," +
   "categories(name),author:profiles!submissions_user_id_fkey(id,display_name,role)";
 
+/** Public scalar count only; pagination never depends on this cached value. */
+export function loadPublishedTotal(category='All',search='',report?:(status:CacheStatus)=>void){
+  const term=search.trim();
+  return fetchWithCache(`published_count_${JSON.stringify([category,term])}`,async()=>{
+    const filtered=!!category && category!=='All';
+    const ids=filtered?await getCategoryIdMap():null;
+    const id=ids?.get(category) ?? ids?.get(category.toLowerCase());
+    let query=supabase.from('submissions').select(filtered && !id?'id,categories!inner(name)':'id',{count:'exact',head:true})
+      .in('status',['approved','in_progress','resolved']);
+    if(filtered)query=id?query.eq('category_id',id):query.eq('categories.name',category);
+    if(term){const safe=sanitizeSearch(term);query=query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);}
+    const {count,error}=await query;
+    if(error)throw error;
+    return count ?? 0;
+  },30_000,report);
+}
+
 /* ─── Published feed ──────────────────────────────────────────────────── */
 export async function loadPublishedSubmissions(opts: {
   page?: number;
@@ -109,6 +131,7 @@ export async function loadPublishedSubmissions(opts: {
   search?: string;
   followingUserId?: string;
   reportCache?: (status:CacheStatus)=>void;
+  includeTotal?: boolean;
 } = {}) {
   const { page = 1, sortBy = "all", category = "All", search = "", followingUserId } = opts;
 
@@ -119,60 +142,57 @@ export async function loadPublishedSubmissions(opts: {
       ? "oldest"
       : "all";
 
-  const cacheKey = `feed_${normalizedSort}_${category}_${search}_p${page}`;
-  const fetchFeed = async () => {
-    let query = (followingUserId ? supabaseService : supabase)
-      .from("submissions")
-      .select(SUBMISSION_SELECT + (followingUserId ? ',idea_follows!inner(user_id)' : ''), { count: "exact" })
-      .in("status", ["approved", "in_progress", "resolved"]);
-    if (followingUserId) query = query.eq('idea_follows.user_id', followingUserId);
-
-    // Category filter: resolve name → UUID for reliable matching
-    if (category && category !== "All") {
-      const idMap = await getCategoryIdMap();
-      const catId = idMap.get(category) ?? idMap.get(category.toLowerCase());
-      if (catId) {
-        query = query.eq("category_id", catId);
-      } else {
-        // Fallback to join filter if UUID resolution fails
-        query = (query as any).eq("categories.name", category);
-      }
-    }
-
-    // Sanitized search
-    if (search && search.trim()) {
-      const safe = sanitizeSearch(search);
-      query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
-    }
-
-    if (normalizedSort === "top") {
-      query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false });
-    } else if (normalizedSort === "oldest") {
-      query = query.order("created_at", { ascending: true });
-    } else {
-      // "all" / "latest": all published community ideas sorted newest first
-      query = query.order("created_at", { ascending: false });
-    }
-
-    const from = (page - 1) * PER_PAGE;
-    query = query.range(from, from + PER_PAGE - 1);
-
-    const { data, error, count } = await query;
-    if (error) throw error;
-
-    const result = {
-      data: (data ?? []).map(({idea_follows, ...row}: any) => row) as unknown as Submission[],
-      count: count ?? 0,
-      hasMore: (count ?? 0) > page * PER_PAGE,
-    };
-    return result;
+  const filteredCategory=!!category && category !== 'All';
+  const term=search.trim();
+  // Share category resolution between rows and totals on a cold cache miss.
+  let categoryLookup:Promise<string | undefined> | undefined;
+  const categoryId=()=>{
+    if(!filteredCategory)return Promise.resolve(undefined);
+    if(!categoryLookup)categoryLookup=getCategoryIdMap().then(map=>map.get(category) ?? map.get(category.toLowerCase()));
+    return categoryLookup;
   };
+  const applyFilters=(query:any,catId:string | undefined)=>{
+    query=query.in('status',['approved','in_progress','resolved']);
+    if(followingUserId)query=query.eq('idea_follows.user_id',followingUserId);
+    if(filteredCategory)query=catId?query.eq('category_id',catId):query.eq('categories.name',category);
+    if(term){const safe=sanitizeSearch(term);query=query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);}
+    return query;
+  };
+  const readRows=async()=>{
+    const catId=await categoryId();
+    const columns=filteredCategory && !catId?SUBMISSION_SELECT.replace('categories(name)','categories!inner(name)'):SUBMISSION_SELECT;
+    let query=applyFilters((followingUserId?supabaseService:supabase).from('submissions')
+      .select(columns+(followingUserId?',idea_follows!inner(user_id)':''),followingUserId?{count:'exact'}:undefined),catId);
+    if(normalizedSort==='top')query=query.order('vote_count',{ascending:false}).order('created_at',{ascending:false});
+    else query=query.order('created_at',{ascending:normalizedSort==='oldest'});
+    query=query.order('id',{ascending:true});
+    const from=(page-1)*PER_PAGE;
+    // A public feed needs one extra row to know whether another page exists;
+    // that decision must not depend on a briefly cached exact total.
+    const {data,error,count}=await query.range(from,from+PER_PAGE-(followingUserId?1:0));
+    if(error)throw error;
+    const rows=(data || []).map(({idea_follows,...row}:any)=>row) as Submission[];
+    return {data:rows.slice(0,PER_PAGE),count:count ?? 0,
+      hasMore:followingUserId?(count ?? 0)>page*PER_PAGE:rows.length>PER_PAGE};
+  };
+  // Following queries are account-specific and retain their fresh exact count.
+  if(followingUserId)return readRows();
 
-  // Following is account-specific: always read it afresh, outside shared caches.
-  // Public requests share pending queries as well as the existing TTL cache.
-  return followingUserId
-    ? fetchFeed()
-    : fetchWithCache(cacheKey, fetchFeed, page === 1 ? 30_000 : 120_000,opts.reportCache);
+  let rowsStatus:CacheStatus | undefined,totalStatus:CacheStatus | undefined;
+  const report=()=>{
+    if(!rowsStatus)return;
+    if(opts.includeTotal===false){opts.reportCache?.(rowsStatus);return;}
+    if(!totalStatus)return;
+    opts.reportCache?.(rowsStatus==='miss' || totalStatus==='miss'?'miss':rowsStatus==='pending' || totalStatus==='pending'?'pending':'hit');
+  };
+  const rowsPending=fetchWithCache(`feed_${JSON.stringify([normalizedSort,category,term,page])}`,readRows,page===1?30_000:120_000,
+    status=>{rowsStatus=status;report();});
+  if(opts.includeTotal===false){
+    const rows=await rowsPending;
+    return {...rows,count:getCache<number>(`published_count_${JSON.stringify([category,term])}`) ?? null};
+  }
+  const [rows,count]=await Promise.all([rowsPending,loadPublishedTotal(category,term,status=>{totalStatus=status;report();})]);
+  return {...rows,count};
 }
 
 /* ─── Single submission ───────────────────────────────────────────────── */

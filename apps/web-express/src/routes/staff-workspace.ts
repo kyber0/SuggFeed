@@ -103,7 +103,7 @@ router.patch('/submissions/:id/review', run(async (req, res) => {
     if (code === '22023') return res.status(400).json({ success: false, error: 'Choose an active staff assignee and valid review values.' });
     throw error;
   }
-  invalidateCache(`submission_${req.params.id}`); invalidateCache('feed_'); invalidateCache('roadmap_');
+  invalidateCache(`submission_${req.params.id}`); invalidateCache('feed_');invalidateCache('published_count_'); invalidateCache('roadmap_');
   return res.json({ success: true });
 }));
 router.get('/submissions/:id/activity', run(async (req, res) => {

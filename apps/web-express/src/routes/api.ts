@@ -169,6 +169,7 @@ router.post(
     if(error?.code==='P0004')return res.status(410).json({success:false,error:'This receipt expired or its submission was removed.'});
     if(error)throw error;
     invalidateCache('feed_');
+    invalidateCache('published_count_');
     res.setHeader('Cache-Control','private, no-store');
     res.status(data.replayed?200:201).json({success:true,id:data.id,tracking_code:trackingCode,replayed:data.replayed});
   })
@@ -213,6 +214,7 @@ router.patch(
 
     invalidateCache(`submission_${id}`);
     invalidateCache("feed_");
+    invalidateCache("published_count_");
     invalidateCache("roadmap_");
 
     res.json({ success: true });
@@ -227,7 +229,7 @@ router.get(
     const following = scope === 'following';
     if (following && !req.session.user) return res.status(401).json({success:false,error:'Sign in to see followed ideas.'});
     if (following) res.setHeader('Cache-Control','private, no-store');
-    const result = await loadPublishedSubmissions({ page, sortBy, category, search, followingUserId: following ? req.session.user!.id : undefined });
+    const result = await loadPublishedSubmissions({ page, sortBy, category, search, followingUserId: following ? req.session.user!.id : undefined, includeTotal:req.query.total!=='skip' });
     res.json({
       success: true,
       feed: result.data,
