@@ -21,6 +21,7 @@ router.get(
     if (following && !req.session.user) return res.redirect('/notifications');
     if (following) res.setHeader('Cache-Control','private, no-store');
 
+    const dataStarted=performance.now();
     const { data: feed, count, hasMore } = await loadPublishedSubmissions({
       page,
       sortBy: sortBy as any,
@@ -29,6 +30,7 @@ router.get(
       followingUserId: following ? req.session.user!.id : undefined,
     });
 
+    res.append('Server-Timing',`data;dur=${(performance.now()-dataStarted).toFixed(1)}`);
     res.render("feed", {
       title: "Community Ideas — SuggFeed",
       description: "Browse all community feedback and ideas on SuggFeed.",

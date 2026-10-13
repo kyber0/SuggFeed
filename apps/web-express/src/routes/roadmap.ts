@@ -21,6 +21,7 @@ router.get('/idea/:id', async (req, res, next) => {
 });
 router.get('/', async (req, res, next) => {
   try {
+    const dataStarted=performance.now();
     const filters = roadmapFilters(req.query);
     const [result, categories, recentlyCompleted] = await Promise.all([
       loadRoadmapPage(filters),
@@ -28,6 +29,7 @@ router.get('/', async (req, res, next) => {
       filters.view === 'board' && filters.stage === 'all' && !filters.search && filters.category === 'all' ? loadRecentlyCompleted() : Promise.resolve([]),
     ]);
     if (filters.page > result.pageCount) return res.redirect('/roadmap?' + new URLSearchParams({ ...filters, page: String(result.pageCount) }).toString());
+    res.append('Server-Timing',`data;dur=${(performance.now()-dataStarted).toFixed(1)}`);
     res.render('roadmap', {
       title: 'Campus roadmap — SuggFeed',
       description: 'See which community ideas are planned, in progress, and completed.',

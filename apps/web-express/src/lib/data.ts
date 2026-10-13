@@ -126,57 +126,59 @@ export async function loadPublishedSubmissions(opts: {
       : "all";
 
   const cacheKey = `feed_${normalizedSort}_${category}_${search}_p${page}`;
-  const cached = getCache<{ data: Submission[]; count: number; hasMore: boolean }>(cacheKey);
-  if (cached && !followingUserId) return cached;
+  const fetchFeed = async () => {
+    let query = (followingUserId ? supabaseService : supabase)
+      .from("submissions")
+      .select(SUBMISSION_SELECT + (followingUserId ? ',idea_follows!inner(user_id)' : ''), { count: "exact" })
+      .in("status", ["approved", "in_progress", "resolved"]);
+    if (followingUserId) query = query.eq('idea_follows.user_id', followingUserId);
 
-  let query = (followingUserId ? supabaseService : supabase)
-    .from("submissions")
-    .select(SUBMISSION_SELECT + (followingUserId ? ',idea_follows!inner(user_id)' : ''), { count: "exact" })
-    .in("status", ["approved", "in_progress", "resolved"]);
-  if (followingUserId) query = query.eq('idea_follows.user_id', followingUserId);
-
-  // Category filter: resolve name → UUID for reliable matching
-  if (category && category !== "All") {
-    const idMap = await getCategoryIdMap();
-    const catId = idMap.get(category) ?? idMap.get(category.toLowerCase());
-    if (catId) {
-      query = query.eq("category_id", catId);
-    } else {
-      // Fallback to join filter if UUID resolution fails
-      query = (query as any).eq("categories.name", category);
+    // Category filter: resolve name → UUID for reliable matching
+    if (category && category !== "All") {
+      const idMap = await getCategoryIdMap();
+      const catId = idMap.get(category) ?? idMap.get(category.toLowerCase());
+      if (catId) {
+        query = query.eq("category_id", catId);
+      } else {
+        // Fallback to join filter if UUID resolution fails
+        query = (query as any).eq("categories.name", category);
+      }
     }
-  }
 
-  // Sanitized search
-  if (search && search.trim()) {
-    const safe = sanitizeSearch(search);
-    query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
-  }
+    // Sanitized search
+    if (search && search.trim()) {
+      const safe = sanitizeSearch(search);
+      query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
+    }
 
-  if (normalizedSort === "top") {
-    query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false });
-  } else if (normalizedSort === "oldest") {
-    query = query.order("created_at", { ascending: true });
-  } else {
-    // "all" / "latest": all published community ideas sorted newest first
-    query = query.order("created_at", { ascending: false });
-  }
+    if (normalizedSort === "top") {
+      query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false });
+    } else if (normalizedSort === "oldest") {
+      query = query.order("created_at", { ascending: true });
+    } else {
+      // "all" / "latest": all published community ideas sorted newest first
+      query = query.order("created_at", { ascending: false });
+    }
 
-  const from = (page - 1) * PER_PAGE;
-  query = query.range(from, from + PER_PAGE - 1);
+    const from = (page - 1) * PER_PAGE;
+    query = query.range(from, from + PER_PAGE - 1);
 
-  const { data, error, count } = await query;
-  if (error) throw error;
+    const { data, error, count } = await query;
+    if (error) throw error;
 
-  const result = {
-    data: (data ?? []).map(({idea_follows, ...row}: any) => row) as unknown as Submission[],
-    count: count ?? 0,
-    hasMore: (count ?? 0) > page * PER_PAGE,
+    const result = {
+      data: (data ?? []).map(({idea_follows, ...row}: any) => row) as unknown as Submission[],
+      count: count ?? 0,
+      hasMore: (count ?? 0) > page * PER_PAGE,
+    };
+    return result;
   };
 
-  // Cache 30s for first page (hot path), 2min for deeper pages
-  if (!followingUserId) setCache(cacheKey, result, page === 1 ? 30_000 : 120_000);
-  return result;
+  // Following is account-specific: always read it afresh, outside shared caches.
+  // Public requests share pending queries as well as the existing TTL cache.
+  return followingUserId
+    ? fetchFeed()
+    : fetchWithCache(cacheKey, fetchFeed, page === 1 ? 30_000 : 120_000);
 }
 
 /* ─── Single submission ───────────────────────────────────────────────── */

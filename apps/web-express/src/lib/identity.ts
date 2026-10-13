@@ -6,7 +6,10 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
   if (!req.session.user || req.path.startsWith("/auth/")) return next();
   const started=performance.now();
   const expectedUserId=req.session.user.id;
-  const readProfile=()=>supabaseService.from('profiles').select('role, display_name').eq('id',expectedUserId).maybeSingle();
+  const profilePage=['GET','HEAD'].includes(req.method) && /^\/profile\/?$/.test(req.path);
+  const readProfile=()=>profilePage
+    ? supabaseService.from('profiles').select('*').eq('id',expectedUserId).maybeSingle()
+    : supabaseService.from('profiles').select('role, display_name').eq('id',expectedUserId).maybeSingle();
   const readOnly=['GET','HEAD'].includes(req.method);
   const pageRead=/^(?:\/$|\/(?:feed|roadmap|idea|profile|notifications|inbox)(?:\/|$)|\/api\/(?:idea|feed|categories)(?:\/|$))/.test(req.path);
   // Public/self-owned page reads can overlap independent checks. Mutations and
@@ -39,6 +42,9 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
     }
     const {data:profile,error:profileError}=profileResult || await readProfile();
     if (profileError) throw new Error("Account permissions unavailable.");
+    // Only this request's verified owner can reuse this read. No identity or
+    // permission result is cached across requests, and refresh checks still run.
+    if(profilePage)res.locals.verifiedProfile={userId:expectedUserId,profile};
     if (req.session.user) {
       req.session.user.role = profile?.role ?? "student";
       req.session.user.display_name = profile?.display_name ?? req.session.user.display_name;

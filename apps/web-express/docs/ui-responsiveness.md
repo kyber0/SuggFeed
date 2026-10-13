@@ -34,18 +34,29 @@ replace the selected idea, and loading has a timeout.
   it. This removes the blocking CDN dependency and floating browser SDK version.
 - Inter's Latin variable WOFF2 font is served locally with its OFL license and
   source-package/hash metadata. The external Google stylesheet imports are removed.
+- The profile page reuses the profile fetched during its verified identity check
+  in that same request. Owner matching, role revalidation and token verification
+  still run; this does not cache authentication or permissions.
 - Independent token and profile reads overlap on public/self-owned page reads.
   Staff routes and mutations retain the profile check after token verification.
   There is no new authorization cache. The token must still match the session owner.
 - Account bookmark hydration reads bookmark IDs only, instead of fetching all three
   activity lists and their public idea projections.
 - Roadmap idea and public-progress reads run together.
+- Public feed requests now also share identical pending queries, with the existing
+  30-second first-page / two-minute deeper-page TTLs. Following feeds remain
+  uncached and account-specific.
 - Identical in-flight data reads are shared until completion. Existing cache TTLs
   are unchanged, cache invalidation detaches pending reads, and failed reads are
   removed rather than retained as cached promises.
 
-`Server-Timing` reports session loading and identity-check durations, so future
-network traces can distinguish backend waits from UI rendering. Durations contain
+`Server-Timing` reports session loading, identity checks, and data-loading durations
+on home, feed, profile and roadmap pages, so browser network traces can distinguish
+the sequential backend waits. A full signed-in navigation still requires a session
+read, verified identity, and page data before server-rendered HTML is returned.
+In-memory caches are instance-local and do not eliminate serverless cold starts or
+network distance between the function and database. Unchanged sessions already
+avoid rewrites with `resave: false`; the store has not been changed. Durations contain
 no tokens, account identifiers or profile data.
 
 ## Validation and release

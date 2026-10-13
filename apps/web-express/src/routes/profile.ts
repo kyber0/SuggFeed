@@ -29,12 +29,16 @@ router.get(
       });
     }
 
+    const dataStarted=performance.now();
     const [profile, submissions, bookmarks] = await Promise.all([
-      loadUserProfile(user.id),
+      res.locals.verifiedProfile?.userId===user.id
+        ? Promise.resolve(res.locals.verifiedProfile.profile)
+        : loadUserProfile(user.id),
       loadUserSubmissions(user.id),
       loadUserBookmarks(user.id),
     ]);
 
+    res.append('Server-Timing',`data;dur=${(performance.now()-dataStarted).toFixed(1)}`);
     res.render("profile", {
       title: "My Profile — SuggFeed",
       description: "Manage your ideas and bookmarks.",

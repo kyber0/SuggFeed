@@ -14,12 +14,14 @@ function asyncHandler(
 router.get(
   "/",
   asyncHandler(async (_req: Request, res: Response) => {
+    const dataStarted=performance.now();
     const { data: feed, count } = await loadPublishedSubmissions({
       page: 1,
       sortBy: "latest",
       category: "All",
     });
 
+    res.append('Server-Timing',`data;dur=${(performance.now()-dataStarted).toFixed(1)}`);
     res.render("home", {
       title: "SuggFeed — Share feedback, track progress",
       description: "Share campus feedback, choose whether to attach your account, and check submission progress with a private tracking code.",
