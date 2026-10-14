@@ -157,7 +157,10 @@
                 const data = await response.json();
                 if (!response.ok || !data.success)
                     throw new Error('Account bookmark could not be confirmed.');
-                accountSaved = saved;
+                if (willSave)
+                    accountSaved.add(id);
+                else
+                    accountSaved.delete(id);
             }
             else
                 localStorage.setItem('sf_saved_ideas', JSON.stringify([...saved]));
@@ -190,9 +193,36 @@
         }
         catch { }
     }
+    let bookmarkLoadBusy = false;
+    async function loadBookmarks() {
+        if (bookmarkLoadBusy)
+            return;
+        bookmarkLoadBusy = true;
+        document.getElementById('bookmark-retry')?.remove();
+        try {
+            const response = await fetch('/profile/bookmarks', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
+            const data = await response.json();
+            if (!response.ok || !data.success)
+                throw new Error();
+            accountSaved = new Set(data.ids);
+            accountBookmarksLoaded = true;
+            sfInitLocalStates();
+        }
+        catch {
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.id = 'bookmark-retry';
+            retry.className = 'workspace-button';
+            retry.textContent = 'Saved state unavailable · Retry';
+            retry.addEventListener('click', () => void loadBookmarks());
+            document.getElementById('feed-posts-container')?.before(retry);
+        }
+        finally {
+            bookmarkLoadBusy = false;
+        }
+    }
     if (savedOnAccount && !hydratedBookmarks)
-        void fetch('/profile/bookmarks', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) }).then(response => response.json()).then(data => { if (!data.success)
-            throw new Error(); accountSaved = new Set(data.ids); accountBookmarksLoaded = true; sfInitLocalStates(); }).catch(() => window.sfToast?.('Account bookmarks could not load. Refresh to check saved state.', 'error'));
+        void loadBookmarks();
     function sfInitLocalStates() {
         const votes = sfGetVotedSet();
         const saved = sfGetSavedSet();
@@ -427,8 +457,9 @@
         const shown = _feedContainer.querySelectorAll('.post-card[data-idea-id]').length;
         if (typeof total === 'number' && Number.isFinite(total))
             _resultSummary.dataset.total = String(total);
+        const known = _resultSummary.dataset.total !== '';
         const count = Math.max(shown, Number(_resultSummary.dataset.total) || shown);
-        _resultSummary.textContent = 'Showing ' + shown.toLocaleString() + ' of ' + count.toLocaleString() + (_appliedSearch || _currentCat !== 'All' ? ' matching idea' : ' idea') + (count === 1 ? '' : 's');
+        _resultSummary.textContent = 'Showing ' + shown.toLocaleString() + (known ? ' of ' + count.toLocaleString() : '') + (_appliedSearch || _currentCat !== 'All' ? ' matching idea' : ' idea') + ((known ? count : shown) === 1 ? '' : 's');
     }
     async function sfLoadMoreFeed() {
         if (_isLoading || !_hasMore || !_feedContainer)
@@ -450,6 +481,8 @@
             const params = new URLSearchParams({ page: String(nextPage), sort: _currentSort, category: _currentCat, search: _appliedSearch });
             if (following)
                 params.set('scope', 'following');
+            else
+                params.set('total', 'skip');
             const response = await fetch('/api/feed?' + params.toString(), { headers: { Accept: 'application/json' }, signal: controller.signal });
             if (!response.ok)
                 throw new Error('request-failed');
@@ -511,5 +544,14 @@
     sfFeedSearch(searchInput?.value || '');
     updateResultSummary();
     sfInitLocalStates();
+    if (!following && config.dataset.total === '') {
+        const params = new URLSearchParams({ category: _currentCat, search: _appliedSearch });
+        void fetch('/api/feed-total?' + params, { credentials: 'omit', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json' } })
+            .then(response => { if (!response.ok)
+            throw new Error(); return response.json(); })
+            .then(data => { if (data.success && typeof data.count === 'number')
+            updateResultSummary(data.count); })
+            .catch(() => undefined); // A missing total never blocks ideas, saving or pagination.
+    }
     Object.assign(window, { sfSetSort, sfSetTopic, sfSetLeftTopic, sfToggleTopicsChips, sfFeedSearch, sfClearSearch, sfNavigate, sfGetVotedSet, sfSaveVotedId, sfGetSavedSet, sfBookmarkPost, sfInitLocalStates, sfVoteFeed, sfSharePost, sfCloseMobileFilter, sfEscapeHtml, sfCreatePostCardHtml, sfLoadMoreFeed });
 })();

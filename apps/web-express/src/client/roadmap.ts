@@ -145,6 +145,7 @@
     const blockedAlert = document.getElementById('roadmap-detail-blocked-alert');
     if (blockedAlert) {
       blockedAlert.hidden = !item.is_blocked;
+      document.getElementById('roadmap-detail-blocked-reason')!.textContent = 'Check the latest school update for the reason.';
     }
 
     const progressWrap = document.getElementById('roadmap-detail-progress-wrap');
@@ -189,12 +190,17 @@
     document.dispatchEvent(new CustomEvent('sf:follow-context', { detail: follow }));
 
     document.querySelectorAll<HTMLElement>('[data-progress-stage]').forEach(step => {
+      const stages = ['approved', 'in_progress', 'resolved'];
+      const index = stages.indexOf(step.dataset.progressStage || '');
+      step.dataset.state = index < stages.indexOf(item.status) ? 'complete' : index === stages.indexOf(item.status) ? 'current' : 'upcoming';
       if (step.dataset.progressStage === item.status) step.setAttribute('aria-current', 'step');
       else step.removeAttribute('aria-current');
     });
   }
 
   function showUpdates(updates: PublicUpdate[]) {
+    const paused = updates.find(update => update.kind === 'blocked' && update.blocked_reason);
+    if (paused && !document.getElementById('roadmap-detail-blocked-alert')!.hidden) document.getElementById('roadmap-detail-blocked-reason')!.textContent = paused.blocked_reason || '';
     const list = document.getElementById('roadmap-history-list')!;
     list.replaceChildren();
     const earlier=updates.filter(u=>u.kind==='started').sort((a,b)=>a.occurred_on.localeCompare(b.occurred_on)).flatMap(u=>(u.files || []).map(file=>({file,update:u}))).find(x=>x.file.mime_type.startsWith('image/') && uuid.test(x.file.id));
@@ -353,6 +359,10 @@
       return;
     }
     const id = url.searchParams.get('item');
+    if (url.searchParams.has('work')) {
+      if (dialog.open) {syncingHistory = true; dialog.close();}
+      return;
+    }
     if (id) void open(id, false);
     else if (dialog.open) {
       syncingHistory = true;
@@ -428,5 +438,5 @@
   });
 
   const initial = new URL(window.location.href).searchParams.get('item');
-  if (initial) void open(initial, false);
+  if (initial && !new URL(window.location.href).searchParams.has('work')) void open(initial, false);
 })();

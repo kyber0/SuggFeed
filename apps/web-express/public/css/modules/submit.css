@@ -1613,3 +1613,6 @@
   transition: transform 0.2s;
 }
 .sf-track-result-timeline[open] summary::before { transform: rotate(90deg); }
+
+/* Hidden native radios still need a visible keyboard focus indicator. */
+.sip-cat-card:focus-within { outline:3px solid var(--focus-ring); outline-offset:3px; }

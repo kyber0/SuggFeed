@@ -29,6 +29,7 @@ router.get(
       category,
       search,
       followingUserId: following ? req.session.user!.id : undefined,
+      includeTotal:false,
     }),verifiedFeedAccountState(req,res)]);
     const {data:feed,count,hasMore}=result;
 

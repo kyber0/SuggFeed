@@ -40,24 +40,24 @@
       <div class="prof-hero-info">
         <h1 class="prof-hero-name"><%= displayName %></h1>
         <p class="prof-hero-email"><%= email %></p>
-        <div class="prof-hero-stats">
-          <span class="prof-hero-badge">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span id="stat-ideas-count"><%= submissions.length %></span> ideas
-          </span>
-          <span class="prof-hero-badge">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-            <span id="stat-bookmarks-count"><%= bookmarks.length %></span> saved
-          </span>
-          <span class="prof-hero-badge">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            <span id="stat-shared-count">0</span> shared
-          </span>
-          <span class="prof-hero-badge">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-            <span id="stat-supported-count">0</span> supported
-          </span>
-        </div>
+      </div>
+      <div class="prof-hero-stats">
+        <span class="prof-hero-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span id="stat-ideas-count"><%= submissions.length %></span> ideas
+        </span>
+        <span class="prof-hero-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span id="stat-bookmarks-count">—</span> saved
+        </span>
+        <span class="prof-hero-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          <span id="stat-shared-count">—</span> shared
+        </span>
+        <span class="prof-hero-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          <span id="stat-supported-count">—</span> supported
+        </span>
       </div>
 
       <!-- Auth action -->
@@ -78,8 +78,9 @@
               Staff Portal
             </a>
           <% } %>
-          <a href="#prof-settings-panel" class="prof-settings-link" title="Profile Settings">
+          <a href="#prof-settings-panel" class="prof-settings-link" aria-label="Profile settings" title="Profile Settings">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Settings</span>
           </a>
         </div>
       <% } %>
@@ -88,23 +89,27 @@
     <div class="prof-hero-wave"></div>
   </div>
 
-  <p id="profile-feedback" role="status" aria-live="polite"></p>
-  <p>Account bookmarks follow your sign-in. Supported and shared activity also includes public ideas remembered on this device. Up to 200 recent ideas per list are shown.</p>
+  <nav class="prof-shortcuts" aria-label="Your account spaces">
+    <a href="/notifications"><strong>School updates</strong><span>Followed ideas &amp; preferences →</span></a>
+    <a href="/inbox"><strong>Private messages</strong><span>Questions &amp; school replies →</span></a>
+    <a href="/feed?scope=following"><strong>Following</strong><span>Ideas you’re keeping up with →</span></a>
+  </nav>
+  <div class="prof-feedback-row"><p id="profile-feedback" role="status" aria-live="polite"></p><button type="button" class="workspace-button" id="profile-activity-retry" hidden>Retry activity</button></div>
   <!-- ── Content Area ── -->
   <div class="prof-content">
     <!-- Left: Settings Panel -->
     <aside class="prof-settings" id="prof-settings-panel">
-      <div class="prof-settings-header" data-sf-click="action-133" id="prof-settings-header">
-        <h2 class="prof-section-title">
+      <button type="button" class="prof-settings-header" data-sf-click="action-133" id="prof-settings-header" aria-expanded="true" aria-controls="prof-settings-body">
+        <span class="prof-section-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Profile Settings
-        </h2>
+        </span>
         <span class="prof-settings-toggle" aria-hidden="true">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </span>
-      </div>
+      </button>
 
-      <div class="prof-settings-body">
+      <div class="prof-settings-body" id="prof-settings-body">
         <% if (!user) { %>
           <div class="prof-auth-callout">
             <p>Sign in to sync your activity across devices.</p>
@@ -134,6 +139,11 @@
             placeholder="e.g. Alex, Campus Resident…"
             maxlength="60"
           />
+        </div>
+
+        <div class="prof-field">
+          <label for="profile-text-size" class="prof-field-label">Mobile text size</label>
+          <select id="profile-text-size" class="workspace-input"><option value="compact">Compact</option><option value="comfortable">Comfortable</option></select>
         </div>
 
         <div class="prof-divider"></div>
@@ -175,11 +185,15 @@
 
     <!-- Right: Activity Tabs -->
     <section class="prof-activity">
-      <div class="prof-activity-tabs" role="tablist">
+      <details class="prof-activity-note"><summary>About your activity</summary><p>Account bookmarks follow your sign-in. Supported and shared activity also includes public ideas remembered on this device. Account activity loads in pages. Device history includes up to 200 recent ideas. Counts show the public ideas loaded so far.</p></details>
+
+      <div class="prof-activity-tabs" role="tablist" aria-label="Your activity">
         <button
           type="button"
           role="tab"
           id="tab-btn-submissions"
+          aria-controls="prof-pane-submissions"
+          tabindex="0"
           aria-selected="true"
           class="prof-tab-btn active"
           data-sf-click="action-137"
@@ -193,44 +207,50 @@
           type="button"
           role="tab"
           id="tab-btn-bookmarks"
+          aria-controls="prof-pane-bookmarks"
+          tabindex="-1"
           aria-selected="false"
           class="prof-tab-btn"
           data-sf-click="action-138"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
           <span>Bookmarks</span>
-          <span class="prof-tab-count" id="count-tab-bookmarks"><%= bookmarks.length %></span>
+          <span class="prof-tab-count" id="count-tab-bookmarks">—</span>
         </button>
 
         <button
           type="button"
           role="tab"
           id="tab-btn-shared"
+          aria-controls="prof-pane-shared"
+          tabindex="-1"
           aria-selected="false"
           class="prof-tab-btn"
           data-sf-click="action-139"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           <span>Shared</span>
-          <span class="prof-tab-count" id="count-tab-shared">0</span>
+          <span class="prof-tab-count" id="count-tab-shared">—</span>
         </button>
 
         <button
           type="button"
           role="tab"
           id="tab-btn-voted"
+          aria-controls="prof-pane-voted"
+          tabindex="-1"
           aria-selected="false"
           class="prof-tab-btn"
           data-sf-click="action-140"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
           <span>Supported</span>
-          <span class="prof-tab-count" id="count-tab-voted">0</span>
+          <span class="prof-tab-count" id="count-tab-voted">—</span>
         </button>
       </div>
 
       <!-- Tab 1: My Submissions -->
-      <div id="prof-pane-submissions" class="prof-activity-pane">
+      <div id="prof-pane-submissions" class="prof-activity-pane" role="tabpanel" aria-labelledby="tab-btn-submissions" tabindex="0">
         <% if (submissions.length === 0) { %>
           <div class="prof-empty-state">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -272,7 +292,7 @@
       </div>
 
       <!-- Tab 2: Bookmarks -->
-      <div id="prof-pane-bookmarks" class="prof-activity-pane" hidden>
+      <div id="prof-pane-bookmarks" class="prof-activity-pane" role="tabpanel" aria-labelledby="tab-btn-bookmarks" tabindex="0" hidden>
         <% if (bookmarks.length === 0) { %>
           <div class="prof-empty-state">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
@@ -314,7 +334,7 @@
       </div>
 
       <!-- Tab 3: Shared (client-side) -->
-      <div id="prof-pane-shared" class="prof-activity-pane" hidden>
+      <div id="prof-pane-shared" class="prof-activity-pane" role="tabpanel" aria-labelledby="tab-btn-shared" tabindex="0" hidden>
         <div class="prof-empty-state" id="shared-empty">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           <h3>No shared ideas recorded yet</h3>
@@ -325,7 +345,7 @@
       </div>
 
       <!-- Tab 4: Supported / Voted -->
-      <div id="prof-pane-voted" class="prof-activity-pane" hidden>
+      <div id="prof-pane-voted" class="prof-activity-pane" role="tabpanel" aria-labelledby="tab-btn-voted" tabindex="0" hidden>
         <div class="prof-empty-state" id="voted-empty">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
           <h3>No supported proposals yet</h3>
@@ -338,4 +358,4 @@
   </div>
 </main>
 
-<script defer src="/js/profile.js?v=20261013-connected"></script>
+<script defer src="/js/profile.js?v=20261014-enhancements"></script>

@@ -19,6 +19,7 @@ router.get(
       page: 1,
       sortBy: "latest",
       category: "All",
+      includeTotal:false,
     });
 
     res.append('Server-Timing',`data;dur=${(performance.now()-dataStarted).toFixed(1)}`);

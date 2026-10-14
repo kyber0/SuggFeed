@@ -25,6 +25,7 @@ export function createWorkspacePreview() {
  app.use((_req,res,next)=>{res.setHeader('Content-Security-Policy',"script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; script-src-attr 'none'");next();});
  app.use(express.json());app.use(express.static(path.join(root,'public')));
  const privateRequests=[{id:'50000000-0000-4000-8000-000000000001',submission_id:items[0].id,title:items[0].title,prompt:'Which campus zone would benefit most from shaded seating?',reply:null as string|null,created_at:'2026-10-01T10:00:00Z',replied_at:null as string|null,closed_at:null as string|null}];
+ app.get('/profile',(_req,res)=>res.send(eta.render('profile',{currentPath:'/profile',user:{id:staffId,display_name:'Preview member',role:'student'},profile:{display_name:'Preview member'},submissions:[],bookmarks:[]})));
  app.get('/inbox',(_req,res)=>res.send(eta.render('private-inbox',{currentPath:'/inbox',user:{id:staffId,display_name:'Preview member',role:'student'}})));
  app.get('/notifications',(_req,res)=>res.send(eta.render('notifications',{currentPath:'/notifications',user:{id:staffId,display_name:'Preview member',role:'student'},signedIn:true})));
  app.get('/api/notifications/preferences',(_req,res)=>res.json({success:true,preferences:{update_mode:'all',weekly_digest:false,digest_paused:false,digest_kinds:DEFAULT_DIGEST_KINDS},digestAvailable:false,nextDigestWindow:nextDigestWindow()}));

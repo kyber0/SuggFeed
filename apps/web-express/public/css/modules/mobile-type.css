@@ -1,0 +1,43 @@
+/* A modest mobile text reduction. Keep form controls at 16px to avoid focus zoom. */
+@media (max-width:768px) {
+ body { font-size:14px; }
+ h1 { font-size:clamp(28px,7vw,36px); }
+ h2 { font-size:clamp(19px,3vw,25px); }
+ h3 { font-size:16px; }
+ :is(.workspace-heading,.roadmap-heading) h1,.staff-main .workspace-heading h1 { font-size:clamp(24px,6.3vw,30px); }
+ .sf-hero-title { font-size:clamp(32px,9vw,40px); }
+ .sf-hero-subtitle { font-size:15px; }
+ .feed-heading-group h1 { font-size:clamp(23px,6vw,28px); }
+ .prof-hero-name { font-size:20px; }
+ .sf-legal-header h1 { font-size:28px; }
+ :is(.am-heading,.am-magic-heading,.error-page-title,.auth-callback-title) { font-size:20px; }
+ .staff-login-intro h1 { font-size:26px; }
+ .staff-login-card h2 { font-size:24px; }
+ .workspace-dialog#roadmap-dialog .workspace-dialog-body h2 { font-size:23px; }
+ #staff-review-dialog .staff-review-heading h2 { font-size:20px; }
+ .work-record-body h2 { font-size:21px; }
+ .detail-panel-title { font-size:17px; }
+ :is(.post-title,.sip-section-title,.sf-track-title-head) { font-size:16px; }
+ .care-card h2 { font-size:18px; }
+ :is(.sf-card-title,.roadmap-lane h2,.prof-empty-state h3) { font-size:15px; }
+ :is(.prof-activity-title,.roadmap-completion-card h4) { font-size:13px; }
+ .work-timeline-card strong { font-size:12.5px; }
+ :is(.workspace-heading p:not(.workspace-kicker),.roadmap-subtitle,.detail-description-text,.sf-dialog__message) { font-size:13px; }
+ :is(.sf-legal-content p,.sf-legal-content li,.care-card p,.care-row span) { font-size:14px; }
+ :is(.post-body,.idea-card p,.comment-body-text,.am-subtext,.am-magic-body,.auth-callback-sub,.sip-section-sub) { font-size:12.5px; }
+ .workspace-description { font-size:13px; }
+ #staff-review-dialog .staff-review-context .workspace-description { font-size:14px; }
+ .work-record-body p,.work-record-history summary { font-size:12.5px; }
+ .work-record-body h3,.roadmap-public-history h3 { font-size:13px; }
+ .workspace-dialog#roadmap-dialog .roadmap-public-history > h3 { font-size:16px; }
+ :is(.workspace-button,.btn-ghost) { font-size:12.5px; }
+ :is(.btn-primary,.am-btn-primary) { font-size:14px; }
+ .site-header .brand .sf-wordmark { font-size:17px; }
+ :is(input,textarea,select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]) { font-size:16px; }
+}
+
+@media (max-width:768px) {
+ html[data-text-size="comfortable"] body {font-size:16px;}
+ html[data-text-size="comfortable"] :is(.post-body,.idea-card p,.comment-body-text,.am-subtext,.am-magic-body,.auth-callback-sub,.sip-section-sub,.detail-description-text,.workspace-description,.work-record-body p,.sf-dialog__message,.care-card p) {font-size:16px;line-height:1.6;}
+ html[data-text-size="comfortable"] :is(.prof-activity-title,.work-timeline-card strong,.workspace-button,.btn-ghost,.work-record-body h3,.roadmap-public-history h3) {font-size:15px;}
+}

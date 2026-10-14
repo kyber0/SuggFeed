@@ -4,6 +4,7 @@
 <aside
   id="idea-detail-drawer"
   class="detail-panel detail-panel-split"
+  tabindex="-1"
   role="dialog"
   aria-modal="true"
   aria-label="Idea Details"
@@ -290,4 +291,4 @@
   </div>
 </aside>
 
-<script defer src="/js/idea-detail-drawer.js?v=20261013-responsive"></script>
+<script defer src="/js/idea-detail-drawer.js?v=20261014-ui-audit"></script>

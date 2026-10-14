@@ -53,8 +53,9 @@ export async function communityAction(actor: string | null, action: string, data
   const result = await supabaseService.rpc('community_action', { p_actor: actor, p_action: action, p_data: data });
   if (result.error) {
     const code = result.error.code;
-    throw new CommunityError(code === '42501' ? 403 : code === 'P0002' ? 404 : code === '40001' ? 409 : code === '22023' || code === '23514' ? 400 : 500,
-      code === '40001' ? 'This item changed or already has an open request. Refresh and review it again.' : code === 'P0002' ? 'This item is unavailable.' : code === '42501' ? 'Access denied.' : code === '22023' || code === '23514' ? 'Check your selection and required fields.' : 'The change could not be saved. Please try again.');
+    const conflict = code === 'PT409' || code === '40001';
+    throw new CommunityError(code === '42501' ? 403 : code === 'P0002' ? 404 : conflict ? 409 : code === '22023' || code === '23514' ? 400 : 500,
+      conflict ? 'This item changed or already has an open request. Refresh and review it again.' : code === 'P0002' ? 'This item is unavailable.' : code === '42501' ? 'Access denied.' : code === '22023' || code === '23514' ? 'Check your selection and required fields.' : 'The change could not be saved. Please try again.');
   }
   return result.data;
 }

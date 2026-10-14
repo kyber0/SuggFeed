@@ -21,7 +21,7 @@
 /* ── 2. Core UI Components & Global Shell ── */
 @import url('./modules/components.css?v=20261011-feed');
 @import url('./modules/auth.css');
-@import url('./modules/branding.css?v=20261013-sf');
+@import url('./modules/branding.css?v=20261014-transparent-logo');
 @import url('./modules/submit.css');
 
 /* ── 3. Page & Feature Modules ── */
@@ -39,3 +39,5 @@
 @import url("./modules/persistence.css?v=20261013-cards");
 
 @import url("./modules/ui-polish.css?v=20261013-screen-skeletons");
+@import url('./modules/responsive.css?v=20261014-mobile-preferred');
+@import url('./modules/mobile-type.css?v=20261014-small-text');

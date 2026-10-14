@@ -3,6 +3,8 @@
 (function () {
     let sfCurrentIdea = null;
     let drawerRequest = null;
+    let returnFocus = null;
+    let background = [];
     let sfDrawerActiveReplyId = null;
     let sfDrawerOriginalPath = null;
     let sfTouchStartY = 0;
@@ -15,7 +17,7 @@
     };
     const SF_STATUS_CONFIG = {
         resolved: {
-            label: "Resolved",
+            label: "Completed",
             dotColor: "#0d9488",
             badgeBg: "rgba(13, 148, 136, 0.12)",
             badgeText: "#0d9488",
@@ -24,7 +26,7 @@
             iconSvg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>'
         },
         in_progress: {
-            label: "In Progress",
+            label: "In progress",
             dotColor: "var(--navy)",
             badgeBg: "rgba(11, 56, 87, 0.1)",
             badgeText: "var(--navy)",
@@ -33,16 +35,16 @@
             iconSvg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
         },
         approved: {
-            label: "Approved",
+            label: "Planned",
             dotColor: "#10b981",
             badgeBg: "rgba(16, 185, 129, 0.12)",
             badgeText: "#10b981",
             bannerTitle: "Proposal Approved",
-            bannerDesc: "This proposal has been accepted and scheduled for upcoming campus improvements.",
+            bannerDesc: "This proposal has been accepted for planning. Check school updates for any recorded schedule.",
             iconSvg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>'
         },
         pending: {
-            label: "Pending Review",
+            label: "Needs review",
             dotColor: "#f59e0b",
             badgeBg: "rgba(245, 158, 11, 0.12)",
             badgeText: "#f59e0b",
@@ -65,15 +67,28 @@
         const drawer = document.getElementById('idea-detail-drawer');
         const skeleton = document.getElementById('drawer-skeleton');
         const columns = document.getElementById('drawer-columns');
+        const failure = document.getElementById('drawer-load-error');
+        if (failure)
+            failure.hidden = true;
         overlay.removeAttribute('hidden');
+        if (drawer.hidden) {
+            returnFocus = document.activeElement;
+            background = Array.from(document.querySelectorAll('#page-content,.site-header,.mobile-tab-bar')).map(el => [el, el.inert]);
+            background.forEach(([el]) => el.inert = true);
+        }
         drawer.removeAttribute('hidden');
         drawer.setAttribute('aria-busy', 'true');
+        drawer.focus();
         document.body.style.overflow = 'hidden';
         // Update URL history without full reload
-        history.pushState({ ideaDrawerId: ideaId }, '', `/idea/${ideaId}`);
+        if (location.pathname !== `/idea/${ideaId}`)
+            history.pushState({ ideaDrawerId: ideaId }, '', `/idea/${ideaId}`);
         // Show skeleton
         skeleton.style.display = 'block';
         columns.style.display = 'none';
+        const postButton = document.getElementById('drawer-comment-submit-btn');
+        postButton.disabled = false;
+        postButton.textContent = 'Post';
         sfSetDrawerMobileTab(initialTab);
         try {
             const res = await fetch(`/api/idea/${encodeURIComponent(ideaId)}`, { signal: request.signal, headers: { Accept: 'application/json' } });
@@ -93,9 +108,26 @@
         catch (err) {
             if (drawerRequest !== request || drawer.hidden)
                 return;
-            if (window.sfToast)
-                sfToast(err.name === 'AbortError' ? 'Idea details took too long. Please try again.' : err.message || 'Failed to load idea details', 'error');
-            sfCloseIdeaDrawer();
+            skeleton.style.display = 'none';
+            drawer.setAttribute('aria-busy', 'false');
+            let failure = document.getElementById('drawer-load-error');
+            if (!failure) {
+                failure = document.createElement('div');
+                failure.id = 'drawer-load-error';
+                failure.className = 'care-card';
+                drawer.append(failure);
+            }
+            failure.replaceChildren();
+            failure.hidden = false;
+            const message = document.createElement('p');
+            message.setAttribute('role', 'status');
+            message.textContent = err.name === 'AbortError' ? 'Idea details took too long.' : 'Idea details could not load.';
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'workspace-button';
+            retry.textContent = 'Retry idea';
+            retry.addEventListener('click', () => void sfOpenIdeaDetail(ideaId, initialTab));
+            failure.append(message, retry);
         }
         finally {
             clearTimeout(timeout);
@@ -175,7 +207,7 @@
             voteBtn.classList.remove('voted');
             voteBtn.disabled = true;
             voteBtn.title = "Voting opens once approved by staff";
-            document.getElementById('drawer-vote-label').textContent = "Pending Review";
+            document.getElementById('drawer-vote-label').textContent = "Needs review";
             document.getElementById('drawer-vote-icon').innerHTML = '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>';
         }
         else if (hasVoted) {
@@ -307,6 +339,10 @@
             overlay.setAttribute('hidden', '');
         if (drawer)
             drawer.setAttribute('hidden', '');
+        background.forEach(([el, inert]) => el.inert = inert);
+        background = [];
+        if (returnFocus?.isConnected)
+            returnFocus.focus();
         document.body.style.overflow = '';
         // Reset composer state
         const composer = document.getElementById('drawer-comment-composer');
@@ -439,6 +475,7 @@
         e.preventDefault();
         if (!sfCurrentIdea)
             return;
+        const ideaId = sfCurrentIdea.id, context = drawerRequest, replyId = sfDrawerActiveReplyId;
         const input = document.getElementById('drawer-comment-input');
         const body = input.value.trim();
         if (body.length < 10) {
@@ -450,15 +487,18 @@
         btn.disabled = true;
         btn.innerHTML = '<span>Posting…</span>';
         try {
-            const res = await fetch(`/api/comments/${sfCurrentIdea.id}`, {
+            const res = await fetch(`/api/comments/${ideaId}`, {
+                signal: AbortSignal.timeout(15000),
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ body, parentId: sfDrawerActiveReplyId })
+                body: JSON.stringify({ body, parentId: replyId })
             });
             const data = await res.json();
             if (!data.success && !data.data) {
                 throw new Error(data.error || 'Failed to post comment');
             }
+            if (context !== drawerRequest || sfCurrentIdea?.id !== ideaId)
+                return;
             const empty = document.getElementById('drawer-comment-empty');
             if (empty)
                 empty.remove();
@@ -491,16 +531,22 @@
                 sfToast('Comment posted successfully!', 'success');
         }
         catch (err) {
+            if (context !== drawerRequest)
+                return;
             if (window.sfToast)
-                sfToast(err.message || 'Could not post comment.', 'error');
+                sfToast(err.name === 'TimeoutError' ? 'Posting could not be confirmed. Check comments before trying again.' : err.message || 'Could not post comment.', 'error');
         }
         finally {
+            if (context !== drawerRequest)
+                return;
             btn.disabled = false;
             btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span>Post</span>';
         }
     }
     // Keyboard and History Listeners
     window.addEventListener('keydown', (e) => {
+        if (e.defaultPrevented || document.querySelector('dialog[open]'))
+            return;
         if (e.key === 'Escape') {
             const drawer = document.getElementById('idea-detail-drawer');
             if (drawer && !drawer.hasAttribute('hidden')) {
@@ -520,6 +566,24 @@
         const drawer = document.getElementById('idea-detail-drawer');
         if (!handle || !drawer)
             return;
+        drawer.addEventListener('keydown', event => {
+            if (event.key !== 'Tab')
+                return;
+            const items = Array.from(drawer.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),textarea:not(:disabled),select:not(:disabled),[tabindex="0"]')).filter(el => el.getClientRects().length);
+            const first = items[0], last = items[items.length - 1];
+            if (!first) {
+                event.preventDefault();
+                drawer.focus();
+            }
+            else if (event.shiftKey && (document.activeElement === first || document.activeElement === drawer)) {
+                event.preventDefault();
+                last.focus();
+            }
+            else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        });
         handle.addEventListener('touchstart', (e) => {
             sfTouchStartY = e.touches[0].clientY;
         }, { passive: true });

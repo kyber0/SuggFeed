@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { loadUserProfile, loadUserSubmissions, loadUserBookmarks } from "../lib/data";
+import { loadUserProfile, loadUserSubmissions } from "../lib/data";
 
 import { supabaseService } from '../lib/supabase';
 import { sameOriginOnly } from '../lib/security';
@@ -31,12 +31,11 @@ router.get(
     }
 
     const dataStarted=performance.now();
-    const [profile, submissions, bookmarks] = await Promise.all([
+    const [profile, submissions] = await Promise.all([
       res.locals.verifiedProfile?.userId===user.id
         ? Promise.resolve(res.locals.verifiedProfile.profile)
         : loadUserProfile(user.id),
       loadUserSubmissions(user.id),
-      loadUserBookmarks(user.id),
     ]);
 
     res.append('Server-Timing',`data;dur=${(performance.now()-dataStarted).toFixed(1)}`);
@@ -45,7 +44,7 @@ router.get(
       description: "Manage your ideas and bookmarks.",
       profile,
       submissions,
-      bookmarks,
+      bookmarks: [],
     });
   })
 );
@@ -69,6 +68,38 @@ router.post('/preferences',sameOriginOnly,asyncHandler(async(req,res)=>{
 }));
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 router.post('/activity',sameOriginOnly,asyncHandler(async(req,res)=>{
+ // New clients request one bounded page. Keep the legacy response for older cached clients.
+ const tab=req.body?.tab;
+ if(tab!==undefined){
+  const tables:Record<string,string>={bookmarks:'bookmarks',voted:'votes',shared:'shared_posts'};
+  if(typeof tab!=='string' || !['bookmarks','voted','shared'].includes(tab))return res.status(400).json({success:false,error:'Unknown activity tab.'});
+  const offset=req.body?.offset ?? 0,localPhase=req.body?.local===true || !req.session.user;
+  if(!Number.isSafeInteger(offset) || offset<0 || offset>100000)return res.status(400).json({success:false,error:'Invalid activity page.'});
+  const size=25;
+  let ids:string[]=[],more=false;
+  if(!localPhase){
+   const result=await supabaseService.from(tables[tab]).select('submission_id').eq('user_id',req.session.user!.id).order('created_at',{ascending:false}).order('submission_id').range(offset,offset+size);
+   if(result.error)throw new Error('Activity could not load.');
+   more=(result.data || []).length>size;ids=(result.data || []).slice(0,size).map(row=>row.submission_id);
+  }else{
+   let remembered=Array.isArray(req.body?.ids)?[...new Set<string>(req.body.ids.filter((id:unknown):id is string=>typeof id==='string' && uuid.test(id)))].slice(0,200):[];
+   if(req.session.user && tab==='bookmarks')remembered=[];
+   if(req.session.user && remembered.length){
+    const result=await supabaseService.from(tables[tab]).select('submission_id').eq('user_id',req.session.user.id).in('submission_id',remembered);
+    if(result.error)throw new Error('Device activity could not load.');
+    const recorded=new Set((result.data || []).map(row=>row.submission_id));remembered=remembered.filter(id=>!recorded.has(id));
+   }
+   ids=remembered.slice(offset,offset+size);more=remembered.length>offset+size;
+  }
+  let rows:any[]=[];
+  if(ids.length){
+   const result=await supabaseService.from('submissions').select('id,title,status,vote_count,created_at,categories(name)').in('id',ids).in('status',['approved','in_progress','resolved']);
+   if(result.error)throw new Error('Public activity could not load.');
+   const byId=new Map((result.data || []).map(row=>[row.id,row]));rows=ids.map(id=>byId.get(id)).filter(Boolean);
+  }
+  const next=more?{offset:offset+size,local:localPhase}:!localPhase && tab!=='bookmarks'?{offset:0,local:true}:null;
+  return res.json({success:true,rows,next});
+ }
  const local=(key:string):string[]=>Array.isArray(req.body?.[key])?[...new Set<string>(req.body[key].filter((id:unknown):id is string=>typeof id==='string' && uuid.test(id)))].slice(0,200):[];
  const accountIds=async(table:string)=>{
   if(!req.session.user)return [];

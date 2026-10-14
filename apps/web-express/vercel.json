@@ -12,5 +12,8 @@
     "api/index.ts": {
       "includeFiles": "{views/**,dist/**,public/**}"
     }
-  }
+  },
+  "regions": [
+    "icn1"
+  ]
 }

@@ -9,7 +9,7 @@ export class WorkflowError extends ProgressError {constructor(status:number,mess
 export function workflowError(error:any):never {
   const known:Record<string,[number,string,string]>={P0101:[409,'Use an available guided action for this submission.','WORKFLOW_ACTION_REQUIRED'],P0102:[409,'An administrator must verify the missing work dates first.','WORK_DATES_REQUIRED'],P0103:[503,'Work changes are temporarily paused. Reading and private follow-ups remain available.','LIFECYCLE_PAUSED'],P0104:[400,'Completion requires ready evidence attached to this update.','COMPLETION_EVIDENCE_REQUIRED'],
     '40001':[409,'This submission changed. Refresh its details; keep your draft.','VERSION_CONFLICT'],'23505':[409,'This request ID was already used. Keep your draft and refresh.','REQUEST_CONFLICT'],P0002:[404,'Submission not found.','NOT_FOUND'],'42501':[403,'Your current role cannot perform this action.','FORBIDDEN'],'22023':[400,'Check the action, dates, explanation and evidence.','INVALID_ACTION']};
-  const mapped=known[error?.code];if(mapped)throw new WorkflowError(...mapped);
+  const mapped=known[error?.code==='PT409'?'40001':error?.code];if(mapped)throw new WorkflowError(...mapped);
   throw error;
 }
 export async function workflowContext(id:string,actor:string):Promise<WorkflowContext>{
@@ -28,7 +28,7 @@ export async function performAction(id:string,actor:string,body:unknown){
     p_action:action,p_body:input.body,p_occurred_on:input.occurredOn,p_percent:input.percent,p_blocked_reason:input.blockedReason,p_next_step:input.nextStep,
     p_office_label:(process.env.SCHOOL_OFFICE_LABEL || 'School administration').slice(0,80),p_notify:input.notify});
   if(error)workflowError(error);
-  invalidateCache(`submission_${id}`);invalidateCache('feed_');invalidateCache('roadmap_');
+  invalidateCache(`submission_${id}`);invalidateCache('feed_');invalidateCache('published_count_');invalidateCache('roadmap_');
   return {replayed:data?.replayed===true,submission:data.submission,workflow:data.workflow};
 }
 export function validateRepair(body:any){
@@ -41,6 +41,6 @@ export function validateRepair(body:any){
 export async function repairDates(id:string,actor:string,body:any){
   const b=validateRepair(body);const {data,error}=await supabaseService.rpc('repair_work_dates',{p_submission_id:id,p_actor_id:actor,p_request_id:b.requestId,p_expected_updated_at:b.updatedAt,p_started_on:b.startedOn,p_completed_on:b.completedOn,p_source:b.source,p_reason:b.reason});
   if(error)workflowError(error);
-  invalidateCache(`submission_${id}`);invalidateCache('feed_');invalidateCache('roadmap_');
+  invalidateCache(`submission_${id}`);invalidateCache('feed_');invalidateCache('published_count_');invalidateCache('roadmap_');
   return {replayed:data?.replayed===true,submission:data.submission,workflow:data.workflow};
 }

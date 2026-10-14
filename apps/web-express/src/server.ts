@@ -15,7 +15,7 @@ import { sameOriginOnly } from "./lib/security";
 import { safeRequestPath } from "./lib/request-path";
 import { validateIdentity } from "./lib/identity";
 import { startFeedAccountState } from "./lib/feed-account";
-import { startPublicNavigation, warmPublicNavigation } from "./lib/navigation-data";
+import { startPublicNavigation, warmPublicNavigation, publicFeedTotal } from "./lib/navigation-data";
 import "./types"; // session augmentation
 import { supabase as publicSupabase, supabaseService, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
 
@@ -179,6 +179,7 @@ app.use(express.static(publicDir, {
 }));
 // Public prefetch does not need a session read. Rate-limit it independently.
 app.get('/api/navigation-cache',rateLimit({windowMs:60_000,limit:30,standardHeaders:'draft-7',legacyHeaders:false}),warmPublicNavigation);
+app.get('/api/feed-total',rateLimit({windowMs:60_000,limit:60,standardHeaders:'draft-7',legacyHeaders:false}),publicFeedTotal);
 app.use(startPublicNavigation);
 
 /* ── Session ─────────────────────────────────────────────────────────────── */
