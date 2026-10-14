@@ -19,6 +19,8 @@
             return null;
         }
         var modal = document.getElementById('auth-modal');
+        var dialog = document.getElementById('auth-dialog');
+        var feedback = document.getElementById('auth-modal-feedback');
         var closeBtn = document.getElementById('auth-modal-close');
         var tabsContainer = document.getElementById('auth-modal-tabs');
         var tabSignin = document.getElementById('tab-signin');
@@ -30,7 +32,11 @@
         var subtext = document.getElementById('am-subtext-text');
         var returnFocusTo = null;
         var previousBodyOverflow = '';
+        var panelGeneration = 0;
         function showPanel(name) {
+            panelGeneration++;
+            feedback.hidden = true;
+            feedback.textContent = '';
             if (panelSignin)
                 panelSignin.hidden = (name !== 'signin');
             if (panelSignup)
@@ -67,12 +73,18 @@
         }
         window.openAuthModal = function (tab) {
             if (modal) {
-                returnFocusTo = document.activeElement;
-                previousBodyOverflow = document.body.style.overflow;
+                if (!dialog.open) {
+                    returnFocusTo = document.activeElement;
+                    previousBodyOverflow = document.body.style.overflow;
+                }
                 document.body.style.overflow = 'hidden';
                 modal.removeAttribute('hidden');
                 showPanel(tab || 'signin');
+                if (!dialog.open)
+                    dialog.showModal();
                 window.requestAnimationFrame(function () {
+                    if (!dialog.open)
+                        return;
                     var fieldId = tab === 'signup' ? '#signup-name' : tab === 'forgot' ? '#forgot-email' : '#signin-email';
                     var firstField = modal.querySelector(fieldId);
                     (firstField || closeBtn)?.focus();
@@ -80,7 +92,10 @@
             }
         };
         window.closeAuthModal = function () {
+            panelGeneration++;
             if (modal) {
+                if (dialog.open)
+                    dialog.close();
                 modal.setAttribute('hidden', '');
                 document.body.style.overflow = previousBodyOverflow;
                 if (returnFocusTo && typeof returnFocusTo.focus === 'function')
@@ -96,30 +111,13 @@
                     window.closeAuthModal();
             });
         }
-        document.addEventListener('keydown', function (e) {
-            if (!modal || modal.hasAttribute('hidden'))
+        dialog.addEventListener('cancel', event => { event.preventDefault(); window.closeAuthModal(); });
+        dialog.addEventListener('click', event => {
+            if (event.target !== dialog)
                 return;
-            if (e.key === 'Escape') {
-                e.preventDefault();
+            const rect = dialog.getBoundingClientRect();
+            if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)
                 window.closeAuthModal();
-                return;
-            }
-            if (e.key === 'Tab') {
-                var focusable = Array.from(modal.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
-                    .filter(function (el) { return !el.closest('[hidden]') && el.getClientRects().length; });
-                if (!focusable.length)
-                    return;
-                var first = focusable[0];
-                var last = focusable[focusable.length - 1];
-                if (e.shiftKey && (document.activeElement === first || !focusable.includes(document.activeElement))) {
-                    e.preventDefault();
-                    last.focus();
-                }
-                else if (!e.shiftKey && (document.activeElement === last || !focusable.includes(document.activeElement))) {
-                    e.preventDefault();
-                    first.focus();
-                }
-            }
         });
         if (tabSignin)
             tabSignin.addEventListener('click', function () { showPanel('signin'); });
@@ -156,16 +154,25 @@
                     inp.type = inp.type === 'password' ? 'text' : 'password';
             });
         });
-        function sfToast(msg, type) {
-            window.sfToast?.(msg, type);
+        function sfToast(msg, type, generation = panelGeneration) {
+            if (generation !== panelGeneration)
+                return;
+            if (dialog.open) {
+                feedback.setAttribute('role', type === 'error' ? 'alert' : 'status');
+                feedback.textContent = msg;
+                feedback.hidden = false;
+            }
+            else
+                window.sfToast?.(msg, type);
         }
         // Google OAuth
         var googleBtn = document.getElementById('btn-google-auth');
         if (googleBtn) {
             googleBtn.addEventListener('click', async function () {
+                var generation = panelGeneration;
                 var sb = getSb();
                 if (!sb) {
-                    sfToast('Authentication is not configured on this environment.', 'error');
+                    sfToast('Authentication is not configured on this environment.', 'error', generation);
                     return;
                 }
                 googleBtn.disabled = true;
@@ -174,7 +181,7 @@
                 }
                 catch (error) {
                     googleBtn.disabled = false;
-                    sfToast(error.message, 'error');
+                    sfToast(error.message, 'error', generation);
                 }
             });
         }
@@ -183,9 +190,12 @@
         if (formSignin) {
             formSignin.addEventListener('submit', async function (e) {
                 e.preventDefault();
+                var generation = panelGeneration;
+                if (document.getElementById('btn-signin').disabled)
+                    return;
                 var sb = getSb();
                 if (!sb) {
-                    sfToast('Authentication is not configured on this environment.', 'error');
+                    sfToast('Authentication is not configured on this environment.', 'error', generation);
                     return;
                 }
                 var emailEl = document.getElementById('signin-email');
@@ -194,27 +204,34 @@
                 var email = emailEl ? emailEl.value.trim() : '';
                 var password = passEl ? passEl.value : '';
                 if (!email || !password) {
-                    sfToast('Please enter both email and password.', 'error');
+                    sfToast('Please enter both email and password.', 'error', generation);
                     return;
                 }
                 btn.disabled = true;
                 var origText = btn.innerHTML;
                 btn.innerHTML = '<span>Signing in…</span>';
-                var { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
-                btn.disabled = false;
-                btn.innerHTML = origText;
-                if (error) {
-                    sfToast(error.message, 'error');
-                    return;
+                try {
+                    var { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
+                    if (error) {
+                        sfToast(error.message, 'error', generation);
+                        return;
+                    }
+                    // If session directly returned, sync immediately
+                    if (data && data.session) {
+                        try {
+                            await window.sfCompleteSignIn(data.session);
+                        }
+                        catch (syncError) {
+                            sfToast(syncError.message || 'Could not finish signing in. Please try again.', 'error', generation);
+                        }
+                    }
                 }
-                // If session directly returned, sync immediately
-                if (data && data.session) {
-                    try {
-                        await window.sfCompleteSignIn(data.session);
-                    }
-                    catch (syncError) {
-                        sfToast(syncError.message || 'Could not finish signing in. Please try again.', 'error');
-                    }
+                catch (error) {
+                    sfToast(error.message || 'Connection interrupted. Please try again.', 'error', generation);
+                }
+                finally {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
                 }
             });
         }
@@ -223,9 +240,12 @@
         if (formSignup) {
             formSignup.addEventListener('submit', async function (e) {
                 e.preventDefault();
+                var generation = panelGeneration;
+                if (document.getElementById('btn-signup').disabled)
+                    return;
                 var sb = getSb();
                 if (!sb) {
-                    sfToast('Authentication is not configured on this environment.', 'error');
+                    sfToast('Authentication is not configured on this environment.', 'error', generation);
                     return;
                 }
                 var nameEl = document.getElementById('signup-name');
@@ -236,40 +256,48 @@
                 var email = emailEl ? emailEl.value.trim() : '';
                 var password = passEl ? passEl.value : '';
                 if (!email || !password) {
-                    sfToast('Please provide an email and password.', 'error');
+                    sfToast('Please provide an email and password.', 'error', generation);
                     return;
                 }
                 if (password.length < 8) {
-                    sfToast('Password must be at least 8 characters.', 'error');
+                    sfToast('Password must be at least 8 characters.', 'error', generation);
                     return;
                 }
                 btn.disabled = true;
                 var origText = btn.innerHTML;
                 btn.innerHTML = '<span>Creating account…</span>';
-                var { data, error } = await sb.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: { data: { full_name: name, display_name: name }, emailRedirectTo: window.location.origin + '/auth/callback' }
-                });
-                btn.disabled = false;
-                btn.innerHTML = origText;
-                if (error) {
-                    sfToast(error.message, 'error');
-                    return;
-                }
-                // If auto-confirmed session
-                if (data && data.session) {
-                    try {
-                        await window.sfCompleteSignIn(data.session);
+                try {
+                    var { data, error } = await sb.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: { data: { full_name: name, display_name: name }, emailRedirectTo: window.location.origin + '/auth/callback' }
+                    });
+                    if (error) {
+                        sfToast(error.message, 'error', generation);
                         return;
                     }
-                    catch (syncError) {
-                        sfToast(syncError.message || 'Could not save your sign-in. Please try again.', 'error');
-                        return;
+                    // If auto-confirmed session
+                    if (data && data.session) {
+                        try {
+                            await window.sfCompleteSignIn(data.session);
+                            return;
+                        }
+                        catch (syncError) {
+                            sfToast(syncError.message || 'Could not save your sign-in. Please try again.', 'error', generation);
+                            return;
+                        }
                     }
+                    if (generation !== panelGeneration || !dialog.open)
+                        return;
+                    sfToast('Account created! Please check your email to confirm.', 'success', generation);
                 }
-                sfToast('Account created! Please check your email to confirm.', 'success');
-                window.closeAuthModal();
+                catch (error) {
+                    sfToast(error.message || 'Connection interrupted. Please try again.', 'error', generation);
+                }
+                finally {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                }
             });
         }
         // Forgot Password Form
@@ -277,32 +305,44 @@
         if (formForgot) {
             formForgot.addEventListener('submit', async function (e) {
                 e.preventDefault();
+                var generation = panelGeneration;
+                if (document.getElementById('btn-forgot-submit').disabled)
+                    return;
                 var sb = getSb();
                 if (!sb) {
-                    sfToast('Authentication is not configured on this environment.', 'error');
+                    sfToast('Authentication is not configured on this environment.', 'error', generation);
                     return;
                 }
                 var emailEl = document.getElementById('forgot-email');
                 var btn = document.getElementById('btn-forgot-submit');
                 var email = emailEl ? emailEl.value.trim() : '';
                 if (!email) {
-                    sfToast('Please enter your email address.', 'error');
+                    sfToast('Please enter your email address.', 'error', generation);
                     return;
                 }
                 btn.disabled = true;
                 var origText = btn.innerHTML;
                 btn.innerHTML = '<span>Sending link…</span>';
-                var { error } = await sb.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/auth/callback'
-                });
-                btn.disabled = false;
-                btn.innerHTML = origText;
-                if (error) {
-                    sfToast(error.message, 'error');
-                    return;
+                try {
+                    var { error } = await sb.auth.resetPasswordForEmail(email, {
+                        redirectTo: window.location.origin + '/auth/callback'
+                    });
+                    if (error) {
+                        sfToast(error.message, 'error', generation);
+                        return;
+                    }
+                    if (generation !== panelGeneration || !dialog.open)
+                        return;
+                    showPanel('signin');
+                    sfToast('Password reset link sent! Check your inbox.', 'success');
                 }
-                sfToast('Password reset link sent! Check your inbox.', 'success');
-                showPanel('signin');
+                catch (error) {
+                    sfToast(error.message || 'Connection interrupted. Please try again.', 'error', generation);
+                }
+                finally {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                }
             });
         }
     })();

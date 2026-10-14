@@ -521,6 +521,7 @@ let sfCurrentIdea = null;
 
   // Keyboard and History Listeners
   window.addEventListener('keydown', (e) => {
+    if(e.defaultPrevented || document.querySelector('dialog[open]'))return;
     if (e.key === 'Escape') {
       const drawer = (document.getElementById('idea-detail-drawer') as HTMLElement);
       if (drawer && !drawer.hasAttribute('hidden')) {

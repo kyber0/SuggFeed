@@ -461,14 +461,14 @@
   padding: 0 6px;
   border-radius: 9999px;
   background: var(--line);
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 11px;
   font-weight: 700;
   transition: background 0.15s, color 0.15s;
 }
 
 .prof-tab-btn.active .prof-tab-count {
-  background: var(--navy);
+  background: var(--navy-2);
   color: #fff;
 }
 

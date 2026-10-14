@@ -201,11 +201,11 @@ main { max-width: 1200px; margin: auto; }
 }
 .site-header .btn-ghost:hover { border-color: var(--navy); background: var(--bg); }
 .site-header .btn-primary-sm {
-  background: var(--accent); color: white !important; border-radius: var(--r-md);
+  background: var(--action-bg); color: white !important; border-radius: var(--r-md);
   padding: 6px 16px; font-weight: 600;
   transition: background var(--t-fast), transform var(--t-fast);
 }
-.site-header .btn-primary-sm:hover { background: var(--accent-2); transform: translateY(-1px); }
+.site-header .btn-primary-sm:hover { background: var(--action-hover); transform: translateY(-1px); }
 
 /* user avatar chip */
 .avatar-chip {
@@ -503,7 +503,7 @@ textarea { height: 130px; resize: vertical; }
 .primary {
   display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
   margin-top: var(--sp-6); width: 100%;
-  background: var(--accent); color: white; border: none;
+  background: var(--action-bg); color: white; border: none;
   border-radius: var(--r-lg); padding: 14px var(--sp-6);
   font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
   transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
@@ -511,7 +511,7 @@ textarea { height: 130px; resize: vertical; }
 }
 .btn-primary:hover:not(:disabled),
 .primary:hover:not(:disabled) {
-  background: var(--accent-2); transform: translateY(-1px);
+  background: var(--action-hover); transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(232,110,74,.4);
 }
 .btn-primary:active:not(:disabled),
@@ -523,7 +523,7 @@ textarea { height: 130px; resize: vertical; }
 /* â”€â”€ Primary button (small variant) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .btn-primary-sm {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  background: var(--accent); color: white !important; border: none;
+  background: var(--action-bg); color: white !important; border: none;
   border-radius: var(--r-md); padding: 7px 16px;
   font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
   white-space: nowrap; text-decoration: none;
@@ -531,7 +531,7 @@ textarea { height: 130px; resize: vertical; }
   box-shadow: 0 2px 8px rgba(232,110,74,.3);
 }
 .btn-primary-sm:hover:not(:disabled) {
-  background: var(--accent-2); transform: translateY(-1px);
+  background: var(--action-hover); transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(232,110,74,.4);
 }
 .btn-primary-sm:active:not(:disabled) { transform: translateY(0); }
@@ -1236,8 +1236,6 @@ html:not([data-theme="dark"]) .theme-icon-moon { display: block !important; }
 
 @media (max-width: 800px) {
   .mobile-tab-bar { display: flex; }
-  /* Staff tools are offered through the desktop interface. */
-  a[href="/admin"], a[href^="/admin/"] { display: none !important; }
 }
 
 @media (max-width: 420px) {
@@ -1796,6 +1794,13 @@ html:not([data-theme="dark"]) .theme-icon-moon { display: block !important; }
   font-size: 14px;
   color: var(--ink-secondary);
 }
+
+/* Native top-layer auth can open above a roadmap or confirmation dialog. */
+.am-backdrop { background:none; backdrop-filter:none; -webkit-backdrop-filter:none; animation:none; }
+dialog.am-card { position:fixed; margin:auto; width:min(440px,calc(100vw - 32px)); color:var(--ink); }
+dialog.am-card::backdrop { background:rgba(10,20,40,.65); }
+.am-feedback { padding:12px; margin-bottom:16px; border:1px solid var(--line); border-radius:8px; background:var(--bg-2); color:var(--ink); overflow-wrap:anywhere; }
+.am-feedback[role="alert"] { color:var(--error); background:var(--error-bg); border-color:var(--error); }
 
 /* Supplied SF artwork: explicit dimensions prevent layout shifts. */
 .site-header .brand { display:inline-flex; align-items:center; gap:6px; line-height:1; }
@@ -3426,6 +3431,9 @@ html:not([data-theme="dark"]) .theme-icon-moon { display: block !important; }
   transition: transform 0.2s;
 }
 .sf-track-result-timeline[open] summary::before { transform: rotate(90deg); }
+
+/* Hidden native radios still need a visible keyboard focus indicator. */
+.sip-cat-card:focus-within { outline:3px solid var(--focus-ring); outline-offset:3px; }
 
 /* Ã¢â€â‚¬Ã¢â€â‚¬ Feed section Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .feed {
@@ -5716,7 +5724,7 @@ input.feed-search {
     gap: 8px;
     padding: 12px 18px;
     border-radius: var(--radius-pill);
-    background: var(--navy);
+    background: var(--navy-2);
     color: #ffffff;
     font-size: 14px;
     font-weight: 700;
@@ -7197,7 +7205,7 @@ body:has(.workspace-dialog[open]) { overflow:hidden; }
   color:var(--muted);
 }
 .roadmap-card-date--completed {
-  color:#0b6b48;
+  color:var(--success);
   font-weight:500;
 }
 .roadmap-card-footer {
@@ -7359,7 +7367,7 @@ body:has(.workspace-dialog[open]) { overflow:hidden; }
 .work-timeline-months > span { position:absolute; top:0; bottom:0; display:flex; justify-content:center; align-items:center; color:var(--ink-2); font-size:20px; font-weight:500; border-right:1px solid var(--line); }
 .work-timeline-rows { position:relative; padding:34px 0 30px; min-height:330px; background:repeating-linear-gradient(to right, transparent 0, transparent calc(var(--week-width) - 1px), var(--line) calc(var(--week-width) - 1px), var(--line) var(--week-width)); }
 .work-timeline-today { position:absolute; top:0; bottom:0; left:var(--today-left); border-left:1px dashed var(--navy); z-index:1; pointer-events:none; }
-.work-timeline-today > span { position:absolute; top:8px; left:8px; color:var(--navy); background:var(--surface); font-size:12px; font-weight:600; padding:2px 6px; }
+.work-timeline-today > span { position:absolute; top:8px; left:8px; color:var(--text-link); background:var(--surface); font-size:12px; font-weight:600; padding:2px 6px; }
 .work-timeline-row { --work-accent:var(--navy); position:relative; height:160px; }
 .work-timeline-row[data-status="in_progress"] { --work-accent:#7c3aed; }
 .work-timeline-row[data-status="resolved"] { --work-accent:var(--success); }
@@ -7526,7 +7534,7 @@ body:has(.workspace-dialog[open]) { overflow:hidden; }
   padding:2px 8px;
   border-radius:4px;
   background:#e4f7ee;
-  color:#0b6b48;
+  color:var(--success);
 }
 .roadmap-recent-strip-heading h2 {
   font-size:14px;

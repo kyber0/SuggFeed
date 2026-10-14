@@ -4,8 +4,12 @@
   --text-secondary:#526378;
   --focus-ring:#2563eb;
   --control-radius:10px;
+  --action-bg:#b94729;
+  --action-hover:#a53e23;
+  --success:#0b754f;
+  --warn:#8a5900;
 }
-[data-theme="dark"] { --muted:#a9bdd0; --muted-2:#8fa8bd; --focus-ring:#93c5fd; }
+[data-theme="dark"] { --muted:#a9bdd0; --muted-2:#8fa8bd; --focus-ring:#93c5fd; --text-link:#93c5fd; --text-secondary:var(--ink-2); --success:#4ade80; --warn:#fbbf24; --error:#fda4af; }
 ::selection { background:var(--sky-2); color:var(--ink); }
 :is(button,input,select,textarea) { font-family:inherit; }
 :is(a,button,input,select,textarea,summary,[tabindex]):focus-visible { outline:3px solid var(--focus-ring); outline-offset:3px; }
@@ -129,3 +133,7 @@
   html { scroll-behavior:auto; }
   *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
 }
+
+/* Link foregrounds use a lighter tone than filled controls in dark mode. */
+[data-theme="dark"] :is(.sf-hero-action-secondary,.mobile-tab--active,.detail-support-count,.staff-assignee-avatar,.analytics-pct-badge,.staff-you-badge) { color:var(--text-link); }
+[data-theme="dark"] .detail-support-btn:not(.voted):not(:hover) { color:var(--text-link); }

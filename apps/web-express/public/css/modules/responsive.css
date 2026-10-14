@@ -217,3 +217,22 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
  .site-header nav { gap:4px; }
  .site-header .header-divider { display:none; }
 }
+
+/* Identity remains available in the account menu when the header is narrow. */
+.site-header nav,.header-user-menu { min-width:0; }
+@media (max-width:420px) { .site-header .avatar-chip > span { max-width:52px; } }
+@media (max-width:360px) {
+ .site-header .avatar-chip { min-width:44px; min-height:44px; justify-content:center; }
+ .site-header .avatar-chip > span,.site-header .avatar-chip > svg { display:none; }
+}
+
+@media (max-width:800px) {
+ .roadmap-card-vote-btn,.analytics-pill,.staff-lane-pagination button { min-height:44px; min-width:44px; }
+ .roadmap-card-vote-btn { padding:8px 12px; }
+ .roadmap-card-footer { flex-wrap:wrap; gap:8px; }
+ .analytics-pill { padding:10px 12px; }
+ button.workspace-text-link,.sf-profile-login-btn,.detail-share-btn { min-height:44px; }
+}
+@media (min-width:801px) and (max-width:960px) {
+ .site-header nav { gap:8px; }
+}

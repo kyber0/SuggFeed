@@ -1,6 +1,6 @@
 <!-- Auth Modal — powered by Supabase Auth -->
 <div id="auth-modal" class="am-backdrop" hidden role="presentation">
-  <div class="am-card" role="dialog" aria-modal="true" aria-labelledby="am-heading-text">
+  <dialog id="auth-dialog" class="am-card" aria-modal="true" aria-labelledby="am-heading-text">
     <!-- Mobile drag handle -->
     <div class="am-handle" aria-hidden="true"></div>
 
@@ -25,6 +25,8 @@
         <p class="am-subtext" id="am-subtext-text">Sign in to manage your ideas and track submissions.</p>
       </div>
     </div>
+
+    <p id="auth-modal-feedback" class="am-feedback" role="alert" hidden></p>
 
     <!-- Google OAuth Button -->
     <button type="button" class="am-btn-google" id="btn-google-auth">
@@ -140,7 +142,7 @@
         </button>
       </form>
     </div>
-  </div>
+  </dialog>
 </div>
 
-<script defer src="/js/auth-modal.js?v=20261013-recovery-code"></script>
+<script defer src="/js/auth-modal.js?v=20261014-ui-audit"></script>

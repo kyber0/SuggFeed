@@ -71,6 +71,8 @@
     }
     // Keyboard shortcut: Esc closes panel
     document.addEventListener('keydown', function (e) {
+        if (e.defaultPrevented || document.querySelector('dialog[open]'))
+            return;
         if (e.key === 'Escape') {
             const panel = document.getElementById('submit-panel');
             if (panel && !panel.hidden) {

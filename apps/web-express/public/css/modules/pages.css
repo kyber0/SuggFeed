@@ -2303,3 +2303,6 @@
     transition-duration: .01ms !important;
   }
 }
+
+.sf-legal-content a { color:var(--text-link); text-underline-offset:3px; }
+[data-theme="dark"] .sf-btn-empty-action { background:var(--navy-2); }
