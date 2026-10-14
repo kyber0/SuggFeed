@@ -3054,9 +3054,9 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
 .prof-settings.open .prof-settings-body { max-height:none; }
 .prof-activity,.prof-settings { min-width:0; }
 .prof-activity-tabs { scrollbar-width:thin; }
-.prof-activity-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:16px 20px; border-top:1px solid var(--line); }
+.prof-activity-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; padding:16px 20px; border-top:1px solid var(--line); text-align:center; }
 .prof-activity-footer p { margin:0; font-size:12px; color:var(--muted); }
-.prof-activity-footer .workspace-button { min-height:44px; margin-left:auto; }
+.prof-activity-footer .workspace-button { min-height:44px; }
 .prof-activity-pane > [data-activity-more] { margin:16px 20px; min-height:44px; }
 .prof-tab-btn { min-height:48px; }
 .prof-tab-btn span:not(.prof-tab-count) { display:inline; }
