@@ -46,13 +46,21 @@ test('both apps share the supplied transparent monogram and correctly sized inst
   assert.deepEqual(readFileSync(resolve(root, roots[0], 'branding/sf-monogram.png')), readFileSync(resolve(root, roots[1], 'branding/sf-monogram.png')));
 });
 
-test('shared web, staff, auth, offline and email branding use the new asset with accessible names', () => {
-  for (const file of ['views/partials/header.eta', 'views/partials/staff-sidebar.eta', 'views/partials/auth-modal.eta', 'views/staff-login.eta', 'public/offline.html']) {
+test('navigation stays text-only while staff, auth, offline and email branding retain the supplied asset', () => {
+  for (const file of ['views/partials/staff-sidebar.eta', 'views/partials/auth-modal.eta', 'views/staff-login.eta', 'public/offline.html']) {
     assert.match(readFileSync(resolve(root, 'apps/web-express', file), 'utf8'), /\/branding\/sf-monogram\.png/);
   }
   const header = readFileSync(resolve(root, 'apps/web-express/views/partials/header.eta'), 'utf8');
   assert.match(header, /aria-label="SuggFeed home"/);
-  assert.match(header, /width="54" height="36" alt=""/);
+  assert.match(header, /Sugg<span>Feed<\/span>/);
+  const brand = header.match(/<a class="brand"[\s\S]*?<\/a>/)?.[0];
+  assert.ok(brand);
+  assert.doesNotMatch(brand, /<img|sf-brand-logo/);
+  for (const file of ['header.tsx', 'admin-dashboard.tsx']) {
+    const source = readFileSync(resolve(root, 'apps/web/components', file), 'utf8');
+    assert.doesNotMatch(source, /BrandLogo|sf-brand-logo/);
+    assert.match(source, /Sugg<span>Feed<\/span>/);
+  }
   for (const template of ['confirmation', 'email_change', 'invite', 'magic_link', 'recovery']) {
     const html = readFileSync(resolve(root, 'supabase/templates/' + template + '.html'), 'utf8');
     assert.match(html, /\{\{ \.SiteURL \}\}\/branding\/sf-monogram\.png/);

@@ -1,6 +1,6 @@
 <% const menuIcon=name=>'<svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-'+name+'"></use></svg>'; %>
 <header class="site-header">
-  <a class="brand" href="/" aria-label="SuggFeed home"><img class="sf-brand-logo" src="/branding/sf-monogram.png" width="54" height="36" alt="" /><span class="sf-wordmark">Sugg<span>Feed</span></span></a>
+  <a class="brand" href="/" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>
   <nav aria-label="Primary navigation">
     <a href="/" aria-current="<%= it.currentPath === '/' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>">Home</a>
     <a href="/feed" aria-current="<%= it.currentPath === '/feed' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/feed' ? ' active' : '' %>">Community ideas</a>
