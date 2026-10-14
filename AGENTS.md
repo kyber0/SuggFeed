@@ -30,3 +30,9 @@ Take the first option that fully works:
 Never cut: validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs, anything the user asked for.
 
 (Yes, this file also applies to agents working on the ponytail repo itself. Especially to them.)
+
+## Superpowers workflows
+
+Superpowers skills are available alongside Ponytail in `.agents/skills`. For Superpowers workflows, read `.agents/skills/using-superpowers/SKILL.md` and the relevant skill. Use Ponytail to keep the implementation small and Superpowers for planning, debugging, testing and verification where appropriate.
+
+Follow the user's current task and existing authorization, and the host's tool and permission requirements. Project installation details and available skills are in `.agents/skills/SUPERPOWERS.md`.
