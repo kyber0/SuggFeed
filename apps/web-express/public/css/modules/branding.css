@@ -6,7 +6,7 @@
 .staff-brand .sf-brand-logo { width:54px; height:36px; }
 .sf-login-logo { width:120px; height:80px; display:block; object-fit:contain; margin-bottom:12px; }
 [data-theme="dark"] .site-header .brand .sf-wordmark { color:var(--ink); }
-[data-theme="dark"] .sf-brand-logo,[data-theme="dark"] .sf-auth-logo { background:#f8fafc; border-radius:7px; }
+[data-theme="dark"] .sf-auth-logo { background:#f8fafc; border-radius:7px; }
 @media(max-width:800px) {
   .site-header .brand { gap:2px; }
   .site-header .sf-brand-logo { width:42px; height:28px; }
