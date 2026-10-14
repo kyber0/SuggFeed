@@ -73,7 +73,7 @@
             button.disabled = false;
         }
     }
-    function draw(tab, rows) {
+    function draw(tab, rows, hasMore) {
         const pane = document.getElementById('prof-pane-' + tab);
         pane.replaceChildren();
         const grid = document.createElement('div');
@@ -81,7 +81,7 @@
         if (!rows.length) {
             const empty = document.createElement('p');
             empty.className = 'prof-empty-state';
-            empty.textContent = 'No ' + ({ bookmarks: 'saved', shared: 'shared', voted: 'supported' }[tab]) + ' public ideas in this list yet.';
+            empty.textContent = hasMore ? 'No public ideas found in this part of your activity. You can check more below.' : 'No ' + ({ bookmarks: 'saved', shared: 'shared', voted: 'supported' }[tab]) + ' public ideas in this list yet.';
             pane.append(empty);
         }
         for (const row of rows) {
@@ -150,18 +150,25 @@
             state.next = data.next;
             state.loaded = true;
             const restoreFocus = pane.contains(document.activeElement);
-            draw(tab, state.rows);
-            const note = document.createElement('p');
-            note.textContent = state.rows.length + ' public ideas shown' + (state.next ? ' · More activity available' : '');
-            pane.append(note);
-            if (state.next) {
-                const more = document.createElement('button');
-                more.type = 'button';
-                more.className = 'workspace-button';
-                more.dataset.activityMore = '';
-                more.textContent = 'Load more activity';
-                more.addEventListener('click', () => void loadActivity(tab));
-                pane.append(more);
+            draw(tab, state.rows, !!state.next);
+            if (state.rows.length || state.next) {
+                const footer = document.createElement('div');
+                footer.className = 'prof-activity-footer';
+                if (state.rows.length) {
+                    const note = document.createElement('p');
+                    note.textContent = state.rows.length + ' public ' + (state.rows.length === 1 ? 'idea' : 'ideas') + ' shown';
+                    footer.append(note);
+                }
+                if (state.next) {
+                    const more = document.createElement('button');
+                    more.type = 'button';
+                    more.className = 'workspace-button';
+                    more.dataset.activityMore = '';
+                    more.textContent = 'Load more activity';
+                    more.addEventListener('click', () => void loadActivity(tab));
+                    footer.append(more);
+                }
+                pane.append(footer);
             }
             if (restoreFocus && selectedTab === tab)
                 pane.focus();

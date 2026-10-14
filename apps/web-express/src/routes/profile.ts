@@ -75,29 +75,39 @@ router.post('/activity',sameOriginOnly,asyncHandler(async(req,res)=>{
   if(typeof tab!=='string' || !['bookmarks','voted','shared'].includes(tab))return res.status(400).json({success:false,error:'Unknown activity tab.'});
   const offset=req.body?.offset ?? 0,localPhase=req.body?.local===true || !req.session.user;
   if(!Number.isSafeInteger(offset) || offset<0 || offset>100000)return res.status(400).json({success:false,error:'Invalid activity page.'});
-  const size=25;
-  let ids:string[]=[],more=false;
-  if(!localPhase){
-   const result=await supabaseService.from(tables[tab]).select('submission_id').eq('user_id',req.session.user!.id).order('created_at',{ascending:false}).order('submission_id').range(offset,offset+size);
-   if(result.error)throw new Error('Activity could not load.');
-   more=(result.data || []).length>size;ids=(result.data || []).slice(0,size).map(row=>row.submission_id);
-  }else{
+  const size=25,columns='id,title,status,vote_count,created_at,categories(name)';
+  const publicStatuses=['approved','in_progress','resolved'];
+  const deviceRows=async()=>{
    let remembered=Array.isArray(req.body?.ids)?[...new Set<string>(req.body.ids.filter((id:unknown):id is string=>typeof id==='string' && uuid.test(id)))].slice(0,200):[];
-   if(req.session.user && tab==='bookmarks')remembered=[];
+   if(req.session.user && tab==='bookmarks')return [];
    if(req.session.user && remembered.length){
     const result=await supabaseService.from(tables[tab]).select('submission_id').eq('user_id',req.session.user.id).in('submission_id',remembered);
     if(result.error)throw new Error('Device activity could not load.');
     const recorded=new Set((result.data || []).map(row=>row.submission_id));remembered=remembered.filter(id=>!recorded.has(id));
    }
-   ids=remembered.slice(offset,offset+size);more=remembered.length>offset+size;
-  }
-  let rows:any[]=[];
-  if(ids.length){
-   const result=await supabaseService.from('submissions').select('id,title,status,vote_count,created_at,categories(name)').in('id',ids).in('status',['approved','in_progress','resolved']);
+   if(!remembered.length)return [];
+   const result=await supabaseService.from('submissions').select(columns).in('id',remembered).in('status',publicStatuses);
    if(result.error)throw new Error('Public activity could not load.');
-   const byId=new Map((result.data || []).map(row=>[row.id,row]));rows=ids.map(id=>byId.get(id)).filter(Boolean);
+   const byId=new Map((result.data || []).map(row=>[row.id,row]));
+   return remembered.map(id=>byId.get(id)).filter(Boolean);
+  };
+  let rows:any[]=[],next:{offset:number;local:boolean}|null=null;
+  if(localPhase){
+   const available=await deviceRows();
+   rows=available.slice(offset,offset+size);
+   if(available.length>offset+size)next={offset:offset+size,local:true};
+  }else{
+   // Filter before pagination so hidden or deleted ideas cannot create empty pages.
+   const result=await supabaseService.from(tables[tab]).select(`submission_id,submission:submissions!inner(${columns})`).eq('user_id',req.session.user!.id).in('submission.status',publicStatuses).order('created_at',{ascending:false}).order('submission_id').range(offset,offset+size);
+   if(result.error)throw new Error('Activity could not load.');
+   rows=(result.data || []).slice(0,size).map(row=>row.submission);
+   if((result.data || []).length>size)next={offset:offset+size,local:false};
+   else {
+    const available=await deviceRows();
+    if(!rows.length){rows=available.slice(0,size);if(available.length>size)next={offset:size,local:true};}
+    else if(available.length)next={offset:0,local:true};
+   }
   }
-  const next=more?{offset:offset+size,local:localPhase}:!localPhase && tab!=='bookmarks'?{offset:0,local:true}:null;
   return res.json({success:true,rows,next});
  }
  const local=(key:string):string[]=>Array.isArray(req.body?.[key])?[...new Set<string>(req.body[key].filter((id:unknown):id is string=>typeof id==='string' && uuid.test(id)))].slice(0,200):[];
