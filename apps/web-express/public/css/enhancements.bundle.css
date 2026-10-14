@@ -2781,20 +2781,23 @@
 }
 
 /* Shared scroll surfaces and notification presentation. */
-:root { --scroll-thumb:#829ab1; --scroll-thumb-hover:#627d98; --scroll-track:#f0f4f8; }
-[data-theme="dark"] { --scroll-thumb:#52677c; --scroll-thumb-hover:#829ab1; --scroll-track:#15202d; }
-html { scrollbar-gutter:stable; scrollbar-color:var(--scroll-thumb) var(--scroll-track); }
-* { scrollbar-color:var(--scroll-thumb) transparent; }
-html::-webkit-scrollbar { width:12px; height:12px; }
-::-webkit-scrollbar { width:8px; height:8px; }
-::-webkit-scrollbar-track { background:transparent; }
-html::-webkit-scrollbar-track { background:var(--scroll-track); }
-::-webkit-scrollbar-thumb { background:var(--scroll-thumb); border:2px solid transparent; background-clip:padding-box; border-radius:999px; }
-::-webkit-scrollbar-thumb:hover { background-color:var(--scroll-thumb-hover); }
-::-webkit-scrollbar-corner { background:transparent; }
-/* Override older per-page colors while retaining their scroll sizing. */
-:is(.detail-col,.detail-comments-scrollable,.staff-lane-cards,.staff-flow-board,.community-feed-sidebar,.community-feed-right,.work-timeline-scroll,.staff-review-scroll,.workspace-dialog-body,.am-card) { scrollbar-color:var(--scroll-thumb) transparent; }
-:is(.detail-col,.detail-comments-scrollable,.staff-lane-cards,.staff-flow-board)::-webkit-scrollbar-thumb { background-color:var(--scroll-thumb); }
+:root { --scroll-thumb:#627d98; --scroll-thumb-hover:#3f5c78; }
+[data-theme="dark"] { --scroll-thumb:#829ab1; --scroll-thumb-hover:#a8bfd3; }
+html { scrollbar-gutter:stable; }
+/* Keep the scrollbar's space when its thumb is hidden, so content never shifts. */
+:root,:root * { scrollbar-width:thin; scrollbar-color:var(--scroll-thumb) transparent; }
+:root::-webkit-scrollbar,:root *::-webkit-scrollbar { display:block; width:10px; height:10px; }
+:root::-webkit-scrollbar-track,:root *::-webkit-scrollbar-track { background:transparent; }
+:root::-webkit-scrollbar-thumb,:root *::-webkit-scrollbar-thumb { background-color:var(--scroll-thumb); border:2px solid transparent; background-clip:padding-box; border-radius:999px; }
+:root::-webkit-scrollbar-corner,:root *::-webkit-scrollbar-corner { background:transparent; }
+/* Touch devices keep their native visibility behavior; hiding needs a hover pointer. */
+@media (hover:hover) and (pointer:fine) and (forced-colors:none) {
+  :root,:root * { scrollbar-color:transparent transparent; }
+  :root:hover,:root:focus-within,:root *:is(:hover,:focus-visible,:focus-within) { scrollbar-color:var(--scroll-thumb) transparent; }
+  :root::-webkit-scrollbar-thumb,:root *::-webkit-scrollbar-thumb { background-color:transparent; }
+  :root:hover::-webkit-scrollbar-thumb,:root:focus-within::-webkit-scrollbar-thumb,:root *:is(:hover,:focus-visible,:focus-within)::-webkit-scrollbar-thumb { background-color:var(--scroll-thumb); }
+  :root::-webkit-scrollbar-thumb:hover,:root *::-webkit-scrollbar-thumb:hover,:root::-webkit-scrollbar-thumb:active,:root *::-webkit-scrollbar-thumb:active { background-color:var(--scroll-thumb-hover); }
+}
 .toast-region { bottom:calc(24px + env(safe-area-inset-bottom)); max-width:400px; }
 .sf-toast { background:var(--surface); color:var(--ink); border:1px solid var(--line); border-inline-start:4px solid var(--toast-accent); box-shadow:var(--shadow-lg); backdrop-filter:none; padding:16px 12px 18px 16px; animation:sf-toast-in .2s ease-out both; }
 .sf-toast--info { --toast-accent:#2563eb; }
@@ -2823,13 +2826,11 @@ html::-webkit-scrollbar-track { background:var(--scroll-track); }
   .sf-toast,.sf-toast--leaving { animation:none; }
 }
 @media(forced-colors:active) {
-  html,* { scrollbar-color:auto; }
+  :root,:root * { scrollbar-color:auto !important; scrollbar-width:auto !important; }
+  :root::-webkit-scrollbar-thumb,:root *::-webkit-scrollbar-thumb { background-color:CanvasText; }
   .sf-toast { border:1px solid CanvasText; background:Canvas; color:CanvasText; }
   .sf-toast .sf-toast__icon,.sf-toast__title,.sf-toast__message,.sf-toast__close { color:CanvasText; }
 }
-
-.am-card { scrollbar-width:thin; }
-.am-card::-webkit-scrollbar { display:block; width:8px; }
 
 /* Native dialog supplies focus containment and Escape handling for app confirmations. */
 .app-confirm-dialog { margin:auto; width:min(440px,calc(100vw - 32px)); max-height:calc(100dvh - 40px); overflow:auto; padding:28px; border:1px solid var(--line); border-radius:18px; background:var(--surface); color:var(--ink); box-shadow:var(--shadow-lg); }
