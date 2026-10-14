@@ -1,4 +1,5 @@
 (() => {
+  document.documentElement.setAttribute('data-text-size',window.sfPreferences?.read('textSize') || 'compact');
   let theme = window.sfPreferences?.read('theme');
   if(!theme){theme='system';
   try { if (theme === 'system') { const old = localStorage.getItem('sf-theme'); if (old === 'light' || old === 'dark') theme = old; } } catch {}

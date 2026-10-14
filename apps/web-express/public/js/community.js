@@ -119,13 +119,23 @@
     let privateCode = '';
     let inboxVersion = 0;
     const messages = document.getElementById('private-messages');
+    const inboxRetry = document.createElement('button');
+    inboxRetry.type = 'button';
+    inboxRetry.className = 'workspace-button';
+    inboxRetry.textContent = 'Retry messages';
+    inboxRetry.hidden = true;
+    messages?.before(inboxRetry);
+    inboxRetry.addEventListener('click', () => void loadInbox());
     async function loadInbox() {
         if (!messages)
             return;
+        inboxRetry.hidden = true;
+        const drafts = new Map(Array.from(messages.querySelectorAll('textarea[data-request-id]')).map(input => [input.dataset.requestId, input.value]));
+        const inboxCode = privateCode;
         const version = ++inboxVersion;
         notify('Loading private messages…');
         try {
-            const data = await request('inbox', privateCode ? { trackingCode: privateCode } : {});
+            const data = await request('inbox', inboxCode ? { trackingCode: inboxCode } : {});
             if (version !== inboxVersion)
                 return;
             messages.replaceChildren();
@@ -154,6 +164,8 @@
                     textarea.required = true;
                     textarea.minLength = 10;
                     textarea.maxLength = 2000;
+                    textarea.dataset.requestId = entry.id;
+                    textarea.value = drafts.get(entry.id) || '';
                     label.append(textarea);
                     const button = document.createElement('button');
                     button.type = 'submit';
@@ -164,8 +176,13 @@
                         event.preventDefault();
                         button.disabled = true;
                         try {
-                            await request('reply', { id: entry.id, body: textarea.value, ...(privateCode ? { trackingCode: privateCode } : {}) });
-                            await loadInbox();
+                            const reply = textarea.value;
+                            await request('reply', { id: entry.id, body: reply, ...(inboxCode ? { trackingCode: inboxCode } : {}) });
+                            const quote = document.createElement('blockquote');
+                            quote.textContent = reply;
+                            form.replaceWith(quote);
+                            state.textContent = 'Reply sent privately to staff';
+                            notify('Private reply sent.');
                         }
                         catch (error) {
                             notify(fail(error));
@@ -179,8 +196,10 @@
             notify(data.requests.length ? `${data.requests.length} private requests shown.` : 'No clarification requests for these submissions.');
         }
         catch (error) {
-            if (version === inboxVersion)
+            if (version === inboxVersion) {
                 notify(fail(error));
+                inboxRetry.hidden = false;
+            }
         }
     }
     document.getElementById('private-code-form')?.addEventListener('submit', async (e) => { e.preventDefault(); if (Array.from(messages?.querySelectorAll('textarea') || []).some(el => el.value.trim()) && !await window.sfConfirm('Discard your unsent private reply and look up another submission?'))
@@ -194,26 +213,56 @@
         void loadInbox();
     const history = document.getElementById('my-report-history');
     document.querySelectorAll('[data-merge-history]').forEach(container => {
-        void request('merges/' + encodeURIComponent(container.dataset.mergeHistory || '')).then(data => {
-            for (const merge of data.merges) {
-                const p = document.createElement('p');
-                p.textContent = `Merged idea: ${merge.source_title} · ${merge.reason}`;
-                container.append(p);
+        const loadMerges = async () => {
+            container.textContent = 'Loading merge history…';
+            try {
+                const data = await request('merges/' + encodeURIComponent(container.dataset.mergeHistory || ''));
+                container.replaceChildren();
+                for (const merge of data.merges) {
+                    const p = document.createElement('p');
+                    p.textContent = `Merged idea: ${merge.source_title} · ${merge.reason}`;
+                    container.append(p);
+                }
             }
-        }).catch(() => { container.textContent = 'Merge history could not load.'; });
+            catch {
+                container.textContent = 'Merge history could not load. ';
+                const retry = document.createElement('button');
+                retry.type = 'button';
+                retry.className = 'workspace-button';
+                retry.textContent = 'Retry history';
+                retry.addEventListener('click', () => void loadMerges());
+                container.append(retry);
+            }
+        };
+        void loadMerges();
     });
     if (history) {
         if (!signedIn)
             history.textContent = 'Sign in to see decisions on your reports.';
-        else
-            void request('report-history').then(data => {
-                history.textContent = data.reports.length ? '' : 'No reports submitted.';
-                for (const report of data.reports) {
-                    const p = document.createElement('p');
-                    p.textContent = `${report.resolution || 'Awaiting staff review'} · ${report.resolution_reason || report.reason}`;
-                    history.append(p);
+        else {
+            const loadReports = async () => {
+                history.textContent = 'Loading report decisions…';
+                try {
+                    const data = await request('report-history');
+                    history.textContent = data.reports.length ? '' : 'No reports submitted.';
+                    for (const report of data.reports) {
+                        const p = document.createElement('p');
+                        p.textContent = `${report.resolution || 'Awaiting staff review'} · ${report.resolution_reason || report.reason}`;
+                        history.append(p);
+                    }
                 }
-            }).catch(() => { history.textContent = 'Report decisions could not load. Refresh to retry.'; });
+                catch {
+                    history.textContent = 'Report decisions could not load. ';
+                    const retry = document.createElement('button');
+                    retry.type = 'button';
+                    retry.className = 'workspace-button';
+                    retry.textContent = 'Retry decisions';
+                    retry.addEventListener('click', () => void loadReports());
+                    history.append(retry);
+                }
+            };
+            void loadReports();
+        }
     }
     document.addEventListener('submit', async (e) => {
         const form = e.target.closest('[data-care-action]');

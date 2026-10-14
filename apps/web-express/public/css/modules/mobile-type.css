@@ -35,3 +35,9 @@
  .site-header .brand .sf-wordmark { font-size:17px; }
  :is(input,textarea,select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]) { font-size:16px; }
 }
+
+@media (max-width:768px) {
+ html[data-text-size="comfortable"] body {font-size:16px;}
+ html[data-text-size="comfortable"] :is(.post-body,.idea-card p,.comment-body-text,.am-subtext,.am-magic-body,.auth-callback-sub,.sip-section-sub,.detail-description-text,.workspace-description,.work-record-body p,.sf-dialog__message,.care-card p) {font-size:16px;line-height:1.6;}
+ html[data-text-size="comfortable"] :is(.prof-activity-title,.work-timeline-card strong,.workspace-button,.btn-ghost,.work-record-body h3,.roadmap-public-history h3) {font-size:15px;}
+}

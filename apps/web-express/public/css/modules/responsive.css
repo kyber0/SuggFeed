@@ -136,7 +136,7 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
  .staff-search-form .workspace-search { flex-basis:100%; }
  .staff-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
  .staff-review-workflow,.staff-progress-grid,.staff-management-layout,.analytics-grid { grid-template-columns:minmax(0,1fr); }
- .staff-flow-board { grid-template-columns:repeat(3,minmax(260px,1fr)); scroll-snap-type:x proximity; }
+ .staff-flow-board { contain:inline-size paint; grid-template-columns:repeat(3,minmax(260px,1fr)); scroll-snap-type:x proximity; }
  .staff-flow-lane { scroll-snap-align:start; }
  .staff-card-move summary,.staff-lane-pagination > a,.staff-remove-view { min-height:44px; min-width:44px; }
  .staff-board-toolbar .workspace-input,.staff-board-toolbar .workspace-button { min-height:44px; }

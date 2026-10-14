@@ -1,5 +1,6 @@
 "use strict";
 (() => {
+    document.documentElement.setAttribute('data-text-size', window.sfPreferences?.read('textSize') || 'compact');
     let theme = window.sfPreferences?.read('theme');
     if (!theme) {
         theme = 'system';

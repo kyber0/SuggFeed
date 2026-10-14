@@ -157,7 +157,10 @@
                 const data = await response.json();
                 if (!response.ok || !data.success)
                     throw new Error('Account bookmark could not be confirmed.');
-                accountSaved = saved;
+                if (willSave)
+                    accountSaved.add(id);
+                else
+                    accountSaved.delete(id);
             }
             else
                 localStorage.setItem('sf_saved_ideas', JSON.stringify([...saved]));
@@ -190,9 +193,36 @@
         }
         catch { }
     }
+    let bookmarkLoadBusy = false;
+    async function loadBookmarks() {
+        if (bookmarkLoadBusy)
+            return;
+        bookmarkLoadBusy = true;
+        document.getElementById('bookmark-retry')?.remove();
+        try {
+            const response = await fetch('/profile/bookmarks', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
+            const data = await response.json();
+            if (!response.ok || !data.success)
+                throw new Error();
+            accountSaved = new Set(data.ids);
+            accountBookmarksLoaded = true;
+            sfInitLocalStates();
+        }
+        catch {
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.id = 'bookmark-retry';
+            retry.className = 'workspace-button';
+            retry.textContent = 'Saved state unavailable · Retry';
+            retry.addEventListener('click', () => void loadBookmarks());
+            document.getElementById('feed-posts-container')?.before(retry);
+        }
+        finally {
+            bookmarkLoadBusy = false;
+        }
+    }
     if (savedOnAccount && !hydratedBookmarks)
-        void fetch('/profile/bookmarks', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) }).then(response => response.json()).then(data => { if (!data.success)
-            throw new Error(); accountSaved = new Set(data.ids); accountBookmarksLoaded = true; sfInitLocalStates(); }).catch(() => window.sfToast?.('Account bookmarks could not load. Refresh to check saved state.', 'error'));
+        void loadBookmarks();
     function sfInitLocalStates() {
         const votes = sfGetVotedSet();
         const saved = sfGetSavedSet();

@@ -9,20 +9,31 @@
         const paused = preferences.elements.namedItem('digest_paused');
         const kindControls = Array.from(preferences.querySelectorAll('input[name=digest_kinds]'));
         preferences.querySelectorAll('input,select').forEach(control => control.disabled = true);
-        void fetch('/api/notifications/preferences', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) }).then(async (response) => {
-            const data = await response.json();
-            if (!response.ok || !data.success)
-                throw new Error();
-            preferences.querySelectorAll('input,select').forEach(control => control.disabled = false);
-            paused.checked = data.preferences.digest_paused === true;
-            kindControls.forEach(control => control.checked = !data.preferences.digest_kinds || data.preferences.digest_kinds.includes(control.value));
-            document.getElementById('digest-window').textContent = 'Weekly scheduler window: after ' + new Date(data.nextDigestWindow).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }) + ' Manila time. Delivery depends on your school’s configured scheduler.';
-            mode.value = data.preferences.update_mode;
-            digest.checked = data.preferences.weekly_digest;
-            digest.disabled = !data.digestAvailable && !data.preferences.weekly_digest;
-            save.disabled = false;
-            document.getElementById('digest-availability').textContent = data.digestAvailable ? 'Opt-in only. A verified account email is required. No private messages are included.' : 'Your school has not enabled weekly email delivery yet. In-app updates work independently.';
-        }).catch(() => { status.textContent = 'Preferences could not load. Refresh to retry.'; });
+        const prefRetry = document.createElement('button');
+        prefRetry.type = 'button';
+        prefRetry.className = 'workspace-button';
+        prefRetry.textContent = 'Retry preferences';
+        prefRetry.hidden = true;
+        status.after(prefRetry);
+        const loadPreferences = () => {
+            prefRetry.hidden = true;
+            return fetch('/api/notifications/preferences', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) }).then(async (response) => {
+                const data = await response.json();
+                if (!response.ok || !data.success)
+                    throw new Error();
+                preferences.querySelectorAll('input,select').forEach(control => control.disabled = false);
+                paused.checked = data.preferences.digest_paused === true;
+                kindControls.forEach(control => control.checked = !data.preferences.digest_kinds || data.preferences.digest_kinds.includes(control.value));
+                document.getElementById('digest-window').textContent = 'Weekly scheduler window: after ' + new Date(data.nextDigestWindow).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }) + ' Manila time. Delivery depends on your school’s configured scheduler.';
+                mode.value = data.preferences.update_mode;
+                digest.checked = data.preferences.weekly_digest;
+                digest.disabled = !data.digestAvailable && !data.preferences.weekly_digest;
+                save.disabled = false;
+                document.getElementById('digest-availability').textContent = data.digestAvailable ? 'Opt-in only. A verified account email is required. No private messages are included.' : 'Your school has not enabled weekly email delivery yet. In-app updates work independently.';
+            }).catch(() => { status.textContent = 'Preferences could not load.'; prefRetry.hidden = false; });
+        };
+        prefRetry.addEventListener('click', () => void loadPreferences());
+        void loadPreferences();
         preferences.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (save.disabled)

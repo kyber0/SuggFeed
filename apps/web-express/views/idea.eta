@@ -13,7 +13,7 @@
 
   const statusConfig = {
     resolved: {
-      label: "Resolved",
+      label: "Completed",
       dotColor: "#0d9488",
       badgeBg: "rgba(13, 148, 136, 0.12)",
       badgeText: "#0d9488",
@@ -21,7 +21,7 @@
       bannerDesc: "This suggestion has been addressed and marked as completed by campus administration.",
     },
     in_progress: {
-      label: "In Progress",
+      label: "In progress",
       dotColor: "var(--navy)",
       badgeBg: "rgba(11, 56, 87, 0.1)",
       badgeText: "var(--navy)",
@@ -29,15 +29,15 @@
       bannerDesc: "Campus teams are currently working on planning and implementing this proposal.",
     },
     approved: {
-      label: "Approved",
+      label: "Planned",
       dotColor: "#10b981",
       badgeBg: "rgba(16, 185, 129, 0.12)",
       badgeText: "#10b981",
       bannerTitle: "Proposal Approved",
-      bannerDesc: "This proposal has been accepted and scheduled for upcoming campus improvements.",
+      bannerDesc: "This proposal has been accepted for planning. Check school updates for any recorded schedule.",
     },
     pending: {
-      label: "Pending Review",
+      label: "Needs review",
       dotColor: "#f59e0b",
       badgeBg: "rgba(245, 158, 11, 0.12)",
       badgeText: "#f59e0b",
@@ -172,7 +172,7 @@
             <% lifecycleOrder.forEach((stepKey, idx) => {
                  const isDone = idx < currentIdx;
                  const isActive = idx === currentIdx;
-                 const stepLabels = { pending: "Submitted", approved: "Approved", in_progress: "In Progress", resolved: "Resolved" };
+                 const stepLabels = { pending: "Submitted", approved: "Planned", in_progress: "In progress", resolved: "Completed" };
             %>
               <div class="step<%= isDone ? ' done' : '' %><%= isActive ? ' active' : '' %>">
                 <div class="step-dot">
@@ -207,7 +207,7 @@
                 <% } %>
               </svg>
               <span class="detail-support-count" id="detail-vote-count"><%= it.submission.vote_count ?? 0 %></span>
-              <span id="detail-vote-text"><%= it.submission.status === 'pending' ? 'Pending Review' : 'Support this idea' %></span>
+              <span id="detail-vote-text"><%= it.submission.status === 'pending' ? 'Needs review' : 'Support this idea' %></span>
             </button>
 
             <div class="detail-support-info">

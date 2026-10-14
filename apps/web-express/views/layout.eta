@@ -16,12 +16,15 @@
   <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/styles.css?v=20261014-small-text" />
+  <link rel="stylesheet" href="/css/base.bundle.css?v=20261014-enhancements" />
+  <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-enhancements" /><% } %>
+  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-enhancements" /><% } %>
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261014-enhancements" />
   <script defer src="/js/events.js?v=20261011-feed"></script>
 
-  <script src="/js/preferences.js?v=20261012-features"></script>
+  <script src="/js/preferences.js?v=20261014-enhancements"></script>
   <!-- Theme init (before render to prevent flash) -->
-  <script src="/js/theme-init.js?v=20261012-features"></script>
+  <script src="/js/theme-init.js?v=20261014-enhancements"></script>
 
   <!-- Supabase (client-side auth) -->
   <script defer src="/js/vendor/supabase.js?v=20261013-local"></script>
@@ -41,7 +44,7 @@
 
 <%~ include('partials/auth-modal', it) %>
 <%~ include('partials/submit-panel', it) %>
-<%~ include('partials/idea-detail-drawer', it) %>
+<% if (['/','/feed','/feed/'].includes(it.currentPath || '/')) { %><%~ include('partials/idea-detail-drawer', it) %><% } %>
 <%~ include('partials/report-dialog', it) %>
 <%~ include('partials/mobile-nav', it) %>
 
@@ -51,7 +54,7 @@
 <!-- Theme toggle logic -->
 <script defer src="/js/theme.js?v=20261012-features"></script>
 <script defer src="/js/engagement.js?v=20261012-progress"></script>
-<script defer src="/js/community.js?v=20261013-custom-dialogs"></script>
+<script defer src="/js/community.js?v=20261014-enhancements"></script>
 
 <script defer src="/js/public-history.js?v=20261012-features"></script>
 <script defer src="/js/responsive.js?v=20261013-adaptive"></script>

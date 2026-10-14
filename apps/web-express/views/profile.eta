@@ -47,15 +47,15 @@
           </span>
           <span class="prof-hero-badge">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-            <span id="stat-bookmarks-count"><%= bookmarks.length %></span> saved
+            <span id="stat-bookmarks-count">—</span> saved
           </span>
           <span class="prof-hero-badge">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            <span id="stat-shared-count">0</span> shared
+            <span id="stat-shared-count">—</span> shared
           </span>
           <span class="prof-hero-badge">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-            <span id="stat-supported-count">0</span> supported
+            <span id="stat-supported-count">—</span> supported
           </span>
         </div>
       </div>
@@ -94,7 +94,8 @@
     <a href="/feed?scope=following"><strong>Following</strong><span>Ideas you’re keeping up with →</span></a>
   </nav>
   <div class="prof-feedback-row"><p id="profile-feedback" role="status" aria-live="polite"></p><button type="button" class="workspace-button" id="profile-activity-retry" hidden>Retry activity</button></div>
-  <details class="prof-activity-note"><summary>About your activity</summary><p>Account bookmarks follow your sign-in. Supported and shared activity also includes public ideas remembered on this device. Up to 200 recent ideas per list are shown.</p></details>
+  <label class="prof-field">Mobile text size<select id="profile-text-size" class="workspace-input"><option value="compact">Compact</option><option value="comfortable">Comfortable</option></select></label>
+  <details class="prof-activity-note"><summary>About your activity</summary><p>Account bookmarks follow your sign-in. Supported and shared activity also includes public ideas remembered on this device. Account activity loads in pages. Device history includes up to 200 recent ideas. Counts show the public ideas loaded so far.</p></details>
   <!-- ── Content Area ── -->
   <div class="prof-content">
     <!-- Left: Settings Panel -->
@@ -208,7 +209,7 @@
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
           <span>Bookmarks</span>
-          <span class="prof-tab-count" id="count-tab-bookmarks"><%= bookmarks.length %></span>
+          <span class="prof-tab-count" id="count-tab-bookmarks">—</span>
         </button>
 
         <button
@@ -223,7 +224,7 @@
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           <span>Shared</span>
-          <span class="prof-tab-count" id="count-tab-shared">0</span>
+          <span class="prof-tab-count" id="count-tab-shared">—</span>
         </button>
 
         <button
@@ -238,7 +239,7 @@
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
           <span>Supported</span>
-          <span class="prof-tab-count" id="count-tab-voted">0</span>
+          <span class="prof-tab-count" id="count-tab-voted">—</span>
         </button>
       </div>
 
@@ -351,4 +352,4 @@
   </div>
 </main>
 
-<script defer src="/js/profile.js?v=20261013-adaptive"></script>
+<script defer src="/js/profile.js?v=20261014-enhancements"></script>

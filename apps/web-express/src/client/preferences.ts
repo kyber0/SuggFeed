@@ -1,5 +1,5 @@
 (() => {
-  const choices: Record<string, string[]> = { theme: ['light','dark','system'], roadmapView: ['board','tree','timeline','done'] };
+  const choices: Record<string, string[]> = { textSize: ['compact','comfortable'], theme: ['light','dark','system'], roadmapView: ['board','tree','timeline','done'] };
   const memory = new Map<string, string>();
   const read = (name: string): string | null => {
     if (!choices[name]) return null;

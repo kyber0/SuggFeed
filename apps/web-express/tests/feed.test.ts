@@ -36,8 +36,9 @@ class FeedElement {
   blur() {}
 }
 
-function browser(fetchResponse: (url: string, options: any) => Promise<any> = async () => ({ ok: true, json: async () => ({ success: true, feed: [], hasMore: false, totalCount: 1 }) })) {
+function browser(fetchResponse: (url: string, options: any) => Promise<any> = async () => ({ ok: true, json: async () => ({ success: true, feed: [], hasMore: false, totalCount: 1 }) }), signedIn=false) {
   const nodes = new Map<string, FeedElement>();
+  if(signedIn){nodes.set('sf-auth-config',new FeedElement({user:'member'}));nodes.set('sf-feed-account-state',new FeedElement({user:'member',bookmarks:'[]'}));}
   const config = new FeedElement({ sort: 'all', category: 'Learning', search: 'library', page: '1', hasMore: 'true' });
   nodes.set('sf-feed-config', config);
   const search = new FeedElement();
@@ -69,7 +70,7 @@ function browser(fetchResponse: (url: string, options: any) => Promise<any> = as
     setTimeout, clearTimeout, sfToast: (message: string) => toasts.push(message),
   };
   const context = {
-    window, URL, URLSearchParams, AbortController, setTimeout, clearTimeout,
+    window, URL, URLSearchParams, AbortController, AbortSignal, setTimeout, clearTimeout,
     localStorage: { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) },
     sfToast: (message: string) => toasts.push(message),
     navigator: {},
@@ -313,3 +314,16 @@ test('3-dot kebab menu toggles open and closed on click and closes on Escape', (
   assert.equal(dropdown.hidden, true, 'Escape must close the dropdown');
 });
 
+
+
+test('concurrent account bookmarks preserve both confirmed changes in either response order',async()=>{
+ for(const order of [[0,1],[1,0]]){
+  const pending:Array<()=>void>=[];
+  const app=browser(async()=>new Promise(resolve=>pending.push(()=>resolve({ok:true,json:async()=>({success:true})}))),true);
+  const first=app.window.sfBookmarkPost('first',new FeedElement());
+  const second=app.window.sfBookmarkPost('second',new FeedElement());
+  pending[order[0]]();await new Promise(resolve=>setImmediate(resolve));pending[order[1]]();
+  await Promise.all([first,second]);
+  assert.deepEqual([...app.window.sfGetSavedSet()].sort(),['first','second']);
+ }
+});
