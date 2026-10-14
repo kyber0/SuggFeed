@@ -38,10 +38,10 @@
   }catch(error){tell(savedAccount?'Account preferences saved, but this browser could not remember your fresh-draft default.':error.name==='SecurityError' || error.name==='QuotaExceededError'?'Browser storage is unavailable. This preference was not saved.':error.message);}
   finally{button.disabled=false;}
  }
- function draw(tab:string,rows:any[]){
+ function draw(tab:string,rows:any[],hasMore:boolean){
   const pane=document.getElementById('prof-pane-'+tab)!;
   pane.replaceChildren();const grid=document.createElement('div');grid.className='prof-activity-grid';
-  if(!rows.length){const empty=document.createElement('p');empty.className='prof-empty-state';empty.textContent='No '+({bookmarks:'saved',shared:'shared',voted:'supported'}[tab])+' public ideas in this list yet.';pane.append(empty);}
+  if(!rows.length){const empty=document.createElement('p');empty.className='prof-empty-state';empty.textContent=hasMore?'No public ideas found in this part of your activity. You can check more below.':'No '+({bookmarks:'saved',shared:'shared',voted:'supported'}[tab])+' public ideas in this list yet.';pane.append(empty);}
   for(const row of rows){
    const wrap=document.createElement('div');wrap.className='prof-activity-card-wrap';
    const link=document.createElement('a');link.className='prof-activity-card';link.href='/idea/'+encodeURIComponent(row.id);
@@ -72,9 +72,13 @@
    if(activity.get(tab)!==state)return;
    const seen=new Set(state.rows.map(row=>row.id));state.rows.push(...data.rows.filter(row=>!seen.has(row.id)));state.next=data.next;state.loaded=true;
    const restoreFocus=pane.contains(document.activeElement);
-   draw(tab,state.rows);
-   const note=document.createElement('p');note.textContent=state.rows.length+' public ideas shown'+(state.next?' · More activity available':'');pane.append(note);
-   if(state.next){const more=document.createElement('button');more.type='button';more.className='workspace-button';more.dataset.activityMore='';more.textContent='Load more activity';more.addEventListener('click',()=>void loadActivity(tab));pane.append(more);}
+   draw(tab,state.rows,!!state.next);
+   if(state.rows.length || state.next){
+    const footer=document.createElement('div');footer.className='prof-activity-footer';
+    if(state.rows.length){const note=document.createElement('p');note.textContent=state.rows.length+' public '+(state.rows.length===1?'idea':'ideas')+' shown';footer.append(note);}
+    if(state.next){const more=document.createElement('button');more.type='button';more.className='workspace-button';more.dataset.activityMore='';more.textContent='Load more activity';more.addEventListener('click',()=>void loadActivity(tab));footer.append(more);}
+    pane.append(footer);
+   }
    if(restoreFocus && selectedTab===tab)pane.focus();
   }catch{
    if(!state.loaded)pane.textContent='Activity could not load.';
