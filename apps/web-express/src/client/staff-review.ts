@@ -156,7 +156,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   document.addEventListener('click',event=>{
     const target=event.target as Element;
     const card=target.closest<HTMLElement>('[data-board-id]');
-    if(card && (Date.now()-Number(card.dataset.draggedAt || 0)<400 || card.dataset.dragging==='true'))return;
+    if(card && (Date.now()-Number(card.dataset.draggedAt || 0)<400 || card.dataset.dragging==='true')){event.preventDefault();return;}
     const button=target.closest<HTMLElement>('[data-review]');
     if(event.button!==0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
     if(button){event.preventDefault();void openReview(button.dataset.review!,button,button.dataset.reviewSection);}

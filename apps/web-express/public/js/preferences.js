@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-    const choices = { textSize: ['compact', 'comfortable'], theme: ['light', 'dark', 'system'], roadmapView: ['board', 'tree', 'timeline', 'done'] };
+    const choices = { textSize: ['compact', 'comfortable'], theme: ['light', 'dark', 'system'], roadmapView: ['board', 'tree', 'timeline', 'done'], staffSidebar: ['expanded', 'collapsed'] };
     const memory = new Map();
     const read = (name) => {
         if (!choices[name])

@@ -296,8 +296,10 @@
     document.addEventListener('click', event => {
         const target = event.target;
         const card = target.closest('[data-board-id]');
-        if (card && (Date.now() - Number(card.dataset.draggedAt || 0) < 400 || card.dataset.dragging === 'true'))
+        if (card && (Date.now() - Number(card.dataset.draggedAt || 0) < 400 || card.dataset.dragging === 'true')) {
+            event.preventDefault();
             return;
+        }
         const button = target.closest('[data-review]');
         if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
             return;

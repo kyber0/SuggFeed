@@ -2413,7 +2413,17 @@
 .staff-flow-lane[aria-busy=true] .staff-lane-cards {opacity:.6;}
 .staff-board-safety {margin:16px 0 0;font-size:12px;color:var(--muted);line-height:1.5;}
 @media(min-width:1200px) {.staff-board-main .workspace-heading {align-items:center;}}
-.is-drop-target {border-color:#3885a6;}
+.staff-flow-lane {position:relative;}
+.staff-flow-card[data-dragging="true"] {opacity:.4;border-style:dashed;box-shadow:none;}
+.staff-flow-board.is-dragging .staff-flow-lane[data-drop-label] {border-style:dashed;border-color:var(--navy);}
+.staff-flow-board .staff-flow-lane.is-drop-target {border-style:solid;border-color:var(--navy);background:var(--sky);box-shadow:inset 0 0 0 2px var(--navy);}
+.staff-flow-lane::after {content:attr(data-drop-label);position:absolute;top:48px;left:12px;right:12px;padding:8px 10px;border-radius:10px;background:var(--navy-2);color:#fff;font-size:13px;font-weight:700;text-align:center;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;}
+.staff-flow-lane.is-drop-target::after {opacity:1;}
+.staff-flow-board.is-dragging .staff-flow-card {cursor:grabbing;}
+.staff-drag-preview {position:fixed;top:0;left:-10000px;width:300px;padding:18px;border:2px solid var(--navy);border-radius:12px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-lg);pointer-events:none;}
+.staff-drag-preview strong {display:block;font-size:15px;line-height:1.5;overflow-wrap:anywhere;}
+.staff-drag-preview span {display:block;margin-top:8px;font-size:12px;color:var(--muted);}
+@media(prefers-reduced-motion:no-preference) {.staff-flow-lane {transition:border-color .15s ease,background-color .15s ease,box-shadow .15s ease;}.staff-flow-lane::after {transition:opacity .15s ease;}}
 .staff-bulk-controls {display:flex;gap:16px;align-items:end;flex-wrap:wrap;margin-top:24px;}
 .staff-bulk-controls label {display:grid;gap:8px;}
 .staff-upload-thumbnail {width:160px;height:100px;object-fit:contain;border-radius:10px;background:#eef2f6;}
@@ -3216,6 +3226,22 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
 }
 @media (min-width:801px) and (max-width:960px) {
  .site-header nav { gap:8px; }
+}
+
+/* Keep a restore control available when the staff navigation is collapsed. */
+.staff-sidebar-content { display:flex; flex-direction:column; flex:1; min-height:0; }
+.staff-sidebar-toggle { display:none; }
+@media (min-width:801px) {
+ .staff-sidebar { padding-top:76px; }
+ .staff-sidebar-toggle { position:absolute; top:12px; left:12px; z-index:35; display:flex; align-items:center; justify-content:center; gap:10px; width:calc(100% - 24px); min-height:44px; padding:10px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--ink); font:600 12px/1.4 Inter,Arial,sans-serif; cursor:pointer; }
+ .staff-sidebar-toggle:hover { background:var(--sky); border-color:var(--navy); }
+ .staff-sidebar-toggle:focus-visible { outline:3px solid var(--text-link); outline-offset:3px; }
+ html[data-staff-sidebar="collapsed"] .staff-workspace { grid-template-columns:68px minmax(0,1fr); }
+ html[data-staff-sidebar="collapsed"] .staff-sidebar-content { display:none; }
+ html[data-staff-sidebar="collapsed"] .staff-sidebar { padding-inline:12px; }
+ html[data-staff-sidebar="collapsed"] .staff-sidebar-toggle { width:44px; }
+ html[data-staff-sidebar="collapsed"] .staff-sidebar-toggle span { display:none; }
+ html[data-staff-sidebar="collapsed"] .staff-sidebar-toggle svg { transform:rotate(180deg); }
 }
 
 /* A modest mobile text reduction. Keep form controls at 16px to avoid focus zoom. */

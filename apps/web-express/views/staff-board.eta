@@ -25,6 +25,7 @@
   <label><span class="visually-hidden">Assign selected cards to</span><select class="workspace-input" id="staff-bulk-assignee" aria-label="Assign selected cards to"><option value="">Unassigned</option><% for(const member of it.members) { %><option value="<%= member.id %>"><%= member.display_name || 'Staff member' %></option><% } %></select></label>
   <button class="workspace-button" id="staff-bulk-assign" type="button">Assign selected</button><button class="workspace-text-link" id="staff-clear-selection" type="button">Clear selection</button>
  </div>
+ <p class="visually-hidden" id="staff-drag-status" role="status" aria-live="polite"></p>
  <section class="staff-flow-board" id="staff-flow-board" aria-label="Submission stages">
   <% for(const lane of it.lanes) { %><%~ include('partials/staff-board-lane',{lane,urlFor,pageFields}) %><% } %>
  </section>
@@ -32,10 +33,10 @@
  <details class="staff-board-help"><summary>Board controls and recovery</summary><p>Use the stage menu on each card with a keyboard, or drag a card with a pointer. Each stage pages independently. Selection can include other pages and is kept only during this visit.</p><p>Assignments save together: if any selected version changed, none are saved. After a timeout, refresh to confirm before retrying. Published history is corrected with a new update; merges require an operator to review the audit for recovery.</p></details>
  <script id="staff-board-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script>
  <script id="staff-board-meta" type="application/json"><%~ JSON.stringify(meta).replace(/</g,'\\u003c') %></script>
- <script defer src="/js/staff-tools.js?v=20261013-custom-dialogs"></script>
+ <script defer src="/js/staff-tools.js?v=20261014-staff-interactions"></script>
 </div>
 <%~ include('partials/staff-review',{...it,staffMembers:it.members}) %>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
 <script defer src="/js/staff-progress.js?v=20261013-custom-dialogs"></script>
-<script defer src="/js/staff-review.js?v=20261012-shared-review"></script>
+<script defer src="/js/staff-review.js?v=20261014-staff-interactions"></script>
 </main><section class="staff-mobile-notice"><h1>Staff workspace</h1><p>Use a desktop or larger screen to manage the work board.</p><a class="workspace-button" href="/roadmap">Explore the roadmap</a></section>

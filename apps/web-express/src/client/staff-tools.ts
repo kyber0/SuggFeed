@@ -83,11 +83,16 @@
    }catch(e){failedPage={stage,url:target.href,push};retry.hidden=false;tell(e.name==='AbortError'?'Loading timed out. Your current cards and selection are unchanged. Retry loading.':e.message);return false;}
    finally{clearTimeout(timer);ownLane?.removeAttribute('aria-busy');loading=false;controls();}
   }
+  const stageActions:Record<string,Record<string,string>>={
+   pending:{approved:'approve',rejected:'decline'},approved:{in_progress:'start',rejected:'withdraw'},
+   in_progress:{resolved:'complete',rejected:'withdraw'},resolved:{in_progress:'reopen',rejected:'withdraw'}
+  };
+  const moveAction=(item:BoardItem,stage:string)=>stageActions[item.status]?.[stage] || null;
   async function move(id:string,stage:string){
    const item=items.get(id);if(!item || item.status===stage || busy || loading)return;
-   const action=stage==='in_progress'?(item.status==='resolved'?'reopen':'start'):stage==='resolved'?'complete':stage==='approved' && item.status==='pending'?'approve':stage==='rejected'?(item.status==='pending'?'decline':'withdraw'):null;
+   const action=moveAction(item,stage);
    const select=board.querySelector<HTMLSelectElement>(`[data-stage-select="${id}"]`);if(select)select.value=item.status;
-   if(!action){tell('Use Review submissions for review decisions. Work moves forward through guided actions.');return;}
+   if(!action){tell('That stage is unavailable for this idea. Open the idea to see its available actions.');return;}
    document.dispatchEvent(new CustomEvent('sf:review-action',{detail:{id,action,trigger:board.querySelector(`[data-review="${id}"]`)}}));
   }
   board.addEventListener('click',e=>{
@@ -108,11 +113,47 @@
     if(input.checked)selected.set(id,{...item});else selected.delete(id);selectionState();
    } else if(input.matches('[data-stage-select]'))void move(input.dataset.stageSelect!,input.value);
   });
-  board.addEventListener('dragstart',e=>{const card=(e.target as HTMLElement).closest<HTMLElement>('[data-board-id]');if(!card)return;if(busy || loading || (e.target as HTMLElement).closest('input,select,a,button,summary')){e.preventDefault();return;}card.dataset.dragging='true';dragging=card.dataset.boardId!;e.dataTransfer?.setData('text/plain',dragging);});
-  board.addEventListener('dragend',()=>{board.querySelectorAll<HTMLElement>('[data-dragging]').forEach(card=>{delete card.dataset.dragging;card.dataset.draggedAt=String(Date.now());});dragging=null;board.querySelectorAll('.is-drop-target').forEach(el=>el.classList.remove('is-drop-target'));});
-  board.addEventListener('dragover',e=>{const lane=(e.target as HTMLElement).closest<HTMLElement>('[data-drop-stage]');if(lane && dragging && !busy && !loading){e.preventDefault();lane.classList.add('is-drop-target');}});
-  board.addEventListener('dragleave',e=>{const lane=(e.target as HTMLElement).closest<HTMLElement>('[data-drop-stage]');if(lane && !lane.contains(e.relatedTarget as Node))lane.classList.remove('is-drop-target');});
-  board.addEventListener('drop',e=>{const lane=(e.target as HTMLElement).closest<HTMLElement>('[data-drop-stage]');if(!lane)return;e.preventDefault();lane.classList.remove('is-drop-target');if(dragging)void move(dragging,lane.dataset.dropStage!);dragging=null;});
+  const dragStatus=document.getElementById('staff-drag-status');
+  const tellDrag=(text:string)=>{if(dragStatus)dragStatus.textContent=text;};
+  let dragPreview:HTMLElement|null=null;
+  function clearDrag(){
+   board.classList.remove('is-dragging');
+   board.querySelectorAll<HTMLElement>('[data-dragging]').forEach(card=>{delete card.dataset.dragging;card.dataset.draggedAt=String(Date.now());});
+   board.querySelectorAll<HTMLElement>('[data-drop-stage]').forEach(lane=>{lane.classList.remove('is-drop-target');delete lane.dataset.dropLabel;});
+   dragPreview?.remove();dragPreview=null;dragging=null;
+  }
+  board.addEventListener('dragstart',e=>{
+   const target=e.target as HTMLElement,card=target.closest<HTMLElement>('[data-board-id]');if(!card)return;
+   if(busy || loading || target.closest('input,select,button,summary,label,details')){e.preventDefault();return;}
+   const item=items.get(card.dataset.boardId!);if(!item){e.preventDefault();return;}
+   dragging=item.id;card.dataset.dragging='true';board.classList.add('is-dragging');
+   board.querySelectorAll<HTMLElement>('[data-drop-stage]').forEach(lane=>{
+    const action=moveAction(item,lane.dataset.dropStage!);
+    if(action)lane.dataset.dropLabel=({start:'Release to start work',reopen:'Release to reopen work',complete:'Release to review completion',approve:'Release to review approval',decline:'Release to review decline',withdraw:'Release to review withdrawal'})[action];
+   });
+   if(e.dataTransfer){
+    e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragging);
+    dragPreview=document.createElement('div');dragPreview.className='staff-drag-preview';dragPreview.setAttribute('aria-hidden','true');
+    const title=document.createElement('strong');title.textContent=item.title;
+    const hint=document.createElement('span');hint.textContent='Move idea · review before saving';dragPreview.append(title,hint);document.body.append(dragPreview);e.dataTransfer.setDragImage(dragPreview,24,20);
+   }
+   tellDrag('Drop onto a highlighted stage to review the move. Nothing changes until you save.');
+  });
+  board.addEventListener('dragend',()=>{const cancelled=!!dragging;clearDrag();if(cancelled)tellDrag('Drag cancelled. No changes saved.');});
+  board.addEventListener('dragover',e=>{
+   const lane=(e.target as HTMLElement).closest<HTMLElement>('[data-drop-stage]');
+   const allowed=!!(lane?.dataset.dropLabel && dragging && !busy && !loading);
+   board.querySelectorAll('.is-drop-target').forEach(el=>{if(el!==lane || !allowed)el.classList.remove('is-drop-target');});
+   if(!allowed){if(e.dataTransfer)e.dataTransfer.dropEffect='none';return;}
+   e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect='move';lane!.classList.add('is-drop-target');
+  });
+  board.addEventListener('dragleave',e=>{const lane=(e.target as HTMLElement).closest<HTMLElement>('[data-drop-stage]');if(lane && (!(e.relatedTarget instanceof Node) || !lane.contains(e.relatedTarget)))lane.classList.remove('is-drop-target');});
+  board.addEventListener('drop',e=>{
+   const lane=(e.target as HTMLElement).closest<HTMLElement>('[data-drop-stage]');if(!lane || !dragging)return;
+   e.preventDefault();const id=dragging,stage=lane.dataset.dropStage!,allowed=!!lane.dataset.dropLabel;
+   clearDrag();if(allowed){tellDrag('Opening the move form. Review the change before saving.');void move(id,stage);}else tellDrag('That stage is unavailable for this idea. No changes saved.');
+  });
+  window.addEventListener('pagehide',clearDrag);
   retry.addEventListener('click',()=>{if(failedPage)void navigate(failedPage.stage,failedPage.url,failedPage.push);});
   document.getElementById('staff-clear-selection')?.addEventListener('click',()=>{if(busy || loading)return;selected.clear();selectionState();tell('Selection cleared.');});
   document.getElementById('staff-bulk-assign')?.addEventListener('click',async()=>{

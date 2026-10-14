@@ -8,6 +8,10 @@
   const isFiltered = !!filters.search || filters.assignment !== 'all' || filters.priority !== 'all' || filters.overdue === 'true';
 %>
 <aside class="staff-sidebar" aria-label="Staff workspace">
+<button type="button" class="staff-sidebar-toggle" id="staff-sidebar-toggle" aria-controls="staff-sidebar-content" aria-expanded="true" aria-label="Hide sidebar" title="Hide sidebar">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18m7-13-4 4 4 4"/></svg><span>Hide sidebar</span>
+</button>
+ <div class="staff-sidebar-content" id="staff-sidebar-content">
   <a class="staff-brand" href="/admin"><img class="sf-brand-logo" src="/branding/sf-monogram.png" width="54" height="36" alt="" /><span>SuggFeed<small>STAFF WORKSPACE</small></span></a>
   <details class="staff-navigation-disclosure" open>
   <summary>Workspace menu</summary>
@@ -38,4 +42,5 @@
   <div class="staff-identity"><span class="staff-brand-mark" aria-hidden="true"><%= (it.user?.display_name || 'S').slice(0,1).toUpperCase() %></span><div><strong><%= it.user?.display_name || 'School staff' %></strong><small><%= it.user?.role==='admin' ? 'Administrator' : 'Moderator' %></small></div></div>
   </div>
   </details>
+ </div>
 </aside>

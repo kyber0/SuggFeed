@@ -1,6 +1,7 @@
 "use strict";
 (() => {
     document.documentElement.setAttribute('data-text-size', window.sfPreferences?.read('textSize') || 'compact');
+    document.documentElement.dataset.staffSidebar = window.sfPreferences?.read('staffSidebar') || 'expanded';
     let theme = window.sfPreferences?.read('theme');
     if (!theme) {
         theme = 'system';
