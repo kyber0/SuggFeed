@@ -36,3 +36,7 @@ Never cut: validation at trust boundaries, error handling that prevents data los
 Superpowers skills are available alongside Ponytail in `.agents/skills`. For Superpowers workflows, read `.agents/skills/using-superpowers/SKILL.md` and the relevant skill. Use Ponytail to keep the implementation small and Superpowers for planning, debugging, testing and verification where appropriate.
 
 Follow the user's current task and existing authorization, and the host's tool and permission requirements. Project installation details and available skills are in `.agents/skills/SUPERPOWERS.md`.
+
+## UI UX Pro Max
+
+For UI/UX design and review work, read `.agents/skills/ui-ux-pro-max/SKILL.md`. Its local search data and companion skills cover responsive layouts, typography, colors, accessibility and design systems. Preserve SuggFeed's existing brand and components when applying recommendations. Installation and invocation details are in `.agents/skills/UI-UX-PRO-MAX.md`.
