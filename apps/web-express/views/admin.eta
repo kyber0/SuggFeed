@@ -84,4 +84,4 @@
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
 <script defer src="/js/staff-progress.js?v=20261013-custom-dialogs"></script>
 <script defer src="/js/staff-review.js?v=20261014-staff-interactions"></script>
-<script defer src="/js/staff-tools.js?v=20261014-staff-interactions"></script>
+<script defer src="/js/staff-tools.js?v=20261014-open-workspace"></script>

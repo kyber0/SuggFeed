@@ -37,7 +37,6 @@
    let visible=0;
    board.querySelectorAll<HTMLInputElement>('[data-bulk-id]').forEach(input=>{input.checked=selected.has(input.dataset.bulkId!);if(input.checked)visible++;});
    document.getElementById('staff-selection-tools')!.hidden=!selected.size;
-   document.querySelector('.staff-board-main')?.classList.toggle('is-selecting',selected.size>0);
    document.getElementById('staff-selection-count')!.textContent=`${selected.size} selected${selected.size>visible?' · '+(selected.size-visible)+' on other pages':''} · maximum 25`;
   }
   async function navigate(stage:string|null,rawUrl:string,push=true,internal=false){
@@ -63,9 +62,7 @@
     for(const key of Object.keys(labels)){
      const oldLane=board.querySelector<HTMLElement>(`[data-drop-stage="${key}"]`),newLane=fresh.querySelector<HTMLElement>(`[data-drop-stage="${key}"]`)!;
      if(replacementStages.includes(key)){
-      const oldScroll=oldLane?.querySelector('.staff-lane-cards')?.scrollTop || 0;
       oldLane?.replaceWith(newLane);
-      const scroll=newLane.querySelector('.staff-lane-cards');if(scroll)scroll.scrollTop=key===stage?0:oldScroll;
      } else {
       for(const selector of ['.staff-lane-heading','.staff-lane-pagination']){const old=oldLane?.querySelector(selector),current=newLane.querySelector(selector);if(old && current)old.replaceChildren(...Array.from(current.childNodes));}
      }
@@ -77,7 +74,7 @@
     selectionState();
     const canonical=urlFor(stage,stage?meta.filters.pages[stage]:undefined);
     if(push)window.history.pushState(null,'',canonical.href);else window.history.replaceState(null,'',canonical.href);
-    if(stage){const heading=board.querySelector<HTMLElement>(`#board-title-${stage}`);heading?.focus({preventScroll:true});const lane=meta.lanes.find(l=>l.status===stage)!;tell(`${lane.label}: ${lane.from}–${lane.to} of ${lane.count}. Page ${lane.page} of ${lane.pageCount}. Selection retained.`);}
+    if(stage){board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"]`)?.scrollIntoView({block:'start',inline:'nearest',behavior:'instant'});const heading=board.querySelector<HTMLElement>(`#board-title-${stage}`);heading?.focus({preventScroll:true});const lane=meta.lanes.find(l=>l.status===stage)!;tell(`${lane.label}: ${lane.from}–${lane.to} of ${lane.count}. Page ${lane.page} of ${lane.pageCount}. Selection retained.`);}
     else tell('Work board refreshed.');
     return true;
    }catch(e){failedPage={stage,url:target.href,push};retry.hidden=false;tell(e.name==='AbortError'?'Loading timed out. Your current cards and selection are unchanged. Retry loading.':e.message);return false;}
@@ -119,7 +116,7 @@
   function clearDrag(){
    board.classList.remove('is-dragging');
    board.querySelectorAll<HTMLElement>('[data-dragging]').forEach(card=>{delete card.dataset.dragging;card.dataset.draggedAt=String(Date.now());});
-   board.querySelectorAll<HTMLElement>('[data-drop-stage]').forEach(lane=>{lane.classList.remove('is-drop-target');delete lane.dataset.dropLabel;});
+   board.querySelectorAll<HTMLElement>('[data-drop-stage]').forEach(lane=>{lane.classList.remove('is-drop-target');delete lane.dataset.dropLabel;lane.querySelector<HTMLElement>('.staff-lane-heading')?.removeAttribute('data-drop-label');});
    dragPreview?.remove();dragPreview=null;dragging=null;
   }
   board.addEventListener('dragstart',e=>{
@@ -129,7 +126,7 @@
    dragging=item.id;card.dataset.dragging='true';board.classList.add('is-dragging');
    board.querySelectorAll<HTMLElement>('[data-drop-stage]').forEach(lane=>{
     const action=moveAction(item,lane.dataset.dropStage!);
-    if(action)lane.dataset.dropLabel=({start:'Release to start work',reopen:'Release to reopen work',complete:'Release to review completion',approve:'Release to review approval',decline:'Release to review decline',withdraw:'Release to review withdrawal'})[action];
+    if(action){lane.dataset.dropLabel=({start:'Release to start work',reopen:'Release to reopen work',complete:'Release to review completion',approve:'Release to review approval',decline:'Release to review decline',withdraw:'Release to review withdrawal'})[action];lane.querySelector<HTMLElement>('.staff-lane-heading')!.dataset.dropLabel=lane.dataset.dropLabel;}
    });
    if(e.dataTransfer){
     e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragging);

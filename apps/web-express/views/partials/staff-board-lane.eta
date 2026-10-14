@@ -1,7 +1,7 @@
 <% const lane=it.lane; %>
 <section class="staff-flow-lane" id="board-lane-<%= lane.status %>" data-drop-stage="<%= lane.status %>" aria-labelledby="board-title-<%= lane.status %>">
  <header class="staff-lane-heading"><h2 id="board-title-<%= lane.status %>" tabindex="-1"><%= lane.label %><span class="staff-lane-count" aria-label="<%= lane.count %> matching submissions"><%= lane.count.toLocaleString() %></span></h2><p><%= lane.count ? lane.from+'–'+lane.to+' of '+lane.count.toLocaleString() : 'No matching submissions' %></p></header>
- <div class="staff-lane-cards" role="region" tabindex="0" aria-label="<%= lane.label %> cards; scroll to see this page">
+ <div class="staff-lane-cards" role="region" tabindex="0" aria-label="<%= lane.label %> cards">
   <% for(const item of lane.items) { %>
   <article class="staff-flow-card" data-board-id="<%= item.id %>" draggable="true">
    <div class="staff-card-top"><label class="staff-card-select"><input type="checkbox" data-bulk-id="<%= item.id %>" aria-label="Select <%= item.title %>"/></label><span class="staff-card-category" title="<%= item.categories?.name || 'Other' %>"><%= item.categories?.name || 'Other' %></span><% if(['high','urgent'].includes(item.priority)) { %><span class="staff-card-priority" data-priority="<%= item.priority %>"><%= item.priority %></span><% } %></div>
