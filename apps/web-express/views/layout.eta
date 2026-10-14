@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261014-enhancements" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-enhancements" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-enhancements" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261014-enhancements" />
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261014-mobile-preferred" />
   <script defer src="/js/events.js?v=20261011-feed"></script>
 
   <script src="/js/preferences.js?v=20261014-enhancements"></script>

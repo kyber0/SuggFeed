@@ -3149,6 +3149,15 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
  .staff-pagination .workspace-button { min-height:44px; }
 }
 
+/* The saved-view shortcut has its own row rather than squeezing three controls together. */
+.roadmap-preferred-view { display:flex; width:fit-content; max-width:100%; min-height:44px; margin:0 0 16px; white-space:normal; overflow-wrap:anywhere; line-height:1.45; }
+@media (max-width:600px) { .roadmap-preferred-view { width:100%; justify-content:center; text-align:center; } }
+@media (max-width:360px) {
+ .site-header { gap:6px; }
+ .site-header nav { gap:4px; }
+ .site-header .header-divider { display:none; }
+}
+
 /* A modest mobile text reduction. Keep form controls at 16px to avoid focus zoom. */
 @media (max-width:768px) {
  body { font-size:14px; }
