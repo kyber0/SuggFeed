@@ -3293,3 +3293,59 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
  html[data-text-size="comfortable"] :is(.post-body,.idea-card p,.comment-body-text,.am-subtext,.am-magic-body,.auth-callback-sub,.sip-section-sub,.detail-description-text,.workspace-description,.work-record-body p,.sf-dialog__message,.care-card p) {font-size:16px;line-height:1.6;}
  html[data-text-size="comfortable"] :is(.prof-activity-title,.work-timeline-card strong,.workspace-button,.btn-ghost,.work-record-body h3,.roadmap-public-history h3) {font-size:15px;}
 }
+
+/* Interaction feedback only: content stays visible and navigation never waits for motion. */
+:root {
+  --motion-press:100ms;
+  --motion-feedback:160ms;
+  --motion-panel:180ms;
+  --motion-ease:cubic-bezier(.2,.7,.2,1);
+}
+
+@media (prefers-reduced-motion:no-preference) {
+  :is(.workspace-button,.btn-primary,.btn-primary-sm,.btn-ghost,.primary,.am-btn-primary,.am-btn-ghost,.am-btn-google,.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-primary,.saved-search-action,.staff-sidebar-toggle) {
+    transition:scale var(--motion-press) var(--motion-ease),background-color var(--motion-feedback) ease,border-color var(--motion-feedback) ease,box-shadow var(--motion-feedback) ease,color var(--motion-feedback) ease,transform var(--motion-feedback) var(--motion-ease);
+  }
+  :is(.workspace-button,.btn-primary,.btn-primary-sm,.btn-ghost,.primary,.am-btn-primary,.am-btn-ghost,.am-btn-google,.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-primary,.saved-search-action,.staff-sidebar-toggle):active:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) {
+    scale:.98;
+  }
+  :is(.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-action) > svg {
+    transition:scale var(--motion-press) var(--motion-ease);
+  }
+  :is(.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-action):active:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) > svg { scale:.9; }
+
+  :is(.prof-shortcuts a,.prof-activity-card,.work-timeline-card,.roadmap-completion-card,.saved-search-item,.post-card,.roadmap-idea) {
+    transition:translate var(--motion-feedback) var(--motion-ease),border-color var(--motion-feedback) ease,box-shadow var(--motion-feedback) ease,background-color var(--motion-feedback) ease,transform var(--motion-feedback) var(--motion-ease);
+  }
+  .saved-search-link > svg { transition:translate var(--motion-feedback) var(--motion-ease); }
+  .mobile-tab > svg { transition:translate var(--motion-feedback) var(--motion-ease),scale var(--motion-press) var(--motion-ease); }
+  .mobile-tab:active { transform:none; }
+  .mobile-tab:active > svg { scale:.9; }
+
+  :is(.workspace-input,.prof-input,.am-input,.saved-search-input,.workspace-search):not([aria-invalid="true"]) {
+    transition:border-color var(--motion-feedback) ease,box-shadow var(--motion-feedback) ease,background-color var(--motion-feedback) ease;
+  }
+
+  :is(.prof-activity-pane,.staff-review-panel):not([hidden]) { animation:sf-content-enter var(--motion-feedback) var(--motion-ease); }
+  .workspace-dialog[open],.work-record-dialog[open] { animation:sf-drawer-enter var(--motion-panel) var(--motion-ease); }
+  .am-card[open],.app-confirm-dialog[open],.staff-save-view-dialog[open] { animation:sf-dialog-enter var(--motion-panel) var(--motion-ease); }
+
+  @media (hover:hover) and (pointer:fine) {
+    :is(.prof-shortcuts a,.prof-activity-card):hover { translate:0 -2px; border-color:var(--line-2); box-shadow:var(--shadow-md); }
+    :is(.work-timeline-card,.roadmap-completion-card,.saved-search-item,.post-card,.roadmap-idea):hover { border-color:var(--line-2); box-shadow:var(--shadow-sm); }
+    .saved-search-link:hover > svg { translate:2px 0; }
+    .mobile-tab:hover > svg { translate:0 -2px; }
+    .site-header nav > a:not(.btn-primary-sm) {
+      text-decoration:underline;
+      text-decoration-color:transparent;
+      text-decoration-thickness:2px;
+      text-underline-offset:6px;
+      transition:color var(--motion-feedback) ease,text-decoration-color var(--motion-feedback) ease;
+    }
+    .site-header nav > a:not(.btn-primary-sm):is(:hover,:focus-visible,.active) { text-decoration-color:currentColor; }
+  }
+}
+
+@keyframes sf-content-enter { from { opacity:.75; translate:0 3px; } to { opacity:1; translate:0 0; } }
+@keyframes sf-drawer-enter { from { opacity:.8; translate:12px 0; } to { opacity:1; translate:0 0; } }
+@keyframes sf-dialog-enter { from { opacity:.8; scale:.985; } to { opacity:1; scale:1; } }

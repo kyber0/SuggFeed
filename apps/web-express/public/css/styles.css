@@ -41,3 +41,5 @@
 @import url("./modules/ui-polish.css?v=20261014-scrollbars");
 @import url('./modules/responsive.css?v=20261014-mobile-preferred');
 @import url('./modules/mobile-type.css?v=20261014-small-text');
+
+@import url('./modules/interactions.css?v=20261015-minimal-motion');
