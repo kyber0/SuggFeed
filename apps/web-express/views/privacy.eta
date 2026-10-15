@@ -1,111 +1,64 @@
 <% layout('layout') %>
-
+<% const legal = it.legal || {}; %>
 <main class="sf-legal-page">
   <div class="sf-legal-container">
-    <nav class="sf-legal-breadcrumb">
-      <a href="/">← Back to SuggFeed</a>
-    </nav>
-
-    <header class="sf-legal-header">
-      <h1>Privacy Policy</h1>
-      <p class="sf-legal-meta">Last updated: 28 September 2026</p>
-    </header>
-
+    <nav class="sf-legal-breadcrumb"><a href="/">← Back to SuggFeed</a></nav>
+    <header class="sf-legal-header"><h1>Privacy Notice</h1><p class="sf-legal-meta">Updated: 15 October 2026</p></header>
     <article class="sf-legal-content">
       <section>
-        <h2>1. Introduction</h2>
-        <p>
-          SuggFeed is a feedback platform that lets anyone submit complaints, suggestions, or
-          other feedback anonymously and track its progress. This policy explains what data we
-          collect, why we collect it, and how we protect it.
-        </p>
+        <h2>Who operates this service</h2>
+        <% if (legal.operatorName) { %><p>This service is operated by <%= legal.operatorName %>.</p><% } %>
+        <% if (!legal.operatorName || !legal.privacyEmail) { %><p><strong>Privacy setup is incomplete.</strong> The service operator must publish its identity and a monitored privacy contact before this deployment is approved for school use. Avoid submitting sensitive personal information.</p><% } %>
+        <p>SuggFeed supports school feedback, moderation and progress updates. This notice describes the current service. A school adopting SuggFeed must identify its responsibilities, purposes, lawful grounds, retention rules and privacy contact before using it for school records. A school's participation must not be assumed from the product name.</p>
       </section>
-
       <section>
-        <h2>2. What We Collect</h2>
-        <h3>2.1 Submissions</h3>
-        <p>
-          When you submit feedback, we store the text content, category, optional attachments,
-          and a randomly generated anonymous tracking token. We do <strong>not</strong> store
-          your name, identity, or any other personally identifiable information alongside your
-          submission.
-        </p>
-        <h3>2.2 Tracking Tokens</h3>
-        <p>
-          A one-time tracking token is generated in your browser when you submit feedback. It
-          is stored locally on your device and is the only way to look up the status of your
-          own submission. We cannot link a tracking token back to you.
-        </p>
-        <h3>2.3 Authenticated Staff Accounts</h3>
-        <p>
-          Staff and admin users sign in with an email and password managed by Supabase Auth.
-          We store your email address, hashed password (never plaintext), and role assignment.
-          Login events are logged for security auditing.
-        </p>
-        <h3>2.4 Usage Data</h3>
-        <p>
-          We collect anonymised usage metrics (page views, error events) via our analytics
-          provider. No cross-site tracking cookies are used.
-        </p>
-      </section>
-
-      <section>
-        <h2>3. How We Use Your Data</h2>
+        <h2>Information processed</h2>
         <ul>
-          <li>To display approved feedback in the public feed.</li>
-          <li>To allow you to track the status of your own submission.</li>
-          <li>To enable staff to review, respond to, and moderate submissions.</li>
-          <li>To detect abuse and enforce our acceptable-use policy.</li>
-          <li>To improve the platform through aggregated analytics.</li>
+          <li><strong>Accounts:</strong> email, profile name, optional sign-in-provider avatar, authentication information and role permissions. Students as well as staff can have accounts.</li>
+          <li><strong>Ideas and discussions:</strong> submitted text, category, dates, status, comments and any supported attachments. Account submissions are linked to the signed-in account.</li>
+          <li><strong>Activity:</strong> votes, bookmarks, follows, shared activity, saved searches, notification preferences and notifications.</li>
+          <li><strong>Private workflows:</strong> clarification messages, reports, moderation decisions and staff work records, accessible according to their authorization rules.</li>
+          <li><strong>Security and recovery:</strong> session records, submission receipts, tracking-code hashes and device/IP-derived abuse identifiers. Hosting and authentication providers may process connection details and operational logs.</li>
         </ul>
+        <p>These records support authentication, feedback review, progress tracking, requested notifications, recovery and abuse prevention. The adopting operator must assess lawful grounds separately for each purpose, including any sensitive personal information. Providing a notice or accepting terms does not by itself authorize every use.</p>
       </section>
-
       <section>
-        <h2>4. Data Retention</h2>
-        <p>
-          Approved or actioned submissions are retained indefinitely as part of the public
-          record. Rejected or spam submissions are deleted after 90 days. Tracking tokens
-          stored in your browser expire after 12 months of inactivity.
-        </p>
+        <h2>Anonymous mode and public content</h2>
+        <p>Anonymous mode does not attach your account ID to the idea. It does not guarantee that you cannot be identified: your text, attachments, device context or service logs may reveal information about you. Authorized operators and providers may have access to operational records that public readers cannot see.</p>
+        <p>Approved ideas, public comments and published school progress updates or evidence may be visible to anyone. Do not include student numbers, health records, home addresses, private allegations or other people's personal details in public feedback. Use your school's approved confidential channel for sensitive cases.</p>
+        <p>A private tracking code can provide access to an anonymous submission's tracking information. Keep it secret. Do not post it publicly or send it with passwords or login tokens in ordinary email.</p>
       </section>
-
       <section>
-        <h2>5. Third-Party Services</h2>
-        <ul>
-          <li><strong>Supabase</strong> - database, authentication, and file storage.</li>
-          <li><strong>Cloudflare Turnstile</strong> - bot/spam protection at submission time.</li>
-        </ul>
+        <h2>Cookies and device storage</h2>
+        <p>The service uses cookies for sessions and submission recovery, and browser storage for preferences and selected device features. If you enable draft recovery, idea text and category can be saved on this device for seven days. Device history and saved receipts may remain until removed. Anyone with access to your browser may be able to view locally saved information.</p>
+        <p>The service worker caches static application assets for faster loading. Private account pages and API responses are excluded from its persistent cache. Clearing site data removes local settings and may remove recovery information; it does not delete server records. Sign out on shared devices.</p>
       </section>
-
       <section>
-        <h2>6. Your Rights</h2>
-        <p>
-          Because submissions are anonymous, we cannot locate records tied to a specific
-          individual without a tracking token. If you have your tracking token and wish to
-          request deletion of your submission, contact us at the address below.
-        </p>
+        <h2>Providers and disclosures</h2>
+        <p>The current architecture uses Supabase for authentication, database and storage, and Vercel for hosting. Optional weekly email delivery uses Resend when enabled. A chosen external sign-in provider processes sign-in information under its own notice. Authorized school staff process feedback and moderation records as needed for their work.</p>
+        <p>Providers may process information outside the Philippines. The operator must confirm actual processing locations, contracts, subprocessors and safeguards before school use. Additional recipients or integrations must be disclosed when enabled; this notice does not claim that a CAPTCHA or analytics service is active on every page.</p>
       </section>
-
       <section>
-        <h2>7. Security</h2>
-        <p>
-          All data is encrypted in transit (TLS 1.2+) and at rest. We implement Row-Level
-          Security on all database tables and rate limiting on all public endpoints.
-        </p>
+        <h2>Retention and choices</h2>
+        <p>Retention must follow an approved schedule covering accounts, submissions, private messages, attachments, security logs and backups, including applicable records obligations and legal holds. This service does not promise that all rejected records are automatically deleted after 90 days or that public records must be kept forever. The adopting operator must publish its applicable periods or criteria before release.</p>
+        <p>Optional weekly emails can be turned off in notification preferences or through their unsubscribe link. Turning them off does not delete your account or existing records.</p>
       </section>
-
       <section>
-        <h2>8. Contact</h2>
-        <p>
-          Questions about this policy? Email us at
-          <a href="mailto:privacy@suggfeed.app">privacy@suggfeed.app</a>.
-        </p>
+        <h2>Your rights and privacy requests</h2>
+        <p>Under applicable Philippine privacy law, you may have rights to information, access, correction, objection, erasure or blocking, portability where applicable, and remedies or complaints. These rights have legal conditions and limits; official records obligations and other people's rights may affect a request.</p>
+        <p>Contact the privacy office with the type of request and a safe way to reach you. Do not email passwords, login tokens, tracking codes or identity documents unless an authorized officer establishes a secure, necessary verification process. We may need proportionate proof of ownership before disclosing or changing records. Anonymous records can be harder to locate safely.</p>
+        <% if (legal.privacyEmail) { %><p>Privacy contact: <a href="mailto:<%= legal.privacyEmail %>"><%= legal.privacyEmail %></a>.</p><% } else { %><p><strong>The privacy contact has not yet been configured.</strong> School deployment is not ready until an accessible, monitored request channel is provided.</p><% } %>
+        <p>You may also consult the <a href="https://privacy.gov.ph/" rel="noreferrer">National Privacy Commission</a> about complaints and your rights.</p>
+      </section>
+      <section>
+        <h2>Students under 18 and sensitive concerns</h2>
+        <p>School adoption requires an age-appropriate privacy and safeguarding process. This notice does not establish parental consent or a universal age rule. Schools must assess the applicable requirements before allowing minors to participate. SuggFeed is not an emergency service or a substitute for a confidential safeguarding or harassment-reporting channel.</p>
+      </section>
+      <section>
+        <h2>Security and changes</h2>
+        <p>The application includes access checks, protected sessions, request validation and browser security controls. Their effectiveness depends on correct hosting, database policies and operations; no system can guarantee absolute security. Material changes to purposes or processing require an updated notice and any further lawful steps that apply.</p>
       </section>
     </article>
-
-    <footer class="sf-legal-footer">
-      <a href="/terms">Terms of Service</a>
-      <a href="/">Home</a>
-    </footer>
+    <footer class="sf-legal-footer"><a href="/terms">Terms of Service</a><a href="/">Home</a></footer>
   </div>
 </main>

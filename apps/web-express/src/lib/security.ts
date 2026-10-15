@@ -1,5 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
 
+/** These capabilities are not used by the web application. */
+export function browserSecurityHeaders(_req: Request, res: Response, next: NextFunction) {
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+  next();
+}
+
 /** Reject cross-site browser writes, including login/logout CSRF. */
 export function sameOriginOnly(req: Request, res: Response, next: NextFunction) {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();

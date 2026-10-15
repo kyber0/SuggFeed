@@ -74,6 +74,7 @@
   </div>
 
   <form id="submit-idea-form" data-sf-submit="action-115" class="sip-form">
+    <p class="sip-toggle-desc">Reviewed ideas may be public. Avoid personal details; read the <a href="/privacy">Privacy Notice</a> and <a href="/terms">Terms</a> before sending.</p>
     <details class="submission-recovery care-card">
       <summary>Draft recovery and queued ideas</summary>
       <p>Your idea text may become public after review. Anonymous mode hides your identity, not the content. Avoid names and personal details.</p>

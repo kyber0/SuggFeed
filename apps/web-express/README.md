@@ -346,3 +346,35 @@ For local visual QA with sample data (no database writes), run
 from this app folder and open `http://127.0.0.1:4317/admin`,
 `/roadmap`, or `/staff-login`. The test harness is never mounted by the
 production app. Its first moderation save deliberately fails to exercise retry UI.
+
+## Legal and shared-school release readiness
+
+The target product is a shared service for multiple schools. **The current schema
+and staff roles are not tenant-isolated. Do not onboard multiple schools yet.**
+See [release register](../../docs/compliance/school-release-readiness.md),
+[foundation plan](../../docs/superpowers/plans/2026-10-15-school-release-readiness.md)
+and [tenant isolation plan](../../docs/superpowers/plans/2026-10-15-shared-school-isolation.md).
+The Philippine reference register is not worldwide legal clearance; official
+sources could not be freshly retrieved during this audit.
+
+Configure `PLATFORM_OPERATOR_NAME` with the actual service operator and
+`PRIVACY_CONTACT_EMAIL` with a monitored mailbox. These describe the platform,
+not every adopting school. Missing/invalid values produce an explicit setup
+notice rather than a fabricated identity/contact. Tenant-specific notices,
+controller/processor agreements, eligibility, retention and lawful grounds must
+be completed before school activation. Current public pages are a factual
+baseline, not approved institutional policies.
+
+Run `npm run check:release` locally. It reports configuration shape only, never
+prints credentials and does not contact providers. It currently exits **1 even
+when configuration is complete**, because shared-school isolation and documented
+operational/legal approvals are outstanding. Do not bypass the blockers with an
+environment flag. Passing a build does not override them. This command is a
+manual release gate, not part of the build that serves the existing app.
+
+The archival Edge Function now requires `ARCHIVE_CRON_SECRET` of at least 32
+characters; missing/short secrets fail authorization before database access.
+Deploying Express does **not** deploy that Edge Function. Review its deployment
+and disable archival scheduling until its configured retention, linked-record
+coverage, backup and legal-hold handling are approved. No archival action or
+production migration was performed by the readiness work.

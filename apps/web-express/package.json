@@ -7,6 +7,7 @@
     "node": "22.x"
   },
   "scripts": {
+    "check:release": "node -r ts-node/register scripts/check-release.ts",
     "build:brand": "node -r ts-node/register scripts/build-brand-assets.ts",
     "test": "npm run build:client && tsc -p tsconfig.tests.json && node -r ts-node/register/transpile-only --test tests/*.test.ts",
     "predev": "npm run build:client",

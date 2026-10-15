@@ -11,7 +11,7 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 import { randomBytes } from "crypto";
 import { SupabaseSessionStore } from "./lib/session-store";
-import { sameOriginOnly } from "./lib/security";
+import { sameOriginOnly, browserSecurityHeaders } from "./lib/security";
 import { safeRequestPath } from "./lib/request-path";
 import { validateIdentity } from "./lib/identity";
 import { startFeedAccountState } from "./lib/feed-account";
@@ -90,11 +90,9 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        // Inline scripts used for theme init, auth sync, and component logic
+        // Executable scripts are self-hosted; inline JSON blocks are data only.
         scriptSrc: [
           "'self'",
-          "'unsafe-inline'",
-          "https://cdn.jsdelivr.net",
           "https://challenges.cloudflare.com",
         ],
         scriptSrcAttr: ["'none'"],
@@ -121,6 +119,7 @@ app.use(
           "https://lh3.googleusercontent.com",
         ],
         frameSrc: ["https://challenges.cloudflare.com"],
+        frameAncestors: ["'none'"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: isProd ? [] : null,
       },
@@ -130,6 +129,7 @@ app.use(
     crossOriginEmbedderPolicy: false, // allow CDN assets
   })
 );
+app.use(browserSecurityHeaders);
 
 /* ── Compression ─────────────────────────────────────────────────────────── */
 app.use(compression());
