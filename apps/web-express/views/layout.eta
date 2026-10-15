@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261014-ui-audit" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261015-render-motion" />
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261015-hover-fix" />
   <script defer src="/js/events.js?v=20261011-feed"></script>
 
   <script src="/js/preferences.js?v=20261014-staff-interactions"></script>
@@ -58,6 +58,6 @@
 
 <script defer src="/js/public-history.js?v=20261012-features"></script>
 <script defer src="/js/responsive.js?v=20261014-staff-interactions"></script>
-<script defer src="/js/scroll-reveal.js?v=20261015-scroll-reveal"></script>
+<script defer src="/js/scroll-reveal.js?v=20261015-hover-fix"></script>
 </body>
 </html>

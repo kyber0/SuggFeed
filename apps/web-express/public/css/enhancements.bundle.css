@@ -3366,8 +3366,5 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
   :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(2) { --render-delay:25ms; }
   :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(3) { --render-delay:50ms; }
   :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(4) { --render-delay:75ms; }
-
-  /* Interacting takes priority over the entrance effect. */
-  :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(-n+4):is(:hover,:focus-within,[data-dragging="true"]) { animation:none; }
 }
 @keyframes sf-render-in { from { opacity:.9; translate:0 6px; } to { opacity:1; translate:0 0; } }

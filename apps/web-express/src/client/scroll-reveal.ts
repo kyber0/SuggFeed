@@ -36,7 +36,10 @@
     mutations.observe(root,{childList:true,subtree:true});
     const cancel=(event:Event)=>{
       if(!(event.target instanceof Element))return;
-      const card=event.target.closest<HTMLElement>(selector);if(card)active.get(card)?.cancel();
+      const card=event.target.closest<HTMLElement>(selector);if(!card)return;
+      active.get(card)?.cancel();
+      // Cancel the running entrance once; hover-dependent CSS would restart it on pointer leave.
+      card.getAnimations().forEach(animation=>{if('animationName' in animation && animation.animationName==='sf-render-in')animation.cancel();});
     };
     root.addEventListener('pointerdown',cancel);
     root.addEventListener('focusin',cancel);
