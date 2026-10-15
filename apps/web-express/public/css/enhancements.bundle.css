@@ -3349,3 +3349,25 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
 @keyframes sf-content-enter { from { opacity:.75; translate:0 3px; } to { opacity:1; translate:0 0; } }
 @keyframes sf-drawer-enter { from { opacity:.8; translate:12px 0; } to { opacity:1; translate:0 0; } }
 @keyframes sf-dialog-enter { from { opacity:.8; scale:.985; } to { opacity:1; scale:1; } }
+
+/* Animate the first visible group without hiding content or moving fixed/sticky shells. */
+@media (prefers-reduced-motion:no-preference) {
+  :is(.workspace-heading,.feed-heading-group,.roadmap-heading,.prof-hero-info,.sf-hero-title,.sf-hero-subtitle,.sf-hero-actions) {
+    animation:sf-render-in 240ms var(--motion-ease) backwards;
+  }
+  .sf-hero-subtitle { animation-delay:25ms; }
+  .sf-hero-actions { animation-delay:50ms; }
+
+  /* Replace older zero-opacity entrances; long lists do not all animate at once. */
+  .post-card,.roadmap-idea,.sf-idea-card.sf-card-enter { animation:none; }
+  :is(.feed-posts-list > .post-card,.sf-ideas-grid > .sf-idea-card,.prof-activity-grid > .prof-activity-card-wrap,.staff-lane-cards > .staff-flow-card,.roadmap-lane-cards > .roadmap-idea,.staff-rows > .staff-row,.analytics-grid > .analytics-card):nth-child(-n+4) {
+    animation:sf-render-in 240ms var(--motion-ease) var(--render-delay,0ms) backwards;
+  }
+  :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(2) { --render-delay:25ms; }
+  :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(3) { --render-delay:50ms; }
+  :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(4) { --render-delay:75ms; }
+
+  /* Interacting takes priority over the entrance effect. */
+  :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(-n+4):is(:hover,:focus-within,[data-dragging="true"]) { animation:none; }
+}
+@keyframes sf-render-in { from { opacity:.9; translate:0 6px; } to { opacity:1; translate:0 0; } }
