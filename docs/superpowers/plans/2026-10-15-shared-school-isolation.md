@@ -83,10 +83,13 @@
 - [ ] Verify minimum two synthetic schools in staging, then monitored approved onboarding. No production readiness claim until every P0 and applicable legal gate is evidenced.
 
 ## Current status
-All tasks are pending. This plan makes no claim that adding a `school_id` column alone secures multi-tenancy. Existing data is confirmed demo-only; the operator is a registered business whose exact identity/contact remain unconfigured. Independent browser-policy, notice-accuracy and cron authorization fixes are tracked in the foundation plan.
+Task 1 is partially implemented: the staged registry, membership authorization and activation lock are implemented and locally tested. School settings, applications, invitations and the existing-record backfill remain pending. Tasks 2–6 are pending. This plan makes no claim that adding a `school_id` column alone secures multi-tenancy. Existing data is confirmed demo-only; the operator is a registered business whose exact identity/contact remain unconfigured. Independent browser-policy, notice-accuracy and cron authorization fixes are tracked in the foundation plan.
 
 ### Confirmed product decisions (2026-10-15)
 - One shared SaaS service for many schools.
 - Operator is a registered business; exact legal name and monitored privacy mailbox still need configuration/verification.
 - User identifies existing records as demo data only. Preserve these in a dedicated demo school during a reviewed migration; do not delete data or auto-grant platform administration. Existing account identities may still contain real contact information and need protection.
 - Tenant isolation remains unimplemented; data mapping is no longer an unanswered product question, but migration rehearsal and approval remain required.
+
+## Stage 1 execution ledger — 16 October 2026
+Implemented additive registry migration `202610160001_school_registry.sql` and local database regression tests. See `docs/compliance/tenant-cutover.md`. Ruling: retain an explicit database activation lock until all existing readers/writers are tenant-aware; adding a registry must not imply that current global routes are isolated. No production migration or automatic platform-operator grant. User authorization supports the implementation; production cutover still requires a complete reviewed migration.
