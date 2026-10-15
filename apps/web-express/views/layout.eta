@@ -58,5 +58,6 @@
 
 <script defer src="/js/public-history.js?v=20261012-features"></script>
 <script defer src="/js/responsive.js?v=20261014-staff-interactions"></script>
+<script defer src="/js/scroll-reveal.js?v=20261015-scroll-reveal"></script>
 </body>
 </html>
