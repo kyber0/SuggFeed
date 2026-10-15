@@ -115,11 +115,18 @@ Supabase services or concurrent hosted sessions. Staging acceptance must include
 private-code ownership, role revocation, hidden-comment RLS, stale bulk rollback,
 merge redirects, follow transfer, and one opted-in digest plus unsubscribe.
 
-This app runs Express, Eta and TypeScript. Vercel invokes `api/index.ts`, which
-loads the compiled `dist/server.js`. Use `apps/web-express` as the project root.
+This app runs Express, Eta and TypeScript. With the Express framework preset,
+Vercel detects the exported app in `src/server.ts`. Use `apps/web-express` as the
+project root. The function configuration bundles views, compiled files and public
+assets for that entry point. `api/index.ts` is the legacy serverless adapter.
+
+Do not rewrite every request to `/api`: backend framework rewrites now pass the
+destination path to Express, so that rule can replace page and API paths with
+`/api`. Native Express routing preserves `/feed`, `/profile`, `/admin`, auth
+callbacks and API endpoints without a catch-all rewrite.
 
 All authored application scripts live in TypeScript: server code in `src/`,
-browser code in `src/client/`, the worker in `src/sw.ts`, Vercel entry in `api/`,
+browser code in `src/client/`, the worker in `src/sw.ts`, legacy Vercel adapter in `api/`,
 and tests in `tests/*.test.ts`. `npm run build` compiles the server to `dist/`,
 browser scripts to `public/js/`, and the worker to `public/sw.js`. These JavaScript
 files are generated runtime assets; browsers do not execute TypeScript directly.
