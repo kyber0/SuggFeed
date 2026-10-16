@@ -16,7 +16,7 @@ export class SupabaseSessionStore extends session.Store {
   }
 
   get(sid: string, callback: (err?: unknown, data?: session.SessionData | null) => void) {
-    void this.read(sid).then(data => callback(null, data), () => callback(new Error("Session storage unavailable.")));
+    void this.read(sid).then(data => callback(null, data), () => callback(Object.assign(new Error("Session storage unavailable."), {status:503})));
   }
 
   private async read(sid: string): Promise<session.SessionData | null> {
@@ -36,7 +36,7 @@ export class SupabaseSessionStore extends session.Store {
   }
 
   set(sid: string, data: session.SessionData, callback?: (err?: unknown) => void) {
-    void this.write(sid, data).then(() => callback?.(), () => callback?.(new Error("Session storage unavailable.")));
+    void this.write(sid, data).then(() => callback?.(), () => callback?.(Object.assign(new Error("Session storage unavailable."), {status:503})));
   }
 
   private async write(sid: string, data: session.SessionData) {
@@ -53,7 +53,7 @@ export class SupabaseSessionStore extends session.Store {
   }
 
   destroy(sid: string, callback?: (err?: unknown) => void) {
-    void this.remove(sid).then(() => callback?.(), () => callback?.(new Error("Session storage unavailable.")));
+    void this.remove(sid).then(() => callback?.(), () => callback?.(Object.assign(new Error("Session storage unavailable."), {status:503})));
   }
 
   private async remove(sid: string) {

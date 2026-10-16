@@ -174,6 +174,12 @@ const authLimiter = rateLimit({
   message: { success: false, error: "Too many auth attempts — please wait." },
 });
 
+// Error pages must render even if parsing, session storage or identity fails.
+app.use((req,res,next) => {
+  Object.assign(res.locals,{user:null,currentPath:req.path,supabaseUrl,supabaseAnonKey});
+  next();
+});
+
 /* ── Body parsers ────────────────────────────────────────────────────────── */
 app.use(express.json({ limit: "512kb" }));
 app.use(express.urlencoded({ extended: true, limit: "512kb" }));
@@ -295,10 +301,11 @@ app.use((_req: Request, res: Response) => {
 // Must have 4 parameters for Express to treat it as an error handler.
 // Returns a generic message — never leaks stack traces or file paths.
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  res.setHeader("Cache-Control","private, no-store");
   console.error(`[error] ${req.method} ${safeRequestPath(req.path)}: ${err.name}`);
   if ((err as any).status === 503) {
     res.setHeader('Retry-After','30');
-    if (req.path.startsWith('/api/') || req.headers.accept?.includes('application/json') || req.xhr) return res.status(503).json({success:false,error:'The service is temporarily unavailable. Please try again shortly.'});
+    if (req.path.startsWith('/api/') || req.path.startsWith('/auth/') || req.headers.accept?.includes('application/json') || req.xhr) return res.status(503).json({success:false,error:'The service is temporarily unavailable. Please try again shortly.'});
     return res.status(503).render('school-message',{title:'Temporarily unavailable',message:'The service is temporarily unavailable. Please try again shortly.'});
   }
   const isJson = req.path.startsWith("/api/") || req.path.startsWith("/auth/") || req.path.startsWith('/roadmap/idea/') || req.headers.accept?.includes("application/json") || req.xhr;

@@ -85,3 +85,6 @@ The cloud environment startup instructions were updated as a saved draft for the
 
 
 Post-restart rechecks through `16:08Z` still reported Auth/REST unhealthy. No synthetic schools or production test records were created. A managed provider recovery/support investigation is required if those services do not recover; local code cannot establish why the provider services are failing to start. Keep the activation lock and least-privilege grants in place during recovery.
+
+### Signed-in outage rendering fix
+A user screenshot showed a plain `Internal Server Error` at the root page. The session store can fail before normal template locals are assigned; rendering the error layout then also failed because the header expected `currentPath`. Defaults now initialize before body/session/identity middleware, shared-store failures carry status 503, and all error responses are private/no-store. The real Express middleware order is covered by a signed-cookie test with a failed mock session store: root HTML and auth JSON return safe 503 responses with Retry-After, without provider details. Server build/test compilation and all 17 focused auth/scope/outage tests passed. Live anonymous school requests already returned a readable 503 after the prior patch; real signed-in recovery still depends on provider Auth/REST health.
