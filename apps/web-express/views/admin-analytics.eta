@@ -219,4 +219,4 @@
   <a class="workspace-button" href="/roadmap">Explore the campus roadmap →</a>
 </section>
 <script id="analytics-data-json" type="application/json"><%~ JSON.stringify(it.analytics || {}).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/admin-analytics.js?v=20261011-analytics"></script>
+<script defer src="/js/admin-analytics.js?v=20261016-school-isolation"></script>

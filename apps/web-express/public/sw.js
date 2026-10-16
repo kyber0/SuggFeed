@@ -7,7 +7,7 @@
 //   - Navigation (HTML): Network-first, fallback to offline shell
 (() => {
     const worker = self;
-    const CACHE_VERSION = "cv-v12-sf-navigation-assets";
+    const CACHE_VERSION = "cv-v13-school-isolation-assets";
     const STATIC_CACHE = `${CACHE_VERSION}-static`;
     const MAX_STATIC_ENTRIES = 200;
     const STATIC_ASSETS = [
@@ -49,6 +49,9 @@
         // The CSP connect-src directive blocks the SW from re-fetching external origins,
         // which causes a flood of "Failed to fetch" / CSP violation errors.
         if (url.origin !== worker.location.origin)
+            return;
+        // School documents and APIs always recheck server authorization, including offline.
+        if (/^\/s(?:\/|$)/.test(url.pathname))
             return;
         // Never cache login callbacks, session state, private pages or API responses.
         if (/^\/(auth|api|admin|profile|notifications|staff|internal|inbox|digest)(\/|$)/.test(url.pathname))

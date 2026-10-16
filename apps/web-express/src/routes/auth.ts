@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { supabaseService } from "../lib/supabase";
+import { supabasePlatform } from "../lib/supabase";
 import { sameOriginOnly } from "../lib/security";
 
 const router = Router();
@@ -26,9 +26,9 @@ router.post("/session", sameOriginOnly, (req: Request, res: Response, next: Next
         (refresh_token !== undefined && (typeof refresh_token !== "string" || refresh_token.length > 1024))) {
       return res.status(400).json({ success: false, error: "Missing or invalid token." });
     }
-    const { data: { user }, error } = await supabaseService.auth.getUser(access_token);
+    const { data: { user }, error } = await supabasePlatform.auth.getUser(access_token);
     if (error || !user) return res.status(401).json({ success: false, error: "Invalid or expired sign-in. Please try again." });
-    const { data: profile, error: profileError } = await supabaseService.from("profiles")
+    const { data: profile, error: profileError } = await supabasePlatform.from("profiles")
       .select("role, display_name").eq("id", user.id).maybeSingle();
     if (profileError) throw new Error("Could not load account permissions.");
     // Repeated events for the same user update the session; changing identity

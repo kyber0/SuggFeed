@@ -76,7 +76,7 @@ let sfCurrentIdea = null;
     document.body.style.overflow = 'hidden';
 
     // Update URL history without full reload
-    if(location.pathname!==`/idea/${ideaId}`)history.pushState({ ideaDrawerId: ideaId }, '', `/idea/${ideaId}`);
+    if(location.pathname!==sfSchoolPath(`/idea/${ideaId}`))history.pushState({ ideaDrawerId: ideaId }, '', sfSchoolPath(`/idea/${ideaId}`));
 
     // Show skeleton
     skeleton.style.display = 'block';
@@ -87,7 +87,7 @@ let sfCurrentIdea = null;
     sfSetDrawerMobileTab(initialTab);
 
     try {
-      const res = await fetch(`/api/idea/${encodeURIComponent(ideaId)}`,{signal:request.signal,headers:{Accept:'application/json'}});
+      const res = await sfSchoolFetch(`/api/idea/${encodeURIComponent(ideaId)}`,{signal:request.signal,headers:{Accept:'application/json'}});
       if (!res.ok) throw new Error('Idea not found');
       const data = await res.json();
       if (!data.success || !data.submission) throw new Error(data.error || 'Failed to load idea');
@@ -126,7 +126,7 @@ let sfCurrentIdea = null;
     (document.getElementById('drawer-status-label') as HTMLElement).textContent = stConfig.label;
 
     // Permalink
-    (document.getElementById('drawer-permalink') as HTMLAnchorElement).href = `/idea/${idea.id}`;
+    (document.getElementById('drawer-permalink') as HTMLAnchorElement).href = sfSchoolPath(`/idea/${idea.id}`);
 
     // Author & Date
     const isAnon = !idea.author || (!idea.author.display_name && !idea.author.full_name);
@@ -182,7 +182,7 @@ let sfCurrentIdea = null;
     (document.getElementById('drawer-vote-count') as HTMLElement).textContent = voteCount;
     (document.getElementById('drawer-vote-summary') as HTMLElement).textContent = voteCount;
 
-    const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+    const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
     const hasVoted = votedIds.includes(idea.id);
 
     if (idea.status === 'pending') {
@@ -335,10 +335,10 @@ let sfCurrentIdea = null;
     if (banner) banner.setAttribute('hidden', '');
 
     // Restore URL
-    if (window.location.pathname.startsWith('/idea/')) {
+    if (sfSchoolRoute(window.location.pathname).startsWith('/idea/')) {
       const target = sfDrawerOriginalPath || '/feed';
       sfDrawerOriginalPath = null;
-      history.pushState(null, '', target);
+      history.pushState(null, '', sfSchoolPath(target));
     }
   }
 
@@ -363,7 +363,7 @@ let sfCurrentIdea = null;
 
   async function sfDrawerShare() {
     if (!sfCurrentIdea) return;
-    const url = `${window.location.origin}/idea/${sfCurrentIdea.id}`;
+    const url = window.location.origin + sfSchoolPath(`/idea/${sfCurrentIdea.id}`);
     try{await navigator.clipboard.writeText(url);}catch{window.sfToast?.('The link could not be copied.','error');return;}
 
     const btn = (document.getElementById('drawer-share-btn') as HTMLButtonElement);
@@ -386,7 +386,7 @@ let sfCurrentIdea = null;
     if (btn.classList.contains('voted')) return;
 
     try {
-      const res = await fetch(`/api/vote/${sfCurrentIdea.id}`, {
+      const res = await sfSchoolFetch(`/api/vote/${sfCurrentIdea.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'up' })
@@ -400,10 +400,10 @@ let sfCurrentIdea = null;
         (document.getElementById('drawer-vote-icon') as unknown as SVGElement).innerHTML = '<polyline points="20 6 9 17 4 12"/>';
 
         // Remember vote locally
-        const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+        const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
         if (!votedIds.includes(sfCurrentIdea.id)) {
           votedIds.push(sfCurrentIdea.id);
-          localStorage.setItem('sf_voted_ideas', JSON.stringify(votedIds));
+          localStorage.setItem(sfSchoolKey('sf_voted_ideas'), JSON.stringify(votedIds));
         }
 
         // Also reflect on feed cards if present
@@ -467,7 +467,7 @@ let sfCurrentIdea = null;
     btn.innerHTML = '<span>Posting…</span>';
 
     try {
-      const res = await fetch(`/api/comments/${ideaId}`, {
+      const res = await sfSchoolFetch(`/api/comments/${ideaId}`, {
         signal: AbortSignal.timeout(15000),
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

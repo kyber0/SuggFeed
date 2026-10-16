@@ -15,7 +15,7 @@
         container.setAttribute('aria-busy', 'true');
         const timer = setTimeout(() => controller.abort(), 15000);
         try {
-            const response = await fetch('/api/idea/' + encodeURIComponent(id) + '/history', { cache: 'no-store', signal: controller.signal, headers: { Accept: 'application/json' } });
+            const response = await sfSchoolFetch('/api/idea/' + encodeURIComponent(id) + '/history', { cache: 'no-store', signal: controller.signal, headers: { Accept: 'application/json' } });
             const data = await response.json();
             if (!response.ok || !data.success)
                 throw new Error(data.error || 'Public history could not load.');

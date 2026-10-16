@@ -1,3 +1,4 @@
+import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from "express";
 import { loadModerationCounts, MODERATION_STATUSES, PER_PAGE } from "../lib/data";
 import { queueFilters, loadStaffQueue, loadStaffMembers, loadSavedViews, loadAnalyticsData, searchStudentProfiles } from '../lib/staff-workspace';
@@ -17,7 +18,7 @@ function asyncHandler(
 // Database role enum: 'student' | 'moderator' | 'admin'
 // Express sessions previously checked for "staff" which is not a real DB role.
 function requireStaff(req: Request, res: Response, next: () => void) {
-  const user = req.session.user;
+  const user = schoolUser(req);
   if (!user) return res.status(200).render("staff-login", { title: "Staff Portal Sign In — SuggFeed" });
   if (user.role !== "admin" && user.role !== "moderator" && user.role !== "staff") {
     return res.status(403).render("403", { title: "Staff Access Required — SuggFeed" });
@@ -41,8 +42,8 @@ router.get(
     const filters = queueFilters(req.query);
     const [counts, { data: allSubmissions, count }, staffMembers, savedViews] = await Promise.all([
       loadModerationCounts(),
-      loadStaffQueue(filters, req.session.user!.id, page),
-      loadStaffMembers(), loadSavedViews(req.session.user!.id),
+      loadStaffQueue(filters, schoolUser(req)!.id, page),
+      loadStaffMembers(), loadSavedViews(schoolUser(req)!.id),
     ]);
 
     const pageCount = Math.max(1, Math.ceil(count / PER_PAGE));

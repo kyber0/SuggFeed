@@ -108,7 +108,7 @@
 
   function getVotedSet(): Set<string> {
     try {
-      const raw = localStorage.getItem('sf_voted_ideas');
+      const raw = localStorage.getItem(sfSchoolKey('sf_voted_ideas'));
       return new Set(Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : []);
     } catch {
       return new Set();
@@ -119,7 +119,7 @@
     try {
       const set = getVotedSet();
       set.add(id);
-      localStorage.setItem('sf_voted_ideas', JSON.stringify(Array.from(set)));
+      localStorage.setItem(sfSchoolKey('sf_voted_ideas'), JSON.stringify(Array.from(set)));
     } catch {}
   }
 
@@ -184,7 +184,7 @@
     document.getElementById('roadmap-detail-estimate')!.textContent = [
       item.is_blocked ? 'Work is currently blocked; see the school update below.' : '',
     ].filter(Boolean).join(' · ');
-    (document.getElementById('roadmap-detail-link') as HTMLAnchorElement).href = '/idea/' + encodeURIComponent(item.id);
+    (document.getElementById('roadmap-detail-link') as HTMLAnchorElement).href = sfSchoolPath('/idea/' + encodeURIComponent(item.id));
     const follow = document.getElementById('roadmap-follow') as HTMLButtonElement;
     follow.dataset.followIdea = item.id;
     document.dispatchEvent(new CustomEvent('sf:follow-context', { detail: follow }));
@@ -247,7 +247,7 @@
           if (!uuid.test(file.id)) continue;
           const row = document.createElement('li');
           const link = document.createElement('a');
-          link.href = '/api/progress-evidence/' + encodeURIComponent(file.id);
+          link.href = sfSchoolPath('/api/progress-evidence/' + encodeURIComponent(file.id));
           link.target = '_blank'; link.rel = 'noopener noreferrer';
           link.textContent = `${file.mime_type === 'application/pdf' ? 'PDF' : 'Image'} · ${file.display_name} · ${Math.ceil(file.size_bytes / 1024)} KB ↗`;
           if (file.alt) link.setAttribute('aria-label', `${file.display_name}: ${file.alt}`);
@@ -301,7 +301,7 @@
     detailRequest = controller;
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
-      const response = await fetch('/roadmap/idea/' + encodeURIComponent(id), { signal: controller.signal });
+      const response = await sfSchoolFetch('/roadmap/idea/' + encodeURIComponent(id), { signal: controller.signal });
       const body = await response.json();
       if (!response.ok || !body.success) {
         throw new Error(response.status === 404 ? 'This idea is no longer on the public roadmap.' : 'This idea could not load. Please try again.');
@@ -309,7 +309,7 @@
       if (dialog.open && detailRequest === controller) {
         show(body.item);
         showUpdates(Array.isArray(body.updates) ? body.updates : []);
-        void fetch('/api/community/merges/'+encodeURIComponent(id),{headers:{Accept:'application/json'},signal:controller.signal}).then(async response=>{
+        void sfSchoolFetch('/api/community/merges/'+encodeURIComponent(id),{headers:{Accept:'application/json'},signal:controller.signal}).then(async response=>{
           if(!response.ok) return;const data=await response.json();if(detailRequest!==controller || !dialog.open) return;
           for(const merge of data.merges || []){const entry=document.createElement('li');entry.textContent='Merged public idea: '+merge.source_title+' · '+merge.reason;document.getElementById('roadmap-history-list')!.append(entry);}
         }).catch(()=>undefined);
@@ -395,7 +395,7 @@
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
-      const res = await fetch('/api/vote/' + encodeURIComponent(id), {
+      const res = await sfSchoolFetch('/api/vote/' + encodeURIComponent(id), {
         method: 'POST',
         signal: controller.signal,
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },

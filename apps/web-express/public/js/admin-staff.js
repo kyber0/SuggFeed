@@ -110,7 +110,7 @@
     }
     async function updateRole(memberId, newRole) {
         try {
-            const res = await fetch(`/api/staff/members/${memberId}/role`, {
+            const res = await sfSchoolFetch(`/api/staff/members/${memberId}/role`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ role: newRole }),
@@ -130,7 +130,7 @@
     }
     async function refreshRoster() {
         try {
-            const res = await fetch('/api/staff/members');
+            const res = await sfSchoolFetch('/api/staff/members');
             const data = await res.json();
             if (data.success && Array.isArray(data.members)) {
                 members = data.members;
@@ -207,7 +207,7 @@
             return;
         studentResultsList.innerHTML = '<div class="staff-empty-hint">Searching student accounts…</div>';
         try {
-            const res = await fetch(`/api/staff/students?search=${encodeURIComponent(query)}`);
+            const res = await sfSchoolFetch(`/api/staff/students?search=${encodeURIComponent(query)}`);
             const data = await res.json();
             if (!res.ok || !data.success || !Array.isArray(data.students)) {
                 studentResultsList.innerHTML = '<div class="staff-empty-hint">Search failed. Please try again.</div>';
@@ -268,7 +268,7 @@
         if (inviteStatus)
             inviteStatus.textContent = 'Generating invitation…';
         try {
-            const res = await fetch('/api/staff/invite', {
+            const res = await sfSchoolFetch('/api/staff/invite', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, role }),
@@ -296,7 +296,7 @@
                 if (inviteOutput && inviteUrlInput) {
                     inviteOutput.hidden = false;
                     const origin = window.location.origin;
-                    inviteUrlInput.value = `${origin}${data.inviteUrl || '/staff-login'}`;
+                    inviteUrlInput.value = `${origin}${sfSchoolPath(data.inviteUrl || '/staff-login')}`;
                 }
             }
         }

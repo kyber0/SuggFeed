@@ -1,4 +1,6 @@
-import { supabaseService } from './supabase';
+import { requireSchool } from './school-scope';
+import { invitationToken, invitationHash } from './school-onboarding';
+import { supabaseService, supabasePlatform } from './supabase';
 import { MODERATION_STATUSES, PER_PAGE, sanitizeSearch } from './data';
 
 export const PRIORITIES = ['low', 'normal', 'high', 'urgent'] as const;
@@ -68,42 +70,20 @@ export async function searchStudentProfiles(search = '', limit = 30) {
 }
 
 export async function updateStaffRole(actorId: string, memberId: string, newRole: 'admin' | 'moderator' | 'student') {
-  if (actorId === memberId && newRole !== 'admin') {
-    const err: any = new Error('You cannot demote or revoke your own access.');
-    err.status = 400;
-    throw err;
-  }
-  const { error } = await supabaseService.from('profiles').update({ role: newRole }).eq('id', memberId);
-  if (error) throw error;
-  return { success: true };
+  const school=requireSchool();
+  if(school.actorId!==actorId || school.role!=='admin') throw new Error('School administrator access required.');
+  const {error}=await supabasePlatform.rpc('change_school_membership',{p_school:school.id,p_actor:actorId,p_user:memberId,p_role:newRole,p_status:'active'});
+  if(error) throw error;
+  return {success:true};
 }
 
 export async function inviteStaffMember(email: string, role: 'admin' | 'moderator') {
-  const normalized = email.trim().toLowerCase();
-  const { data: existing, error: findError } = await supabaseService
-    .from('profiles')
-    .select('id,display_name,email,role')
-    .ilike('email', normalized)
-    .maybeSingle();
-
-  if (findError) throw findError;
-
-  if (existing) {
-    const { error: updateError } = await supabaseService
-      .from('profiles')
-      .update({ role })
-      .eq('id', existing.id);
-    if (updateError) throw updateError;
-    return { success: true, user: { ...existing, role }, isExisting: true };
-  }
-
-  return {
-    success: true,
-    isExisting: false,
-    email: normalized,
-    role,
-    inviteUrl: `/staff-login?invite=${encodeURIComponent(normalized)}&role=${role}`,
-  };
+  const school=requireSchool();
+  if(!school.actorId || school.role!=='admin') throw new Error('School administrator access required.');
+  const token=invitationToken();
+  const {error}=await supabasePlatform.rpc('issue_school_invitation',{p_school:school.id,p_actor:school.actorId,p_email:email.trim().toLowerCase(),p_role:role,p_hash:invitationHash(token)});
+  if(error) throw error;
+  return {success:true,isExisting:false,email:email.trim().toLowerCase(),role,inviteUrl:'/schools/invitations/'+token};
 }
 
 export async function loadAnalyticsData() {

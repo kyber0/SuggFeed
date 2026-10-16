@@ -1,3 +1,4 @@
+import { schoolUser } from '../lib/school-scope';
 import crypto from "crypto";
 import { Router, Request, Response, NextFunction } from "express";
 import { supabase, supabaseService } from "../lib/supabase";
@@ -46,7 +47,7 @@ router.post(
     const id = req.params["id"] as string;
 
     if (!ENGAGEMENT_UUID.test(id)) return res.status(400).json({ success: false, error: 'Invalid idea ID.' });
-    const user = req.session.user;
+    const user = schoolUser(req);
     let anonToken: string | null = null;
     if (!user?.id) {
       const cookieToken = req.cookies?.['sf_anon_token'];
@@ -81,6 +82,7 @@ const trackHandler=asyncHandler(async(req:Request,res:Response)=>{
   const code=raw.trim().toUpperCase();
   if(!/^CV-[0-9A-F]{32}$/.test(code))return res.status(400).json({success:false,error:'Invalid tracking code format.'});
   const result=await lookupTrackingCode(code);
+  if(!result)return res.status(404).json({success:false,error:'Idea not found. Check your private tracking code.'});
   res.json({success:true,data:result});
 });
 router.post('/track',trackHandler);
@@ -135,7 +137,7 @@ router.post(
       return res.status(400).json({ success: false, error: `Category must be one of: ${VALID_CATEGORIES.join(", ")}.` });
     }
     const anonymous = isAnonymous === true || isAnonymous === "true";
-    const user = req.session.user;
+    const user = schoolUser(req);
     if (!anonymous && !user?.id) {
       return res.status(401).json({ success: false, error: "Sign in to submit a non-anonymous idea." });
     }
@@ -181,7 +183,7 @@ router.post(
 router.patch(
   "/submissions/:id/status",
   asyncHandler(async (req: Request, res: Response) => {
-    const user = req.session.user;
+    const user = schoolUser(req);
     if (!user || (user.role !== "admin" && user.role !== "moderator" && user.role !== "staff")) {
       return res.status(403).json({ error: "Forbidden" });
     }
@@ -227,9 +229,9 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const { page, sort: sortBy, category, search, scope } = feedFilters(req.query);
     const following = scope === 'following';
-    if (following && !req.session.user) return res.status(401).json({success:false,error:'Sign in to see followed ideas.'});
+    if (following && !schoolUser(req)) return res.status(401).json({success:false,error:'Sign in to see followed ideas.'});
     if (following) res.setHeader('Cache-Control','private, no-store');
-    const result = await loadPublishedSubmissions({ page, sortBy, category, search, followingUserId: following ? req.session.user!.id : undefined, includeTotal:req.query.total!=='skip' });
+    const result = await loadPublishedSubmissions({ page, sortBy, category, search, followingUserId: following ? schoolUser(req)!.id : undefined, includeTotal:req.query.total!=='skip' });
     res.json({
       success: true,
       feed: result.data,
@@ -247,7 +249,7 @@ router.post(
   "/comments/:id",
   asyncHandler(async (req: Request, res: Response) => {
     const { id: submissionId } = req.params;
-    const user = req.session.user;
+    const user = schoolUser(req);
     const { body, parentId } = req.body as { body?: unknown; parentId?: unknown };
 
     // Strict type check before trimming
@@ -321,7 +323,7 @@ router.post(
 router.post(
   "/bookmarks/:id",
   asyncHandler(async (req: Request, res: Response) => {
-    const user = req.session.user;
+    const user = schoolUser(req);
     if (!user?.id) {
       return res.status(401).json({ success: false, error: "Sign in to bookmark ideas." });
     }

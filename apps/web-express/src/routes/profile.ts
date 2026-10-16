@@ -1,7 +1,8 @@
+import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from "express";
 import { loadUserProfile, loadUserSubmissions } from "../lib/data";
 
-import { supabaseService } from '../lib/supabase';
+import { supabaseService, supabasePlatform } from '../lib/supabase';
 import { sameOriginOnly } from '../lib/security';
 import { loadBookmarkIds } from '../lib/feed-account';
 const router = Router();
@@ -18,7 +19,7 @@ function asyncHandler(
 router.get(
   "/",
   asyncHandler(async (req: Request, res: Response) => {
-    const user = req.session.user ?? null;
+    const user = schoolUser(req) ?? null;
 
     if (!user) {
       return res.render("profile", {
@@ -51,15 +52,15 @@ router.get(
 
 
 router.get('/bookmarks',asyncHandler(async(req,res)=>{
- if(!req.session.user)return res.status(401).json({success:false,error:'Sign in to load account bookmarks.'});
- const ids=await loadBookmarkIds(req.session.user.id);
+ if(!schoolUser(req))return res.status(401).json({success:false,error:'Sign in to load account bookmarks.'});
+ const ids=await loadBookmarkIds(schoolUser(req)!.id);
  return res.json({success:true,ids});
 }));
 router.post('/preferences',sameOriginOnly,asyncHandler(async(req,res)=>{
- const user=req.session.user;if(!user)return res.status(401).json({success:false,error:'Sign in to update account preferences.'});
+ const user=schoolUser(req);if(!user)return res.status(401).json({success:false,error:'Sign in to update account preferences.'});
  const {display_name,email_notifications_enabled}=req.body || {};
  if(typeof display_name!=='string' || display_name.trim().length>60 || typeof email_notifications_enabled!=='boolean')return res.status(400).json({success:false,error:'Use a display name of up to 60 characters and a valid notification choice.'});
- const {data,error}=await supabaseService.from('profiles').update({display_name:display_name.trim() || null,email_notifications_enabled}).eq('id',user.id).select('display_name,email_notifications_enabled').single();
+ const {data,error}=await supabasePlatform.from('profiles').update({display_name:display_name.trim() || null,email_notifications_enabled}).eq('id',user.id).select('display_name,email_notifications_enabled').single();
  if(error)throw new Error('Account preferences could not be saved.');
  req.session.user!.display_name=data.display_name || undefined;
  req.session.user!.full_name=data.display_name || undefined;
@@ -73,15 +74,15 @@ router.post('/activity',sameOriginOnly,asyncHandler(async(req,res)=>{
  if(tab!==undefined){
   const tables:Record<string,string>={bookmarks:'bookmarks',voted:'votes',shared:'shared_posts'};
   if(typeof tab!=='string' || !['bookmarks','voted','shared'].includes(tab))return res.status(400).json({success:false,error:'Unknown activity tab.'});
-  const offset=req.body?.offset ?? 0,localPhase=req.body?.local===true || !req.session.user;
+  const offset=req.body?.offset ?? 0,localPhase=req.body?.local===true || !schoolUser(req);
   if(!Number.isSafeInteger(offset) || offset<0 || offset>100000)return res.status(400).json({success:false,error:'Invalid activity page.'});
   const size=25,columns='id,title,status,vote_count,created_at,categories(name)';
   const publicStatuses=['approved','in_progress','resolved'];
   const deviceRows=async()=>{
    let remembered=Array.isArray(req.body?.ids)?[...new Set<string>(req.body.ids.filter((id:unknown):id is string=>typeof id==='string' && uuid.test(id)))].slice(0,200):[];
-   if(req.session.user && tab==='bookmarks')return [];
-   if(req.session.user && remembered.length){
-    const result=await supabaseService.from(tables[tab]).select('submission_id').eq('user_id',req.session.user.id).in('submission_id',remembered);
+   if(schoolUser(req) && tab==='bookmarks')return [];
+   if(schoolUser(req) && remembered.length){
+    const result=await supabaseService.from(tables[tab]).select('submission_id').eq('user_id',schoolUser(req)!.id).in('submission_id',remembered);
     if(result.error)throw new Error('Device activity could not load.');
     const recorded=new Set((result.data || []).map(row=>row.submission_id));remembered=remembered.filter(id=>!recorded.has(id));
    }
@@ -98,7 +99,7 @@ router.post('/activity',sameOriginOnly,asyncHandler(async(req,res)=>{
    if(available.length>offset+size)next={offset:offset+size,local:true};
   }else{
    // Filter before pagination so hidden or deleted ideas cannot create empty pages.
-   const result=await supabaseService.from(tables[tab]).select(`submission_id,submission:submissions!inner(${columns})`).eq('user_id',req.session.user!.id).in('submission.status',publicStatuses).order('created_at',{ascending:false}).order('submission_id').range(offset,offset+size);
+   const result=await supabaseService.from(tables[tab]).select(`submission_id,submission:submissions!inner(${columns})`).eq('user_id',schoolUser(req)!.id).in('submission.status',publicStatuses).order('created_at',{ascending:false}).order('submission_id').range(offset,offset+size);
    if(result.error)throw new Error('Activity could not load.');
    rows=(result.data || []).slice(0,size).map(row=>row.submission);
    if((result.data || []).length>size)next={offset:offset+size,local:false};
@@ -112,12 +113,12 @@ router.post('/activity',sameOriginOnly,asyncHandler(async(req,res)=>{
  }
  const local=(key:string):string[]=>Array.isArray(req.body?.[key])?[...new Set<string>(req.body[key].filter((id:unknown):id is string=>typeof id==='string' && uuid.test(id)))].slice(0,200):[];
  const accountIds=async(table:string)=>{
-  if(!req.session.user)return [];
-  const {data,error}=await supabaseService.from(table).select('submission_id').eq('user_id',req.session.user.id).order('created_at',{ascending:false}).limit(200);
+  if(!schoolUser(req))return [];
+  const {data,error}=await supabaseService.from(table).select('submission_id').eq('user_id',schoolUser(req)!.id).order('created_at',{ascending:false}).limit(200);
   if(error)throw new Error('Account activity could not load.');return (data || []).map(row=>row.submission_id as string);
  };
  const [saved,supported,shared]=await Promise.all([accountIds('bookmarks'),accountIds('votes'),accountIds('shared_posts')]);
- const groups={bookmarks:req.session.user?saved:local('saved'),voted:[...new Set([...supported,...local('supported')])].slice(0,200),shared:[...new Set([...shared,...local('shared')])].slice(0,200)};
+ const groups={bookmarks:schoolUser(req)?saved:local('saved'),voted:[...new Set([...supported,...local('supported')])].slice(0,200),shared:[...new Set([...shared,...local('shared')])].slice(0,200)};
  const ids=[...new Set(Object.values(groups).flat())];
  let rows:any[]=[];
  for(let offset=0;offset<ids.length;offset+=100){const result=await supabaseService.from('submissions').select('id,title,status,vote_count,created_at,categories(name)').in('id',ids.slice(offset,offset+100)).in('status',['approved','in_progress','resolved']);if(result.error)throw new Error('Public activity could not load.');rows.push(...(result.data || []));}
@@ -128,7 +129,7 @@ router.post('/shared/:id',sameOriginOnly,asyncHandler(async(req,res)=>{
  const id=req.params.id as string;if(!uuid.test(id))return res.status(400).json({success:false,error:'Invalid idea.'});
  const {data,error}=await supabaseService.from('submissions').select('id').eq('id',id).in('status',['approved','in_progress','resolved']).maybeSingle();
  if(error)throw new Error('Sharing could not be recorded.');if(!data)return res.status(404).json({success:false,error:'Public idea not found.'});
- if(req.session.user){const write=await supabaseService.from('shared_posts').upsert({user_id:req.session.user.id,submission_id:id},{onConflict:'user_id,submission_id'});if(write.error)throw new Error('Sharing could not be recorded.');}
+ if(schoolUser(req)){const write=await supabaseService.from('shared_posts').upsert({user_id:schoolUser(req)!.id,submission_id:id},{onConflict:'user_id,submission_id'});if(write.error)throw new Error('Sharing could not be recorded.');}
  return res.json({success:true});
 }));
 export default router;

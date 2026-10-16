@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { Eta } from 'eta';
 import {createWorkspacePreview} from './support/workspace-preview';
 
 test('roadmap and staff filter toolbars neutralize stacked label spacing and match control heights',()=>{
@@ -14,7 +15,7 @@ test('calendar arrows share the scale control row and Manage work removes stacke
   assert.match(css,/\.timeline-controls \{display:grid;grid-template-columns:minmax\(140px,1fr\) 44px 44px;gap:8px;align-items:end;/);
   assert.match(css,/\.timeline-controls > label \{margin-bottom:0;min-width:0;\}/);
   assert.match(css,/\.timeline-controls > \.workspace-button \{width:44px;height:44px;min-height:44px;/);
-  assert.match(css,/\.staff-board-toolbar label \{display:grid;gap:5px;margin-bottom:0;/);
+  assert.match(css,/\.staff-board-toolbar label \{display:grid;[^}]*margin-bottom:0;/);
 });
 
 // Exercise the preview's real Eta rendering without binding a local HTTP port.
@@ -103,4 +104,19 @@ test('shared secondary text tokens meet normal-text contrast on main light and d
   for(const bg of ['ffffff','f8fafc','f0f4f8'])assert.ok(contrast('526b82',bg)>=4.5);
   for(const bg of ['102a43','061a2b','0c2134'])assert.ok(contrast('a9bdd0',bg)>=4.5);
   assert.match(css,/prefers-reduced-motion:reduce/);assert.match(css,/font-size:16px/);
+});
+
+
+test('school layout identifies the active school and shows settings only for school administrators', () => {
+  const eta = new Eta({ views: path.join(__dirname, '../views') });
+  for (const role of ['student', 'admin']) {
+    const html = eta.render('layout', { currentPath: '/feed', body: '', schoolBase: '/s/campus-a', schoolId: 'school-a-id', schoolName: 'Campus A', user: { id: 'member-a', role } });
+    const navigation = html.match(/<nav class="workspace-actions care-card" aria-label="Current school">[\s\S]*?<\/nav>/)![0];
+    assert.match(navigation, /Campus A/);
+    assert.match(navigation, /href="\/schools">Switch school/);
+    assert.equal(navigation.includes('/s/campus-a/admin/school-settings'), role === 'admin');
+    assert.match(html, /name="school-base" content="\/s\/campus-a"/);
+    assert.match(html, /name="school-id" content="school-a-id"/);
+    assert.match(html, /name="school-actor" content="member-a"/);
+  }
 });

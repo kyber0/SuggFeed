@@ -7,7 +7,7 @@
  let busy=false, dragging:string|null=null;
  async function save(url:string,data:unknown,method='POST') {
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
-  try {const response=await fetch(url,{method,signal:controller.signal,headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(data)});const payload=await response.json();if(!response.ok || !payload.success) throw new Error(payload.error || 'Change not saved. Refresh and try again.');return payload;}
+  try {const response=await sfSchoolFetch(url,{method,signal:controller.signal,headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(data)});const payload=await response.json();if(!response.ok || !payload.success) throw new Error(payload.error || 'Change not saved. Refresh and try again.');return payload;}
   finally{clearTimeout(timer);}
  }
  if(boardData) {
@@ -22,7 +22,7 @@
   const retry=document.getElementById('staff-board-retry') as HTMLButtonElement;
   let loading=false, failedPage:{stage:string|null;url:string;push:boolean}|null=null;
   const urlFor=(stage:string|null,page?:number)=>{
-   const url=new URL('/admin/board',window.location.origin);url.searchParams.set('sort',meta.filters.sort);url.searchParams.set('pageSize',String(meta.filters.pageSize));
+   const url=new URL(sfSchoolPath('/admin/board'),window.location.origin);url.searchParams.set('sort',meta.filters.sort);url.searchParams.set('pageSize',String(meta.filters.pageSize));
    if(meta.filters.search)url.searchParams.set('search',meta.filters.search);
    for(const [key,number] of Object.entries(meta.filters.pages)){const value=key===stage?page:number;if(value && value>1)url.searchParams.set(key+'Page',String(value));}
    if(stage)url.hash='board-lane-'+stage;return url;
@@ -42,13 +42,13 @@
   async function navigate(stage:string|null,rawUrl:string,push=true,internal=false){
    if(loading || (busy && !internal))return false;
    const target=new URL(rawUrl,window.location.origin);
-   if(target.origin!==window.location.origin || target.pathname!=='/admin/board')return false;
+   if(target.origin!==window.location.origin || sfSchoolRoute(target.pathname)!=='/admin/board')return false;
    loading=true;failedPage=null;retry.hidden=true;controls();tell(stage?`Loading ${labels[stage]} page…`:'Refreshing the work board…');
    const ownLane=stage?board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"]`):board;
    ownLane?.setAttribute('aria-busy','true');
    const request=new AbortController(),timer=setTimeout(()=>request.abort(),15000);
    try {
-    const response=await fetch(target.pathname+target.search,{headers:{Accept:'text/html'},cache:'no-store',signal:request.signal});
+    const response=await sfSchoolFetch(sfSchoolRoute(target.pathname)+target.search,{headers:{Accept:'text/html'},cache:'no-store',signal:request.signal});
     if(!response.ok)throw new Error(response.status===401 || response.status===403?'Sign in again to continue using the staff board.':'The page could not load. Your current cards and selection are unchanged.');
     const fresh=new DOMParser().parseFromString(await response.text(),'text/html');
     const freshData=fresh.getElementById('staff-board-data'),freshMeta=fresh.getElementById('staff-board-meta');

@@ -1,0 +1,20 @@
+<% layout('layout') %>
+<main class="sf-main auth-callback-container" id="account-security" data-user-id="<%= it.securityUserId %>" data-return-to="<%= it.securityReturnTo %>">
+  <h1 class="auth-callback-title">Account security</h1>
+  <p class="auth-callback-sub">School staff and platform operators must verify an authenticator code before opening their workspace. Anyone can protect their own account here.</p>
+  <p id="security-feedback" class="auth-reset-feedback" role="status" aria-live="polite">Loading your account security…</p>
+  <button id="security-enroll" class="am-btn-primary" type="button" hidden>Set up authenticator</button>
+  <button id="security-replace" class="am-btn-ghost" type="button" hidden>Replace unfinished authenticator setup</button>
+  <section id="security-setup" hidden aria-label="Authenticator setup">
+    <p>Scan this QR code with your authenticator app, or enter the setup key below. Keep the key private.</p>
+    <img id="security-qr" width="200" height="200" alt="Authenticator setup QR code" />
+    <p>Setup key: <code id="security-secret"></code></p>
+  </section>
+  <form id="security-form" class="auth-reset-form am-form" novalidate hidden>
+    <div class="am-field"><label class="am-label" for="security-code">Authenticator code</label><input id="security-code" class="am-input" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required aria-describedby="security-code-help security-feedback" /></div>
+    <p id="security-code-help">Enter the current six digit code from your authenticator app.</p>
+    <button id="security-verify" class="am-btn-primary" type="submit">Verify and continue</button>
+  </form>
+  <a href="/schools" class="am-btn-ghost">Return to schools</a>
+</main>
+<script defer src="/js/account-security.js?v=20261016-mfa"></script>

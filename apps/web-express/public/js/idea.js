@@ -25,7 +25,7 @@
         return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     }
     document.addEventListener('DOMContentLoaded', () => {
-        const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+        const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
         if (votedIds.includes(document.getElementById('sf-idea-config').dataset.id)) {
             const btn = document.getElementById('detail-vote-btn');
             if (btn && document.getElementById('sf-idea-config').dataset.status !== 'pending') {
@@ -116,7 +116,7 @@
         if (btn.classList.contains('voted'))
             return;
         try {
-            const res = await fetch(`/api/vote/${id}`, {
+            const res = await sfSchoolFetch(`/api/vote/${id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'up' })
@@ -129,10 +129,10 @@
                 document.getElementById('detail-vote-text').textContent = 'Supported';
                 document.getElementById('detail-vote-icon').innerHTML = '<polyline points="20 6 9 17 4 12"/>';
                 // Persist to local storage
-                const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+                const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
                 if (!votedIds.includes(id)) {
                     votedIds.push(id);
-                    localStorage.setItem('sf_voted_ideas', JSON.stringify(votedIds));
+                    localStorage.setItem(sfSchoolKey('sf_voted_ideas'), JSON.stringify(votedIds));
                 }
                 if (window.sfToast)
                     sfToast('Vote recorded! Thank you.', 'success');
@@ -184,7 +184,7 @@
         btn.disabled = true;
         btn.innerHTML = '<span>Posting…</span>';
         try {
-            const res = await fetch(`/api/comments/${submissionId}`, {
+            const res = await sfSchoolFetch(`/api/comments/${submissionId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

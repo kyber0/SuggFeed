@@ -1,8 +1,10 @@
+import { verifiedTokenAssurance } from './auth-assurance';
 import type { Request, Response, NextFunction } from "express";
-import { createAuthClient, supabaseService } from "./supabase";
+import { createAuthClient, supabasePlatform } from "./supabase";
 
 /** Revalidate identity and DB permissions so revoked roles cannot linger. */
 export function validateIdentity(req: Request, res: Response, next: NextFunction) {
+  res.locals.authAssurance = 'aal1';
   if (!req.session.user || req.path.startsWith("/auth/")) return next();
   const started=performance.now();
   const expectedUserId=req.session.user.id;
@@ -10,14 +12,14 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
   const readProfile=async()=>{
     const began=performance.now();
     const result=await (profilePage
-      ? supabaseService.from('profiles').select('*').eq('id',expectedUserId).maybeSingle()
-      : supabaseService.from('profiles').select('role, display_name').eq('id',expectedUserId).maybeSingle());
+      ? supabasePlatform.from('profiles').select('*').eq('id',expectedUserId).maybeSingle()
+      : supabasePlatform.from('profiles').select('role, display_name').eq('id',expectedUserId).maybeSingle());
     res.append?.('Server-Timing',`permissions;dur=${(performance.now()-began).toFixed(1)}`);
     return result;
   };
   const verifyToken=async(token:string,label='auth-user')=>{
     const began=performance.now();
-    const result=await supabaseService.auth.getUser(token);
+    const result=await supabasePlatform.auth.getUser(token);
     res.append?.('Server-Timing',`${label};dur=${(performance.now()-began).toFixed(1)}`);
     return result;
   };
@@ -51,6 +53,7 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
       delete req.session.refreshToken;
       return;
     }
+    res.locals.authAssurance = verifiedTokenAssurance(token || '');
     const {data:profile,error:profileError}=profileResult || await readProfile();
     if (profileError) throw new Error("Account permissions unavailable.");
     // Only this request's verified owner can reuse this read. No identity or

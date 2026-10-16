@@ -9,7 +9,7 @@
  let timer:number;
  function reset(){clearTimeout(timer);shell.hidden=true;content.hidden=false;content.removeAttribute('aria-busy');document.documentElement.classList.remove('is-navigating');}
  function destinationScreen(destination:URL):[string,string] {
-  const path=destination.pathname.replace(/\/+$/, '') || '/';
+  const path=sfSchoolRoute(destination.pathname).replace(/\/+$/, '') || '/';
   if(path==='/')return ['home','SuggFeed'];
   if(path==='/feed')return ['feed','Community ideas'];
   if(path==='/roadmap'){
@@ -43,7 +43,7 @@
  }
  function canLoad(destination:URL):boolean {
   return destination.origin===location.origin && destination.protocol===location.protocol
-   && !/^\/(api|auth|staff\/workspace)(\/|$)/.test(destination.pathname);
+   && !/^\/(api|auth|staff\/workspace)(\/|$)/.test(sfSchoolRoute(destination.pathname));
  }
  function show(destination:URL){
   const [layout,section]=destinationScreen(destination);

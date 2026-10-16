@@ -1,3 +1,4 @@
+import { withTestSchool } from './support/school-context';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -79,7 +80,7 @@ test('progress routes protect identity, roles, CSRF, UUIDs, payloads, and stale-
   }) as any;
   const app = express(); app.use(express.json());
   app.use((req, _res, next) => { req.session = { user: role ? { id, role } : undefined } as any; next(); });
-  app.use(sameOriginOnly); app.use('/api/staff', progressRouter);
+  app.use(sameOriginOnly); app.use(withTestSchool); app.use('/api/staff', progressRouter);
   app.use((_err, _req, res, _next) => res.status(500).json({ success: false, error: 'Unexpected error.' }));
   const server = app.listen(0, '127.0.0.1'); await new Promise<void>(resolve => server.once('listening', resolve));
   const origin = 'http://127.0.0.1:' + (server.address() as { port: number }).port;

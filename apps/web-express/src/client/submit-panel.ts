@@ -20,7 +20,7 @@ let sipCurrentStep = 1;
     if (panel) panel.removeAttribute('hidden');
     if (form && (!sipOpened || !(document.getElementById('sip-success') as HTMLElement).hidden)) {
       form.reset();
-      try {const choice=localStorage.getItem('sf_anon_default');const signedIn=!!document.getElementById('sf-auth-config')?.dataset.user;(document.getElementById('sip-anon') as HTMLInputElement).checked=!signedIn || choice!=='false';}catch{}
+      try {const choice=localStorage.getItem(sfSchoolKey('sf_anon_default'));const signedIn=!!document.getElementById('sf-auth-config')?.dataset.user;(document.getElementById('sip-anon') as HTMLInputElement).checked=!signedIn || choice!=='false';}catch{}
     }
     sipOpened = true;
     window.dispatchEvent(new CustomEvent('sf:submission-open'));
@@ -460,11 +460,11 @@ let sipCurrentStep = 1;
   }
   document.getElementById('sip-save-code')?.addEventListener('click',()=>{
     if(!sipTrackingCode)return;
-    try{const data=JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');const codes=Array.isArray(data)?data.filter(x=>typeof x==='string' && /^CV-[A-F0-9]{32}$/.test(x)):[];localStorage.setItem('sf_my_tracking_codes',JSON.stringify([...new Set([...codes,sipTrackingCode])].slice(-20)));(document.getElementById('sip-code-status') as HTMLElement).textContent='Code saved on this device. Others using this browser can access it.';}catch{(document.getElementById('sip-code-status') as HTMLElement).textContent='Code could not be saved. Copy it to a safe place instead.';}
+    try{const data=JSON.parse(localStorage.getItem(sfSchoolKey('sf_my_tracking_codes')) || '[]');const codes=Array.isArray(data)?data.filter(x=>typeof x==='string' && /^CV-[A-F0-9]{32}$/.test(x)):[];localStorage.setItem(sfSchoolKey('sf_my_tracking_codes'),JSON.stringify([...new Set([...codes,sipTrackingCode])].slice(-20)));(document.getElementById('sip-code-status') as HTMLElement).textContent='Code saved on this device. Others using this browser can access it.';}catch{(document.getElementById('sip-code-status') as HTMLElement).textContent='Code could not be saved. Copy it to a safe place instead.';}
   });
   document.getElementById('sip-clear-codes')?.addEventListener('click',async()=>{
     if(!await window.sfConfirm('Remove all tracking codes saved on this device? Copy any you still need first.', {title:'Clear saved tracking codes?', confirmLabel:'Clear codes', danger:true}))return;
-    try{localStorage.removeItem('sf_my_tracking_codes');(document.getElementById('sip-code-status') as HTMLElement).textContent='Saved codes cleared.';}catch{(document.getElementById('sip-code-status') as HTMLElement).textContent='Saved codes could not be cleared.';}
+    try{localStorage.removeItem(sfSchoolKey('sf_my_tracking_codes'));(document.getElementById('sip-code-status') as HTMLElement).textContent='Saved codes cleared.';}catch{(document.getElementById('sip-code-status') as HTMLElement).textContent='Saved codes could not be cleared.';}
   });
 Object.assign(window, { sfRestoreSubmissionStep, sfShowSubmissionSuccess, openSubmitPanel, closeSubmitPanel, onCategorySelected, handleTitleInput, handleDescInput, handleAnonToggle, handleConsentChange, goToStep, updateSipUI, sipNextStep, sipPrevStep, handleIdeaSubmit, copyTrackingCode, fallbackCopy });
 })();

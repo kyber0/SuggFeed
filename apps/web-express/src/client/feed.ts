@@ -65,7 +65,7 @@
   }
 
   function sfNavigate() {
-    const url = new URL('/feed', window.location.origin);
+    const url = new URL(sfSchoolPath('/feed'), window.location.origin);
     url.searchParams.set('sort', _currentSort);
     if (_currentCat !== 'All') url.searchParams.set('category', _currentCat);
     if (_appliedSearch.trim()) url.searchParams.set('search', _appliedSearch.trim());
@@ -100,7 +100,7 @@
   let rememberedVotes = new Set<string>();
   function readLocalSet(key: string): Set<string> {
     try {
-      const values: unknown = JSON.parse(localStorage.getItem(key) || '[]');
+      const values: unknown = JSON.parse(localStorage.getItem(sfSchoolKey(key)) || '[]');
       return new Set(Array.isArray(values) ? values.filter((value): value is string => typeof value === 'string') : []);
     } catch { return new Set(); }
   }
@@ -110,7 +110,7 @@
   }
   function sfSaveVotedId(id: string) {
     rememberedVotes.add(id);
-    try { localStorage.setItem('sf_voted_ideas', JSON.stringify([...sfGetVotedSet()])); } catch {}
+    try { localStorage.setItem(sfSchoolKey('sf_voted_ideas'), JSON.stringify([...sfGetVotedSet()])); } catch {}
   }
   const savedOnAccount=!!document.getElementById('sf-auth-config')?.dataset.user;
   let accountSaved=new Set<string>();
@@ -142,8 +142,8 @@
     const willSave = !saved.has(id);
     if (willSave) saved.add(id); else saved.delete(id);
     try {
-      if(savedOnAccount){const response=await fetch('/api/bookmarks/'+encodeURIComponent(id),{method:'POST',signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json'},body:JSON.stringify({action:willSave?'add':'remove'})});const data=await response.json();if(!response.ok || !data.success)throw new Error('Account bookmark could not be confirmed.');if(willSave)accountSaved.add(id);else accountSaved.delete(id);}
-      else localStorage.setItem('sf_saved_ideas', JSON.stringify([...saved]));
+      if(savedOnAccount){const response=await sfSchoolFetch('/api/bookmarks/'+encodeURIComponent(id),{method:'POST',signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json'},body:JSON.stringify({action:willSave?'add':'remove'})});const data=await response.json();if(!response.ok || !data.success)throw new Error('Account bookmark could not be confirmed.');if(willSave)accountSaved.add(id);else accountSaved.delete(id);}
+      else localStorage.setItem(sfSchoolKey('sf_saved_ideas'), JSON.stringify([...saved]));
       document.querySelectorAll<HTMLElement>('.action-bookmark[data-id]').forEach(other => {
         if (other.dataset.id === id) setSavedState(other, willSave);
       });
@@ -167,7 +167,7 @@
   async function loadBookmarks(){
     if(bookmarkLoadBusy)return;bookmarkLoadBusy=true;
     document.getElementById('bookmark-retry')?.remove();
-    try{const response=await fetch('/profile/bookmarks',{cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)});const data=await response.json();if(!response.ok || !data.success)throw new Error();accountSaved=new Set(data.ids);accountBookmarksLoaded=true;sfInitLocalStates();}
+    try{const response=await sfSchoolFetch('/profile/bookmarks',{cache:'no-store',headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)});const data=await response.json();if(!response.ok || !data.success)throw new Error();accountSaved=new Set(data.ids);accountBookmarksLoaded=true;sfInitLocalStates();}
     catch{const retry=document.createElement('button');retry.type='button';retry.id='bookmark-retry';retry.className='workspace-button';retry.textContent='Saved state unavailable · Retry';retry.addEventListener('click',()=>void loadBookmarks());document.getElementById('feed-posts-container')?.before(retry);}
     finally{bookmarkLoadBusy=false;}
   }
@@ -191,7 +191,7 @@
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 15000);
     try {
-      const response = await fetch('/api/vote/' + encodeURIComponent(id), {
+      const response = await sfSchoolFetch('/api/vote/' + encodeURIComponent(id), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ action: 'up' }),
@@ -225,7 +225,7 @@
 
   async function sfSharePost(id: string, event: Event, button: HTMLButtonElement) {
     event?.stopPropagation();
-    const url = window.location.origin + '/idea/' + encodeURIComponent(id);
+    const url = window.location.origin + sfSchoolPath('/idea/' + encodeURIComponent(id));
     try {
       if (navigator.share) {
         await navigator.share({ title: 'SuggFeed idea', url });
@@ -267,7 +267,7 @@
     const votes = Math.max(0, Number(item.vote_count) || 0);
     const comments = Math.max(0, Number(item.comment_count) || 0);
     const id = sfEscapeHtml(item.id);
-    const href = '/idea/' + encodeURIComponent(String(item.id));
+    const href = sfSchoolPath('/idea/' + encodeURIComponent(String(item.id)));
     const created = new Date(item.created_at);
     const validDate = Number.isFinite(created.getTime());
     const secondsAgo = validDate ? Math.max(0, Math.floor((Date.now() - created.getTime()) / 1000)) : 0;
@@ -410,7 +410,7 @@
       const nextPage = _currentPage + 1;
       const params = new URLSearchParams({ page: String(nextPage), sort: _currentSort, category: _currentCat, search: _appliedSearch });
       if (following) params.set('scope','following');else params.set('total','skip');
-      const response = await fetch('/api/feed?' + params.toString(), { headers: { Accept: 'application/json' }, signal: controller.signal });
+      const response = await sfSchoolFetch('/api/feed?' + params.toString(), { headers: { Accept: 'application/json' }, signal: controller.signal });
       if (!response.ok) throw new Error('request-failed');
       const data = await response.json();
       const items = data?.feed ?? data?.data;
@@ -464,7 +464,7 @@
   sfInitLocalStates();
   if(!following && config.dataset.total===''){
     const params=new URLSearchParams({category:_currentCat,search:_appliedSearch});
-    void fetch('/api/feed-total?'+params,{credentials:'omit',signal:AbortSignal.timeout(15000),headers:{Accept:'application/json'}})
+    void sfSchoolFetch('/api/feed-total?'+params,{credentials:'omit',signal:AbortSignal.timeout(15000),headers:{Accept:'application/json'}})
       .then(response=>{if(!response.ok)throw new Error();return response.json();})
       .then(data=>{if(data.success && typeof data.count==='number')updateResultSummary(data.count);})
       .catch(()=>undefined); // A missing total never blocks ideas, saving or pagination.

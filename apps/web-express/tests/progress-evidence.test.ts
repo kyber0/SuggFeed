@@ -1,9 +1,12 @@
-import { test } from 'node:test';
+import { test as nodeTest } from 'node:test';
+import { runWithSchool } from '../src/lib/school-scope';
+const SCHOOL={id:'10000000-0000-4000-8000-000000000001',slug:'demo',name:'Demo',actorId:null,role:null};
+const test=(name:string,fn:()=>void|Promise<void>)=>nodeTest(name,()=>runWithSchool(SCHOOL,fn));
 import assert from 'node:assert/strict';
 import express from 'express';
 import sharp from 'sharp';
 import evidenceRouter, { cleanupHandler } from '../src/routes/progress-evidence';
-import { supabase, supabaseService } from '../src/lib/supabase';
+import { supabase, supabaseService, supabasePlatform } from '../src/lib/supabase';
 import { ProgressError } from '../src/lib/progress';
 import { validateEvidence, validateEvidenceBytes, reserveEvidence, finalizeEvidence, evidenceDownload, listPublicEvidence, cleanupEvidence } from '../src/lib/progress-evidence';
 import { sameOriginOnly } from '../src/lib/security';
@@ -45,14 +48,14 @@ test('reservation only signs an opaque source path; finalize validates before re
   const png = await sharp({ create: { width: 20, height: 20, channels: 3, background: '#dddddd' } }).png().toBuffer();
   const row: any = { id: fileId, request_id: requestId, actor_id: actorId, update_id: null,
     display_name: input.name, declared_mime: 'image/png', declared_size: png.length, alt: input.alt,
-    temp_path: `${fileId}/source`, final_path: `${fileId}/final.webp`, state: 'pending',
+    temp_path: `${SCHOOL.id}/${fileId}/source`, final_path: `${SCHOOL.id}/${fileId}/final.webp`, state: 'pending',
     expires_at: new Date(Date.now() + 86400000).toISOString() };
   let uploaded = 0; let signed = 0;
   supabaseService.rpc = (async (name, args) => {
     if (name === 'reserve_progress_upload') { assert.equal(args.p_upload_id, fileId); return { data: { ...row }, error: null }; }
     if (name === 'read_authorized_progress_file') { assert.deepEqual(args, { p_file_id: fileId, p_actor_id: actorId }); return { data: [{ ...row }], error: null }; }
     if (name === 'finalize_progress_upload') {
-      assert.equal(args.p_path, `${fileId}/final.webp`); assert.equal(args.p_mime, 'image/webp');
+      assert.equal(args.p_path, `${SCHOOL.id}/${fileId}/final.webp`); assert.equal(args.p_mime, 'image/webp');
       assert.equal(uploaded, 1); row.state = 'ready'; row.mime_type = args.p_mime; row.size_bytes = args.p_size;
       return { data: { ...row }, error: null };
     }
@@ -68,7 +71,7 @@ test('reservation only signs an opaque source path; finalize validates before re
     const reserved = await reserveEvidence(actorId, { ...input, size: png.length });
     assert.equal(reserved.upload?.path, row.temp_path); assert.equal(JSON.stringify(reserved).includes('actor_id'), false);
     const ready = await finalizeEvidence(actorId, fileId); assert.equal(ready.state, 'ready');
-    assert.equal(ready.href, `/api/progress-evidence/${fileId}`); assert.equal(JSON.stringify(ready).includes('final_path'), false);
+    assert.equal(ready.href, `/s/demo/api/progress-evidence/${fileId}`); assert.equal(JSON.stringify(ready).includes('final_path'), false);
     await finalizeEvidence(actorId, fileId); assert.equal(uploaded, 1);
     assert.equal((await reserveEvidence(actorId, { ...input, size: png.length })).upload, null); assert.equal(signed, 1);
   } finally { supabaseService.rpc = originalRpc; supabaseService.storage.from = originalStorage; }
@@ -78,7 +81,7 @@ test('public evidence whitelists metadata and download authorization uses a shor
   const originalAnonRpc = supabase.rpc; const originalRpc = supabaseService.rpc; const originalStorage = supabaseService.storage.from;
   let allowed = true;
   const row = { id: fileId, update_id: requestId, display_name: 'School report.pdf', mime_type: 'application/pdf', size_bytes: 40,
-    alt: null, state: 'published', final_path: `${fileId}/final.pdf`, temp_path: `${fileId}/source`, actor_id: actorId };
+    alt: null, state: 'published', final_path: `${SCHOOL.id}/${fileId}/final.pdf`, temp_path: `${SCHOOL.id}/${fileId}/source`, actor_id: actorId };
   supabase.rpc = (async (name) => { assert.equal(name, 'read_public_idea_update_files'); return { data: [row], error: null }; }) as any;
   supabaseService.rpc = (async (name, args) => { assert.equal(name, 'read_authorized_progress_file'); assert.equal(args.p_actor_id, null); return { data: allowed ? [row] : [], error: null }; }) as any;
   supabaseService.storage.from = (() => ({ async createSignedUrl(path, seconds, options) {
@@ -97,13 +100,13 @@ test('cleanup only finishes successfully removed objects and retries failed dele
   const originalRpc = supabaseService.rpc; const originalStorage = supabaseService.storage.from;
   const finished: string[] = []; let attempts = 0;
   supabaseService.rpc = (async (name, args) => {
-    if (name === 'claim_progress_upload_cleanup') return { data: [{ id: fileId, temp_path: `${fileId}/source`, final_path: `${fileId}/final.webp` }], error: null };
+    if (name === 'claim_progress_upload_cleanup') return { data: [{ id: fileId, temp_path: `${SCHOOL.id}/${fileId}/source`, final_path: `${SCHOOL.id}/${fileId}/final.webp` }], error: null };
     if (name === 'finish_progress_upload_cleanup') { finished.push(args.p_file_id); return { error: null }; }
     if (name === 'list_progress_sources_to_clean') return { data: [], error: null };
     throw new Error('Unexpected RPC');
   }) as any;
   supabaseService.storage.from = (() => ({ async remove(paths) {
-    assert.deepEqual(paths, [`${fileId}/source`, `${fileId}/final.webp`]); attempts++;
+    assert.deepEqual(paths, [`${SCHOOL.id}/${fileId}/source`, `${SCHOOL.id}/${fileId}/final.webp`]); attempts++;
     return { error: attempts === 1 ? new Error('Storage failure') : null };
   } })) as any;
   try {
@@ -113,7 +116,8 @@ test('cleanup only finishes successfully removed objects and retries failed dele
 });
 
 test('evidence routes require staff mutations, same-origin requests, UUIDs and a configured cleanup secret', async () => {
-  const originalRpc = supabaseService.rpc; const originalSecret = process.env.CRON_SECRET;
+  const originalRpc = supabaseService.rpc; const originalSecret = process.env.CRON_SECRET,platformFrom=supabasePlatform.from;
+  supabasePlatform.from=(()=>{const q:any={select(){return q;},not(){return q;},eq(){return q;},order(){return q;},async range(){return {error:null,data:[SCHOOL]};}};return q;}) as any;
   let role: string | null = null;
   supabaseService.rpc = (async (name) => {
     if (name === 'read_authorized_progress_file') return { data: [], error: null };
@@ -121,7 +125,7 @@ test('evidence routes require staff mutations, same-origin requests, UUIDs and a
     return { error: { code: '22023' } };
   }) as any;
   const app = express(); app.use(express.json());
-  app.use((req, _res, next) => { req.session = { user: role ? { id: actorId, role } : undefined } as any; next(); });
+  app.use((req, _res, next) => { req.session = { user: role ? { id: actorId, role } : undefined } as any; runWithSchool({...SCHOOL,actorId:role?actorId:null,role:role as any},next); });
   app.get('/internal/cleanup', cleanupHandler); app.use(sameOriginOnly); app.use('/api/evidence', evidenceRouter);
   app.use((_err, _req, res, _next) => res.status(500).json({ success: false, error: 'Unexpected error.' }));
   const server = app.listen(0, '127.0.0.1'); await new Promise<void>(resolve => server.once('listening', resolve));
@@ -135,10 +139,43 @@ test('evidence routes require staff mutations, same-origin requests, UUIDs and a
     assert.equal((await fetch(origin + '/api/evidence/' + fileId)).status, 404);
     delete process.env.CRON_SECRET; assert.equal((await fetch(origin + '/internal/cleanup')).status, 401);
     process.env.CRON_SECRET = 'local-test-secret';
+    assert.equal((await fetch(origin + '/internal/cleanup', { headers: { Authorization: 'Bearer local-test-secret' } })).status, 401);
+    process.env.CRON_SECRET = 's'.repeat(40);
     assert.equal((await fetch(origin + '/internal/cleanup', { headers: { Authorization: 'Bearer wrong' } })).status, 401);
-    assert.equal((await fetch(origin + '/internal/cleanup', { headers: { Authorization: 'Bearer local-test-secret' } })).status, 200);
+    assert.equal((await fetch(origin + '/internal/cleanup', { headers: { Authorization: 'Bearer '+'s'.repeat(40) } })).status, 200);
   } finally {
     if (originalSecret === undefined) delete process.env.CRON_SECRET; else process.env.CRON_SECRET = originalSecret;
-    supabaseService.rpc = originalRpc; server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));
+    supabasePlatform.from=platformFrom;supabaseService.rpc = originalRpc; server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));
   }
+});
+
+test('cleanup refuses another school path and continues after a thrown storage failure',async()=>{
+ const rpc=supabaseService.rpc,storage=supabaseService.storage.from,removed:string[][]=[],finished:string[]=[];
+ const ids=['20000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000003'];
+ supabaseService.rpc=(async(name:string,args:any)=>{
+  if(name==='claim_progress_upload_cleanup')return {error:null,data:[
+   {id:ids[0],temp_path:`another-school/${ids[0]}/source`},
+   {id:ids[1],temp_path:`${SCHOOL.id}/${ids[1]}/source`},
+   {id:ids[2],temp_path:`${SCHOOL.id}/${ids[2]}/source`},
+  ]};
+  if(name==='finish_progress_upload_cleanup'){finished.push(args.p_file_id);return {error:null};}
+  if(name==='list_progress_sources_to_clean')return {error:null,data:[]};
+  throw new Error('Unexpected RPC');
+ }) as any;
+ supabaseService.storage.from=(()=>({async remove(paths:string[]){removed.push(paths);if(paths[0].includes(ids[1]))throw new Error('Network lost');return {error:null};}})) as any;
+ try{assert.deepEqual(await cleanupEvidence(),{removed:1,failed:2});assert.deepEqual(finished,[ids[2]]);assert.equal(removed.length,2);}
+ finally{supabaseService.rpc=rpc;supabaseService.storage.from=storage;}
+});
+test('evidence signing rejects another school and only the demo school can use preserved legacy paths',async()=>{
+ const rpc=supabaseService.rpc,storage=supabaseService.storage.from;let path=`${fileId}/final.pdf`,signed=0;
+ supabaseService.rpc=(async()=>({error:null,data:[{id:fileId,final_path:path,state:'published',mime_type:'application/pdf',display_name:'Evidence.pdf'}]})) as any;
+ supabaseService.storage.from=(()=>({async createSignedUrl(){signed++;return {error:null,data:{signedUrl:'https://storage.test/file'}};}})) as any;
+ try {
+  assert.equal(await evidenceDownload(fileId,null),'https://storage.test/file');
+  await assert.rejects(()=>runWithSchool({...SCHOOL,slug:'other'},()=>evidenceDownload(fileId,null)),/another school/);
+  path=`another-school/${fileId}/final.pdf`;await assert.rejects(()=>evidenceDownload(fileId,null),/another school/);
+  path=`${SCHOOL.id}/${fileId}/../secret.pdf`;await assert.rejects(()=>evidenceDownload(fileId,null),/another school/);
+  path=`${SCHOOL.id}/${fileId}/%2e%2e%2fsecret.pdf`;await assert.rejects(()=>evidenceDownload(fileId,null),/another school/);
+  assert.equal(signed,1);
+ }finally{supabaseService.rpc=rpc;supabaseService.storage.from=storage;}
 });

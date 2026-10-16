@@ -1,0 +1,2 @@
+<% layout('layout') %>
+<main class="sf-legal-page"><div class="sf-legal-container"><h1>Accept school invitation</h1><p>Use the account with the confirmed email this invitation was issued to. Acceptance grants a school membership. Invitations expire after 48 hours and can be used once.</p><% if(it.user) { %><p>Signed in as <%= it.user.email %>.</p><form action="/schools/invitations/<%= it.token %>" method="post"><button type="submit">Accept membership</button></form><% } else { %><p>Sign in, then return to this invitation.</p><% } %></div></main>

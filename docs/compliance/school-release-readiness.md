@@ -4,11 +4,11 @@
 
 ## Deployment boundary and responsibilities
 
-**Confirmed target: one shared service where many schools sign up.** Existing tables and API authorization do not have a school tenant boundary. School signup must remain unavailable until the shared-school isolation plan is implemented and verified. Never put unrelated schools into this database expecting global role checks to isolate them. Isolation must cover database, storage, clients, Edge Functions, caches, jobs, backups and provider support access. Existing records are confirmed demo data: preserve them in a dedicated demo school during the reviewed backfill, never in a new customer school.
+**Confirmed target: one shared service where many schools sign up.** The existing hosted deployment has not yet received the staged school tenant boundary. School signup must remain unavailable until the implemented shared-school isolation plan is deployed and verified. Never put unrelated schools into this database expecting global role checks to isolate them. Isolation must cover database, storage, clients, Edge Functions, caches, jobs, backups and provider support access. Existing records are confirmed demo data: preserve them in a dedicated demo school during the reviewed backfill, never in a new customer school.
 
 See `docs/superpowers/plans/2026-10-15-shared-school-isolation.md` for the separate architectural workstream. No tenant migration is applied by this security foundation change.
 
-A registered business will operate the shared service (confirmed by user). The school may be the personal information controller for school feedback. The product provider may be a processor for that service and a separate controller for its own billing/support/security purposes. Determine roles from actual decisions and contracts; branding and a checkbox do not establish legal roles. Establish a processing agreement covering instructions, subprocessors, incident assistance, return/deletion and termination before processing school data.
+The user clarified that SuggFeed is their own project for CSPC and other schools to adopt. CSPC is not established as the platform operator. The actual operator name and permission to publish a privacy mailbox remain unconfirmed. The school may be the personal information controller for school feedback. The product provider may be a processor for that service and a separate controller for its own billing/support/security purposes. Determine roles from actual decisions and contracts; branding and a checkbox do not establish legal roles. Establish a processing agreement covering instructions, subprocessors, incident assistance, return/deletion and termination before processing school data.
 
 No school's name, DPO, approval, privacy address, retention period or legal basis is assumed. A configured operator name and email are not proof of authority or that the mailbox is monitored. A generic demo should use synthetic data until its own operator and notices are established.
 
@@ -47,7 +47,7 @@ GDPR, US FERPA/COPPA, payment regulations and medical-system requirements are no
 
 Existing `archive-old-submissions` uses configured retention_days and updates selected submission content, with attachment handling. Its presence does NOT establish a complete purge, a running scheduler, all related tables' coverage, safe legal holds, or the old privacy page's “90 days/12 months” promises. Do not run it as a compliance shortcut.
 
-## Confirmed engineering findings
+## Initial engineering findings (before staged implementation)
 
 1. Old privacy/terms pages incorrectly described only staff accounts, unconditional anonymity, unverified addresses, 90-day rejected-record deletion, 12-month tracking expiry and blanket security/analytics claims. Correct to observable behavior and per-school configuration; DPO must finalize purposes, grounds, recipients and time limits.
 2. CSP allowed executable inline scripts and jsDelivr although current Eta scripts are external/self-hosted (JSON data blocks are inert). Remove that permission, explicitly deny embedding and unused browser capabilities.
@@ -55,23 +55,23 @@ Existing `archive-old-submissions` uses configured retention_days and updates se
 4. Express submission path has no Turnstile validation; Edge Function support does not prove this path is protected. A frontend CAPTCHA alone is insufficient. Choose edge/bot controls or integrate challenge verification server-side before making a protection claim.
 5. Service-role queries bypass RLS by design. Review every authorization branch and direct anon/authenticated database access after all migrations; compiled migrations are not evidence of hosted policy state.
 6. No complete self-service personal-data export/deletion workflow was established. A monitored manual process can support rights if lawful, accessible and operational; require it before launch. Do not expose all associated staff notes or other people's information in a bulk export.
-7. Operator, contact, minors policy, grounds, retention schedule, registration applicability and contracts are unconfirmed. Multi-school isolation is absent.
+7. Operator, contact, minors policy, grounds, retention schedule, registration applicability and contracts are unconfirmed. Multi-school isolation is implemented and the four hosted migrations are applied; activation remains locked pending acceptance and approvals.
 8. `archive-old-submissions` accepted literal `Bearer undefined` when `ARCHIVE_CRON_SECRET` was missing. Locally reproduced with a mocked handler, then fixed to reject missing/short secrets before database client construction. Hosted exposure depends on gateway/function configuration; deployment is not verified. Edge Functions require a separate deployment from Express.
-9. Shared Edge CORS helpers still allow wildcard origins in fallback paths and shared rate limiting can fail open. CORS is not authorization; assess supported clients before restricting origins. Historical ADR claims of comprehensive origin allowlisting do not match these paths. This remains part of the alternate-client/Edge audit.
+9. Legacy Edge helper fallback paths used wildcard CORS and could fail open on rate limiting. All active legacy entrypoints are now staged to return 410 before helper/service execution. Hosted retirement deployment remains required. CORS is not authorization.
 
 ## Release gates (every adopting school)
 
 | Priority / owner | Deliverable and acceptance evidence | Current state |
 |---|---|---|
-| P0 product owner | Implement/test shared tenancy, including backup/support isolation and verified school activation | Shared service confirmed; isolation not implemented |
+| P0 product owner | Implement/test shared tenancy, including backup/support isolation and verified school activation | Implemented and migrated with local negative checks; activation/hosted acceptance still pending |
 | P0 school signatory + provider | Actual controller/processor allocation, school authorization, DPO/privacy contact, processing agreement, privacy notice approved with lawful grounds per purpose | Open |
 | P0 DPO + safeguarding lead | Institution/age eligibility, children's notice and safeguards; determine if guardian involvement is required for each purpose, never a blanket age checkbox | Open |
 | P0 DPO + records officer | Approved retention schedule per table/storage/log/backup, legal holds, deletion/anonymization and recovery protocol | Open; destructive automation deferred |
-| P0 security owner | Hosted RLS/grants/security-definer review with anon/student/staff/admin negative tests, private buckets and role revocation; no service key in frontend/repo/history | Open; code inspection only |
+| P0 security owner | Hosted RLS/grants/security-definer review with anon/student/staff/admin negative tests, private buckets and role revocation; no service key in frontend/repo/history | Local SQL/HTTP negative checks passed; hosted grants/bucket checks pending |
 | P0 operations | Production HTTPS, Supabase URLs/redirect allowlist, strong separate secrets, least-privilege provider access and staff MFA; controlled staging with synthetic data | Configuration partly present; hosted verification open |
-| P0 operations | Deployment-wide rate/bot controls including Supabase Auth and anonymous writes, alerting, bounded retry behavior | Open |
+| P0 operations | Deployment-wide rate/bot controls including Supabase Auth and anonymous writes, alerting, bounded retry behavior | Atomic shared budgets implemented and migrated; matching app deployment/hosted acceptance in progress |
 | P0 DPO/support | Working monitored rights and incident channels, responder assignments, verified request dry run | Open |
-| P0 operations | Recoverable backups, restore rehearsal in isolated project, documented RPO/RTO, rollback and forward-compatible migration process | Open |
+| P0 operations | Recoverable backups, restore rehearsal in isolated project, documented RPO/RTO, rollback and forward-compatible migration process | Encrypted snapshot and full local database restore/migration rehearsal passed; Auth/Storage recovery, durable backup retention and approved RPO/RTO remain open |
 | P0 release owner | Functional auth/recovery/accessibility/security checks against release candidate, dependency/license findings triaged and patches applied | Focused code checks only in this task |
 | P1 DPO/vendor owner | NPC registration determination, PIA, provider/subprocessor list/locations, cross-border transfer safeguards and incident terms | Open; South Korea hosting known from user history, actual residency must be confirmed |
 | P1 operations | SPF/DKIM/DMARC, approved sender, bounce/unsubscribe/digest behavior, log redaction and deletion verification | Open |
@@ -113,6 +113,10 @@ This register starts the readiness work. Record implementation and checks in the
 
 ### Confirmed product decisions (2026-10-15)
 - One shared SaaS service for many schools.
-- Operator is a registered business; exact legal name and monitored privacy mailbox still need configuration/verification.
+- Latest clarification: this is the user’s project for schools to adopt; actual operator name and monitored public privacy mailbox still need confirmation.
 - User identifies existing records as demo data only. Preserve these in a dedicated demo school during a reviewed migration; do not delete data or auto-grant platform administration. Existing account identities may still contain real contact information and need protection.
-- Tenant isolation remains unimplemented; data mapping is no longer an unanswered product question, but migration rehearsal and approval remain required.
+- Tenant isolation, onboarding, browser/job isolation, shared budgets and staff MFA are implemented locally. A full hosted-snapshot migration rehearsal passed. Live migrations, exact-account operator bootstrap and all ten retired Edge deployments are complete. School activation remains locked pending evidence and approvals.
+
+
+### Implementation update — 16 October 2026
+See [cutover evidence](tenant-cutover.md#current-cutover-evidence--16-october-2026). Local implementation is complete for the staged shared-school boundary, onboarding review, invitations, per-school notices, shared request budgets, account-security UI and staff/operator MFA. This does not complete institutional authority, lawful grounds, contracts, monitored rights handling, incident staffing, retention approval or provider recovery/configuration checks. Existing public availability is not approval to onboard schools.

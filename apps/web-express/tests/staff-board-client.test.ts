@@ -67,6 +67,8 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
     append(...nodes: any[]) { for (const node of nodes) { node.parentElement = this; this.children.push(node); } }
     replaceWith(next: any) { const parent = this.parentElement; const index = parent.children.indexOf(this); assert.ok(index >= 0); parent.children.splice(index, 1, next); next.parentElement = parent; this.parentElement = null; }
     replaceChildren(...nodes: any[]) { this.children = []; this.append(...nodes); }
+    get childNodes() { return this.children; }
+    remove() { if (this.parentElement) this.parentElement.children = this.parentElement.children.filter(node => node !== this); this.parentElement = null; }
     descendants(): any[] { return this.children.flatMap(node => [node, ...node.descendants()]); }
     querySelectorAll(selector: string): any[] { return this.descendants().filter(node => node.matches(selector)); }
     querySelector(selector: string): any { return this.querySelectorAll(selector)[0] || null; }
@@ -79,6 +81,7 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
   const element = (tag: string, id = '') => new Node(tag, id);
   const lane = (status: string, entries: any[], page = 1) => {
     const node = element('section'); node.dataset.dropStage = status; node.classes.add('staff-flow-lane');
+    const heading = element('h2'); heading.classes.add('staff-lane-heading'); node.append(heading);
     for (const entry of entries.filter(item => item.status === status)) {
       const card = element('article'); card.dataset.boardId = entry.id; card.classes.add('staff-flow-card');
       const checkbox = element('input'); checkbox.dataset.bulkId = entry.id;
@@ -105,6 +108,7 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
     return { root, getElementById: (id: string) => root.querySelector('#' + id), querySelector: (selector: string) => root.querySelector(selector), querySelectorAll: (selector: string) => root.querySelectorAll(selector), activeElement: null };
   };
   doc = documentTree(initial);
+  doc.body = doc.root;
   doc.addEventListener = (name: string, fn: Function) => listeners.set(name, [...(listeners.get(name) || []), fn]);
   doc.createElement = (tag: string) => element(tag);
   const workflowEvents:any[]=[];
@@ -120,7 +124,7 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
     requests.push({ url, options, body: options.body ? JSON.parse(options.body) : null });
     if (!options.method || options.method === 'GET') {
       if (getError) throw getError;
-      const parsed = new URL(url, currentUrl), stage = stages.find(status => parsed.searchParams.get(status + 'Page') !== currentUrl.searchParams.get(status + 'Page')) || 'approved';
+      const parsed = new URL(url, currentUrl), stage = stages.find(status => Number(parsed.searchParams.get(status + 'Page') || 1) !== Number(currentUrl.searchParams.get(status + 'Page') || 1)) || 'approved';
       const page = Number(parsed.searchParams.get(stage + 'Page') || 1);
       const entries = pages.get(stage + ':' + page) || [idea(page * 10, stage)];
       const marker = stage + ':' + page, fresh = documentTree(entries, stage, page);
@@ -133,7 +137,7 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
     return { ok: true, status: 200, json: async () => ({ success: true }) };
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/staff-tools.js'), 'utf8'), {
-    document: doc, window, history: window.history, location, fetch, URL, URLSearchParams, AbortController, Map, Set, JSON, Date, Number, String, Array, Error,
+    sfSchoolPath: (value: string) => value, sfSchoolRoute: (value: string) => value, sfSchoolFetch: fetch, document: doc, window, history: window.history, location, fetch, URL, URLSearchParams, AbortController, Map, Set, JSON, Date, Number, String, Array, Error,
     HTMLElement: Node, HTMLInputElement: Node, HTMLSelectElement: Node, HTMLAnchorElement: Node, Event: class {}, CustomEvent: class {constructor(public type:string,public options:any){} get detail(){return this.options.detail;}},
     DOMParser: class { parseFromString(marker: string) { return trees.get(marker); } },
     setTimeout: (fn: Function) => { timers.set(++timerId, fn); return timerId; }, clearTimeout: (id: number) => timers.delete(id),
@@ -265,16 +269,16 @@ test('paging is blocked while a confirmed mutation is outstanding', async () => 
 });
 
 test('dragging a newly paged card opens completion and leaves the existing stage unchanged', async () => {
-  const h = harness(); await h.page('approved');
-  const card = h.lane('approved').querySelector('[data-board-id]');
+  const h = harness(); await h.page('in_progress');
+  const card = h.lane('in_progress').querySelector('[data-board-id]');
   const transfer: string[] = [];
-  await h.emit('dragstart', card, { dataTransfer: { setData: (_type: string, value: string) => transfer.push(value) } });
+  await h.emit('dragstart', card, { dataTransfer: { setDragImage() {}, setData: (_type: string, value: string) => transfer.push(value) } });
   const error = new Error('Timed out'); error.name = 'AbortError'; h.setMutationError(error);
   const dropped = await h.emit('drop', h.lane('resolved'));
   assert.equal(dropped.defaultPrevented, true);
   assert.equal(transfer[0], card.dataset.boardId);
   assert.equal(h.workflowEvents[0].action,'complete');
-  assert.equal(h.lane('approved').querySelector('[data-board-id]'), card);
+  assert.equal(h.lane('in_progress').querySelector('[data-board-id]'), card);
   assert.equal(h.reloads, 0);
   assert.equal(h.requests.some(request=>request.options.method==='PATCH'),false);
   assert.equal(h.timers.size, 0);

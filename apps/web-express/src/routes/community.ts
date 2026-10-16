@@ -1,3 +1,4 @@
+import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import { CommunityError, textField, idField, communityAction, privateInbox, replyToClarification, similarIdeas, staffCommunity, loadReportDecisions, loadPublicMergeHistory, loadCommunityStaffIdea } from '../lib/community';
@@ -11,24 +12,24 @@ const run = (handler: (req: Request, res: Response) => Promise<unknown>) => (req
 communityRouter.use((_req, res, next) => { res.setHeader('Cache-Control','private, no-store'); next(); });
 communityRouter.use(rateLimit({ windowMs: 15 * 60_000, limit: 60, standardHeaders: 'draft-7', legacyHeaders: false }));
 communityRouter.get('/similar', run(async (req,res) => res.json({ success: true, ideas: await similarIdeas(req.query.q) })));
-communityRouter.post('/inbox', run(async (req,res) => res.json({ success: true, requests: await privateInbox(req.session.user?.id || null, req.body.trackingCode) })));
-communityRouter.post('/reply', run(async (req,res) => res.json({ success: true, ...await replyToClarification(req.session.user?.id || null,req.body) })));
+communityRouter.post('/inbox', run(async (req,res) => res.json({ success: true, requests: await privateInbox(schoolUser(req)?.id || null, req.body.trackingCode) })));
+communityRouter.post('/reply', run(async (req,res) => res.json({ success: true, ...await replyToClarification(schoolUser(req)?.id || null,req.body) })));
 communityRouter.post('/report', run(async (req,res) => {
-  if (!req.session.user) throw new CommunityError(401,'Sign in to report content.');
+  if (!schoolUser(req)) throw new CommunityError(401,'Sign in to report content.');
   const body = textField(req.body.body,10,500);
   const data = req.body.commentId ? {commentId:idField(req.body.commentId),body} : {submissionId:idField(req.body.submissionId),body};
-  await communityAction(req.session.user.id,'report',data);
+  await communityAction(schoolUser(req)!.id,'report',data);
   return res.json({success:true});
 }));
 communityRouter.get('/report-history',run(async(req,res)=>{
-  if(!req.session.user) throw new CommunityError(401,'Sign in to see report decisions.');
-  return res.json({success:true,reports:await loadReportDecisions(req.session.user.id)});
+  if(!schoolUser(req)) throw new CommunityError(401,'Sign in to see report decisions.');
+  return res.json({success:true,reports:await loadReportDecisions(schoolUser(req)!.id)});
 }));
 communityRouter.get('/merges/:id', run(async(req,res)=>{
   return res.json({success:true,merges:await loadPublicMergeHistory(req.params.id)});
 }));
 communityRouter.post('/staff/:action',run(async(req,res)=>{
-  const user=req.session.user;
+  const user=schoolUser(req);
   if(!user || !staffRole(user.role)) throw new CommunityError(user ? 403 : 401,'Staff access required.');
   const action=req.params.action as string, input=req.body;
   let data: Record<string,unknown>;
@@ -52,24 +53,24 @@ communityRouter.post('/staff/:action',run(async(req,res)=>{
   return res.json({success:true});
 }));
 communityRouter.get('/staff/idea/:id',run(async(req,res)=>{
-  if(!req.session.user || !staffRole(req.session.user.role)) throw new CommunityError(403,'Staff access required.');
-  return res.json({success:true,idea:await loadCommunityStaffIdea(req.session.user,req.params.id)});
+  if(!schoolUser(req) || !staffRole(schoolUser(req)!.role)) throw new CommunityError(403,'Staff access required.');
+  return res.json({success:true,idea:await loadCommunityStaffIdea(schoolUser(req)!,req.params.id)});
 }));
 communityRouter.get('/staff/board',run(async(req,res)=>{
-  const user=req.session.user;
+  const user=schoolUser(req);
   if(!user || !staffRole(user.role)) throw new CommunityError(user ? 403 : 401,'Staff access required.');
   return res.json({success:true,...await loadStaffBoard(boardFilters(req.query), WORK_STAGES)});
 }));
 communityPages.get('/inbox',(_req,res)=>{res.setHeader('Cache-Control','private, no-store');res.render('private-inbox',{title:'Private school messages — SuggFeed'});});
 communityPages.get('/admin/community',run(async(req,res)=>{
-  const user=req.session.user;
+  const user=schoolUser(req);
   if(!user) return res.redirect('/admin');
   if(!staffRole(user.role)) return res.status(403).render('error',{title:'Access denied',message:'Staff access required.'});
   res.setHeader('Cache-Control','private, no-store');
   res.render('staff-community',{title:'Follow-ups — SuggFeed',activeSection:'community',mergeSelected:req.query.task==='merge' && user.role==='admin',submissionId:typeof req.query.idea==='string' && /^[a-f0-9-]{36}$/i.test(req.query.idea) ? req.query.idea : '',...await staffCommunity(user,req.query),members:await loadStaffMembers()});
 }));
 communityPages.get('/admin/board',run(async(req,res)=>{
-  const user=req.session.user;
+  const user=schoolUser(req);
   if(!user) return res.redirect('/admin');
   if(!staffRole(user.role)) return res.status(403).render('error',{title:'Access denied',message:'Staff access required.'});
   res.setHeader('Cache-Control','private, no-store');

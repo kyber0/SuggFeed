@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { schoolTest as test } from './support/school-context';
 import assert from 'node:assert/strict';
 import { supabase } from '../src/lib/supabase';
 import { roadmapFilters, loadRoadmapPage, loadPublicRoadmapIdea, formatManilaDate, publicItem, groupTimelineByMonth } from '../src/lib/roadmap';

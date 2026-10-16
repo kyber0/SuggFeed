@@ -1,3 +1,4 @@
+import { schoolUser } from '../lib/school-scope';
 import { Router } from 'express';
 
 const router = Router();
@@ -6,7 +7,7 @@ router.get('/', (req, res) => {
   res.render('notifications', {
     title: 'School updates — SuggFeed',
     description: 'Updates on the campus ideas you follow.',
-    signedIn: !!req.session.user,
+    signedIn: !!schoolUser(req),
   });
 });
 export default router;

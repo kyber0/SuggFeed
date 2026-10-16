@@ -11,7 +11,7 @@
     const controller = new AbortController(); requests.set(button, controller);
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
-      const response = await fetch('/api/follows/' + encodeURIComponent(id), { signal: controller.signal });
+      const response = await sfSchoolFetch('/api/follows/' + encodeURIComponent(id), { signal: controller.signal });
       const body = await response.json();
       if (!response.ok || !body.success) throw new Error();
       if (button.dataset.followIdea !== id || requests.get(button) !== controller) return;
@@ -44,7 +44,7 @@
     const controller = new AbortController(); requests.set(button, controller);
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
-      const response = await fetch('/api/follows/' + encodeURIComponent(id), { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ following }) });
+      const response = await sfSchoolFetch('/api/follows/' + encodeURIComponent(id), { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ following }) });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error();
       if (button.dataset.followIdea !== id || requests.get(button) !== controller) return;

@@ -17,7 +17,7 @@
         status.after(prefRetry);
         const loadPreferences = () => {
             prefRetry.hidden = true;
-            return fetch('/api/notifications/preferences', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) }).then(async (response) => {
+            return sfSchoolFetch('/api/notifications/preferences', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) }).then(async (response) => {
                 const data = await response.json();
                 if (!response.ok || !data.success)
                     throw new Error();
@@ -41,7 +41,7 @@
             save.disabled = true;
             status.textContent = 'Saving…';
             try {
-                const response = await fetch('/api/notifications/preferences', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ update_mode: mode.value, weekly_digest: digest.checked, digest_paused: paused.checked, digest_kinds: kindControls.filter(control => control.checked).map(control => control.value) }) });
+                const response = await sfSchoolFetch('/api/notifications/preferences', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ update_mode: mode.value, weekly_digest: digest.checked, digest_paused: paused.checked, digest_kinds: kindControls.filter(control => control.checked).map(control => control.value) }) });
                 const data = await response.json();
                 if (!response.ok || !data.success)
                     throw new Error(data.error || 'Preferences not saved.');
@@ -74,7 +74,7 @@
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 15000);
         try {
-            const response = await fetch('/api/notifications' + (cursor ? '?cursor=' + encodeURIComponent(cursor) : ''), { signal: controller.signal, headers: { Accept: 'application/json' } });
+            const response = await sfSchoolFetch('/api/notifications' + (cursor ? '?cursor=' + encodeURIComponent(cursor) : ''), { signal: controller.signal, headers: { Accept: 'application/json' } });
             const payload = await response.json();
             if (!response.ok || !payload.success)
                 throw new Error(response.status === 401 ? 'Please sign in again to see your updates.' : 'Your updates could not load. Please try again.');
@@ -91,7 +91,7 @@
                 if (!notification.read_at)
                     entry.append(unread);
                 const link = document.createElement('a');
-                link.href = '/roadmap?item=' + encodeURIComponent(notification.submission_id);
+                link.href = sfSchoolPath('/roadmap?item=' + encodeURIComponent(notification.submission_id));
                 link.textContent = notification.title;
                 const meta = document.createElement('p');
                 const kinds = { started: 'Work started', milestone: 'Milestone', blocked: 'Work paused', completed: 'Completed', update: 'Progress update', correction: 'Correction', resumed: 'Work resumed', reopened: 'Work reopened', withdrawn: 'Idea withdrawn' };
@@ -107,7 +107,7 @@
                         const readController = new AbortController();
                         const readTimer = setTimeout(() => readController.abort(), 15000);
                         try {
-                            const result = await fetch('/api/notifications/' + encodeURIComponent(notification.id) + '/read', { method: 'PATCH', signal: readController.signal, headers: { Accept: 'application/json' } });
+                            const result = await sfSchoolFetch('/api/notifications/' + encodeURIComponent(notification.id) + '/read', { method: 'PATCH', signal: readController.signal, headers: { Accept: 'application/json' } });
                             if (!result.ok)
                                 throw new Error();
                             entry.dataset.unread = 'false';

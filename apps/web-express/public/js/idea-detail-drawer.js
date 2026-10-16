@@ -81,8 +81,8 @@
         drawer.focus();
         document.body.style.overflow = 'hidden';
         // Update URL history without full reload
-        if (location.pathname !== `/idea/${ideaId}`)
-            history.pushState({ ideaDrawerId: ideaId }, '', `/idea/${ideaId}`);
+        if (location.pathname !== sfSchoolPath(`/idea/${ideaId}`))
+            history.pushState({ ideaDrawerId: ideaId }, '', sfSchoolPath(`/idea/${ideaId}`));
         // Show skeleton
         skeleton.style.display = 'block';
         columns.style.display = 'none';
@@ -91,7 +91,7 @@
         postButton.textContent = 'Post';
         sfSetDrawerMobileTab(initialTab);
         try {
-            const res = await fetch(`/api/idea/${encodeURIComponent(ideaId)}`, { signal: request.signal, headers: { Accept: 'application/json' } });
+            const res = await sfSchoolFetch(`/api/idea/${encodeURIComponent(ideaId)}`, { signal: request.signal, headers: { Accept: 'application/json' } });
             if (!res.ok)
                 throw new Error('Idea not found');
             const data = await res.json();
@@ -149,7 +149,7 @@
         document.getElementById('drawer-status-dot').style.background = stConfig.dotColor;
         document.getElementById('drawer-status-label').textContent = stConfig.label;
         // Permalink
-        document.getElementById('drawer-permalink').href = `/idea/${idea.id}`;
+        document.getElementById('drawer-permalink').href = sfSchoolPath(`/idea/${idea.id}`);
         // Author & Date
         const isAnon = !idea.author || (!idea.author.display_name && !idea.author.full_name);
         const authorName = isAnon ? "Anonymous Student" : (idea.author.display_name || idea.author.full_name);
@@ -201,7 +201,7 @@
         const voteCount = idea.vote_count ?? 0;
         document.getElementById('drawer-vote-count').textContent = voteCount;
         document.getElementById('drawer-vote-summary').textContent = voteCount;
-        const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+        const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
         const hasVoted = votedIds.includes(idea.id);
         if (idea.status === 'pending') {
             voteBtn.classList.remove('voted');
@@ -353,10 +353,10 @@
         if (banner)
             banner.setAttribute('hidden', '');
         // Restore URL
-        if (window.location.pathname.startsWith('/idea/')) {
+        if (sfSchoolRoute(window.location.pathname).startsWith('/idea/')) {
             const target = sfDrawerOriginalPath || '/feed';
             sfDrawerOriginalPath = null;
-            history.pushState(null, '', target);
+            history.pushState(null, '', sfSchoolPath(target));
         }
     }
     function sfSetDrawerMobileTab(tab) {
@@ -379,7 +379,7 @@
     async function sfDrawerShare() {
         if (!sfCurrentIdea)
             return;
-        const url = `${window.location.origin}/idea/${sfCurrentIdea.id}`;
+        const url = window.location.origin + sfSchoolPath(`/idea/${sfCurrentIdea.id}`);
         try {
             await navigator.clipboard.writeText(url);
         }
@@ -407,7 +407,7 @@
         if (btn.classList.contains('voted'))
             return;
         try {
-            const res = await fetch(`/api/vote/${sfCurrentIdea.id}`, {
+            const res = await sfSchoolFetch(`/api/vote/${sfCurrentIdea.id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'up' })
@@ -420,10 +420,10 @@
                 document.getElementById('drawer-vote-label').textContent = 'Supported';
                 document.getElementById('drawer-vote-icon').innerHTML = '<polyline points="20 6 9 17 4 12"/>';
                 // Remember vote locally
-                const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+                const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
                 if (!votedIds.includes(sfCurrentIdea.id)) {
                     votedIds.push(sfCurrentIdea.id);
-                    localStorage.setItem('sf_voted_ideas', JSON.stringify(votedIds));
+                    localStorage.setItem(sfSchoolKey('sf_voted_ideas'), JSON.stringify(votedIds));
                 }
                 // Also reflect on feed cards if present
                 const feedCardVote = document.querySelector(`[data-idea-id="${sfCurrentIdea.id}"] .action-like .action-count`);
@@ -487,7 +487,7 @@
         btn.disabled = true;
         btn.innerHTML = '<span>Posting…</span>';
         try {
-            const res = await fetch(`/api/comments/${ideaId}`, {
+            const res = await sfSchoolFetch(`/api/comments/${ideaId}`, {
                 signal: AbortSignal.timeout(15000),
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

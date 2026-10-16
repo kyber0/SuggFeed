@@ -17,7 +17,7 @@
     const payload = () => ({ title: title.value.trim(), description: description.value.trim(), category: document.querySelector('input[name="sip-category"]:checked')?.value || '', isAnonymous: anon.checked });
     const fingerprint = async (value) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(value))))).map(x => x.toString(16).padStart(2, '0')).join('');
     async function request(path, body) {
-        const response = await fetch('/api/' + path, { method: body === undefined ? 'GET' : 'POST', cache: 'no-store', credentials: 'same-origin', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+        const response = await sfSchoolFetch('/api/' + path, { method: body === undefined ? 'GET' : 'POST', cache: 'no-store', credentials: 'same-origin', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
         const data = await response.json();
         if (!response.ok || !data.success) {
             const error = new Error(data.error || 'The request could not finish. Check its receipt before retrying.');
@@ -28,7 +28,7 @@
     }
     async function getContext() { context = await request('submission-context'); return context; }
     try {
-        const value = JSON.parse(sessionStorage.getItem(receiptKey) || 'null');
+        const value = JSON.parse(sessionStorage.getItem(sfSchoolKey(receiptKey)) || 'null');
         if (value?.version === 1 && /^[0-9a-f-]{36}$/i.test(value.key) && /^[a-f0-9]{64}$/.test(value.actor) && /^[a-f0-9]{64}$/.test(value.fingerprint))
             currentReceipt = value;
     }
@@ -36,7 +36,7 @@
     function keepReceipt(operation, hash) {
         currentReceipt = { version: 1, key: operation.key, actor: operation.actor, fingerprint: hash };
         try {
-            sessionStorage.setItem(receiptKey, JSON.stringify(currentReceipt));
+            sessionStorage.setItem(sfSchoolKey(receiptKey), JSON.stringify(currentReceipt));
         }
         catch {
             tell('Receipt kept for this visit only. Browser storage is unavailable.');
@@ -44,7 +44,7 @@
         receiptButton.disabled = false;
     }
     function clearReceipt() { currentReceipt = null; try {
-        sessionStorage.removeItem(receiptKey);
+        sessionStorage.removeItem(sfSchoolKey(receiptKey));
     }
     catch { } receiptButton.disabled = true; }
     async function prepare(value, queued) {

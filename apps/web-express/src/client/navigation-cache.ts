@@ -29,16 +29,17 @@
     return safe;
   }
   function warm(url:URL){
+    if(sfSchoolBase)return;
     if(!allowedConnection() || budget<=0 || pending.size>=2)return;
     const key=url.pathname+url.search;
     if(pending.has(key) || (warmed.get(key) || 0)>Date.now())return;
     budget--;
-    const endpoint=new URL('/api/navigation-cache',location.origin);
+    const endpoint=new URL(sfSchoolPath('/api/navigation-cache'),location.origin);
     endpoint.search=url.search;
     endpoint.searchParams.set('path',url.pathname);
     const controller=new AbortController();
     const timeout=window.setTimeout(()=>controller.abort(),4000);
-    const request=fetch(endpoint,{credentials:'omit',cache:'no-store',signal:controller.signal,headers:{Accept:'application/json'}})
+    const request=sfSchoolFetch(endpoint,{credentials:'omit',cache:'no-store',signal:controller.signal,headers:{Accept:'application/json'}})
       .then(response=>{if(response.ok)warmed.set(key,Date.now()+10_000);})
       .catch(()=>undefined)
       .finally(()=>{clearTimeout(timeout);pending.delete(key);});

@@ -52,7 +52,7 @@ test('release CLI stays blocked for shared SaaS even with complete configuration
     cwd: path.join(__dirname, '..'), env: { ...process.env, ...validEnv }, encoding: 'utf8',
   });
   assert.equal(result.status, 1);
-  assert.match(result.stdout, /BLOCKED: Shared-school isolation/);
+  assert.match(result.stdout, /BLOCKED: Shared-school release requires hosted tenant-isolation/);
   assert.doesNotMatch(result.stdout, /MISSING\/INVALID/);
   assert.equal(result.stdout.includes(validEnv.SESSION_SECRET), false);
   assert.equal(result.stdout.includes(validEnv.SUPABASE_SERVICE_ROLE_KEY), false);

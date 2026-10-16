@@ -1,3 +1,4 @@
+import { withTestSchool } from './support/school-context';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -180,6 +181,7 @@ test('work-board JSON and page routes enforce staff access, no-store and normali
     res.render = ((view: string, data: unknown) => res.json({ view, data })) as any;
     next();
   });
+  app.use(withTestSchool);
   app.use('/api/community', communityRouter);
   app.use(communityPages);
   const server = app.listen(0, '127.0.0.1');

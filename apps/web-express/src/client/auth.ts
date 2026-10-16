@@ -57,7 +57,7 @@
     if (navigating) return;
     navigating = true;
     // Keep all app navigation on the current origin.
-    if (path && path.startsWith('/') && !path.startsWith('//') && !path.includes('\\')) window.location.replace(path);
+    if (path && path.startsWith('/') && !path.startsWith('//') && !path.includes('\\') && !/[\u0000-\u0020\u007f]/.test(path)) window.location.replace(window.sfSchoolPath?.(path) || path);
     else window.location.reload();
   };
 
@@ -79,6 +79,7 @@
   window.sfSignOut = async function () {
     await request('/auth/signout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     // Clear this browser's Supabase session too, so it cannot silently log back in.
+    await window.sfClearSchoolState?.();
     await sb.auth.signOut({ scope: 'local' });
     window.sfAuthNavigate('/');
   };
@@ -92,6 +93,18 @@
   // The callback page owns code exchange and navigation. Events never reload it.
   // Keep this callback synchronous; run I/O after Supabase releases its auth lock.
   sb.auth.onAuthStateChange(function (event, session) {
+    if (!callbackPage && ((event === 'SIGNED_OUT' && config.dataset.user) ||
+        (event === 'SIGNED_IN' && session && config.dataset.user !== session.user.id))) {
+      setTimeout(async function () {
+        if (navigating) return;
+        await window.sfClearSchoolState?.();
+        try {
+          if (session) await window.sfSyncSession(session);
+          else await request('/auth/signout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+          window.sfAuthNavigate();
+        } catch (_) { window.location.replace('/schools'); }
+      }, 0);
+    }
     if (event === 'PASSWORD_RECOVERY') window.sfPasswordRecovery = true;
     if (event === 'TOKEN_REFRESHED' && session && !callbackPage) {
       setTimeout(function () { window.sfSyncSession(session).catch(function () {}); }, 0);
@@ -102,6 +115,7 @@
     if (result.error) throw result.error;
     var session = result.data.session;
     if (!callbackPage && !returning && session && config.dataset.user !== session.user.id) {
+      await window.sfClearSchoolState?.();
       await window.sfSyncSession(session);
       window.sfAuthNavigate();
     }

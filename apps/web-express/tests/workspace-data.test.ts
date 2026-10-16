@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { schoolTest as test } from './support/school-context';
 import assert from 'node:assert/strict';
 import { supabase, supabaseService } from '../src/lib/supabase';
 import { loadModerationCounts, loadAllSubmissionsForAdmin, loadRoadmapSubmissions, invalidateCache } from '../src/lib/data';

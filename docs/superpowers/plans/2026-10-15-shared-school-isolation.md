@@ -82,14 +82,12 @@
 - [ ] Obtain platform/legal and first-school approvals with known data owner mapping. Apply reviewed migration in maintenance window with backup and monitoring; do not use code rollback that restores global permissions after multiple schools exist.
 - [ ] Verify minimum two synthetic schools in staging, then monitored approved onboarding. No production readiness claim until every P0 and applicable legal gate is evidenced.
 
-## Current status
-Task 1 is partially implemented: the staged registry, membership authorization and activation lock are implemented and locally tested. School settings, applications, invitations and the existing-record backfill remain pending. Tasks 2–6 are pending. This plan makes no claim that adding a `school_id` column alone secures multi-tenancy. Existing data is confirmed demo-only; the operator is a registered business whose exact identity/contact remain unconfigured. Independent browser-policy, notice-accuracy and cron authorization fixes are tracked in the foundation plan.
+## Current status — 16 October 2026
+Tasks 1–4 are implemented locally: registry/memberships, reviewed applications/settings/invitations, full scoped database/API context and browser state/navigation. Task 5 has scoped jobs/evidence and retired legacy handlers; real support, rights, retention and recovery operations still need accountable owners and drills. Task 6 has a successful full hosted-snapshot local restore/migration rehearsal; four hosted migrations, exact-account operator bootstrap and Edge retirement deployment are complete; app deployment/hosted acceptance and activation remain pending. The detailed checklist above is the acceptance inventory, not a claim that hosted or human approvals are complete.
 
-### Confirmed product decisions (2026-10-15)
-- One shared SaaS service for many schools.
-- Operator is a registered business; exact legal name and monitored privacy mailbox still need configuration/verification.
-- User identifies existing records as demo data only. Preserve these in a dedicated demo school during a reviewed migration; do not delete data or auto-grant platform administration. Existing account identities may still contain real contact information and need protection.
-- Tenant isolation remains unimplemented; data mapping is no longer an unanswered product question, but migration rehearsal and approval remain required.
+The user clarified that SuggFeed is their own project for CSPC and other schools to adopt. Do not identify CSPC as operator or invent a company name. Operator identity and publication of a monitored privacy address remain unresolved. Existing records are demo-only, preserved in the pending demo school without automatic platform grants. The intended initial platform operator sign-in is `keanethdaveberido@gmail.com`.
+
+See `docs/compliance/tenant-cutover.md` for current implementation, backup/restore evidence, proxy correction and the exact remaining live sequence. Never push this schema-dependent build to production before completing the matching migration and legacy-client cutover.
 
 ## Stage 1 execution ledger — 16 October 2026
 Implemented additive registry migration `202610160001_school_registry.sql` and local database regression tests. See `docs/compliance/tenant-cutover.md`. Ruling: retain an explicit database activation lock until all existing readers/writers are tenant-aware; adding a registry must not imply that current global routes are isolated. No production migration or automatic platform-operator grant. User authorization supports the implementation; production cutover still requires a complete reviewed migration.

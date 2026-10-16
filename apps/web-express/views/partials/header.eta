@@ -37,6 +37,7 @@
             <%~ menuIcon('shield') %>
             Staff Portal
           </a>
+          <a href="/account/security" class="dropdown-link"><%~ menuIcon('shield') %> Account security</a>
           <div class="divider"></div>
           <form action="/auth/signout" method="POST" class="dropdown-form">
             <button type="submit" class="danger dropdown-signout-btn">
@@ -67,4 +68,4 @@
   </nav>
 </header>
 
-<script defer src="/js/header.js?v=20261012-system"></script>
+<script defer src="/js/header.js?v=20261016-school-isolation"></script>

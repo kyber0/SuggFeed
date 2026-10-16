@@ -1,12 +1,13 @@
 "use strict";
 (() => {
     const choices = { textSize: ['compact', 'comfortable'], theme: ['light', 'dark', 'system'], roadmapView: ['board', 'tree', 'timeline', 'done'], staffSidebar: ['expanded', 'collapsed'] };
+    const key = (name) => ['theme', 'textSize'].includes(name) ? 'sf:preferences:v1:' + name : sfSchoolKey('sf:preferences:v1:' + name);
     const memory = new Map();
     const read = (name) => {
         if (!choices[name])
             return null;
         try {
-            const value = JSON.parse(localStorage.getItem('sf:preferences:v1:' + name) || 'null');
+            const value = JSON.parse(localStorage.getItem(key(name)) || 'null');
             if (value && typeof value === 'object' && 'version' in value && value.version === 1 &&
                 'value' in value && typeof value.value === 'string' && choices[name].includes(value.value))
                 return value.value;
@@ -19,7 +20,7 @@
             return false;
         memory.set(name, value);
         try {
-            localStorage.setItem('sf:preferences:v1:' + name, JSON.stringify({ version: 1, value }));
+            localStorage.setItem(key(name), JSON.stringify({ version: 1, value }));
             return true;
         }
         catch {

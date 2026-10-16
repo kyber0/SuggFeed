@@ -13,4 +13,4 @@
   </section>
 </main>
 <section class="staff-mobile-notice"><span class="workspace-empty-symbol" aria-hidden="true">▤</span><h1>Staff workspace</h1><p>Use a desktop or larger screen to sign in and review submissions.</p><a class="workspace-button" href="/roadmap">Explore the campus roadmap →</a></section>
-<script defer src="/js/staff-login.js?v=20261010-workspace"></script>
+<script defer src="/js/staff-login.js?v=20261016-school-isolation"></script>

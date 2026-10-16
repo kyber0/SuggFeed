@@ -14,7 +14,7 @@ test('strict preference/theme integration tolerates missing, malformed and unava
     const context = { window: browser, localStorage: {
       getItem: (key: string) => storage.get(key) ?? null,
       setItem: (key: string, value: string) => storage.set(key, value),
-    }, document: { documentElement: {
+    }, document: { documentElement: { dataset: {},
       getAttribute: (name: string) => attrs.get(name) ?? null,
       setAttribute: (name: string, value: string) => attrs.set(name, value),
     } } };
@@ -32,7 +32,7 @@ test('strict preference/theme integration tolerates missing, malformed and unava
   const context = { window: browser, localStorage: {
     getItem() { throw new Error('Storage unavailable'); },
     setItem() { throw new Error('Storage unavailable'); },
-  }, document: { documentElement: {
+  }, document: { documentElement: { dataset: {},
     getAttribute: (name: string) => attrs.get(name) ?? null,
     setAttribute: (name: string, value: string) => attrs.set(name, value),
   } } };

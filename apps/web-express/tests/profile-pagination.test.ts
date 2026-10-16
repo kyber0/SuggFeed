@@ -1,3 +1,4 @@
+import { withTestSchool } from './support/school-context';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -14,7 +15,7 @@ test('profile pages isolate account reads, continue beyond 200 and reject invali
    return Promise.resolve({data,error:null}).then(resolve as any);
   }};return query;
  }) as any;
- const app=express();app.use(express.json());app.use((req,_res,next)=>{req.session={user:{id:'member-one'}} as any;next();});app.use('/profile',profile);
+ const app=express();app.use(express.json());app.use((req,_res,next)=>{req.session={user:{id:'member-one'}} as any;next();});app.use(withTestSchool);app.use('/profile',profile);
  const server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));
  const origin='http://127.0.0.1:'+(server.address() as any).port;
  const send=(body:any)=>fetch(origin+'/profile/activity',{method:'POST',headers:{'Content-Type':'application/json',origin},body:JSON.stringify(body)});

@@ -8,7 +8,7 @@
             opening = new Promise((resolve, reject) => {
                 let request;
                 try {
-                    request = indexedDB.open('suggfeed-submissions', 1);
+                    request = indexedDB.open(sfSchoolKey('suggfeed-submissions'), 1);
                 }
                 catch {
                     reject(new Error('Browser storage is unavailable. Your editable draft is still here.'));

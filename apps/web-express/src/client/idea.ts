@@ -22,7 +22,7 @@ let activeReplyingToId = null;
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+    const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
     if (votedIds.includes((document.getElementById('sf-idea-config') as HTMLElement).dataset.id)) {
       const btn = (document.getElementById('detail-vote-btn') as HTMLButtonElement);
       if (btn && (document.getElementById('sf-idea-config') as HTMLElement).dataset.status !== 'pending') {
@@ -106,7 +106,7 @@ let activeReplyingToId = null;
     if (btn.classList.contains('voted')) return;
 
     try {
-      const res = await fetch(`/api/vote/${id}`, {
+      const res = await sfSchoolFetch(`/api/vote/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'up' })
@@ -120,10 +120,10 @@ let activeReplyingToId = null;
         (document.getElementById('detail-vote-icon') as unknown as SVGElement).innerHTML = '<polyline points="20 6 9 17 4 12"/>';
 
         // Persist to local storage
-        const votedIds = JSON.parse(localStorage.getItem('sf_voted_ideas') || '[]');
+        const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
         if (!votedIds.includes(id)) {
           votedIds.push(id);
-          localStorage.setItem('sf_voted_ideas', JSON.stringify(votedIds));
+          localStorage.setItem(sfSchoolKey('sf_voted_ideas'), JSON.stringify(votedIds));
         }
 
         if (window.sfToast) sfToast('Vote recorded! Thank you.', 'success');
@@ -178,7 +178,7 @@ let activeReplyingToId = null;
     btn.innerHTML = '<span>Posting…</span>';
 
     try {
-      const res = await fetch(`/api/comments/${submissionId}`, {
+      const res = await sfSchoolFetch(`/api/comments/${submissionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

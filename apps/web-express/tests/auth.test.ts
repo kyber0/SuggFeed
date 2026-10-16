@@ -6,12 +6,14 @@ require('../src/types');
 const { SupabaseSessionStore } = require('../src/lib/session-store');
 const { sameOriginOnly } = require('../src/lib/security');
 const { validateIdentity } = require('../src/lib/identity');
-const { supabaseService } = require('../src/lib/supabase');
+const { supabaseService, supabasePlatform } = require('../src/lib/supabase');
+const { runWithSchool } = require('../src/lib/school-scope');
 const auth = require('../src/routes/auth').default;
 const api = require('../src/routes/api').default;
 
 const rows = new Map();
 let role = 'admin';
+let schoolRoleOverride: 'student' | null = null;
 let permissionsUnavailable = false;
 const database = {
   from(table) {
@@ -23,8 +25,8 @@ const database = {
     };
   }
 };
-const originalGetUser = supabaseService.auth.getUser;
-const originalFrom = supabaseService.from;
+const originalGetUser = supabasePlatform.auth.getUser;
+const originalFrom = supabasePlatform.from;
 const originalRpc = supabaseService.rpc;
 let moderationArgs;
 const secret = 'test-only-shared-secret-of-at-least-32-characters';
@@ -37,11 +39,11 @@ before(async () => {
     moderationArgs = args;
     return { error: null };
   };
-  supabaseService.auth.getUser = async token => ({
+  supabasePlatform.auth.getUser = async token => ({
     data: { user: token === 'valid-access-token' ? { id: 'test-user', email: 'student@example.test', user_metadata: { role: 'admin', full_name: 'Test Student' } } : null },
     error: token === 'valid-access-token' ? null : { status: 401 }
   });
-  supabaseService.from = table => {
+  supabasePlatform.from = table => {
     assert.equal(table, 'profiles');
     return { select() { return { eq() { return { async maybeSingle() { return { data: { role, display_name: 'Test Student' }, error: permissionsUnavailable ? { message: 'private database detail' } : null }; } }; } }; } };
   };
@@ -51,6 +53,7 @@ before(async () => {
     app.use(session({ secret, store: new SupabaseSessionStore(database, secret), resave: false, saveUninitialized: false, cookie: { httpOnly: true, sameSite: 'lax', maxAge: 60000 } }));
     app.use(validateIdentity);
     app.use('/auth', auth);
+    app.use((req, _res, next) => runWithSchool({id:'00000000-0000-4000-8000-00000000000a',slug:'test-school',name:'Test School',actorId:req.session.user?.id??null,role:req.session.user ? schoolRoleOverride || role : null},next));
     app.use('/api', api);
     app.post('/write', sameOriginOnly, (_req, res) => res.json({ success: true }));
     app.get('/identity', (req, res) => res.json({ user: req.session.user }));
@@ -61,8 +64,8 @@ before(async () => {
   }
 });
 after(async () => {
-  supabaseService.auth.getUser = originalGetUser;
-  supabaseService.from = originalFrom;
+  supabasePlatform.auth.getUser = originalGetUser;
+  supabasePlatform.from = originalFrom;
   supabaseService.rpc = originalRpc;
   await Promise.all(servers.map(server => new Promise(resolve => { server.closeAllConnections(); server.close(resolve); })));
 });
@@ -174,4 +177,11 @@ test('student cannot moderate even if their auth metadata says admin', async () 
   } finally { role = 'admin'; }
 });
 
+test('global profile admin does not grant a school moderator role', async () => {
+ const cookie=await login();schoolRoleOverride='student';moderationArgs=null;
+ try {
+  const response=await fetch(origins[1]+'/api/submissions/12345678-1234-1234-1234-123456789abc/status',{method:'PATCH',headers:{Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify({status:'approved'})});
+  assert.equal(response.status,403);assert.equal(moderationArgs,null);
+ } finally {schoolRoleOverride=null;}
+});
 export {};

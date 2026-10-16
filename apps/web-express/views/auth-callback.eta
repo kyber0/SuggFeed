@@ -25,4 +25,4 @@
   <a class="btn-primary" id="auth-callback-retry" href="/" hidden>Return home and try again</a>
 </main>
 
-<script defer src="/js/auth-callback.js?v=20261013-recovery-code"></script>
+<script defer src="/js/auth-callback.js?v=20261016-school-isolation"></script>

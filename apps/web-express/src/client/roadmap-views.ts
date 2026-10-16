@@ -9,7 +9,7 @@
   const preferred=preferences?.read('roadmapView');
   if(preferred && !new URLSearchParams(location.search).has('view')) {
     const link=document.createElement('a');link.className='workspace-button roadmap-preferred-view';
-    link.href='/roadmap?'+new URLSearchParams({view:preferred});link.textContent='Open your preferred '+({tree:'category',done:'completed',board:'board',timeline:'timeline'}[preferred])+' view';disclosure.parentElement?.after(link);
+    link.href=sfSchoolPath('/roadmap?'+new URLSearchParams({view:preferred}));link.textContent='Open your preferred '+({tree:'category',done:'completed',board:'board',timeline:'timeline'}[preferred])+' view';disclosure.parentElement?.after(link);
   }
   const trigger=disclosure.querySelector<HTMLElement>('summary')!;
   const links=Array.from(disclosure.querySelectorAll<HTMLAnchorElement>('[data-roadmap-view]'));

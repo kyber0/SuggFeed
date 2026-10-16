@@ -7,7 +7,7 @@
   function database(){
     if(!opening)opening=new Promise<IDBDatabase>((resolve,reject)=>{
       let request:IDBOpenDBRequest;
-      try{request=indexedDB.open('suggfeed-submissions',1);}catch{reject(new Error('Browser storage is unavailable. Your editable draft is still here.'));return;}
+      try{request=indexedDB.open(sfSchoolKey('suggfeed-submissions'),1);}catch{reject(new Error('Browser storage is unavailable. Your editable draft is still here.'));return;}
       request.onupgradeneeded=()=>request.result.createObjectStore('records',{keyPath:'key'});
       request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>{db.close();opening=null;};resolve(db);};
       request.onerror=()=>{opening=null;reject(new Error('Browser storage is unavailable. Your editable draft is still here.'));};

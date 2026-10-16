@@ -47,7 +47,7 @@
                 step.removeAttribute('aria-current');
         }
         const discussion = element('discussion');
-        discussion.href = '/idea/' + encodeURIComponent(item.id);
+        discussion.href = sfSchoolPath('/idea/' + encodeURIComponent(item.id));
         discussion.hidden = false;
     }
     function showHistory(updates, item) {
@@ -89,7 +89,7 @@
                     continue;
                 const link = document.createElement('a');
                 link.className = 'work-record-evidence';
-                link.href = '/api/progress-evidence/' + encodeURIComponent(file.id);
+                link.href = sfSchoolPath('/api/progress-evidence/' + encodeURIComponent(file.id));
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
                 link.textContent = (file.mime_type === 'application/pdf' ? 'PDF' : 'Image') + ' · ' + file.display_name + ' ↗';
@@ -138,7 +138,7 @@
         try {
             if (!uuid.test(id))
                 throw new Error('This link does not contain a valid idea ID.');
-            const response = await fetch('/roadmap/idea/' + encodeURIComponent(id), { signal: controller.signal, headers: { Accept: 'application/json' } });
+            const response = await sfSchoolFetch('/roadmap/idea/' + encodeURIComponent(id), { signal: controller.signal, headers: { Accept: 'application/json' } });
             const data = await response.json();
             if (!response.ok || !data.success)
                 throw new Error(response.status === 404 ? 'This work record is no longer on the public roadmap.' : 'The work record could not load. Please try again.');

@@ -11,7 +11,7 @@
     let timer;
     function reset() { clearTimeout(timer); shell.hidden = true; content.hidden = false; content.removeAttribute('aria-busy'); document.documentElement.classList.remove('is-navigating'); }
     function destinationScreen(destination) {
-        const path = destination.pathname.replace(/\/+$/, '') || '/';
+        const path = sfSchoolRoute(destination.pathname).replace(/\/+$/, '') || '/';
         if (path === '/')
             return ['home', 'SuggFeed'];
         if (path === '/feed')
@@ -60,7 +60,7 @@
     }
     function canLoad(destination) {
         return destination.origin === location.origin && destination.protocol === location.protocol
-            && !/^\/(api|auth|staff\/workspace)(\/|$)/.test(destination.pathname);
+            && !/^\/(api|auth|staff\/workspace)(\/|$)/.test(sfSchoolRoute(destination.pathname));
     }
     function show(destination) {
         const [layout, section] = destinationScreen(destination);

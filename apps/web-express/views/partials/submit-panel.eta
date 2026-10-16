@@ -418,6 +418,6 @@
   </form>
 </aside>
 
-<script defer src="/js/submission-storage.js?v=20261012-features"></script>
-<script defer src="/js/submission-recovery.js?v=20261013-context-on-open"></script>
-<script defer src="/js/submit-panel.js?v=20261014-ui-audit"></script>
+<script defer src="/js/submission-storage.js?v=20261016-school-isolation"></script>
+<script defer src="/js/submission-recovery.js?v=20261016-school-isolation"></script>
+<script defer src="/js/submit-panel.js?v=20261016-school-isolation"></script>

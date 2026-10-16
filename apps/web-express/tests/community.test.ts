@@ -1,3 +1,4 @@
+import { withTestSchool } from './support/school-context';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -8,7 +9,7 @@ const id='10000000-0000-4000-8000-000000000001',idea='30000000-0000-4000-8000-00
 test('community routes enforce staff roles, ignore caller identity and reject cross-origin writes',async()=>{
  const rpc=supabaseService.rpc;const calls:any[]=[];let role:string|null=null;
  supabaseService.rpc=(async(name,args)=>{calls.push([name,args]);return {error:null,data:{success:true}};}) as any;
- const app=express();app.use(express.json());app.use((req,_res,next)=>{req.session={user:role?{id,role}:undefined} as any;next();});app.use(sameOriginOnly);app.use('/api/community',communityRouter);
+ const app=express();app.use(express.json());app.use((req,_res,next)=>{req.session={user:role?{id,role}:undefined} as any;next();});app.use(sameOriginOnly);app.use(withTestSchool);app.use('/api/community',communityRouter);
  const server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));
  const origin='http://127.0.0.1:'+(server.address() as any).port;
  const send=(path:string,body:any,source=origin)=>fetch(origin+'/api/community/'+path,{method:'POST',headers:{'Content-Type':'application/json',Origin:source},body:JSON.stringify(body)});

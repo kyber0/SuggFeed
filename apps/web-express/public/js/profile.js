@@ -31,14 +31,14 @@
             void loadActivity(tab);
     }
     const read = (key, limit = 200) => { try {
-        const data = JSON.parse(localStorage.getItem(key) || '[]');
+        const data = JSON.parse(localStorage.getItem(sfSchoolKey(key)) || '[]');
         return Array.isArray(data) ? data.filter(id => typeof id === 'string' && /^[a-f0-9-]{36}$/i.test(id)).slice(limit ? -limit : 0) : [];
     }
     catch {
         return [];
     } };
     async function request(path, body) {
-        const response = await fetch(path, { method: 'POST', cache: 'no-store', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
+        const response = await sfSchoolFetch(path, { method: 'POST', cache: 'no-store', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
         const data = await response.json();
         if (!response.ok || !data.success)
             throw new Error(data.error || 'This change could not be confirmed. Refresh before retrying.');
@@ -62,7 +62,7 @@
                 if (heading)
                     heading.textContent = name || 'Community Member';
             }
-            localStorage.setItem('sf_anon_default', String(anon));
+            localStorage.setItem(sfSchoolKey('sf_anon_default'), String(anon));
             tell(account ? 'Account preferences saved. Your fresh-draft default is saved on this browser.' : 'Fresh-draft preference saved on this browser. Named submissions require sign-in.');
             window.sfToast?.('Preferences saved.', 'success');
         }
@@ -89,7 +89,7 @@
             wrap.className = 'prof-activity-card-wrap';
             const link = document.createElement('a');
             link.className = 'prof-activity-card';
-            link.href = '/idea/' + encodeURIComponent(row.id);
+            link.href = sfSchoolPath('/idea/' + encodeURIComponent(row.id));
             const heading = document.createElement('h3');
             heading.className = 'prof-activity-title';
             heading.textContent = row.title;
@@ -106,7 +106,7 @@
                     if (account)
                         await request('/api/bookmarks/' + encodeURIComponent(row.id), { action: 'remove' });
                     else
-                        localStorage.setItem('sf_saved_ideas', JSON.stringify(read('sf_saved_ideas', 0).filter(id => id !== row.id)));
+                        localStorage.setItem(sfSchoolKey('sf_saved_ideas'), JSON.stringify(read('sf_saved_ideas', 0).filter(id => id !== row.id)));
                     activity.delete('bookmarks');
                     await loadActivity('bookmarks');
                 }
@@ -216,7 +216,7 @@
             document.getElementById('tab-btn-' + tabs[next])?.focus();
         });
         try {
-            document.getElementById('prof-anon-toggle').checked = localStorage.getItem('sf_anon_default') !== 'false';
+            document.getElementById('prof-anon-toggle').checked = localStorage.getItem(sfSchoolKey('sf_anon_default')) !== 'false';
         }
         catch {
             tell('Browser preferences are unavailable for this visit.');

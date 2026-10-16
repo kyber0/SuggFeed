@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { supabaseService } from './supabase';
+import { schoolUser } from './school-scope';
 import { fetchWithCache } from './data';
 
 // Read-only UI state, keyed by the account in the encrypted server session.
@@ -25,7 +26,7 @@ export async function readFeedAccountState(userId:string){
     searches:searches.status==='fulfilled'?searches.value:null};
 }
 export function startFeedAccountState(req:Request,res:Response,next:NextFunction){
-  const userId=req.session.user?.id;
+  const userId=schoolUser(req)?.id;
   if(req.method==='GET' && /^\/feed\/?$/.test(req.path) && userId){
     res.locals.feedAccountOwner=userId;
     res.locals.feedAccountPending=readFeedAccountState(userId);
@@ -33,7 +34,7 @@ export function startFeedAccountState(req:Request,res:Response,next:NextFunction
   next();
 }
 export async function verifiedFeedAccountState(req:Request,res:Response){
-  const userId=req.session.user?.id;
+  const userId=schoolUser(req)?.id;
   if(!userId || res.locals.feedAccountOwner!==userId || !res.locals.feedAccountPending)return null;
   const started=performance.now();
   let timer:ReturnType<typeof setTimeout> | undefined;

@@ -27,7 +27,7 @@ test('password validation and update happen before server session sync',async()=
  assert.equal(h.updates.length,0);assert.match(h.node('auth-reset-feedback').textContent,/match/);
  h.node('auth-reset-confirm').value='long-enough-password';h.stored.set('sf-auth-return','/admin');await h.node('auth-reset-form').emit('submit');
  assert.equal(h.updates.length,1);assert.equal(h.updates[0].password,'long-enough-password');assert.equal(h.synced.length,1);assert.equal(h.navigation.length,0);
- assert.equal(h.node('auth-reset-form').hidden,true);assert.equal(h.node('auth-reset-password').value,'');assert.equal(h.node('auth-callback-retry').href,'/profile');assert.equal(h.stored.has('sf:password-recovery:v1'),false);assert.equal(h.stored.has('sf-auth-return'),false);
+ assert.equal(h.node('auth-reset-form').hidden,true);assert.equal(h.node('auth-reset-password').value,'');assert.equal(h.node('auth-callback-retry').href,'/schools');assert.equal(h.stored.has('sf:password-recovery:v1'),false);assert.equal(h.stored.has('sf-auth-return'),false);
 });
 test('password rejection and account changes cannot create a server session',async()=>{
  const h=harness();await h.open();h.setUpdateError();h.node('auth-reset-password').value=h.node('auth-reset-confirm').value='long-enough-password';await h.node('auth-reset-form').emit('submit');
@@ -43,7 +43,7 @@ test('recovery resumes after reload only with a recent marker for the same sessi
  const missing=harness('?type=recovery','',null);await missing.open();assert.equal(missing.node('auth-reset-form').hidden,true);assert.equal(missing.synced.length,0);assert.match(missing.node('auth-callback-message').textContent,/missing or has expired/);
 });
 test('OAuth keeps its return page; expired recovery links never use existing sign-in',async()=>{
- const h=harness('?code=fixture','',null);h.stored.set('sf-auth-return','/feed');await h.open();assert.equal(h.synced.length,1);assert.deepEqual(h.navigation,['/feed']);
+ const h=harness('?code=fixture','',null);h.stored.set('sf-auth-return','/s/demo/feed');await h.open();assert.equal(h.synced.length,1);assert.deepEqual(h.navigation,['/s/demo/feed']);
  const expired=harness();expired.setExchangeError();await expired.open();assert.equal(expired.synced.length,0);assert.equal(expired.navigation.length,0);assert.equal(expired.node('auth-reset-form').hidden,true);
 });
 
@@ -60,4 +60,12 @@ test('invalid, expired and reused recovery codes cannot reuse an existing sessio
  h.node('auth-code-email').value='student@example.test';h.node('auth-recovery-code').value='bad';await h.node('auth-code-form').emit('submit');assert.equal(h.otps.length,0);
  h.node('auth-recovery-code').value='123456';h.setOtpError();await h.node('auth-code-form').emit('submit');
  assert.equal(h.node('auth-reset-form').hidden,true);assert.equal(h.node('auth-code-form').hidden,false);assert.match(h.node('auth-code-feedback').textContent,/could not be verified/);assert.equal(h.synced.length,0);assert.equal(h.navigation.length,0);
+});
+
+
+test('OAuth rejects unscoped, auth, and external callback return destinations', async () => {
+ for (const destination of ['/feed', '/auth/callback', '//other.test', '/s/school-a/\\other.test', '/s/school-a/feed\n']) {
+  const h=harness('?code=fixture','',null);h.stored.set('sf-auth-return',destination);await h.open();
+  assert.deepEqual(h.navigation,['/schools']);
+ }
 });

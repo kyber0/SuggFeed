@@ -8,6 +8,8 @@ import digestRoutes from '../src/routes/digests';
 import { supabaseService } from '../src/lib/supabase';
 import { sameOriginOnly } from '../src/lib/security';
 import { createRoadmapDb,USER_ID,OTHER_USER_ID,CATEGORY_ID } from './support/roadmap-db';
+import { runWithSchool } from '../src/lib/school-scope';
+const SCHOOL={id:'10000000-0000-4000-8000-000000000001',slug:'demo',name:'Demo',actorId:null,role:null};
 import { unsubscribeToken } from '../src/lib/digests';
 
 async function serve(app:express.Express){const server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));return {origin:'http://127.0.0.1:'+(server.address() as any).port,close:()=>new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()))};}
@@ -25,7 +27,7 @@ test('real HTTP submit replays a lost response, recovers code, and rejects accou
       return {data:query.rows[0].result,error:null};
     }catch(e:any){return {data:null,error:{code:e.code,message:e.message}};}
   }) as any;
-  const app=express();app.use(express.json(),cookieParser(),sameOriginOnly);app.use((req,_res,next)=>{req.session={user:user?{id:user,role:'student'}:null} as any;next();});app.use('/api',api);
+  const app=express();app.use(express.json(),cookieParser(),sameOriginOnly);app.use((req,_res,next)=>{req.session={user:user?{id:user,role:'student'}:null} as any;runWithSchool({...SCHOOL,actorId:user,role:user?'student':null},next);});app.use('/api',api);
   const server=await serve(app);
   try {
     const contextResponse=await fetch(server.origin+'/api/submission-context'),context=await contextResponse.json() as any;
@@ -48,14 +50,14 @@ test('real HTTP submit replays a lost response, recovers code, and rejects accou
 test('search rename uses the verified account, never the request owner field',async()=>{
   const original=supabaseService.from,filters:any[]=[];
   supabaseService.from=(()=>{const q:any={update(){return q;},eq(...args:any[]){filters.push(args);return q;},select(){return q;},async maybeSingle(){return {data:{id:crypto.randomUUID()},error:null};}};return q;}) as any;
-  const app=express();app.use(express.json());app.use((req,_res,next)=>{req.session={user:{id:USER_ID}} as any;next();});app.use(savedSearches);const server=await serve(app);
+  const app=express();app.use(express.json());app.use((req,_res,next)=>{req.session={user:{id:USER_ID}} as any;runWithSchool({...SCHOOL,actorId:USER_ID,role:'student'},next);});app.use(savedSearches);const server=await serve(app);
   try {const response=await fetch(server.origin+'/'+crypto.randomUUID(),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'My library search',user_id:OTHER_USER_ID})});assert.equal(response.status,200);assert.ok(filters.some(([key,value])=>key==='user_id' && value===USER_ID));assert.ok(!filters.some(([,value])=>value===OTHER_USER_ID));}
   finally{await server.close();supabaseService.from=original;}
 });
 test('unsubscribe HTML write redirects 303 to a GET without the private token',async()=>{
   const original=supabaseService.from,secret=process.env.DIGEST_UNSUBSCRIBE_SECRET;process.env.DIGEST_UNSUBSCRIBE_SECRET='x'.repeat(40);
   supabaseService.from=(()=>{const q:any={update(){return q;},async eq(){return {error:null};}};return q;}) as any;
-  const app=express();app.use(express.urlencoded({extended:false}));app.use(digestRoutes);const server=await serve(app);
-  try{const token=unsubscribeToken(USER_ID);const response=await fetch(server.origin+'/digest/unsubscribe',{method:'POST',redirect:'manual',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({token})});assert.equal(response.status,303);assert.equal(response.headers.get('location'),'/digest/unsubscribed');assert.doesNotMatch(response.headers.get('location')!,/token|10000000/);}
+  const app=express();app.use(express.urlencoded({extended:false}));app.use((_req,_res,next)=>runWithSchool(SCHOOL,next));app.use('/s/demo',digestRoutes);const server=await serve(app);
+  try{const token=runWithSchool(SCHOOL,()=>unsubscribeToken(USER_ID));const response=await fetch(server.origin+'/s/demo/digest/unsubscribe',{method:'POST',redirect:'manual',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({token})});assert.equal(response.status,303);assert.equal(response.headers.get('location'),'/s/demo/digest/unsubscribed');assert.doesNotMatch(response.headers.get('location')!,/token|10000000/);}
   finally{await server.close();supabaseService.from=original;if(secret===undefined)delete process.env.DIGEST_UNSUBSCRIBE_SECRET;else process.env.DIGEST_UNSUBSCRIBE_SECRET=secret;}
 });

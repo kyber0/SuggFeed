@@ -150,8 +150,8 @@
                 form.hidden = true;
                 title.textContent = 'Password updated';
                 message.textContent = 'Your new password is saved. You can now continue to your account.';
-                retry.href = '/profile';
-                retry.textContent = 'Continue to your profile';
+                retry.href = '/schools';
+                retry.textContent = 'Choose your school';
                 retry.hidden = false;
                 retry.focus();
             }
@@ -252,14 +252,14 @@
             await window.sfSyncSession(session);
             if (expired)
                 return;
-            let destination = '/profile';
+            let destination = '/schools';
             try {
                 destination = sessionStorage.getItem('sf-auth-return') || destination;
                 sessionStorage.removeItem('sf-auth-return');
             }
             catch { }
-            if (destination.startsWith('/auth/'))
-                destination = '/profile';
+            if (!/^\/s\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/|[?#]|$)/.test(destination) || destination.includes('\\') || /[\u0000-\u0020\u007f]/.test(destination))
+                destination = '/schools';
             window.sfAuthNavigate(destination);
         }
         catch (error) {

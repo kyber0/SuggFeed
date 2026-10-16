@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { loadPublishedSubmissions, loadPublishedTotal, publishedTotalMaxAge, type CacheStatus } from './data';
+import { loadPublishedSubmissions, loadPublishedTotal, type CacheStatus } from './data';
 import { feedFilters } from './feed-filters';
 import { roadmapFilters, loadRoadmapPage, loadRoadmapCategories, loadRecentlyCompleted } from './roadmap';
 
@@ -53,8 +53,7 @@ export async function publicFeedTotal(req:Request,res:Response,next:NextFunction
   }
   try{
     const count=await loadPublishedTotal(filters.category,filters.search);
-    const maxAge=publishedTotalMaxAge(filters.category,filters.search);
-    res.setHeader('Cache-Control',`public, max-age=${maxAge}, s-maxage=${maxAge}`);
+    res.setHeader('Cache-Control','private, no-store');
     return res.json({success:true,count});
   }catch(error){res.setHeader('Cache-Control','no-store');next(error);}
 }

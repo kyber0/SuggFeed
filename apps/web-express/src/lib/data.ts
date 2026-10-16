@@ -1,3 +1,4 @@
+import { schoolCacheKey } from './school-scope';
 import { supabase, supabaseService } from "./supabase";
 import type { Submission, Comment, Profile } from "../types";
 
@@ -22,9 +23,9 @@ function evictExpired(): void {
 }
 
 export function getCache<T>(key: string): T | undefined {
-  const entry = _cache.get(key) as CacheEntry<T> | undefined;
+  const entry = _cache.get(schoolCacheKey(key)) as CacheEntry<T> | undefined;
   if (!entry) return undefined;
-  if (Date.now() > entry.expiresAt) { _cache.delete(key); return undefined; }
+  if (Date.now() > entry.expiresAt) { _cache.delete(schoolCacheKey(key)); return undefined; }
   return entry.value;
 }
 
@@ -37,10 +38,11 @@ export function setCache<T>(key: string, value: T, ttlMs: number): void {
       else break;
     }
   }
-  _cache.set(key, { value, expiresAt: Date.now() + ttlMs });
+  _cache.set(schoolCacheKey(key), { value, expiresAt: Date.now() + ttlMs });
 }
 
 export function invalidateCache(prefix: string): void {
+  prefix=schoolCacheKey(prefix);
   for(const key of inFlight.keys())if(key.startsWith(prefix))inFlight.delete(key);
   for (const key of _cache.keys()) {
     if (key.startsWith(prefix)) _cache.delete(key);
@@ -48,7 +50,7 @@ export function invalidateCache(prefix: string): void {
 }
 
 export function publishedTotalMaxAge(category='All',search=''){
-  const entry=_cache.get(`published_count_${JSON.stringify([category,search.trim()])}`);
+  const entry=_cache.get(schoolCacheKey(`published_count_${JSON.stringify([category,search.trim()])}`));
   return entry?Math.max(0,Math.floor((entry.expiresAt-Date.now())/1000)):0;
 }
 
@@ -62,12 +64,12 @@ export async function fetchWithCache<T>(
 ): Promise<T> {
   const cached = getCache<T>(key);
   if (cached !== undefined) {report?.("hit");return cached;}
-  const running=inFlight.get(key);if(running){report?.("pending");return running as Promise<T>;}
+  const running=inFlight.get(schoolCacheKey(key));if(running){report?.("pending");return running as Promise<T>;}
   report?.("miss");
   if(inFlight.size>=MAX_CACHE_ENTRIES)return fetcher();
-  const request=fetcher().then(value=>{if(inFlight.get(key)===request)setCache(key,value,ttlMs);return value;});
-  inFlight.set(key,request);
-  try{return await request;}finally{if(inFlight.get(key)===request)inFlight.delete(key);}
+  const request=fetcher().then(value=>{if(inFlight.get(schoolCacheKey(key))===request)setCache(key,value,ttlMs);return value;});
+  inFlight.set(schoolCacheKey(key),request);
+  try{return await request;}finally{if(inFlight.get(schoolCacheKey(key))===request)inFlight.delete(schoolCacheKey(key));}
 }
 
 /* ─── Search sanitization ──────────────────────────────────────────────── */
@@ -222,7 +224,8 @@ export async function loadComments(submissionId: string): Promise<Comment[]> {
     async () => {
       const { data, error } = await supabase
         .from("comments")
-        .select("*, author:profiles!comments_user_id_fkey(id,display_name,role)")
+        .select("id,submission_id,user_id,body,display_name,created_at,parent_id,author:profiles!comments_user_id_fkey(id,display_name),submission:submissions!inner(status)")
+        .eq("is_hidden",false).in("submission.status",["approved","in_progress","resolved"])
         .eq("submission_id", submissionId)
         .order("created_at", { ascending: true });
       if (error) throw error;
@@ -333,23 +336,19 @@ export async function loadAllSubmissionsForAdmin(opts: {
   return { data: (data ?? []) as unknown as Submission[], count: count ?? 0 };
 }
 
-import { supabaseUrl, supabaseAnonKey } from "./supabase";
+import { createHash } from "node:crypto";
 
 /* ─── Tracking ─────────────────────────────────────────────────────────── */
 export async function lookupTrackingCode(code: string) {
-  const baseUrl = supabaseUrl || process.env.SUPABASE_URL || "";
-  const anonKey = supabaseAnonKey || process.env.SUPABASE_ANON_KEY || "";
-  const url = `${baseUrl}/functions/v1/lookup-by-tracking-code`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: anonKey,
-      Authorization: `Bearer ${anonKey}`,
-    },
-    body: JSON.stringify({ trackingCode: code.trim().toUpperCase() }),
-  });
-  const data = (await res.json()) as any;
-  if (!res.ok) throw new Error(data.error || "Idea not found");
-  return data;
+  const clean=code.trim().toUpperCase();
+  if(!/^CV-[A-F0-9]{32}$/.test(clean)) throw new Error('A full private tracking code is required.');
+  const hashes=[clean,clean.slice(3)].map(value=>createHash('sha256').update(value).digest('hex'));
+  const {data,error}=await supabaseService.from('submissions')
+    .select('id,title,description,status,created_at,categories(name),status_history(new_status,created_at)')
+    .in('anonymous_tracking_hash',hashes).maybeSingle();
+  if(error) throw new Error('Tracking is temporarily unavailable.');
+  if(!data)return null;
+  return {id:data.id,title:data.title,description:data.description,status:data.status,createdAt:data.created_at,
+    category:(data.categories as any)?.name || 'General',
+    timeline:[...((data.status_history as any[]) || [])].map(row=>({new_status:row.new_status,created_at:row.created_at})).sort((a,b)=>a.created_at.localeCompare(b.created_at))};
 }

@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { supabase, supabaseService } from './supabase';
 import { UUID } from './staff-workspace';
 import { ProgressError } from './progress';
+import { currentSchool } from './school-scope';
+import { forEachActiveSchool } from './school-jobs';
 
 export const EVIDENCE_BUCKET = 'idea-update-evidence';
 export const MAX_EVIDENCE_BYTES = 10 * 1024 * 1024;
@@ -49,10 +51,21 @@ function evidenceError(error: { code?: string } | null) {
   if (error.code === '22023') throw new ProgressError(400, 'The evidence draft expired, was published, or exceeds five files. Remove unfinished files or start a new update.');
   throw error;
 }
+function evidencePath(row: {id:string}, path:string):string {
+  const school=currentSchool();
+  if(!school) throw new ProgressError(403,'School context required.');
+  const prefix=school.id+'/'+row.id+'/';
+  const legacy=school.slug==='demo' && path.startsWith(row.id+'/');
+  const filename=path.slice(legacy ? row.id.length+1 : prefix.length);
+  if(!UUID.test(row.id) || (!path.startsWith(prefix) && !legacy) || !/^(source|final\.(webp|pdf))$/.test(filename)) {
+    throw new ProgressError(403,'Evidence belongs to another school.');
+  }
+  return path;
+}
 function fileMetadata(row: Record<string, any>): EvidenceFile {
   return { id: row.id, ...(row.update_id ? { update_id: row.update_id } : {}), display_name: row.display_name,
     mime_type: row.mime_type, size_bytes: row.size_bytes, alt: row.alt ?? null,
-    href: `/api/progress-evidence/${row.id}` };
+    href: `/s/${currentSchool()!.slug}/api/progress-evidence/${row.id}` };
 }
 export async function listPublicEvidence(submissionId: string): Promise<EvidenceFile[]> {
   const { data, error } = await supabase.rpc('read_public_idea_update_files', { p_submission_id: submissionId });
@@ -71,6 +84,8 @@ async function authorizedFile(fileId: string, actorId: string | null): Promise<U
   evidenceError(error);
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) throw new ProgressError(404, 'Evidence not found.');
+  if(row.temp_path) evidencePath(row,row.temp_path);
+  if(row.final_path) evidencePath(row,row.final_path);
   return row;
 }
 export async function reserveEvidence(actorId: string, body: unknown) {
@@ -89,7 +104,7 @@ export async function reserveEvidence(actorId: string, body: unknown) {
   const row = data as UploadRow;
   if (row.state === 'ready') return { file: { ...fileMetadata(row), state: 'ready' }, upload: null };
   const { data: upload, error: uploadError } = await supabaseService.storage.from(EVIDENCE_BUCKET)
-    .createSignedUploadUrl(row.temp_path, { upsert: false });
+    .createSignedUploadUrl(evidencePath(row,row.temp_path), { upsert: false });
   if (uploadError || !upload) {
     await supabaseService.rpc('cancel_progress_upload', { p_actor_id: actorId, p_file_id: row.id });
     throw new ProgressError(503, 'Evidence uploads are temporarily unavailable. Please try again.');
@@ -139,7 +154,7 @@ export async function finalizeEvidence(actorId: string, fileId: string) {
   const { data: source, error: downloadError } = await storage.download(row.temp_path);
   if (downloadError || !source) throw new ProgressError(400, 'Upload the file before finalizing it.');
   const validated = await validateEvidenceBytes(Buffer.from(await source.arrayBuffer()), row.declared_mime, row.declared_size);
-  const finalPath = `${row.id}/final.${validated.extension}`;
+  const finalPath = evidencePath(row,row.final_path || `${currentSchool()!.id}/${row.id}/final.${validated.extension}`);
   const { error: writeError } = await storage.upload(finalPath, validated.bytes, {
     contentType: validated.mime, upsert: false, cacheControl: '0',
   });
@@ -178,24 +193,37 @@ export async function evidenceDownload(fileId: string, actorId: string | null) {
   return data.signedUrl;
 }
 export async function cleanupEvidence() {
+  if(!currentSchool()) throw new ProgressError(403,'School context required.');
   const { data, error } = await supabaseService.rpc('claim_progress_upload_cleanup', { p_limit: 50 });
   if (error) throw error;
   let removed = 0; let failed = 0;
   for (const row of (data ?? []) as UploadRow[]) {
-    const paths = [row.temp_path, row.final_path].filter((p): p is string => !!p);
-    const { error: removeError } = await supabaseService.storage.from(EVIDENCE_BUCKET).remove(paths);
-    if (removeError) { failed++; continue; }
-    const { error: finishError } = await supabaseService.rpc('finish_progress_upload_cleanup', { p_file_id: row.id });
-    if (finishError) failed++; else removed++;
+    try {
+      const paths = [row.temp_path, row.final_path].filter((p): p is string => !!p).map(path=>evidencePath(row,path));
+      const { error: removeError } = await supabaseService.storage.from(EVIDENCE_BUCKET).remove(paths);
+      if (removeError) { failed++; continue; }
+      const { error: finishError } = await supabaseService.rpc('finish_progress_upload_cleanup', { p_file_id: row.id });
+      if (finishError) failed++; else removed++;
+    } catch { failed++; }
   }
   // Source uploads from completed publications can be reintroduced until their upload token expires.
   const { data: sources, error: sourcesError } = await supabaseService.rpc('list_progress_sources_to_clean', { p_limit: 50 });
   if (sourcesError) throw sourcesError;
   for (const row of sources ?? []) {
-    const { error: removeError } = await supabaseService.storage.from(EVIDENCE_BUCKET).remove([row.temp_path]);
-    if (removeError) { failed++; continue; }
-    const { error: finishError } = await supabaseService.rpc('finish_progress_source_cleanup', { p_file_id: row.id });
-    if (finishError) failed++;
+    try {
+      const { error: removeError } = await supabaseService.storage.from(EVIDENCE_BUCKET).remove([evidencePath(row,row.temp_path)]);
+      if (removeError) { failed++; continue; }
+      const { error: finishError } = await supabaseService.rpc('finish_progress_source_cleanup', { p_file_id: row.id });
+      if (finishError) failed++;
+    } catch { failed++; }
   }
   return { removed, failed };
+}
+
+export async function cleanupAllSchoolEvidence() {
+  const result={removed:0,failed:0};
+  const outcomes=await forEachActiveSchool(async()=>{
+    const school=await cleanupEvidence();result.removed+=school.removed;result.failed+=school.failed;
+  });
+  return {...result,...outcomes,failed:result.failed+outcomes.failedSchools};
 }

@@ -51,6 +51,7 @@ function harness() {
       return {ok:true,status:201,json:async()=>({success:true,update:updates[0],submission:snapshot})};
     }
   };
+  context.sfSchoolPath=(value:string)=>value;context.sfSchoolRoute=(value:string)=>value;context.sfSchoolFetch=context.fetch;
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../public/js/staff-progress.js'),'utf8'),context);
   const controller=context.window.sfStaffProgress;
   controller.bind({canPost:()=>allowPost,applySnapshot:(s:any)=>{applied.push(s);return true;},afterPost:async()=>{},changed(){},posting(){}});

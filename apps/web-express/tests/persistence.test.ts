@@ -99,5 +99,8 @@ test('paused accounts are not claimed and expired receipts cannot create another
 
 test('tracking capabilities and query values are absent from request logs',()=>{
   assert.equal(safeRequestPath('/api/track/CV-'+ 'A'.repeat(32)+'?secret=value'),'/api/track/[redacted]');
+  assert.equal(safeRequestPath('/s/school-a/api/track/CV-'+'B'.repeat(32)+'?token=private'),'/s/school-a/api/track/[redacted]');
+  assert.equal(safeRequestPath('/schools/invitations/private-invite-token?redirect=private'),'/schools/invitations/[redacted]');
+  assert.equal(safeRequestPath('/s/school-a/digest/unsubscribe?token=private-capability'),'/s/school-a/digest/unsubscribe');
   assert.equal(safeRequestPath('/feed?search=private'),'/feed');
 });

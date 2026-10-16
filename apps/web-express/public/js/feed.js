@@ -62,7 +62,7 @@
         }
     }
     function sfNavigate() {
-        const url = new URL('/feed', window.location.origin);
+        const url = new URL(sfSchoolPath('/feed'), window.location.origin);
         url.searchParams.set('sort', _currentSort);
         if (_currentCat !== 'All')
             url.searchParams.set('category', _currentCat);
@@ -99,7 +99,7 @@
     let rememberedVotes = new Set();
     function readLocalSet(key) {
         try {
-            const values = JSON.parse(localStorage.getItem(key) || '[]');
+            const values = JSON.parse(localStorage.getItem(sfSchoolKey(key)) || '[]');
             return new Set(Array.isArray(values) ? values.filter((value) => typeof value === 'string') : []);
         }
         catch {
@@ -112,7 +112,7 @@
     function sfSaveVotedId(id) {
         rememberedVotes.add(id);
         try {
-            localStorage.setItem('sf_voted_ideas', JSON.stringify([...sfGetVotedSet()]));
+            localStorage.setItem(sfSchoolKey('sf_voted_ideas'), JSON.stringify([...sfGetVotedSet()]));
         }
         catch { }
     }
@@ -153,7 +153,7 @@
             saved.delete(id);
         try {
             if (savedOnAccount) {
-                const response = await fetch('/api/bookmarks/' + encodeURIComponent(id), { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: willSave ? 'add' : 'remove' }) });
+                const response = await sfSchoolFetch('/api/bookmarks/' + encodeURIComponent(id), { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: willSave ? 'add' : 'remove' }) });
                 const data = await response.json();
                 if (!response.ok || !data.success)
                     throw new Error('Account bookmark could not be confirmed.');
@@ -163,7 +163,7 @@
                     accountSaved.delete(id);
             }
             else
-                localStorage.setItem('sf_saved_ideas', JSON.stringify([...saved]));
+                localStorage.setItem(sfSchoolKey('sf_saved_ideas'), JSON.stringify([...saved]));
             document.querySelectorAll('.action-bookmark[data-id]').forEach(other => {
                 if (other.dataset.id === id)
                     setSavedState(other, willSave);
@@ -200,7 +200,7 @@
         bookmarkLoadBusy = true;
         document.getElementById('bookmark-retry')?.remove();
         try {
-            const response = await fetch('/profile/bookmarks', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
+            const response = await sfSchoolFetch('/profile/bookmarks', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
             const data = await response.json();
             if (!response.ok || !data.success)
                 throw new Error();
@@ -244,7 +244,7 @@
         const controller = new AbortController();
         const timeout = window.setTimeout(() => controller.abort(), 15000);
         try {
-            const response = await fetch('/api/vote/' + encodeURIComponent(id), {
+            const response = await sfSchoolFetch('/api/vote/' + encodeURIComponent(id), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                 body: JSON.stringify({ action: 'up' }),
@@ -286,7 +286,7 @@
     }
     async function sfSharePost(id, event, button) {
         event?.stopPropagation();
-        const url = window.location.origin + '/idea/' + encodeURIComponent(id);
+        const url = window.location.origin + sfSchoolPath('/idea/' + encodeURIComponent(id));
         try {
             if (navigator.share) {
                 await navigator.share({ title: 'SuggFeed idea', url });
@@ -329,7 +329,7 @@
         const votes = Math.max(0, Number(item.vote_count) || 0);
         const comments = Math.max(0, Number(item.comment_count) || 0);
         const id = sfEscapeHtml(item.id);
-        const href = '/idea/' + encodeURIComponent(String(item.id));
+        const href = sfSchoolPath('/idea/' + encodeURIComponent(String(item.id)));
         const created = new Date(item.created_at);
         const validDate = Number.isFinite(created.getTime());
         const secondsAgo = validDate ? Math.max(0, Math.floor((Date.now() - created.getTime()) / 1000)) : 0;
@@ -483,7 +483,7 @@
                 params.set('scope', 'following');
             else
                 params.set('total', 'skip');
-            const response = await fetch('/api/feed?' + params.toString(), { headers: { Accept: 'application/json' }, signal: controller.signal });
+            const response = await sfSchoolFetch('/api/feed?' + params.toString(), { headers: { Accept: 'application/json' }, signal: controller.signal });
             if (!response.ok)
                 throw new Error('request-failed');
             const data = await response.json();
@@ -546,7 +546,7 @@
     sfInitLocalStates();
     if (!following && config.dataset.total === '') {
         const params = new URLSearchParams({ category: _currentCat, search: _appliedSearch });
-        void fetch('/api/feed-total?' + params, { credentials: 'omit', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json' } })
+        void sfSchoolFetch('/api/feed-total?' + params, { credentials: 'omit', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json' } })
             .then(response => { if (!response.ok)
             throw new Error(); return response.json(); })
             .then(data => { if (data.success && typeof data.count === 'number')

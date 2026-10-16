@@ -133,7 +133,7 @@
     refreshBtn?.addEventListener('click', async () => {
         refreshBtn.setAttribute('disabled', 'true');
         try {
-            const res = await fetch('/api/staff/analytics');
+            const res = await sfSchoolFetch('/api/staff/analytics');
             const json = await res.json();
             if (json.success && json.data) {
                 data = json.data;

@@ -160,7 +160,7 @@
     });
     function loadRecentTrackingCodes() {
         try {
-            const stored = JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');
+            const stored = JSON.parse(localStorage.getItem(sfSchoolKey('sf_my_tracking_codes')) || '[]');
             const container = document.getElementById('sf-recent-codes-wrap');
             const list = document.getElementById('sf-recent-codes-list');
             if (stored && stored.length > 0 && container && list) {
@@ -305,7 +305,7 @@
         document.getElementById('track-error').hidden = true;
         document.getElementById('track-result').hidden = true;
         try {
-            const res = await fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ code }), signal: AbortSignal.timeout(15000) });
+            const res = await sfSchoolFetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ code }), signal: AbortSignal.timeout(15000) });
             const data = await res.json();
             if (!data.success || !data.data) {
                 throw new Error(data.error || 'Tracking code not found');
@@ -419,7 +419,7 @@
         if (numSpan)
             numSpan.textContent = String(prevCount + 1);
         try {
-            const res = await fetch(`/api/vote/${id}`, {
+            const res = await sfSchoolFetch(`/api/vote/${id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'up' })

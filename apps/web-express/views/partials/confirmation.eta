@@ -4,4 +4,4 @@
   <p id="sf-confirm-message"></p>
   <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>
 </dialog>
-<script defer src="/js/confirmation.js?v=20261013-custom"></script>
+<script defer src="/js/confirmation.js?v=20261016-school-isolation"></script>

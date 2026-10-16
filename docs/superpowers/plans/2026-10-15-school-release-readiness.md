@@ -11,7 +11,7 @@
 **Spec:** `docs/superpowers/specs/2026-10-15-school-release-design.md`
 
 ## Global Constraints
-- No new dependencies; no production test records, migrations or deletion.
+- No new dependencies or production test records/deletion. Later user authorization permits reviewed migrations after backup and rehearsal; activation still requires evidence.
 - Shared SaaS confirmed; platform operator/contact and per-school policies unconfirmed.
 - No compliance certification; distinguish source verification and configuration from operational evidence.
 - User already requested planning and implementation. Execute independent fixes under that authorization; unresolved school decisions remain release gates, not guessed policies.
@@ -72,3 +72,7 @@ Additional confirmed security fix: archive-old-submissions accepted `Bearer unde
 - Tenant isolation workstream: planned, not implemented. No overall deployment/legal readiness claim.
 
 Final independent review found a mailbox URL-fragment edge case and stale scope wording. Reproduced the mailbox test failure, rejected fragment-bearing addresses, reran all five readiness checks successfully and reran server/test type checks. Updated the design to the confirmed registered-business/shared-SaaS/demo-data decisions. No remaining material foundation regression was reported by review; this does not assess the unimplemented isolation workstream.
+
+
+### Shared-service continuation — 16 October 2026
+The isolation plan now has locally implemented migrations, scoped server/browser/jobs, reviewed school onboarding, shared request budgets and staff/operator MFA. Actual hosted snapshot export/restore and four-migration local rehearsal passed. See `docs/compliance/tenant-cutover.md` for remaining live work; proxy configuration restored management API access; all four migrations and the requested operator bootstrap are applied, and all ten legacy Edge handlers were retired and verified. School activation remains locked. The latest user clarification identifies this as their own project for schools to adopt, not a CSPC-operated service or a confirmed registered company. Operator name/public privacy mailbox remain unresolved.

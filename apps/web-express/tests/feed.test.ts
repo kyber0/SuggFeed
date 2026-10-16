@@ -83,6 +83,7 @@ function browser(fetchResponse: (url: string, options: any) => Promise<any> = as
     },
     fetch: async (url: string, options: any) => { calls.push({ url, options }); return fetchResponse(url, options); },
   };
+  Object.assign(context, { sfSchoolPath: (value: string) => value, sfSchoolKey: (value: string) => value, ...('fetch' in context ? { sfSchoolFetch: context.fetch } : {}) });
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/feed.js'), 'utf8'), context);
   function input(value: string) {
     search.value = value;
@@ -277,6 +278,7 @@ test('3-dot kebab menu toggles open and closed on click and closes on Escape', (
     navigator: {},
   };
 
+  Object.assign(context, { sfSchoolPath: (value: string) => value, sfSchoolKey: (value: string) => value, ...('fetch' in context ? { sfSchoolFetch: context.fetch } : {}) });
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/feed.js'), 'utf8'), context);
 
   function dispatch(type: string, target: any, key?: string) {

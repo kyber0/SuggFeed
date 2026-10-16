@@ -8,6 +8,7 @@
   },
   "include": [
     "src/client/globals.d.ts",
+    "src/client/school-context.ts",
     "src/client/preferences.ts",
     "src/client/theme-init.ts",
     "src/client/theme.ts",

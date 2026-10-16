@@ -15,7 +15,7 @@
         const status = { pending: 'Needs review', approved: 'Planned', in_progress: 'In progress', resolved: 'Completed', rejected: 'Declined' };
         const choose = (item) => { value.value = item.id; selected.textContent = `${item.title} · ${item.category || item.categories?.name || 'Other'} · ${status[item.status] || item.status} · ${item.id.slice(0, 8)}`; input.setCustomValidity(''); results.replaceChildren(); };
         if (value.value)
-            void fetch('/api/staff/submissions/' + encodeURIComponent(value.value), { cache: 'no-store' }).then(async (response) => { const data = await response.json(); if (generation !== 0)
+            void sfSchoolFetch('/api/staff/submissions/' + encodeURIComponent(value.value), { cache: 'no-store' }).then(async (response) => { const data = await response.json(); if (generation !== 0)
                 return; if (!response.ok || !data.item)
                 throw new Error(); choose(data.item); }).catch(() => { if (generation === 0) {
                 value.value = '';
@@ -35,7 +35,7 @@
                 controller = new AbortController();
                 selected.textContent = 'Searching…';
                 try {
-                    const response = await fetch('/api/staff/submission-search?' + new URLSearchParams({ q: input.value.trim(), public: picker.dataset.publicScope || 'false' }), { signal: controller.signal, cache: 'no-store' });
+                    const response = await sfSchoolFetch('/api/staff/submission-search?' + new URLSearchParams({ q: input.value.trim(), public: picker.dataset.publicScope || 'false' }), { signal: controller.signal, cache: 'no-store' });
                     const data = await response.json();
                     if (current !== generation)
                         return;
@@ -67,7 +67,7 @@
     async function request(path, body) {
         const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
         try {
-            const response = await fetch('/api/community/' + path, { method: body === undefined ? 'GET' : 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+            const response = await sfSchoolFetch('/api/community/' + path, { method: body === undefined ? 'GET' : 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
             const data = await response.json();
             if (!response.ok || !data.success)
                 throw new Error(data.error || 'This request could not be completed.');
@@ -325,7 +325,7 @@
                 similar.append(heading, help);
                 for (const idea of data.ideas) {
                     const link = document.createElement('a');
-                    link.href = '/idea/' + encodeURIComponent(idea.id);
+                    link.href = sfSchoolPath('/idea/' + encodeURIComponent(idea.id));
                     link.target = '_blank';
                     link.rel = 'noopener';
                     link.textContent = `${idea.title} · ${idea.vote_count} supporters ↗`;

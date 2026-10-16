@@ -13,11 +13,18 @@ import { randomBytes } from "crypto";
 import { SupabaseSessionStore } from "./lib/session-store";
 import { sameOriginOnly, browserSecurityHeaders } from "./lib/security";
 import { safeRequestPath } from "./lib/request-path";
+import accountSecurityRouter from './routes/account-security';
+import { requireStrongAuth } from './lib/auth-assurance';
 import { validateIdentity } from "./lib/identity";
 import { startFeedAccountState } from "./lib/feed-account";
 import { startPublicNavigation, warmPublicNavigation, publicFeedTotal } from "./lib/navigation-data";
+import { resolveSchool } from './lib/school-context';
+import { schoolUser } from './lib/school-scope';
+import { schoolHtml } from './lib/school-path';
+import schoolsRouter from './routes/schools';
+import { sharedWriteBudget, sharedAuthBudget } from './lib/shared-rate-limit';
 import "./types"; // session augmentation
-import { supabase as publicSupabase, supabaseService, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
+import { supabase as publicSupabase, supabaseService, supabasePlatform, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
 
 /* ── Environment validation ────────────────────────────────────────────────── */
 const REQUIRED_ENV = ["SUPABASE_URL", "SUPABASE_ANON_KEY"] as const;
@@ -76,7 +83,7 @@ app.engine("eta", (filePath: string, data: object, cb: (err: any, str?: string) 
       .relative(viewsDir, filePath)
       .replace(/\\/g, "/");
     const html = eta.render(viewName, data as Record<string, unknown>);
-    cb(null, html);
+    cb(null, schoolHtml(html, (data as any).schoolBase || ''));
   } catch (err) {
     cb(err as Error);
   }
@@ -177,17 +184,12 @@ app.use(express.static(publicDir, {
   maxAge: isProd ? "7d" : 0,
   setHeaders(res,filePath){if(path.basename(filePath)==='sw.js')res.setHeader('Cache-Control','no-cache');},
 }));
-// Public prefetch does not need a session read. Rate-limit it independently.
-app.get('/api/navigation-cache',rateLimit({windowMs:60_000,limit:30,standardHeaders:'draft-7',legacyHeaders:false}),warmPublicNavigation);
-app.get('/api/feed-total',rateLimit({windowMs:60_000,limit:60,standardHeaders:'draft-7',legacyHeaders:false}),publicFeedTotal);
-app.use(startPublicNavigation);
-
 /* ── Session ─────────────────────────────────────────────────────────────── */
 app.use((_req,res,next)=>{res.locals.sessionStarted=performance.now();next();});
 app.use(
   session({
     secret: sessionSecret,
-    store: isProd ? new SupabaseSessionStore(supabaseService, sessionSecret) : undefined,
+    store: isProd ? new SupabaseSessionStore(supabasePlatform, sessionSecret) : undefined,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -200,7 +202,6 @@ app.use(
 );
 
 app.use((_req,res,next)=>{res.append("Server-Timing",`session;dur=${(performance.now()-res.locals.sessionStarted).toFixed(1)}`);delete res.locals.sessionStarted;next();});
-app.use(startFeedAccountState);
 app.use(validateIdentity);
 app.use((_req,res,next)=>{
   const status=res.locals.publicNavigationCache;
@@ -225,7 +226,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // API router both work correctly.
 app.get(["/health", "/api/health"], async (_req: Request, res: Response) => {
   try {
-    const { error } = await publicSupabase.from("categories").select("id").limit(1);
+    const { error } = await supabasePlatform.from("schools").select("id").limit(1);
     if (error) throw error;
     res.json({ status: "healthy", database: "connected", ts: new Date().toISOString() });
   } catch {
@@ -233,34 +234,57 @@ app.get(["/health", "/api/health"], async (_req: Request, res: Response) => {
   }
 });
 
-/* ── Rate-limited route groups ───────────────────────────────────────────── */
-app.use("/api/", generalApiLimiter);
-app.use("/api/submit", writeLimiter);
-app.use("/api/vote", writeLimiter);
-app.use("/api/comments", writeLimiter);
-app.use("/auth/", (req, res, next) => req.method === "POST" ? authLimiter(req, res, next) : next());
-
-/* ── Routes ──────────────────────────────────────────────────────────────── */
-app.use("/", homeRouter);
-app.use("/feed", feedRouter);
-app.use("/idea", ideaRouter);
-app.use("/roadmap", roadmapRouter);
-app.use("/profile", profileRouter);
+/* Global identity and school onboarding routes. */
+app.use('/auth', sharedAuthBudget, (req,res,next) => req.method === 'POST' ? authLimiter(req,res,next) : next(), authRouter);
+app.use(['/schools','/platform','/s/:schoolSlug/admin'],sharedAuthBudget);
+app.use('/account/security', accountSecurityRouter);
+app.use('/', schoolsRouter);
+app.use('/', digestRouter); // only global internal cron matches without a school
+app.get('/internal/progress-evidence-cleanup', cleanupHandler);
+app.use('/', legalRouter);
+app.get('/', (_req,res) => res.redirect(302, '/schools'));
+// Legacy entry points cannot silently choose a customer's school.
+app.use((req,res,next) => {
+  if (req.path === '/s' || req.path.startsWith('/s/')) return next();
+  if (['GET','HEAD'].includes(req.method)) return res.redirect(302, '/schools');
+  return res.status(410).json({success:false,error:'Choose a school and use its current address.'});
+});
+app.use(resolveSchool);
+app.use((req,res,next) => {res.locals.currentPath=req.path;res.locals.user=schoolUser(req);next();});
+// Scope and freshly verified membership precede privileged assurance checks.
+app.use((req,res,next) => {
+  const role = schoolUser(req)?.role;
+  const privileged = /^\/(?:admin(?:\/|$)|staff(?:\/|$)|api\/(?:staff(?:\/|$)|community\/staff(?:\/|$)|submissions\/[^/]+\/status(?:\/|$)))/.test(req.path)
+    || (req.path.startsWith('/api/progress-evidence') && !['GET','HEAD'].includes(req.method));
+  if (privileged && role && ['admin','moderator','staff'].includes(role)) return requireStrongAuth(req,res,next);
+  next();
+});
+app.use(startFeedAccountState);
+app.use(startPublicNavigation);
+app.get('/api/navigation-cache',generalApiLimiter,warmPublicNavigation);
+app.get('/api/feed-total',generalApiLimiter,publicFeedTotal);
+app.use(sharedWriteBudget);
+app.use('/api/', generalApiLimiter);
+app.use('/api/submit', writeLimiter);
+app.use('/api/vote', writeLimiter);
+app.use('/api/comments', writeLimiter);
+app.use('/', homeRouter);
+app.use('/feed', feedRouter);
+app.use('/idea', ideaRouter);
+app.use('/roadmap', roadmapRouter);
+app.use('/profile', profileRouter);
 app.use('/notifications', notificationsRouter);
-app.use("/admin", adminRouter);
-app.use("/auth", authRouter);
+app.use('/admin', adminRouter);
 app.use('/api/community', communityRouter);
 app.use('/', communityPages);
 app.use('/', digestRouter);
-app.use("/api", apiRouter);
+app.use('/api', apiRouter);
 app.use('/api', engagementRouter);
 app.use('/api/progress-evidence', progressEvidenceRouter);
 app.use('/api/staff/progress-upload', progressEvidenceRouter);
 app.use('/api/staff', progressRouter);
 app.use('/staff/workspace', generalApiLimiter, progressRouter);
 app.use('/api/staff', staffWorkspaceRouter);
-app.get('/internal/progress-evidence-cleanup', cleanupHandler);
-app.use("/", legalRouter);
 
 /* ── 404 ─────────────────────────────────────────────────────────────────── */
 app.use((_req: Request, res: Response) => {

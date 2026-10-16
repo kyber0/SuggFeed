@@ -267,6 +267,10 @@
                 var origText = btn.innerHTML;
                 btn.innerHTML = '<span>Creating account…</span>';
                 try {
+                    try {
+                        sessionStorage.setItem('sf-auth-return', window.location.pathname + window.location.search);
+                    }
+                    catch { }
                     var { data, error } = await sb.auth.signUp({
                         email: email,
                         password: password,

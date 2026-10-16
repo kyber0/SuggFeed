@@ -1,3 +1,4 @@
+import { withTestSchool } from './support/school-context';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -15,7 +16,7 @@ test('exact submission detail requires staff, validates IDs and excludes submitt
     select(fields:string){selections.push(fields);return this;},eq(key:string,value:string){assert.equal(key,'id');ids.push(value);return this;},
     async maybeSingle(){return {data:missing?null:{id,title:'Duplicate title',description:'Details',status:'pending',categories:{name:'Facilities'},created_at:'2026-10-01',updated_at:'2026-10-12T00:00:00Z',staff_note:null,assignee_id:null,priority:null,target_date:null,user_id:'private',anonymous_tracking_hash:'secret',email:'private@example.test'},error:failed?{message:'Database secret'}:null};}
   };}) as any;
-  const app=express();app.use((req,_res,next)=>{req.session={user:role?{id,role}:undefined} as any;next();});app.use('/api/staff',staffRouter);
+  const app=express();app.use((req,_res,next)=>{req.session={user:role?{id,role}:undefined} as any;next();});app.use(withTestSchool);app.use('/api/staff',staffRouter);
   const server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));
   const base='http://127.0.0.1:'+(server.address() as {port:number}).port+'/api/staff/submissions/';
   try{
@@ -62,7 +63,7 @@ test('staff endpoints enforce roles, CSRF, review validation, conflicts, private
   }) as any;
   const app=express(); app.use(express.json());
   app.use((req,_res,next)=>{req.session={user:role?{id,role}:undefined} as any;next();});
-  app.use(sameOriginOnly); app.use('/api/staff',staffRouter);
+  app.use(sameOriginOnly); app.use(withTestSchool);app.use('/api/staff',staffRouter);
   const server=app.listen(0,'127.0.0.1'); await new Promise<void>(resolve=>server.once('listening',resolve));
   const origin='http://127.0.0.1:'+(server.address() as {port:number}).port;
   const review={status:'approved',note:'Public response',assignee:null,priority:'high',targetDate:'2026-12-20',updatedAt:'2026-10-10T10:00:00Z'};

@@ -8,7 +8,7 @@
     const kindControls=Array.from(preferences.querySelectorAll<HTMLInputElement>('input[name=digest_kinds]'));
     preferences.querySelectorAll<HTMLInputElement|HTMLSelectElement>('input,select').forEach(control=>control.disabled=true);
     const prefRetry=document.createElement('button');prefRetry.type='button';prefRetry.className='workspace-button';prefRetry.textContent='Retry preferences';prefRetry.hidden=true;status.after(prefRetry);
-    const loadPreferences=()=>{prefRetry.hidden=true;return fetch('/api/notifications/preferences',{headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)}).then(async response=>{
+    const loadPreferences=()=>{prefRetry.hidden=true;return sfSchoolFetch('/api/notifications/preferences',{headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000)}).then(async response=>{
       const data=await response.json();if(!response.ok || !data.success) throw new Error();
       preferences.querySelectorAll<HTMLInputElement|HTMLSelectElement>('input,select').forEach(control=>control.disabled=false);
       paused.checked=data.preferences.digest_paused===true;
@@ -19,7 +19,7 @@
     }).catch(()=>{status.textContent='Preferences could not load.';prefRetry.hidden=false;});};
     prefRetry.addEventListener('click',()=>void loadPreferences());void loadPreferences();
     preferences.addEventListener('submit',async e=>{e.preventDefault();if(save.disabled)return;save.disabled=true;status.textContent='Saving…';
-      try {const response=await fetch('/api/notifications/preferences',{method:'POST',signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({update_mode:mode.value,weekly_digest:digest.checked,digest_paused:paused.checked,digest_kinds:kindControls.filter(control=>control.checked).map(control=>control.value)})});const data=await response.json();if(!response.ok || !data.success) throw new Error(data.error || 'Preferences not saved.');status.textContent=paused.checked?'Saved. Weekly emails are paused until you resume them. In-app updates still follow your chosen mode.':'Saved. Weekly email uses these update types and your current follows. In-app settings apply to new updates.';}catch(e){status.textContent=e.name==='TimeoutError' ? 'Saving timed out. Refresh to confirm preferences.' : e.message;}finally{save.disabled=false;}
+      try {const response=await sfSchoolFetch('/api/notifications/preferences',{method:'POST',signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({update_mode:mode.value,weekly_digest:digest.checked,digest_paused:paused.checked,digest_kinds:kindControls.filter(control=>control.checked).map(control=>control.value)})});const data=await response.json();if(!response.ok || !data.success) throw new Error(data.error || 'Preferences not saved.');status.textContent=paused.checked?'Saved. Weekly emails are paused until you resume them. In-app updates still follow your chosen mode.':'Saved. Weekly email uses these update types and your current follows. In-app settings apply to new updates.';}catch(e){status.textContent=e.name==='TimeoutError' ? 'Saving timed out. Refresh to confirm preferences.' : e.message;}finally{save.disabled=false;}
     });
   }
   const summary = document.getElementById('notification-summary')!;
@@ -36,7 +36,7 @@
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
-      const response = await fetch('/api/notifications' + (cursor ? '?cursor=' + encodeURIComponent(cursor) : ''), { signal: controller.signal, headers: { Accept: 'application/json' } });
+      const response = await sfSchoolFetch('/api/notifications' + (cursor ? '?cursor=' + encodeURIComponent(cursor) : ''), { signal: controller.signal, headers: { Accept: 'application/json' } });
       const payload = await response.json();
       if (!response.ok || !payload.success) throw new Error(response.status === 401 ? 'Please sign in again to see your updates.' : 'Your updates could not load. Please try again.');
       for (const notification of payload.notifications) {
@@ -48,7 +48,7 @@
         const unread=document.createElement('span');unread.className='notification-new';unread.textContent='New update';
         if(!notification.read_at)entry.append(unread);
         const link = document.createElement('a');
-        link.href = '/roadmap?item=' + encodeURIComponent(notification.submission_id);
+        link.href = sfSchoolPath('/roadmap?item=' + encodeURIComponent(notification.submission_id));
         link.textContent = notification.title;
         const meta = document.createElement('p');
         const kinds: Record<string, string> = { started: 'Work started', milestone: 'Milestone', blocked: 'Work paused', completed: 'Completed', update: 'Progress update', correction: 'Correction',resumed:'Work resumed',reopened:'Work reopened',withdrawn:'Idea withdrawn' };
@@ -62,7 +62,7 @@
             const readController = new AbortController();
             const readTimer = setTimeout(() => readController.abort(), 15000);
             try {
-              const result = await fetch('/api/notifications/' + encodeURIComponent(notification.id) + '/read', { method: 'PATCH', signal: readController.signal, headers: { Accept: 'application/json' } });
+              const result = await sfSchoolFetch('/api/notifications/' + encodeURIComponent(notification.id) + '/read', { method: 'PATCH', signal: readController.signal, headers: { Accept: 'application/json' } });
               if (!result.ok) throw new Error();
               entry.dataset.unread = 'false'; mark.remove();unread.remove();
               summary.textContent = 'Update marked as read.';

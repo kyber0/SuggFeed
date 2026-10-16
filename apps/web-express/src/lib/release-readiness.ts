@@ -30,8 +30,8 @@ export function releaseConfigurationChecks(env: NodeJS.ProcessEnv = process.env)
 
 // These are verified project gaps, not switches that an environment flag can waive.
 export const sharedServiceReleaseBlockers = [
-  'Shared-school isolation and verified school onboarding are not implemented.',
-  'A safe demo-school backfill and tenant authorization verification are not implemented.',
+  'Shared-school release requires hosted tenant-isolation verification and an approved cutover.',
+  'The demo-school migration, retired legacy endpoints and recovery evidence require deployment verification.',
   'Platform/school notices, lawful grounds, eligibility, retention and processing agreements need approval.',
   'Hosted access controls, distributed abuse protection, rights handling and recovery require operational evidence.',
 ];

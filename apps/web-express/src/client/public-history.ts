@@ -8,7 +8,7 @@
     container.replaceChildren(heading,status);container.setAttribute('aria-busy','true');
     const timer=setTimeout(()=>controller.abort(),15000);
     try{
-      const response=await fetch('/api/idea/'+encodeURIComponent(id)+'/history',{cache:'no-store',signal:controller.signal,headers:{Accept:'application/json'}});
+      const response=await sfSchoolFetch('/api/idea/'+encodeURIComponent(id)+'/history',{cache:'no-store',signal:controller.signal,headers:{Accept:'application/json'}});
       const data=await response.json();if(!response.ok || !data.success)throw new Error(data.error || 'Public history could not load.');
       if(requests.get(container)!==controller)return;
       const entries=[...data.history.map(item=>({time:item.created_at,title:(item.old_status?labels[item.old_status]+' → ':'')+labels[item.new_status],body:'',occurred:null})),...data.updates.map(item=>({time:item.created_at,title:labels[item.kind] || 'School update',body:item.body,occurred:item.occurred_on}))].sort((a,b)=>Date.parse(b.time)-Date.parse(a.time));

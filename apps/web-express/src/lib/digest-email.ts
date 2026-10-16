@@ -8,9 +8,9 @@ function httpsLink(value: string): string {
   if (url.protocol !== 'https:') throw new Error('Email links require HTTPS.');
   return escapeHtml(url.href);
 }
-export function digestHtml(entries: DigestEmailEntry[], origin: string, unsubscribe: string): string {
-  const updatesUrl = httpsLink(new URL('/notifications', origin).href);
-  const preferencesUrl = httpsLink(new URL('/notifications#notification-preferences', origin).href);
+export function digestHtml(entries: DigestEmailEntry[], origin: string, unsubscribe: string, schoolPath = ''): string {
+  const updatesUrl = httpsLink(new URL(schoolPath + '/notifications', origin).href);
+  const preferencesUrl = httpsLink(new URL(schoolPath + '/notifications#notification-preferences', origin).href);
   const unsubscribeUrl = httpsLink(unsubscribe);
   const labels: Record<string, string> = {started:'Work started',update:'Progress update',milestone:'Milestone reached',blocked:'Work paused',completed:'Completed',correction:'Correction',resumed:'Work resumed',reopened:'Reopened',withdrawn:'Withdrawn'};
   const cards = entries.map(entry => `<tr><td class="email-update" style="padding:18px 20px;border-bottom:1px solid #d9e2ec;">

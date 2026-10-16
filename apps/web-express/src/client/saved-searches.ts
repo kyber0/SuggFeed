@@ -45,9 +45,9 @@
   document.getElementById('saved-search-current-filters')!.append(chips(current));
   document.getElementById('saved-search-storage')!.textContent=account?'Saved to your account':'Saved on this device';
   document.getElementById('saved-search-storage-note')!.textContent=account?'Your saved views follow your account. Saving a view does not enable email alerts.':'Only this browser remembers these views. Others using this device can see them; saving a view does not enable email alerts.';
-  function store(){localStorage.setItem(key,JSON.stringify({version:1,items}));}
+  function store(){localStorage.setItem(sfSchoolKey(key),JSON.stringify({version:1,items}));}
   async function request(path='',method='GET',body?:unknown){
-    const response=await fetch('/api/saved-searches'+path,{method,cache:'no-store',signal:AbortSignal.timeout(15000),headers:{Accept:'application/json','Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
+    const response=await sfSchoolFetch('/api/saved-searches'+path,{method,cache:'no-store',signal:AbortSignal.timeout(15000),headers:{Accept:'application/json','Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
     const data=await response.json();
     if(!response.ok || !data.success){const error=new Error(typeof data.error==='string'?data.error:'This change could not be confirmed. Reload searches before trying again.');Object.assign(error,{status:response.status});throw error;}
     return data;
@@ -78,7 +78,7 @@
     list.replaceChildren();
     for(const item of items){
       const row=document.createElement('li');row.className='saved-search-item';row.dataset.searchId=item.id;
-      const link=document.createElement('a');link.className='saved-search-link';link.href='/feed?'+new URLSearchParams(clean(item.filters));
+      const link=document.createElement('a');link.className='saved-search-link';link.href=sfSchoolPath('/feed?'+new URLSearchParams(clean(item.filters)));
       const mark=document.createElement('span');mark.className='saved-search-mark';mark.append(icon('bookmark'));
       const title=document.createElement('span');title.className='saved-search-name';title.textContent=item.name;
       link.append(mark,title,icon('arrow'));row.append(link);
@@ -142,7 +142,7 @@
         if(!Array.isArray(values))values=(await request()).searches;
         if(!Array.isArray(values))throw new Error('Invalid search response.');
       }
-      else{const data=JSON.parse(localStorage.getItem(key) || 'null');values=data?.version===1 && Array.isArray(data.items)?data.items:[];}
+      else{const data=JSON.parse(localStorage.getItem(sfSchoolKey(key)) || 'null');values=data?.version===1 && Array.isArray(data.items)?data.items:[];}
       items=values.map(normalize).filter((item:any):item is Search=>!!item).slice(0,10);loaded=true;editing=null;render();feedback('');
     }catch{loaded=false;retry.hidden=false;feedback('Saved searches could not load. Try again or check browser storage.',true);}
     finally{busy=false;controls();}

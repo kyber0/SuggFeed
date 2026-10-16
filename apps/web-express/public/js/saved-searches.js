@@ -65,9 +65,9 @@
     document.getElementById('saved-search-current-filters').append(chips(current));
     document.getElementById('saved-search-storage').textContent = account ? 'Saved to your account' : 'Saved on this device';
     document.getElementById('saved-search-storage-note').textContent = account ? 'Your saved views follow your account. Saving a view does not enable email alerts.' : 'Only this browser remembers these views. Others using this device can see them; saving a view does not enable email alerts.';
-    function store() { localStorage.setItem(key, JSON.stringify({ version: 1, items })); }
+    function store() { localStorage.setItem(sfSchoolKey(key), JSON.stringify({ version: 1, items })); }
     async function request(path = '', method = 'GET', body) {
-        const response = await fetch('/api/saved-searches' + path, { method, cache: 'no-store', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+        const response = await sfSchoolFetch('/api/saved-searches' + path, { method, cache: 'no-store', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
         const data = await response.json();
         if (!response.ok || !data.success) {
             const error = new Error(typeof data.error === 'string' ? data.error : 'This change could not be confirmed. Reload searches before trying again.');
@@ -114,7 +114,7 @@
             row.dataset.searchId = item.id;
             const link = document.createElement('a');
             link.className = 'saved-search-link';
-            link.href = '/feed?' + new URLSearchParams(clean(item.filters));
+            link.href = sfSchoolPath('/feed?' + new URLSearchParams(clean(item.filters)));
             const mark = document.createElement('span');
             mark.className = 'saved-search-mark';
             mark.append(icon('bookmark'));
@@ -257,7 +257,7 @@
                     throw new Error('Invalid search response.');
             }
             else {
-                const data = JSON.parse(localStorage.getItem(key) || 'null');
+                const data = JSON.parse(localStorage.getItem(sfSchoolKey(key)) || 'null');
                 values = data?.version === 1 && Array.isArray(data.items) ? data.items : [];
             }
             items = values.map(normalize).filter((item) => !!item).slice(0, 10);

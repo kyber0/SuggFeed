@@ -58,7 +58,7 @@
             const merge = document.createElement('a');
             merge.className = 'workspace-button';
             merge.textContent = 'Merge duplicate';
-            merge.href = '/admin/community?section=clarifications&task=merge&idea=' + encodeURIComponent(active.id);
+            merge.href = sfSchoolPath('/admin/community?section=clarifications&task=merge&idea=' + encodeURIComponent(active.id));
             more.append(merge);
         }
         if (more.children.length > 1)
@@ -148,7 +148,7 @@
             clarification.textContent = 'Request private clarification →';
             document.getElementById('review-meta').after(clarification);
         }
-        clarification.href = '/admin/community?idea=' + encodeURIComponent(item.id);
+        clarification.href = sfSchoolPath('/admin/community?idea=' + encodeURIComponent(item.id));
         document.getElementById('review-position').textContent = isQueue && index >= 0 ? 'Item ' + (index + 1) + ' of ' + items.length + ' on this page' : isQueue ? 'Opened from a direct link' : document.getElementById('staff-board-data') ? 'Work board' : 'Community care';
         const badge = document.getElementById('review-current-status');
         badge.textContent = labels[item.status];
@@ -269,7 +269,7 @@
         try {
             if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
                 throw new Error('This link contains an invalid submission ID.');
-            const response = await fetch('/api/staff/submissions/' + encodeURIComponent(id), { headers: { Accept: 'application/json' }, cache: 'no-store', signal: controller.signal });
+            const response = await sfSchoolFetch('/api/staff/submissions/' + encodeURIComponent(id), { headers: { Accept: 'application/json' }, cache: 'no-store', signal: controller.signal });
             const body = await response.json().catch(() => null);
             if (!response.ok || !body?.success)
                 throw new Error(response.status === 401 || response.status === 403 ? 'Your staff session expired or access changed. Sign in again.' : response.status === 404 ? 'This submission is no longer available.' : 'Submission details could not load. Please retry.');
@@ -349,7 +349,7 @@
         const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null, scrollY = window.scrollY;
         const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
         try {
-            const response = await fetch(window.location.href, { headers: { Accept: 'text/html' }, cache: 'no-store', signal: controller.signal });
+            const response = await sfSchoolFetch(window.location.href, { headers: { Accept: 'text/html' }, cache: 'no-store', signal: controller.signal });
             const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
             const ids = ['care-reminders', 'care-reports', 'care-clarification', 'care-merges'];
             if (!response.ok || ids.some(id => !doc.getElementById(id)))
@@ -405,7 +405,7 @@
         const queue = document.querySelector('.staff-queue');
         queue.setAttribute('aria-busy', 'true');
         try {
-            const response = await fetch(window.location.href, { headers: { Accept: 'text/html' }, cache: 'no-store', signal: controller.signal });
+            const response = await sfSchoolFetch(window.location.href, { headers: { Accept: 'text/html' }, cache: 'no-store', signal: controller.signal });
             const html = await response.text();
             const doc = new DOMParser().parseFromString(html, 'text/html');
             const data = doc.getElementById('staff-queue-data');
@@ -481,7 +481,7 @@
         const index = items.findIndex(i => i.id === active?.id);
         const candidates = [...items.slice(index + 1), ...items.slice(0, index)].map(i => i.id);
         try {
-            const response = await fetch('/api/staff/submissions/' + encodeURIComponent(savedId) + '/review', {
+            const response = await sfSchoolFetch('/api/staff/submissions/' + encodeURIComponent(savedId) + '/review', {
                 method: 'PATCH', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
                 body: JSON.stringify({ status: status.value, note: note.value.trim(), assignee: assignee.value || null, priority: priority.value, targetDate: targetDate.value || null, updatedAt: active.updated_at })
             });
@@ -531,7 +531,7 @@
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 20000);
         try {
-            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: payload === undefined ? undefined : JSON.stringify(payload), signal: controller.signal });
+            const response = await sfSchoolFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: payload === undefined ? undefined : JSON.stringify(payload), signal: controller.signal });
             const body = await response.json().catch(() => null);
             if (!response.ok || !body?.success)
                 throw new Error(body?.error || 'Request failed. Try again.');
@@ -567,7 +567,7 @@
         activityMessage.textContent = 'Loading history and private notes…';
         document.getElementById('review-notes-state').textContent = 'Loading private notes…';
         try {
-            const response = await fetch('/api/staff/submissions/' + encodeURIComponent(active.id) + '/activity', { signal: controller.signal });
+            const response = await sfSchoolFetch('/api/staff/submissions/' + encodeURIComponent(active.id) + '/activity', { signal: controller.signal });
             const data = await response.json();
             if (!response.ok || !data.success)
                 throw new Error('History could not be loaded. Your review draft is safe; use Refresh history & notes to retry.');
@@ -694,7 +694,7 @@
         }
     });
     const initial = new URL(window.location.href).searchParams.get('idea');
-    if (initial && window.location.pathname === '/admin')
+    if (initial && sfSchoolRoute(window.location.pathname) === '/admin')
         void openReview(initial);
     if (!isQueue)
         return;

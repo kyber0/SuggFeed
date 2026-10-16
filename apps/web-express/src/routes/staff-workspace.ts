@@ -1,3 +1,4 @@
+import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from 'express';
 import { supabaseService } from '../lib/supabase';
 import { invalidateCache, MODERATION_STATUSES } from '../lib/data';
@@ -10,8 +11,8 @@ const router = Router();
 const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { fn(req, res).catch(error=>error instanceof ProgressError?res.status(error.status).json({success:false,error:error.message,code:error.code}):next(error)); };
 router.use((req, res, next) => {
   res.setHeader('Cache-Control', 'private, no-store');
-  if (!req.session.user) return res.status(401).json({ success: false, error: 'Sign in to the staff portal.' });
-  if (!staffRole(req.session.user.role)) return res.status(403).json({ success: false, error: 'Staff access required.' });
+  if (!schoolUser(req)) return res.status(401).json({ success: false, error: 'Sign in to the staff portal.' });
+  if (!staffRole(schoolUser(req)!.role)) return res.status(403).json({ success: false, error: 'Staff access required.' });
   next();
 });
 router.param('id', (_req, res, next, id) => {
@@ -27,7 +28,7 @@ router.get('/submissions/:id', run(async (req, res) => {
   return res.json({success:true,item:{id:data.id,title:data.title,description:data.description,status:data.status,
     category:(data.categories as {name?:string} | null)?.name || 'Other',created_at:data.created_at,updated_at:data.updated_at,
     staff_note:data.staff_note || '',assignee_id:data.assignee_id || '',priority:data.priority || 'normal',target_date:data.target_date || '',
-    started_at:data.started_at || null,resolved_at:data.resolved_at || null,is_blocked:!!data.is_blocked,workflow:await workflowContext(data.id,req.session.user!.id)}});
+    started_at:data.started_at || null,resolved_at:data.resolved_at || null,is_blocked:!!data.is_blocked,workflow:await workflowContext(data.id,schoolUser(req)!.id)}});
 }));
 router.get('/submission-search',run(async(req,res)=>{
   const text=typeof req.query.q==='string'?req.query.q.trim().slice(0,120):'';
@@ -38,10 +39,10 @@ router.get('/submission-search',run(async(req,res)=>{
 }));
 router.post('/submissions/:id/actions',run(async(req,res)=>{
   const began=Date.now(),action=WORK_ACTIONS.includes(req.body?.action)?req.body.action:'invalid';
-  try{const result=await performAction(req.params.id as string,req.session.user!.id,req.body);console.info(JSON.stringify({event:'workflow_action',action,result:result.replayed?'replayed':'saved',durationMs:Date.now()-began}));return res.json({success:true,...result});}
+  try{const result=await performAction(req.params.id as string,schoolUser(req)!.id,req.body);console.info(JSON.stringify({event:'workflow_action',action,result:result.replayed?'replayed':'saved',durationMs:Date.now()-began}));return res.json({success:true,...result});}
   catch(error){console.warn(JSON.stringify({event:'workflow_action',action,result:'failed',code:error instanceof ProgressError?error.code || 'INVALID_ACTION':'UNEXPECTED',durationMs:Date.now()-began}));throw error;}
 }));
-router.post('/submissions/:id/work-dates',run(async(req,res)=>res.json({success:true,...await repairDates(req.params.id as string,req.session.user!.id,req.body)})));
+router.post('/submissions/:id/work-dates',run(async(req,res)=>res.json({success:true,...await repairDates(req.params.id as string,schoolUser(req)!.id,req.body)})));
 router.get('/analytics', run(async (_req, res) => {
   const data = await loadAnalyticsData();
   return res.json({ success: true, data });
@@ -51,7 +52,7 @@ router.get('/members', run(async (_req, res) => {
   return res.json({ success: true, members });
 }));
 router.patch('/members/:memberId/role', run(async (req, res) => {
-  const actor = req.session.user!;
+  const actor = schoolUser(req)!;
   if (actor.role !== 'admin' && actor.role !== 'staff') {
     return res.status(403).json({ success: false, error: 'Only administrators can modify roles.' });
   }
@@ -68,7 +69,7 @@ router.get('/students', run(async (req, res) => {
   return res.json({ success: true, students });
 }));
 router.post('/invite', run(async (req, res) => {
-  const actor = req.session.user!;
+  const actor = schoolUser(req)!;
   if (actor.role !== 'admin' && actor.role !== 'staff') {
     return res.status(403).json({ success: false, error: 'Only administrators can invite or promote staff.' });
   }
@@ -90,7 +91,7 @@ router.patch('/submissions/:id/review', run(async (req, res) => {
   }
   if (/\[(explain the decision|provide a helpful option)\]/i.test(note)) return res.status(400).json({success:false,error:'Replace the template placeholders with your actual decision and next step.'});
   const { error } = await supabaseService.rpc('save_staff_review', {
-    p_submission_id: req.params.id, p_staff_id: req.session.user!.id,
+    p_submission_id: req.params.id, p_staff_id: schoolUser(req)!.id,
     p_expected_updated_at: updatedAt, p_status: status, p_note: note.trim(),
     p_assignee_id: assignee, p_priority: priority, p_target_date: targetDate,
   });
@@ -120,7 +121,7 @@ router.post('/submissions/:id/notes', run(async (req, res) => {
   if (typeof req.body.body !== 'string' || !req.body.body.trim() || req.body.body.length > 2000) {
     return res.status(400).json({ success: false, error: 'Write a note of 1–2,000 characters.' });
   }
-  const { error } = await supabaseService.from('staff_internal_notes').insert({ submission_id: req.params.id, actor_id: req.session.user!.id, body: req.body.body.trim() });
+  const { error } = await supabaseService.from('staff_internal_notes').insert({ submission_id: req.params.id, actor_id: schoolUser(req)!.id, body: req.body.body.trim() });
   if (error?.code === '23503') return res.status(404).json({ success: false, error: 'Submission not found.' });
   if (error) throw error;
   return res.status(201).json({ success: true });
@@ -130,13 +131,13 @@ router.post('/views', run(async (req, res) => {
       !req.body.filters || typeof req.body.filters !== 'object' || Array.isArray(req.body.filters)) {
     return res.status(400).json({ success: false, error: 'Give the view a name of 1–60 characters.' });
   }
-  const { error } = await supabaseService.rpc('save_staff_view', { p_staff_id: req.session.user!.id, p_name: req.body.name.trim(), p_filters: queueFilters(req.body.filters) });
+  const { error } = await supabaseService.rpc('save_staff_view', { p_staff_id: schoolUser(req)!.id, p_name: req.body.name.trim(), p_filters: queueFilters(req.body.filters) });
   if (error?.code === '23505' || error?.code === '22023') return res.status(400).json({ success: false, error: 'Use a unique name. You can save up to ten views.' });
   if (error) throw error;
   return res.status(201).json({ success: true });
 }));
 router.delete('/views/:id', run(async (req, res) => {
-  const { error } = await supabaseService.from('staff_saved_views').delete().eq('id', req.params.id).eq('owner_id', req.session.user!.id);
+  const { error } = await supabaseService.from('staff_saved_views').delete().eq('id', req.params.id).eq('owner_id', schoolUser(req)!.id);
   if (error) throw error;
   return res.json({ success: true });
 }));

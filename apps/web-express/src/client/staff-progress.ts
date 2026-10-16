@@ -92,7 +92,7 @@ interface Window {
   const acceptedTypes=new Set(['image/jpeg','image/png','image/webp','application/pdf']);
   const isBusy=()=>posting || evidenceBusy>0;
   const evidenceReady=()=>draftFiles.every(file=>file.state==='ready');
-  const evidenceUrl=(value:unknown)=>typeof value==='string' && /^\/api\/progress-evidence\/[0-9a-f-]{36}$/i.test(value)?value:null;
+  const evidenceUrl=(value:unknown)=>typeof value==='string' && /^\/api\/progress-evidence\/[0-9a-f-]{36}$/i.test(sfSchoolRoute(value))?sfSchoolPath(value):null;
   function evidenceLink(file:EvidenceFile){
     const href=evidenceUrl(file.href);if(!href)return null;
     const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='noopener noreferrer';
@@ -102,7 +102,7 @@ interface Window {
   async function evidenceRequest(url:string,method:string,payload?:unknown){
     const request=new AbortController();const timer=setTimeout(()=>request.abort(),30000);
     try{
-      const response=await fetch(url,{method,headers:{'Content-Type':'application/json',Accept:'application/json'},body:payload===undefined?undefined:JSON.stringify(payload),signal:request.signal,cache:'no-store'});
+      const response=await sfSchoolFetch(url,{method,headers:{'Content-Type':'application/json',Accept:'application/json'},body:payload===undefined?undefined:JSON.stringify(payload),signal:request.signal,cache:'no-store'});
       const data=await response.json().catch(()=>null);
       if(!response.ok || !data?.success)throw new Error(response.status===401 || response.status===403?'Your staff session expired or access changed. Sign in again.':response.status===400 || response.status===409 || response.status===413?data?.error || 'The evidence could not be accepted. Check the file and try again.':'The evidence request could not be confirmed. Retry or remove the file before posting.');
       return data;
@@ -162,7 +162,7 @@ interface Window {
         if(url.protocol!=='https:')throw new Error('The upload link was not secure. Remove this file and try again.');
         const request=new AbortController();const timer=setTimeout(()=>request.abort(),90000);
         try{
-          const response=await fetch(url.href,{method:'PUT',headers:{'Content-Type':file.file.type,'x-upsert':'false'},body:file.file,signal:request.signal});
+          const response=await sfSchoolFetch(url.href,{method:'PUT',headers:{'Content-Type':file.file.type,'x-upsert':'false'},body:file.file,signal:request.signal});
           // A retry may encounter an object already uploaded after a lost response. Finalization verifies the actual object.
           if(!response.ok && response.status!==409 && response.status!==400)throw new Error('The file upload failed. Retry before publishing this update.');
         }finally{clearTimeout(timer);}
@@ -189,7 +189,7 @@ interface Window {
   function discardEvidence(){
     const abandoned=draftFiles;draftFiles=[];
     for(const file of abandoned)if(file.previewUrl)URL.revokeObjectURL(file.previewUrl);
-    for(const file of abandoned)if(file.reservationId)void fetch('/api/staff/progress-upload/'+encodeURIComponent(file.reservationId),{method:'DELETE',headers:{Accept:'application/json'},keepalive:true}).catch(()=>undefined);
+    for(const file of abandoned)if(file.reservationId)void sfSchoolFetch('/api/staff/progress-upload/'+encodeURIComponent(file.reservationId),{method:'DELETE',headers:{Accept:'application/json'},keepalive:true}).catch(()=>undefined);
   }
   const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const localPreview=(file:File)=>{try{return file.type.startsWith('image/') && typeof URL.createObjectURL==='function' ? URL.createObjectURL(file) : undefined;}catch{return undefined;}};
@@ -284,7 +284,7 @@ interface Window {
     const timer=setTimeout(()=>request.abort(),20000);loading=true;refresh.disabled=true;fields.disabled=true;
     state.textContent='Loading progress and update history…';history.setAttribute('aria-busy','true');
     try{
-      const response=await fetch('/staff/workspace/'+encodeURIComponent(active.id)+'/updates',{headers:{Accept:'application/json'},cache:'no-store',signal:request.signal});
+      const response=await sfSchoolFetch('/staff/workspace/'+encodeURIComponent(active.id)+'/updates',{headers:{Accept:'application/json'},cache:'no-store',signal:request.signal});
       const data=await response.json().catch(()=>null);
       if(!response.ok || !data?.success || !data.submission)throw new Error(response.status===401 || response.status===403?'Your staff session expired or access changed. Sign in again.':'Progress could not load. Use Refresh to try again.');
       if(generation!==ownGeneration || controller!==request)return;
@@ -340,7 +340,7 @@ interface Window {
     const request=new AbortController();const timer=setTimeout(()=>request.abort(),20000);
     try{
       const action=Object.keys(actionKind).find(action=>actionKind[action]===kind.value);
-      const response=await fetch(workflow?'/api/staff/submissions/'+encodeURIComponent(active.id)+'/actions':'/staff/workspace/'+encodeURIComponent(active.id)+'/updates',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({...payload,requestId,...workflow?{action}: {}}),signal:request.signal});
+      const response=await sfSchoolFetch(workflow?'/api/staff/submissions/'+encodeURIComponent(active.id)+'/actions':'/staff/workspace/'+encodeURIComponent(active.id)+'/updates',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({...payload,requestId,...workflow?{action}: {}}),signal:request.signal});
       const data=await response.json().catch(()=>null);
       if(!response.ok || !data?.success || !data.submission){
         if(response.status===409)throw new Error('This idea changed before your update was posted. Refresh progress, review the latest information, then retry. Your draft has been kept.');

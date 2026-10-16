@@ -6,6 +6,11 @@
   <meta name="description" content="<%= it.description ?? 'Share campus feedback and follow submission progress on SuggFeed.' %>" />
   <title><%= it.title ?? 'SuggFeed' %></title>
 
+  <meta name="school-base" content="<%= it.schoolBase || '' %>" />
+  <meta name="school-id" content="<%= it.schoolId || '' %>" />
+  <meta name="school-actor" content="<%= it.user?.id || '' %>" />
+  <script src="/js/school-context.js?v=20261016-school-isolation"></script>
+
   <!-- PWA / Icons -->
   <link rel="icon" href="/branding/favicon.ico" sizes="any" />
   <link rel="icon" href="/branding/icon-32.png" sizes="32x32" type="image/png" />
@@ -20,14 +25,14 @@
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
   <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261015-hover-fix" />
-  <script defer src="/js/events.js?v=20261011-feed"></script>
+  <script defer src="/js/events.js?v=20261016-school-isolation"></script>
 
-  <script src="/js/preferences.js?v=20261014-staff-interactions"></script>
+  <script src="/js/preferences.js?v=20261016-school-isolation"></script>
   <!-- Theme init (before render to prevent flash) -->
-  <script src="/js/theme-init.js?v=20261014-staff-interactions"></script>
+  <script src="/js/theme-init.js?v=20261016-school-isolation"></script>
 
   <!-- Supabase (client-side auth) -->
-  <script defer src="/js/vendor/supabase.js?v=20261013-local"></script>
+  <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>
 </head>
 <body>
 <a class="system-skip-link" href="#page-content">Skip to page content</a>
@@ -36,8 +41,15 @@
 
 <%~ include('partials/toast', it) %>
 <%~ include('partials/confirmation', it) %>
-<script defer src="/js/activity.js?v=20261013-connected"></script>
+<script defer src="/js/activity.js?v=20261016-school-isolation"></script>
 <%~ include('partials/header', it) %>
+<% if (it.schoolBase) { %>
+<nav class="workspace-actions care-card" aria-label="Current school">
+  <strong><%= it.schoolName || 'Your school' %></strong>
+  <a class="workspace-button" href="/schools">Switch school</a>
+  <% if (it.user?.role === 'admin') { %><a class="workspace-button" href="<%= it.schoolBase %>/admin/school-settings">School settings</a><% } %>
+</nav>
+<% } %>
 
 <%~ include('partials/navigation-skeleton', it) %>
 <div id="page-content" tabindex="-1"><%~ it.body ?? '' %></div>
@@ -49,15 +61,15 @@
 <%~ include('partials/mobile-nav', it) %>
 
 <!-- Client-side auth state sync -->
-<script defer src="/js/auth.js?v=20261013-recovery-code"></script>
+<script defer src="/js/auth.js?v=20261016-school-isolation"></script>
 
 <!-- Theme toggle logic -->
-<script defer src="/js/theme.js?v=20261012-features"></script>
-<script defer src="/js/engagement.js?v=20261012-progress"></script>
-<script defer src="/js/community.js?v=20261014-enhancements"></script>
+<script defer src="/js/theme.js?v=20261016-school-isolation"></script>
+<script defer src="/js/engagement.js?v=20261016-school-isolation"></script>
+<script defer src="/js/community.js?v=20261016-school-isolation"></script>
 
-<script defer src="/js/public-history.js?v=20261012-features"></script>
-<script defer src="/js/responsive.js?v=20261014-staff-interactions"></script>
-<script defer src="/js/scroll-reveal.js?v=20261015-hover-fix"></script>
+<script defer src="/js/public-history.js?v=20261016-school-isolation"></script>
+<script defer src="/js/responsive.js?v=20261016-school-isolation"></script>
+<script defer src="/js/scroll-reveal.js?v=20261016-school-isolation"></script>
 </body>
 </html>

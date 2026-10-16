@@ -1,3 +1,4 @@
+import { withTestSchool } from './support/school-context';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -76,7 +77,7 @@ test('engagement routes enforce session identity, CSRF, payloads, private cachin
     async maybeSingle() { return { error: null, data: table === 'submissions' ? { id } : null }; } })) as any;
   const app = express(); app.use(express.json());
   app.use((req, _res, next) => { req.session = { user: signedIn ? { id, role: 'student' } : undefined } as any; next(); });
-  app.use(sameOriginOnly); app.use('/api', engagementRouter);
+  app.use(sameOriginOnly); app.use(withTestSchool); app.use('/api', engagementRouter);
   app.use((_err, _req, res, _next) => res.status(500).json({ success: false, error: 'Unexpected error.' }));
   const server = app.listen(0, '127.0.0.1'); await new Promise<void>(resolve => server.once('listening', resolve));
   const origin = 'http://127.0.0.1:' + (server.address() as { port: number }).port;
@@ -112,7 +113,7 @@ test('Express vote routes use one database RPC and never accept a browser-suppli
   supabaseService.rpc = (async (name, args) => { calls.push([name, args]); return { error: null, data: { vote_count: 41, already_voted: false } }; }) as any;
   const app = express(); app.use(express.json());
   app.use((req, _res, next) => { req.session = { user: signedIn ? { id, role: 'student' } : undefined } as any; req.cookies = { sf_anon_token: otherId }; next(); });
-  app.use('/api', apiRouter);
+  app.use(withTestSchool); app.use('/api', apiRouter);
   const server = app.listen(0, '127.0.0.1'); await new Promise<void>(resolve => server.once('listening', resolve));
   const origin = 'http://127.0.0.1:' + (server.address() as { port: number }).port;
   const vote = (idea = otherId) => fetch(origin + '/api/vote/' + idea, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'ignored' }) });

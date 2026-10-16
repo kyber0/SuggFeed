@@ -21,7 +21,7 @@
         if (form && (!sipOpened || !document.getElementById('sip-success').hidden)) {
             form.reset();
             try {
-                const choice = localStorage.getItem('sf_anon_default');
+                const choice = localStorage.getItem(sfSchoolKey('sf_anon_default'));
                 const signedIn = !!document.getElementById('sf-auth-config')?.dataset.user;
                 document.getElementById('sip-anon').checked = !signedIn || choice !== 'false';
             }
@@ -501,9 +501,9 @@
         if (!sipTrackingCode)
             return;
         try {
-            const data = JSON.parse(localStorage.getItem('sf_my_tracking_codes') || '[]');
+            const data = JSON.parse(localStorage.getItem(sfSchoolKey('sf_my_tracking_codes')) || '[]');
             const codes = Array.isArray(data) ? data.filter(x => typeof x === 'string' && /^CV-[A-F0-9]{32}$/.test(x)) : [];
-            localStorage.setItem('sf_my_tracking_codes', JSON.stringify([...new Set([...codes, sipTrackingCode])].slice(-20)));
+            localStorage.setItem(sfSchoolKey('sf_my_tracking_codes'), JSON.stringify([...new Set([...codes, sipTrackingCode])].slice(-20)));
             document.getElementById('sip-code-status').textContent = 'Code saved on this device. Others using this browser can access it.';
         }
         catch {
@@ -514,7 +514,7 @@
         if (!await window.sfConfirm('Remove all tracking codes saved on this device? Copy any you still need first.', { title: 'Clear saved tracking codes?', confirmLabel: 'Clear codes', danger: true }))
             return;
         try {
-            localStorage.removeItem('sf_my_tracking_codes');
+            localStorage.removeItem(sfSchoolKey('sf_my_tracking_codes'));
             document.getElementById('sip-code-status').textContent = 'Saved codes cleared.';
         }
         catch {

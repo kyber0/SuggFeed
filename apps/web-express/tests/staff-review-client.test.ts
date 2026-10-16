@@ -35,8 +35,8 @@ function harness(initial=''){
   const document:any={activeElement:new Element(),getElementById:(key:string)=>nodes.get(key),querySelector:()=>null,querySelectorAll:()=>[],addEventListener:(name:string,fn:Function)=>listeners.set(name,[...(listeners.get(name)||[]),fn]),createElement:()=>new Element()};
   const window:any={location:{href:'https://www.suggfeed.me/admin/board'+initial,pathname:initial?'/admin':'/admin/board'},addEventListener(){},getSelection:()=>null};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../public/js/staff-review.js'),'utf8'),{
-    document,window,HTMLElement:Element,URL,AbortController,setTimeout,clearTimeout,
-    fetch:(url:string,options:any)=>url.endsWith('/activity')?Promise.resolve({ok:true,json:async()=>({success:true,history:[],notes:[],transitions:[]})}):new Promise(resolve=>pending.push({url,signal:options.signal,resolve})),
+    sfSchoolPath: (value:string)=>value, sfSchoolRoute:(value:string)=>value, document,window,HTMLElement:Element,URL,AbortController,setTimeout,clearTimeout,
+    sfSchoolFetch:(url:string,options:any)=>url.endsWith('/activity')?Promise.resolve({ok:true,json:async()=>({success:true,history:[],notes:[],transitions:[]})}):new Promise(resolve=>pending.push({url,signal:options.signal,resolve})),
   });
   const flush=async()=>{await new Promise<void>(resolve=>setImmediate(resolve));};
   const click=async(target:any)=>{for(const fn of listeners.get('click')||[])fn({target,button:0,preventDefault(){}});await flush();};

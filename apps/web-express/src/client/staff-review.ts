@@ -41,7 +41,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     const more=document.createElement('details'),caption=document.createElement('summary');caption.textContent='Other actions';more.className='workflow-secondary';more.append(caption);
     const primary=active.status==='pending'?['approve','decline']:active.status==='approved'?['start']:context.allowedActions.includes('resume')?['resume','complete']:active.status==='in_progress'?['update','complete']:['reopen','correction'];
     for(const action of context.allowedActions){const button=document.createElement('button');button.type='button';button.className='workspace-button';button.textContent=names[action];button.dataset.workflowAction=action;(primary.includes(action)?actions:more).append(button);}
-    if(context.allowedActions.includes('withdraw')){const merge=document.createElement('a');merge.className='workspace-button';merge.textContent='Merge duplicate';merge.href='/admin/community?section=clarifications&task=merge&idea='+encodeURIComponent(active.id);more.append(merge);}
+    if(context.allowedActions.includes('withdraw')){const merge=document.createElement('a');merge.className='workspace-button';merge.textContent='Merge duplicate';merge.href=sfSchoolPath('/admin/community?section=clarifications&task=merge&idea='+encodeURIComponent(active.id));more.append(merge);}
     if(more.children.length>1)actions.append(more);
     if(repairForm)repairForm.hidden=!context.canRepair;
   }
@@ -94,7 +94,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     document.getElementById('review-meta')!.textContent=item.category+' · Received '+new Date(item.created_at).toLocaleDateString('en-PH',{dateStyle:'medium'})+' · Submission ID: '+item.id;
     let clarification=document.getElementById('review-clarification-link') as HTMLAnchorElement;
     if(!clarification){clarification=document.createElement('a');clarification.id='review-clarification-link';clarification.textContent='Request private clarification →';document.getElementById('review-meta')!.after(clarification);}
-    clarification.href='/admin/community?idea='+encodeURIComponent(item.id);
+    clarification.href=sfSchoolPath('/admin/community?idea='+encodeURIComponent(item.id));
     document.getElementById('review-position')!.textContent=isQueue && index>=0?'Item '+(index+1)+' of '+items.length+' on this page':isQueue?'Opened from a direct link':document.getElementById('staff-board-data')?'Work board':'Community care';
     const badge=document.getElementById('review-current-status')!; badge.textContent=labels[item.status];badge.dataset.status=item.status;
     status.value=item.status;note.value=item.staff_note;priority.value=item.priority;targetDate.value=item.target_date;
@@ -143,7 +143,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     const timer=setTimeout(()=>controller.abort(),15000);
     try{
       if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))throw new Error('This link contains an invalid submission ID.');
-      const response=await fetch('/api/staff/submissions/'+encodeURIComponent(id),{headers:{Accept:'application/json'},cache:'no-store',signal:controller.signal});
+      const response=await sfSchoolFetch('/api/staff/submissions/'+encodeURIComponent(id),{headers:{Accept:'application/json'},cache:'no-store',signal:controller.signal});
       const body=await response.json().catch(()=>null);
       if(!response.ok || !body?.success)throw new Error(response.status===401 || response.status===403?'Your staff session expired or access changed. Sign in again.':response.status===404?'This submission is no longer available.':'Submission details could not load. Please retry.');
       if(!dialog.open || detailRequest!==controller)return;
@@ -182,7 +182,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     const focused=document.activeElement instanceof HTMLElement?document.activeElement:null,scrollY=window.scrollY;
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
     try{
-      const response=await fetch(window.location.href,{headers:{Accept:'text/html'},cache:'no-store',signal:controller.signal});
+      const response=await sfSchoolFetch(window.location.href,{headers:{Accept:'text/html'},cache:'no-store',signal:controller.signal});
       const doc=new DOMParser().parseFromString(await response.text(),'text/html');
       const ids=['care-reminders','care-reports','care-clarification','care-merges'];
       if(!response.ok || ids.some(id=>!doc.getElementById(id)))throw new Error('Community care could not refresh. Check your staff session.');
@@ -213,7 +213,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     const refreshButton=document.getElementById('staff-refresh') as HTMLButtonElement;refreshButton.disabled=true;
     const queue=document.querySelector('.staff-queue')!;queue.setAttribute('aria-busy','true');
     try {
-      const response=await fetch(window.location.href,{headers:{Accept:'text/html'},cache:'no-store',signal:controller.signal});
+      const response=await sfSchoolFetch(window.location.href,{headers:{Accept:'text/html'},cache:'no-store',signal:controller.signal});
       const html=await response.text();const doc=new DOMParser().parseFromString(html,'text/html');
       const data=doc.getElementById('staff-queue-data');
       if(!response.ok || !data)throw new Error('The queue could not be refreshed. Your staff session may have expired.');
@@ -247,7 +247,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     const index=items.findIndex(i=>i.id===active?.id);
     const candidates=[...items.slice(index+1),...items.slice(0,index)].map(i=>i.id);
     try {
-      const response=await fetch('/api/staff/submissions/'+encodeURIComponent(savedId)+'/review',{
+      const response=await sfSchoolFetch('/api/staff/submissions/'+encodeURIComponent(savedId)+'/review',{
         method:'PATCH',headers:{'Content-Type':'application/json'},signal:controller.signal,
         body:JSON.stringify({status:status.value,note:note.value.trim(),assignee:assignee.value || null,priority:priority.value,targetDate:targetDate.value || null,updatedAt:active.updated_at})
       });
@@ -272,7 +272,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 20000);
     try {
-      const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: payload === undefined ? undefined : JSON.stringify(payload), signal: controller.signal });
+      const response = await sfSchoolFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: payload === undefined ? undefined : JSON.stringify(payload), signal: controller.signal });
       const body = await response.json().catch(() => null);
       if (!response.ok || !body?.success) throw new Error(body?.error || 'Request failed. Try again.');
       return body;
@@ -297,7 +297,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     activityMessage.textContent = 'Loading history and private notes…';
     document.getElementById('review-notes-state')!.textContent = 'Loading private notes…';
     try {
-      const response = await fetch('/api/staff/submissions/' + encodeURIComponent(active.id) + '/activity', { signal: controller.signal });
+      const response = await sfSchoolFetch('/api/staff/submissions/' + encodeURIComponent(active.id) + '/activity', { signal: controller.signal });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error('History could not be loaded. Your review draft is safe; use Refresh history & notes to retry.');
       if (activityRequest !== controller || !dialog.open) return;
@@ -373,7 +373,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     }
   });
   const initial=new URL(window.location.href).searchParams.get('idea');
-  if(initial && window.location.pathname==='/admin')void openReview(initial);
+  if(initial && sfSchoolRoute(window.location.pathname)==='/admin')void openReview(initial);
   if(!isQueue)return;
   const viewDialog=document.getElementById('staff-save-view-dialog') as HTMLDialogElement;
   const viewMessage=document.getElementById('staff-view-message')!;
