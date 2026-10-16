@@ -15,7 +15,7 @@ function account(req: Request, res: Response) {
 async function operator(req: Request, res: Response) {
   const user = account(req, res); if (!user) return null;
   const { data, error } = await supabasePlatform.rpc('platform_operator_active', { p_actor: user.id });
-  if (error) throw new Error('Platform authorization unavailable.');
+  if (error) throw Object.assign(new Error('Platform authorization unavailable.'), {status:503});
   if (data !== true) { res.status(403).render('school-message', { title: 'Access denied', message: 'Platform operator permission is required.' }); return null; }
   let assured = false;
   requireStrongAuth(req, res, () => { assured = true; });
@@ -32,9 +32,9 @@ async function confirmedAccount(req: Request, res: Response) {
 async function schoolAdmin(req: Request, res: Response) {
   const user = account(req, res); if (!user) return null;
   const { data: school, error } = await supabasePlatform.from('schools').select('id,slug,name,status').eq('slug', req.params.schoolSlug).maybeSingle();
-  if (error) throw new Error('School unavailable.');
+  if (error) throw Object.assign(new Error('School unavailable.'), {status:503});
   const { data: membership, error: memberError } = school ? await supabasePlatform.from('school_memberships').select('role,status').eq('school_id', school.id).eq('user_id', user.id).maybeSingle() : { data: null, error: null };
-  if (memberError) throw new Error('School permissions unavailable.');
+  if (memberError) throw Object.assign(new Error('School permissions unavailable.'), {status:503});
   if (!school || school.status === 'closed' || membership?.role !== 'admin' || membership.status !== 'active') {
     res.status(403).render('school-message', { title: 'Access denied', message: 'School administrator permission is required.' }); return null;
   }
@@ -58,7 +58,7 @@ router.get('/schools', run(async (req, res) => {
       supabasePlatform.from('school_applications').select('id,name,slug,status,created_at').eq('applicant_id', user.id).order('created_at', { ascending: false }).limit(20),
       supabasePlatform.rpc('platform_operator_active', { p_actor: user.id }),
     ]);
-    if (membership.error || pending.error) throw new Error('School directory unavailable.');
+    if (membership.error || pending.error) throw Object.assign(new Error('School directory unavailable.'), {status:503});
     isPlatformOperator = !permission.error && permission.data === true;
     schools = membership.data || []; applications = pending.data || [];
   }
@@ -83,7 +83,7 @@ router.get('/platform/schools', run(async (req, res) => {
     supabasePlatform.from('schools').select('id,slug,name,status').order('created_at', { ascending: false }).range(page * 100, page * 100 + 99),
     supabasePlatform.from('school_settings').select('*').order('updated_at', { ascending: false }).range(page * 100, page * 100 + 99),
   ]);
-  if (applications.error || schools.error || settings.error) throw new Error('School review unavailable.');
+  if (applications.error || schools.error || settings.error) throw Object.assign(new Error('School review unavailable.'), {status:503});
   return res.render('platform-schools', { title: 'School review — SuggFeed', applications: applications.data || [], schools: schools.data || [], settings: settings.data || [], page, nextPage: [applications.data, schools.data, settings.data].some(rows => rows?.length === 100), saved: req.query.saved === '1' });
 }));
 router.post('/platform/schools/:id/review', run(async (req, res) => {
@@ -106,7 +106,7 @@ router.post('/platform/schools/:id/policies', run(async (req, res) => {
 router.post('/platform/schools/:id/activate', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;
   const { data: policy, error: policyError } = await supabasePlatform.from('school_settings').select('approved_at').eq('school_id', req.params.id).maybeSingle();
-  if (policyError) throw new Error('School policy unavailable.');
+  if (policyError) throw Object.assign(new Error('School policy unavailable.'), {status:503});
   if (!schoolApplicationsConfigured() || !policy?.approved_at) return failed(res, 'Activation unavailable', 'Business configuration and reviewed school policies are required.');
   const { error } = await supabasePlatform.rpc('change_school_status', { p_school: req.params.id, p_actor: user.id, p_status: 'active' });
   if (error) return failed(res, 'Activation locked', 'The isolation release gate, school status and administrator requirements must all pass before activation.', 409);
@@ -115,7 +115,7 @@ router.post('/platform/schools/:id/activate', run(async (req, res) => {
 router.get('/s/:schoolSlug/admin/school-settings', run(async (req, res) => {
   const context = await schoolAdmin(req, res); if (!context) return;
   const { data, error } = await supabasePlatform.from('school_settings').select('*').eq('school_id', context.school.id).maybeSingle();
-  if (error) throw new Error('School settings unavailable.');
+  if (error) throw Object.assign(new Error('School settings unavailable.'), {status:503});
   const invitation = req.session.schoolInvitation;
   const invitationUrl = invitation && invitation.schoolId === context.school.id ? '/schools/invitations/' + invitation.token : null;
   if (invitationUrl) delete req.session.schoolInvitation;
@@ -161,10 +161,10 @@ router.post('/schools/invitations/:token', run(async (req, res) => {
 }));
 router.get(['/s/:schoolSlug/privacy', '/s/:schoolSlug/terms'], run(async (req, res) => {
   const { data: school, error } = await supabasePlatform.from('schools').select('id,slug,name,status').eq('slug', req.params.schoolSlug).eq('status', 'active').maybeSingle();
-  if (error) throw new Error('School notice unavailable.');
+  if (error) throw Object.assign(new Error('School notice unavailable.'), {status:503});
   if (!school) return failed(res, 'School unavailable', 'This school is unavailable.', 404);
   const { data: settings, error: settingsError } = await supabasePlatform.from('school_settings').select('*').eq('school_id', school.id).not('approved_at', 'is', null).maybeSingle();
-  if (settingsError) throw new Error('School notice unavailable.');
+  if (settingsError) throw Object.assign(new Error('School notice unavailable.'), {status:503});
   if (!settings) return failed(res, 'Notice unavailable', 'This school has not published reviewed notices.', 404);
   Object.assign(res.locals, { schoolBase: '/s/' + school.slug, schoolId: school.id, schoolName: school.name });
   return res.render('school-notice', { title: (req.path.endsWith('/privacy') ? 'Privacy notice' : 'Terms') + ' — ' + school.name, notice: req.path.endsWith('/privacy') ? settings.privacy_notice : settings.terms_notice, school, settings, legal: legalDetails() });

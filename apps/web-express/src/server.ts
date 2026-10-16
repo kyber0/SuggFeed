@@ -296,6 +296,11 @@ app.use((_req: Request, res: Response) => {
 // Returns a generic message — never leaks stack traces or file paths.
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   console.error(`[error] ${req.method} ${safeRequestPath(req.path)}: ${err.name}`);
+  if ((err as any).status === 503) {
+    res.setHeader('Retry-After','30');
+    if (req.path.startsWith('/api/') || req.headers.accept?.includes('application/json') || req.xhr) return res.status(503).json({success:false,error:'The service is temporarily unavailable. Please try again shortly.'});
+    return res.status(503).render('school-message',{title:'Temporarily unavailable',message:'The service is temporarily unavailable. Please try again shortly.'});
+  }
   const isJson = req.path.startsWith("/api/") || req.path.startsWith("/auth/") || req.path.startsWith('/roadmap/idea/') || req.headers.accept?.includes("application/json") || req.xhr;
   if (isJson) {
     const status = (err as any).status === 400 ? 400 : (err as any).status === 413 ? 413 : 500;

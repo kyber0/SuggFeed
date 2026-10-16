@@ -35,7 +35,7 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
     if (error && req.session.refreshToken && (error.status === 401 || error.status === 403)) {
       const result = await createAuthClient().auth.refreshSession({ refresh_token: req.session.refreshToken });
       if (result.error && (!result.error.status || result.error.status >= 500)) {
-        throw new Error("Authentication service unavailable.");
+        throw Object.assign(new Error("Authentication service unavailable."), {status:503});
       }
       if (!result.error && result.data.session) {
         token = result.data.session.access_token;
@@ -47,7 +47,7 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
       }
     }
     if (error || !user || user.id!==expectedUserId) {
-      if (error && (!error.status || error.status >= 500)) throw new Error("Authentication service unavailable.");
+      if (error && (!error.status || error.status >= 500)) throw Object.assign(new Error("Authentication service unavailable."), {status:503});
       req.session.user = null;
       delete req.session.accessToken;
       delete req.session.refreshToken;
@@ -55,7 +55,7 @@ export function validateIdentity(req: Request, res: Response, next: NextFunction
     }
     res.locals.authAssurance = verifiedTokenAssurance(token || '');
     const {data:profile,error:profileError}=profileResult || await readProfile();
-    if (profileError) throw new Error("Account permissions unavailable.");
+    if (profileError) throw Object.assign(new Error("Account permissions unavailable."), {status:503});
     // Only this request's verified owner can reuse this read. No identity or
     // permission result is cached across requests, and refresh checks still run.
     if(profilePage)res.locals.verifiedProfile={userId:expectedUserId,profile};

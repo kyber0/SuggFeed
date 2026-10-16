@@ -60,17 +60,28 @@ The initial direct Node connection failed DNS because this environment requires 
 
 **Live cutover completed:** all four migrations committed together and were recorded in migration history. Preserved 10,004 submissions and 149,380 comments. Only the exact verified requested account was bootstrapped as platform operator; one operator exists. An owner-only audit record in the restricted backup schema records execution, operator UUID, migration version and backup checksum. `isolation_verified=false`; no school was activated. All ten retired Edge deployments were deployed and live-checked with malformed/forged requests: every handler returned its expected 410 retirement code. Both `submission-attachments` and `idea-update-evidence` buckets were confirmed private. Source function definitions had not drifted since the successfully rehearsed snapshot.
 
-The Express build must deploy with these migrations. Follow the remaining acceptance and activation checklist below; completed technical steps do not supply legal/institutional approval.
+The matching Express build was pushed to `main` as `162d52b` and the live Account security route was verified (303 to school chooser when unauthenticated). Follow the remaining acceptance and activation checklist below; completed technical steps do not supply legal/institutional approval.
 
 1. Completed: management connectivity, source function drift/counts and private bucket checks. Pre-cutover database size was 154,659,987 bytes. Repeat drift/backup checks before any further schema change.
 2. Confirm off-project durable backup and recovery access. The provider reported no managed backups and PITR disabled; do not equate the protected same-database copy with independent disaster recovery.
 3. Completed: applied the four reviewed new migrations in one controlled transaction and recorded their exact versions in migration history. Do not replay unrelated old migrations merely because historical tracking is incomplete. Leave `school_release_gate.isolation_verified=false`.
 4. Completed: bootstrapped only the exact confirmed, verified sign-in account `keanethdaveberido@gmail.com` as platform operator through a controlled owner operation, with an audit record. Do not promote all legacy admins. This is not permission to publish that email in legal notices.
 5. Completed: all ten Edge tombstones deployed and verified. Retired Next middleware is included in the app release. Direct grants/RPC checks and hosted object-policy/signed-link checks still need final verification. Keep tenant buckets private.
-6. Deploy the matching Express build. Non-destructive checks must verify chooser, account security, health, no-store behavior, old endpoints and inactive/private-school denial. Do not create test accounts, records, messages or load on production.
+6. Matching Express build deployed. Chooser, Account security redirect and no-store behavior were verified. Full hosted smoke is blocked by the provider service issue recorded below. Verify health and inactive/private-school denial after provider recovery. Do not create test accounts, records, messages or load on production.
 7. Use two-school synthetic staging for hosted Auth/Storage, concurrency, cache switching, revocation and recovery checks. Record cutover commit, reviewer, outputs, rollback/forward-fix steps and operational owners.
 8. Confirm the actual operator’s name and monitored public privacy mailbox; configure notices and approved school policies, institutional authority, contracts, age/retention rules and rights/incident operations before approving any school. CSPC is a prospective adopting school, not the declared service operator. Only after evidence review may the database owner unlock isolation; each school still needs its own reviewed policy and explicit activation.
 
 
 ### Final local validation
 Full suite **236 passed, zero failed/skipped**. Complete app build and all TypeScript targets passed. Four HTTP smoke checks passed against the compiled Express app (chooser redirect, unauthenticated security redirect, private legal page/CSP and retired root write). No production test records, enrollment, email or load tests were performed. `check:release` intentionally still exits 1 for unresolved operational/legal gates.
+
+
+### Hosted service issue after deployment
+At `2026-10-16T16:02Z`, the public Supabase gateway returned 521 and the app health endpoint returned 503. Supabase Management API service health independently reported Auth and REST **UNHEALTHY**, Database and Storage **healthy**; project metadata reported ACTIVE_HEALTHY. The database had ten connections, no lock waiters and intact migrated records. This does not prove the cause of the outage or resolve the historical high CPU issue.
+
+A supported project restart was requested at `16:03:46Z` (HTTP 200); database startup advanced to `16:04:21Z`. Auth/REST remained unhealthy in subsequent checks, so the deployment is **not verified healthy**. Code now reports expected provider unavailability as 503 with a generic message and Retry-After, rather than an undifferentiated school-page error. Full local build/typechecks and 22 focused auth, onboarding and scope/error regressions passed after this recovery handling change. No grants were loosened, data deleted, paid compute changes made, or schools activated to hide the outage. If service health does not recover, use the Supabase dashboard/support to diagnose Auth/REST startup before onboarding any school.
+
+The cloud environment startup instructions were updated as a saved draft for the scoped routes, required service credentials and supported proxy-backed Management API access. Draft persistence is not environment publication.
+
+
+Post-restart rechecks through `16:08Z` still reported Auth/REST unhealthy. No synthetic schools or production test records were created. A managed provider recovery/support investigation is required if those services do not recover; local code cannot establish why the provider services are failing to start. Keep the activation lock and least-privilege grants in place during recovery.

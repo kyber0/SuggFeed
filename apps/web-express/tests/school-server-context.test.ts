@@ -55,10 +55,10 @@ test('rendered school paths scope business links without rewriting assets, text 
 
 test('school middleware ignores legacy roles, fails closed for private/unreviewed schools and preserves unsubscribe',async()=>{
  const originalFrom=supabasePlatform.from;
- let approved=true,publication='private',memberRole:string|null='student',status='active';
+ let approved=true,publication='private',memberRole:string|null='student',status='active',outage=false;
  supabasePlatform.from=((table:string)=>{
   const data=table==='schools'?{id:A.id,slug:A.slug,name:A.name,status}:table==='school_memberships'?(memberRole?{role:memberRole}:null):{approved_at:approved?'2026-10-16':null,publication_policy:publication};
-  const q:any={select(){return q;},eq(){return q;},async maybeSingle(){return {data,error:null};}};return q;
+  const q:any={select(){return q;},eq(){return q;},async maybeSingle(){return {data,error:outage?{message:'private provider failure'}:null};}};return q;
  }) as any;
  async function resolve(path='/feed'){
   const req:any={url:'/s/school-a'+path,session:{user:{id:A.actorId,role:'admin'}}};
@@ -69,6 +69,7 @@ test('school middleware ignores legacy roles, fails closed for private/unreviewe
  }
  try {
   const active=await resolve();assert.equal(active.user.role,'student');assert.equal(active.scope.id,A.id);assert.equal(active.url,'/feed');
+  outage=true;await assert.rejects(resolve(),(error:any)=>error.status===503);outage=false;
   memberRole=null;assert.equal((await resolve()).status,403);
   publication='public';assert.equal((await resolve()).status,200);
   approved=false;assert.equal((await resolve()).status,503);

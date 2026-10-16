@@ -69,7 +69,7 @@ Existing `archive-old-submissions` uses configured retention_days and updates se
 | P0 DPO + records officer | Approved retention schedule per table/storage/log/backup, legal holds, deletion/anonymization and recovery protocol | Open; destructive automation deferred |
 | P0 security owner | Hosted RLS/grants/security-definer review with anon/student/staff/admin negative tests, private buckets and role revocation; no service key in frontend/repo/history | Local SQL/HTTP negative checks passed; hosted grants/bucket checks pending |
 | P0 operations | Production HTTPS, Supabase URLs/redirect allowlist, strong separate secrets, least-privilege provider access and staff MFA; controlled staging with synthetic data | Configuration partly present; hosted verification open |
-| P0 operations | Deployment-wide rate/bot controls including Supabase Auth and anonymous writes, alerting, bounded retry behavior | Atomic shared budgets implemented and migrated; matching app deployment/hosted acceptance in progress |
+| P0 operations | Deployment-wide rate/bot controls including Supabase Auth and anonymous writes, alerting, bounded retry behavior | Atomic shared budgets implemented and migrated; matching app deployed; hosted acceptance blocked by provider Auth/REST outage |
 | P0 DPO/support | Working monitored rights and incident channels, responder assignments, verified request dry run | Open |
 | P0 operations | Recoverable backups, restore rehearsal in isolated project, documented RPO/RTO, rollback and forward-compatible migration process | Encrypted snapshot and full local database restore/migration rehearsal passed; Auth/Storage recovery, durable backup retention and approved RPO/RTO remain open |
 | P0 release owner | Functional auth/recovery/accessibility/security checks against release candidate, dependency/license findings triaged and patches applied | Focused code checks only in this task |
@@ -120,3 +120,6 @@ This register starts the readiness work. Record implementation and checks in the
 
 ### Implementation update — 16 October 2026
 See [cutover evidence](tenant-cutover.md#current-cutover-evidence--16-october-2026). Local implementation is complete for the staged shared-school boundary, onboarding review, invitations, per-school notices, shared request budgets, account-security UI and staff/operator MFA. This does not complete institutional authority, lawful grounds, contracts, monitored rights handling, incident staffing, retention approval or provider recovery/configuration checks. Existing public availability is not approval to onboard schools.
+
+
+Hosted service health after deployment remains blocked: Supabase reports Auth/REST unhealthy while Database/Storage are healthy; a supported restart was requested. See the cutover ledger. Do not treat Git push, migration success or passing local tests as a healthy release or legal clearance.
