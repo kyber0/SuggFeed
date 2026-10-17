@@ -69,3 +69,12 @@ test('OAuth rejects unscoped, auth, and external callback return destinations', 
   assert.deepEqual(h.navigation,['/account/home?returnTo=%2Fschools']);
  }
 });
+
+test('OAuth provider failures explain the category without exposing raw provider data',async()=>{
+ const h=harness('?error=server_error&error_code=unexpected_failure&error_description=Database+error+saving+new+user','',null);await h.open();
+ assert.match(h.node('auth-callback-message').textContent,/could not create or update your account/i);assert.match(h.node('auth-callback-message').textContent,/unexpected_failure/);
+ assert.equal(h.synced.length,0);assert.equal(h.exchanges.length,0);assert.equal(h.history.some(url=>url.includes('error_description')),false);
+ const credentials=harness('','#error=server_error&error_code=unexpected_failure&error_description=invalid_client+secret-value',null);await credentials.open();
+ assert.match(credentials.node('auth-callback-message').textContent,/Google sign-in configuration/);assert.doesNotMatch(credentials.node('auth-callback-message').textContent,/secret-value/);
+ const unknown=harness('?error=server_error&error_description=private-token-value','',null);await unknown.open();assert.doesNotMatch(unknown.node('auth-callback-message').textContent,/private-token-value/);
+});

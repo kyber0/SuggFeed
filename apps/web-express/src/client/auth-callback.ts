@@ -109,7 +109,28 @@
       const sb = window._sb;
       if (!sb) throw new Error('Authentication is unavailable. Please try again later.');
       history.replaceState(null, '', codeEntryPage ? '/auth/recovery' : recovery ? '/auth/callback?type=recovery' : '/auth/callback');
-      if (query.has('error') || hash.has('error')) throw new Error('This link was cancelled, expired, or could not be verified. Request a new link and try again.');
+      if (query.has('error') || hash.has('error') || query.has('error_code') || hash.has('error_code')) {
+        const suppliedCode = query.get('error_code') || hash.get('error_code') || query.get('error') || hash.get('error') || '';
+        const code = /^[a-z0-9_]{1,64}$/.test(suppliedCode) ? suppliedCode : 'oauth_error';
+        // Classify provider details without displaying or storing arbitrary upstream responses.
+        const detail = (query.get('error_description') || hash.get('error_description') || '').toLowerCase();
+        let explanation = 'The sign-in service could not complete Google verification. Start a fresh sign-in. If it happens again, report the error code below.';
+        if (detail.includes('invalid_client') || code === 'provider_disabled' || code === 'oauth_provider_not_supported') {
+          explanation = 'The Google sign-in configuration was rejected. The service administrator needs to check the Google provider credentials and callback configuration.';
+        } else if (detail.includes('database error') || detail.includes('saving new user')) {
+          explanation = 'The authentication service could not create or update your account. The service administrator needs to check the account-creation database error.';
+        } else if (['bad_oauth_state','bad_oauth_callback','flow_state_expired','flow_state_not_found'].includes(code)) {
+          explanation = 'This sign-in request expired or lost its browser session. Start again on this website and finish in the same browser tab.';
+        } else if (code === 'access_denied') {
+          explanation = 'Google sign-in was not authorized. Start again and complete the Google consent screen.';
+        } else if (['identity_already_exists','email_exists'].includes(code)) {
+          explanation = 'This Google identity could not be linked to the account. Sign in using your existing method and contact the service administrator.';
+        } else if (code === 'signup_disabled') {
+          explanation = 'New account registration is disabled. Contact the service administrator if you need access.';
+        }
+        history.replaceState(null, '', '/auth/callback?error=oauth_error&error_code=' + code);
+        throw new Error(explanation + ' Error code: ' + code + '.');
+      }
       if ((query.has('code') && !query.get('code')) ||
           ((hash.has('access_token') || hash.has('refresh_token')) && (!hash.get('access_token') || !hash.get('refresh_token')))) {
         throw new Error('This link is incomplete. Request a new link and try again.');

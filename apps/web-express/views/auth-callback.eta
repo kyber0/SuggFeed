@@ -22,7 +22,7 @@
     <button type="submit" class="am-btn-primary" id="auth-reset-submit">Update password</button>
     <button type="button" class="am-btn-ghost" id="auth-reset-cancel">Cancel reset and sign out</button>
   </form>
-  <a class="btn-primary" id="auth-callback-retry" href="/" hidden>Return home and try again</a>
+  <a class="btn-primary" id="auth-callback-retry" href="/schools" hidden>Return to sign in</a>
 </main>
 
-<script defer src="/js/auth-callback.js?v=20261017-system-navigation"></script>
+<script defer src="/js/auth-callback.js?v=20261017-oauth-errors"></script>
