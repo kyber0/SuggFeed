@@ -25,7 +25,7 @@
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
   <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261015-hover-fix" />
-  <% if (it.platformDashboard || it.currentPath === '/schools') { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261017-super-admin-filters" /><% } %>
+  <% if (it.platformDashboard || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261017-school-settings" /><% } %>
   <script defer src="/js/events.js?v=20261016-school-isolation"></script>
 
   <script src="/js/preferences.js?v=20261016-school-isolation"></script>
