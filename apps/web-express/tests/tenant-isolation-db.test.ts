@@ -176,15 +176,16 @@ test('community, follow/vote/notification and staff saves cannot affect another 
 
 test('workflow posts/snapshots/dates and notification trigger read only their school',async()=>{
  const db=await createTenantDb();try{
+  const day=(await db.query<any>("SELECT to_char(clock_timestamp() AT TIME ZONE 'Asia/Manila','YYYY-MM-DD') AS day")).rows[0].day;
   assert.equal(await tenantRpc(db,SCHOOL_A,STUDENT,'set_idea_follow',{p_submission_id:IDEA_A,p_following:true}),null);
-  const post={p_submission_id:IDEA_A,p_request_id:crypto.randomUUID(),p_expected_updated_at:await timestamp(db,IDEA_A),p_kind:'update',p_body:'The school reviewed this work and published a progress update.',p_visibility:'public',p_percent:null,p_blocked_reason:null,p_next_step:null,p_occurred_on:'2026-10-16',p_office_label:'School administration',p_notify:true};
+  const post={p_submission_id:IDEA_A,p_request_id:crypto.randomUUID(),p_expected_updated_at:await timestamp(db,IDEA_A),p_kind:'update',p_body:'The school reviewed this work and published a progress update.',p_visibility:'public',p_percent:null,p_blocked_reason:null,p_next_step:null,p_occurred_on:day,p_office_label:'School administration',p_notify:true};
   const published=await tenantRpc(db,SCHOOL_A,ADMIN_A,'post_idea_update',post);assert.ok(published.update.id);
   assert.equal((await db.query<any>('SELECT school_id FROM idea_notifications')).rows[0].school_id,SCHOOL_A);
   const snapshot=await tenantRpc(db,SCHOOL_A,ADMIN_A,'staff_workflow_snapshot',{p_submission_id:IDEA_A});assert.ok(snapshot);
   await assert.rejects(tenantRpc(db,SCHOOL_A,ADMIN_A,'staff_workflow_snapshot',{p_submission_id:IDEA_B}),/not found/i);
   await assert.rejects(tenantRpc(db,SCHOOL_A,ADMIN_A,'post_idea_update',{...post,p_submission_id:IDEA_B,p_request_id:crypto.randomUUID(),p_expected_updated_at:await timestamp(db,IDEA_B)}),/Not found/i);
   await assert.rejects(tenantRpc(db,SCHOOL_A,ADMIN_A,'repair_work_dates',{p_submission_id:IDEA_B,p_request_id:crypto.randomUUID(),p_expected_updated_at:await timestamp(db,IDEA_B),p_started_on:'2026-10-10',p_completed_on:null,p_source:'Verified school record',p_reason:'Repair from verified school record.'}),/not found|eligible|dates/i);
-  await assert.rejects(tenantRpc(db,SCHOOL_A,ADMIN_A,'perform_workflow_action',{p_submission_id:IDEA_B,p_request_id:crypto.randomUUID(),p_expected_updated_at:await timestamp(db,IDEA_B),p_action:'start',p_body:'Work has begun on this school improvement.',p_occurred_on:'2026-10-16'}),/not found|disabled|preview/i);
+  await assert.rejects(tenantRpc(db,SCHOOL_A,ADMIN_A,'perform_workflow_action',{p_submission_id:IDEA_B,p_request_id:crypto.randomUUID(),p_expected_updated_at:await timestamp(db,IDEA_B),p_action:'start',p_body:'Work has begun on this school improvement.',p_occurred_on:day}),/not found|disabled|preview/i);
   const note=(await db.query<any>('SELECT id FROM idea_notifications WHERE school_id=$1',[SCHOOL_A])).rows[0].id;
   assert.equal(await tenantRpc(db,SCHOOL_B,STUDENT,'mark_idea_notification_read',{p_notification_id:note}),false);
   assert.equal(await tenantRpc(db,SCHOOL_A,STUDENT,'mark_idea_notification_read',{p_notification_id:note}),true);
