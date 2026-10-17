@@ -2,10 +2,12 @@
 <header class="site-header">
   <a class="brand" href="/" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>
   <nav aria-label="Primary navigation">
+    <% if (it.platformDashboard) { %><a href="/schools" class="nav-link-hide-mobile">Your schools</a><% } else { %>
     <a href="/" aria-current="<%= it.currentPath === '/' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>">Home</a>
     <a href="/feed" aria-current="<%= it.currentPath === '/feed' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/feed' ? ' active' : '' %>">Community ideas</a>
     <a href="/roadmap" aria-current="<%= it.currentPath === '/roadmap' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/roadmap' ? ' active' : '' %>">Roadmap</a>
-    <a href="/admin" aria-current="<%= it.currentPath.startsWith('/admin') ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath.startsWith('/admin') ? ' active' : '' %>">Staff portal</a>
+    <% } %>
+    <% if (it.isPlatformOperator) { %><a href="/platform/schools" class="nav-link-hide-mobile<%= it.platformDashboard ? ' active' : '' %>" aria-current="<%= it.platformDashboard ? 'page' : 'false' %>">Super admin</a><% } else { %><a href="/admin" aria-current="<%= it.currentPath.startsWith('/admin') ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath.startsWith('/admin') ? ' active' : '' %>">Staff portal</a><% } %>
 
     <% if (it.user) { %>
       <!-- Authenticated: avatar chip with dropdown -->
@@ -33,9 +35,9 @@
           <a href="/notifications" class="dropdown-link"><%~ menuIcon('bell') %> School updates</a>
           <a href="/feed?scope=following" class="dropdown-link"><%~ menuIcon('bookmark') %> Following</a>
           <a href="/inbox" class="dropdown-link"><%~ menuIcon('message') %> Private school messages</a>
-          <a href="/admin" class="dropdown-link dropdown-link--staff">
+          <a href="<%= it.isPlatformOperator ? '/platform/schools' : '/admin' %>" class="dropdown-link dropdown-link--staff">
             <%~ menuIcon('shield') %>
-            Staff Portal
+            <%= it.isPlatformOperator ? 'Super admin dashboard' : 'Staff Portal' %>
           </a>
           <a href="/account/security" class="dropdown-link"><%~ menuIcon('shield') %> Account security</a>
           <div class="divider"></div>

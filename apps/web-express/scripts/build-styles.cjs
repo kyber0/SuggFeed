@@ -9,3 +9,4 @@ const write=(name,modules)=>fs.writeFileSync(path.join(root,name),'/* Generated 
 write('base.bundle.css',files.slice(0,boundary));
 write('enhancements.bundle.css',files.slice(tail));
 write('profile.bundle.css',['profile.css']);write('staff.bundle.css',['admin.css']);
+write('platform.bundle.css',['platform.css']);

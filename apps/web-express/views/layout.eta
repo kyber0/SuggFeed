@@ -25,6 +25,7 @@
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
   <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261015-hover-fix" />
+  <% if (it.platformDashboard || it.currentPath === '/schools') { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261017-super-admin" /><% } %>
   <script defer src="/js/events.js?v=20261016-school-isolation"></script>
 
   <script src="/js/preferences.js?v=20261016-school-isolation"></script>
@@ -58,7 +59,7 @@
 <%~ include('partials/submit-panel', it) %>
 <% if (['/','/feed','/feed/'].includes(it.currentPath || '/')) { %><%~ include('partials/idea-detail-drawer', it) %><% } %>
 <%~ include('partials/report-dialog', it) %>
-<%~ include('partials/mobile-nav', it) %>
+<% if (!it.platformDashboard) { %><%~ include('partials/mobile-nav', it) %><% } %>
 
 <!-- Client-side auth state sync -->
 <script defer src="/js/auth.js?v=20261016-school-isolation"></script>

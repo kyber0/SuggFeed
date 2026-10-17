@@ -17,6 +17,7 @@ async function operator(req: Request, res: Response) {
   const { data, error } = await supabasePlatform.rpc('platform_operator_active', { p_actor: user.id });
   if (error) throw Object.assign(new Error('Platform authorization unavailable.'), {status:503});
   if (data !== true) { res.status(403).render('school-message', { title: 'Access denied', message: 'Platform operator permission is required.' }); return null; }
+  Object.assign(res.locals, { isPlatformOperator: true, platformDashboard: true });
   let assured = false;
   requireStrongAuth(req, res, () => { assured = true; });
   return assured ? user : null;
@@ -74,17 +75,26 @@ router.post('/schools/apply', run(async (req, res) => {
   if (error) return failed(res, 'Application not accepted', 'The school address may be unavailable or the daily application limit has been reached. Check your details and try later.');
   return res.redirect(303, '/schools?saved=1');
 }));
+router.get('/platform', (_req, res) => res.redirect(303, '/platform/schools'));
+router.get('/platform/schools/:id/activate', (_req, res) => res.redirect(303, '/platform/schools#schools'));
 router.get('/platform/schools', run(async (req, res) => {
-  if (!await operator(req, res)) return;
+  const user = await operator(req, res); if (!user) return;
   const page = req.query.page === undefined ? 0 : Number(req.query.page);
-  if (!Number.isSafeInteger(page) || page < 0 || page > 10000) return failed(res, 'Invalid review page', 'Choose a valid school review page.');
-  const [applications, schools, settings] = await Promise.all([
-    supabasePlatform.from('school_applications').select('*').eq('status', 'pending').order('created_at').range(page * 100, page * 100 + 99),
-    supabasePlatform.from('schools').select('id,slug,name,status').order('created_at', { ascending: false }).range(page * 100, page * 100 + 99),
-    supabasePlatform.from('school_settings').select('*').order('updated_at', { ascending: false }).range(page * 100, page * 100 + 99),
+  const applicationPage = req.query.applicationPage === undefined ? 0 : Number(req.query.applicationPage);
+  if ([page, applicationPage].some(value => !Number.isSafeInteger(value) || value < 0 || value > 10000)) return failed(res, 'Invalid review page', 'Choose a valid school review page.');
+  const [applications, schools] = await Promise.all([
+    supabasePlatform.from('school_applications').select('id,name,slug,contact_name,contact_email,authority_statement,created_at').eq('status', 'pending').order('created_at').order('id').range(applicationPage * 12, applicationPage * 12 + 12),
+    supabasePlatform.from('schools').select('id,slug,name,status').order('created_at', { ascending: false }).order('id').range(page * 24, page * 24 + 24),
   ]);
-  if (applications.error || schools.error || settings.error) throw Object.assign(new Error('School review unavailable.'), {status:503});
-  return res.render('platform-schools', { title: 'School review — SuggFeed', applications: applications.data || [], schools: schools.data || [], settings: settings.data || [], page, nextPage: [applications.data, schools.data, settings.data].some(rows => rows?.length === 100), saved: req.query.saved === '1' });
+  if (applications.error || schools.error) throw Object.assign(new Error('School review unavailable.'), {status:503});
+  const visibleSchools = (schools.data || []).slice(0, 24);
+  const ids = visibleSchools.map(school => school.id);
+  const [settings, memberships] = visibleSchools.length ? await Promise.all([
+    supabasePlatform.from('school_settings').select('school_id,version,privacy_notice,terms_notice,privacy_contact,school_contact,age_policy,publication_policy,retention_days,approved_at').in('school_id', ids),
+    supabasePlatform.from('school_memberships').select('school_id').eq('user_id', user.id).eq('role', 'admin').eq('status', 'active').in('school_id', ids),
+  ]) : [{ data: [], error: null }, { data: [], error: null }];
+  if (settings.error || memberships.error) throw Object.assign(new Error('School policy review unavailable.'), {status:503});
+  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings: settings.data || [], adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1' });
 }));
 router.post('/platform/schools/:id/review', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;

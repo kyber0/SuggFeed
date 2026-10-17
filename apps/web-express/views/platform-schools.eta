@@ -1,5 +1,77 @@
-<% layout('layout') %>
-<main class="sf-legal-page"><div class="sf-legal-container"><h1>Platform school review</h1><% if(it.saved) { %><p role="status">Review saved.</p><% } %><p>Verify institutional authority, contacts, applicable agreements and required policies through your approved process. Record actual review references. Pending workspace provisioning cannot open the isolation release gate.</p><h2>Pending applications</h2><% if(!it.applications.length) { %><p>No pending applications.</p><% } %>
-<% for(const application of it.applications) { %><section><h3><%= application.name %> (<%= application.slug %>)</h3><p>Contact: <%= application.contact_name %> (<%= application.contact_email %>)</p><p><%= application.authority_statement %></p><form method="post" action="/platform/schools/<%= application.id %>/review"><p><label for="review-<%= application.id %>">Verification outcome and review reference</label><textarea id="review-<%= application.id %>" name="reference" required minlength="10" maxlength="2000"></textarea></p><button name="decision" value="approved">Approve pending workspace</button> <button name="decision" value="rejected">Reject application</button></form></section><% } %>
-<h2>School policy review</h2><% for(const settings of it.settings) { const school=it.schools.find(s=>s.id===settings.school_id); %><section><h3><%= school?.name || settings.school_id %>: version <%= settings.version %></h3><p>Institutional contact: <%= settings.school_contact %>. Privacy contact: <%= settings.privacy_contact %>. Publication: <%= settings.publication_policy %>. Retention: <%= settings.retention_days %> days.</p><h4>Privacy notice</h4><p style="white-space:pre-wrap"><%= settings.privacy_notice %></p><h4>Terms</h4><p style="white-space:pre-wrap"><%= settings.terms_notice %></p><h4>Age policy</h4><p><%= settings.age_policy %></p><p>Review: <%= settings.approved_at?'approved':'pending' %></p><form method="post" action="/platform/schools/<%= settings.school_id %>/policies"><input type="hidden" name="version" value="<%= settings.version %>" /><p><label for="policy-<%= settings.school_id %>">Policy and agreement review reference</label><textarea id="policy-<%= settings.school_id %>" name="reference" required minlength="10" maxlength="2000"></textarea></p><button type="submit">Record completed review</button></form></section><% } %>
-<h2>Activation</h2><p>Activation requires an active administrator, reviewed policies and the database isolation release gate. A locked gate cannot be overridden here.</p><ul><% for(const school of it.schools) { %><li><%= school.name %>: <%= school.status %><% if(['pending','suspended'].includes(school.status)) { %><form method="post" action="/platform/schools/<%= school.id %>/activate"><button type="submit">Request activation</button></form><% } %></li><% } %></ul><nav aria-label="School review pages"><% if(it.page>0) { %><a href="/platform/schools?page=<%= it.page-1 %>">Previous review page</a><% } %> <% if(it.nextPage) { %><a href="/platform/schools?page=<%= it.page+1 %>">Next review page</a><% } %></nav></div></main>
+<% layout('layout');
+const icon = name => '<svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-'+name+'"></use></svg>';
+const policyFor = id => it.settings.find(policy => policy.school_id === id);
+const pageUrl = (page, applications, anchor) => '/platform/schools?page='+page+'&applicationPage='+applications+'#'+anchor;
+const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspended',closed:'Closed'};
+%>
+<main class="platform-dashboard" id="platform-dashboard">
+  <aside class="platform-sidebar" aria-label="Super admin workspace">
+    <div class="platform-workspace"><span class="platform-icon"><%~ icon('crown') %></span><div><strong>SuggFeed</strong><span>Super admin workspace</span></div></div>
+    <nav class="platform-nav" aria-label="Dashboard sections">
+      <a href="#overview" class="is-current"><%~ icon('board') %> Overview</a>
+      <a href="#schools"><%~ icon('users') %> Schools <span><%= it.schools.length %></span></a>
+      <a href="#applications"><%~ icon('inbox') %> Applications <span><%= it.applications.length %></span></a>
+      <a href="#policies"><%~ icon('list') %> Policy reviews</a>
+      <a href="#setup"><%~ icon('shield') %> Service setup</a>
+    </nav>
+    <div class="platform-sidebar-footer"><span class="platform-role"><%~ icon('shield') %> Super admin</span><p>Platform permissions are separate from school memberships.</p><a href="/schools">Back to your schools <%~ icon('arrow') %></a></div>
+  </aside>
+  <div class="platform-content">
+    <header class="platform-page-header" id="overview">
+      <div><p class="platform-eyebrow">Platform administration</p><h1>Platform overview</h1><p>Your schools, reviews, and next steps in one place.</p></div>
+      <a class="platform-button platform-button--primary" href="#applications"><%~ icon('inbox') %> Review applications</a>
+    </header>
+    <% if (it.saved) { %><div class="platform-feedback" role="status"><%~ icon('shield') %> Your review was saved successfully.</div><% } %>
+    <section class="platform-stats" aria-label="Current page summary">
+      <article class="platform-stat"><span class="platform-stat-icon"><%~ icon('users') %></span><p>Schools listed</p><strong><%= it.schools.length %></strong><small>On this page</small></article>
+      <article class="platform-stat"><span class="platform-stat-icon platform-stat-icon--success"><%~ icon('board') %></span><p>Active workspaces</p><strong><%= it.schools.filter(school=>school.status==='active').length %></strong><small>Among listed schools</small></article>
+      <article class="platform-stat"><span class="platform-stat-icon platform-stat-icon--accent"><%~ icon('inbox') %></span><p>Applications to review</p><strong><%= it.applications.length %></strong><small>On this page</small></article>
+      <article class="platform-stat"><span class="platform-stat-icon"><%~ icon('list') %></span><p>Policies to review</p><strong><%= it.settings.filter(policy=>!policy.approved_at).length %></strong><small>Saved drafts for listed schools</small></article>
+    </section>
+    <section class="platform-setup-banner" aria-labelledby="setup-banner-title">
+      <span class="platform-icon"><%~ icon('shield') %></span><div><h2 id="setup-banner-title"><%= it.businessReady ? 'Keep every workspace ready for its community' : 'Complete service setup before onboarding schools' %></h2><p><%= it.businessReady ? 'School activation requires reviewed policies, administrator access, and completed isolation checks.' : 'Your service operator name and privacy contact are needed before applications and approvals can open.' %></p></div><a class="platform-text-link" href="#setup">View checklist <%~ icon('arrow') %></a>
+    </section>
+    <section class="platform-panel" id="schools" aria-labelledby="schools-title">
+      <div class="platform-panel-heading"><div><p class="platform-eyebrow">Workspaces</p><h2 id="schools-title">School directory</h2><p>See what each school needs before it can open.</p></div><span class="platform-count"><%= it.schools.length %> listed</span></div>
+      <% if (!it.schools.length) { %><div class="platform-empty"><%~ icon('users') %><h3>No schools on this page</h3><p>Approved applications create a pending school workspace.</p><a class="platform-text-link" href="#applications">View applications</a></div><% } %>
+      <ul class="platform-school-list">
+      <% for (const school of it.schools) { const policy=policyFor(school.id), canEdit=it.adminSchoolIds.includes(school.id), canRequest=it.businessReady && policy?.approved_at && ['pending','suspended'].includes(school.status); %>
+        <li class="platform-school" id="school-<%= school.id %>">
+          <div class="platform-school-identity"><span class="platform-school-avatar" aria-hidden="true"><%= school.name.slice(0,1).toUpperCase() %></span><div><h3><%= school.name %></h3><p>/s/<%= school.slug %></p></div></div>
+          <div class="platform-school-state"><span class="platform-badge platform-badge--<%= school.status %>"><%= statusLabel[school.status] || school.status %></span><p id="school-reason-<%= school.id %>"><%= school.status==='active' ? 'Workspace is open' : !policy ? 'School policies have not been saved' : !policy.approved_at ? 'Policy review is required' : !it.businessReady ? 'Service setup is incomplete' : 'Final activation checks are required' %></p></div>
+          <div class="platform-school-actions">
+            <% if (canEdit) { %><a class="platform-button" href="/s/<%= school.slug %>/admin/school-settings">School settings</a><% } %>
+            <% if (school.status==='active' && canEdit) { %><a class="platform-button" href="/s/<%= school.slug %>/">Open workspace <%~ icon('arrow') %></a><% } %>
+            <% if (['pending','suspended'].includes(school.status)) { %><form method="post" action="/platform/schools/<%= school.id %>/activate"><button class="platform-button platform-button--primary" type="submit" aria-describedby="school-reason-<%= school.id %>" <%= canRequest ? '' : 'disabled' %>>Request activation</button></form><% } %>
+          </div>
+        </li>
+      <% } %>
+      </ul>
+      <div class="platform-panel-footer"><p>Final administrator and isolation checks run when activation is requested.</p><nav class="platform-pagination" aria-label="School directory pages"><% if (it.page>0) { %><a class="platform-button" href="<%= pageUrl(it.page-1,it.applicationPage,'schools') %>">Previous</a><% } %><span>Page <%= it.page+1 %></span><% if (it.nextPage) { %><a class="platform-button" href="<%= pageUrl(it.page+1,it.applicationPage,'schools') %>">Next schools</a><% } %></nav></div>
+    </section>
+    <div class="platform-review-grid">
+      <section class="platform-panel" id="applications" aria-labelledby="applications-title">
+        <div class="platform-panel-heading"><div><p class="platform-eyebrow">Intake</p><h2 id="applications-title">Pending applications</h2><p>Verify institutional authority before provisioning a workspace.</p></div></div>
+        <% if (!it.applications.length) { %><div class="platform-empty"><%~ icon('inbox') %><h3>You're all caught up</h3><p>No pending applications on this page. New school requests will appear here.</p></div><% } %>
+        <% for (const application of it.applications) { %><article class="platform-review-card"><div class="platform-review-heading"><h3><%= application.name %></h3><span class="platform-badge platform-badge--pending">Awaiting review</span></div><p>/s/<%= application.slug %></p><dl class="platform-facts"><div><dt>Representative</dt><dd><%= application.contact_name %></dd></div><div><dt>Contact</dt><dd><%= application.contact_email %></dd></div></dl><details class="platform-details"><summary>Authority statement</summary><p class="platform-preserve-text"><%= application.authority_statement %></p></details><form method="post" action="/platform/schools/<%= application.id %>/review"><label for="review-<%= application.id %>">Verification outcome and review reference</label><textarea id="review-<%= application.id %>" name="reference" rows="3" required minlength="10" maxlength="2000" placeholder="Record the actual verification and its reference."></textarea><div class="platform-form-actions"><button class="platform-button platform-button--primary" name="decision" value="approved" <%= it.businessReady ? '' : 'disabled' %>>Approve pending workspace</button><button class="platform-button platform-button--danger" name="decision" value="rejected">Reject application</button></div><% if (!it.businessReady) { %><p class="platform-help">Complete service setup before approving applications.</p><% } %></form></article><% } %>
+        <% if (it.applicationPage>0 || it.nextApplicationPage) { %><nav class="platform-pagination platform-pagination--panel" aria-label="Application review pages"><% if (it.applicationPage>0) { %><a class="platform-button" href="<%= pageUrl(it.page,it.applicationPage-1,'applications') %>">Previous applications</a><% } %><span>Page <%= it.applicationPage+1 %></span><% if (it.nextApplicationPage) { %><a class="platform-button" href="<%= pageUrl(it.page,it.applicationPage+1,'applications') %>">Next applications</a><% } %></nav><% } %>
+      </section>
+      <section class="platform-panel" id="setup" aria-labelledby="setup-title">
+        <div class="platform-panel-heading"><div><p class="platform-eyebrow">Before launch</p><h2 id="setup-title">Service setup</h2><p>Requirements for onboarding and activation.</p></div></div>
+        <dl class="platform-checklist">
+          <div><dt><span class="platform-check-dot <%= it.legal.operatorName ? 'is-complete' : '' %>" aria-hidden="true"></span>Service operator</dt><dd><%= it.legal.operatorName || 'Not configured' %></dd></div>
+          <div><dt><span class="platform-check-dot <%= it.legal.privacyEmail ? 'is-complete' : '' %>" aria-hidden="true"></span>Privacy contact</dt><dd><%= it.legal.privacyEmail || 'Not configured' %></dd></div>
+          <div><dt><span class="platform-check-dot is-complete" aria-hidden="true"></span>Admin verification</dt><dd>Authenticator verified for this visit</dd></div>
+          <div><dt><span class="platform-check-dot" aria-hidden="true"></span>School isolation sign-off</dt><dd>Managed separately; checked on activation</dd></div>
+        </dl>
+        <div class="platform-setup-note"><p>Configure your actual service operator and monitored privacy mailbox in deployment settings. School notices and contacts are managed in each school's settings.</p><a class="platform-text-link" href="/account/security?returnTo=%2Fplatform%2Fschools">Account security <%~ icon('arrow') %></a></div>
+      </section>
+    </div>
+    <section class="platform-panel" id="policies" aria-labelledby="policies-title">
+      <div class="platform-panel-heading"><div><p class="platform-eyebrow">Governance</p><h2 id="policies-title">School policy review</h2><p>Review the saved policy version for each school on this page.</p></div><span class="platform-count"><%= it.settings.length %> saved</span></div>
+      <% if (!it.settings.length) { %><div class="platform-empty"><%~ icon('list') %><h3>No saved school policies yet</h3><p>A school administrator needs to save its notices, contacts, and age policy before you can record a review.</p><a class="platform-text-link" href="#schools">Go to school directory</a></div><% } %>
+      <% for (const settings of it.settings) { const school=it.schools.find(s=>s.id===settings.school_id); %><details class="platform-policy" id="policy-<%= settings.school_id %>"><summary><span><strong><%= school?.name || 'School policy' %></strong><span>Version <%= settings.version %> · <%= settings.publication_policy==='public' ? 'Public workspace' : 'Private workspace' %></span></span><span class="platform-badge <%= settings.approved_at ? 'platform-badge--active' : 'platform-badge--pending' %>"><%= settings.approved_at ? 'Reviewed' : 'Review needed' %></span></summary><div class="platform-policy-body"><dl class="platform-facts"><div><dt>Institutional contact</dt><dd><%= settings.school_contact || 'Not provided' %></dd></div><div><dt>Privacy contact</dt><dd><%= settings.privacy_contact || 'Not provided' %></dd></div><div><dt>Retention</dt><dd><%= settings.retention_days %> days</dd></div></dl><h3>Privacy notice</h3><p class="platform-preserve-text"><%= settings.privacy_notice %></p><h3>Terms</h3><p class="platform-preserve-text"><%= settings.terms_notice %></p><h3>Age policy</h3><p class="platform-preserve-text"><%= settings.age_policy %></p><form method="post" action="/platform/schools/<%= settings.school_id %>/policies"><input type="hidden" name="version" value="<%= settings.version %>" /><label for="policy-reference-<%= settings.school_id %>">Policy and agreement review reference</label><textarea id="policy-reference-<%= settings.school_id %>" name="reference" rows="3" required minlength="10" maxlength="2000" placeholder="Record the completed review and agreement reference."></textarea><button class="platform-button platform-button--primary" type="submit">Record completed review</button></form></div></details><% } %>
+    </section>
+    <footer class="platform-footer"><p>Super admin permissions manage the platform. Each school's access rules still apply.</p><a href="/schools">Your schools</a></footer>
+  </div>
+</main>
