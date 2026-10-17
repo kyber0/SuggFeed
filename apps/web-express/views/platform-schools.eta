@@ -1,7 +1,7 @@
 <% layout('layout');
 const icon = name => '<svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-'+name+'"></use></svg>';
 const policyFor = id => it.settings.find(policy => policy.school_id === id);
-const pageUrl = (page, applications, anchor) => '/platform/schools?page='+page+'&applicationPage='+applications+'#'+anchor;
+const pageUrl = (page, applications, anchor) => '/platform/schools?page='+page+'&applicationPage='+applications+(it.search ? '&q='+encodeURIComponent(it.search) : '')+(it.status ? '&status='+encodeURIComponent(it.status) : '')+'#'+anchor;
 const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspended',closed:'Closed'};
 %>
 <main class="platform-dashboard" id="platform-dashboard">
@@ -33,7 +33,14 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
     </section>
     <section class="platform-panel" id="schools" aria-labelledby="schools-title">
       <div class="platform-panel-heading"><div><p class="platform-eyebrow">Workspaces</p><h2 id="schools-title">School directory</h2><p>See what each school needs before it can open.</p></div><span class="platform-count"><%= it.schools.length %> listed</span></div>
-      <% if (!it.schools.length) { %><div class="platform-empty"><%~ icon('users') %><h3>No schools on this page</h3><p>Approved applications create a pending school workspace.</p><a class="platform-text-link" href="#applications">View applications</a></div><% } %>
+      <form class="platform-filters" method="get" action="/platform/schools#schools" role="search" aria-label="Find a school">
+        <input type="hidden" name="applicationPage" value="<%= it.applicationPage %>" />
+        <div><label for="school-search">School name</label><input id="school-search" type="search" name="q" maxlength="100" value="<%= it.search || '' %>" placeholder="Search schools…" /></div>
+        <div><label for="school-status">Workspace status</label><select id="school-status" name="status"><option value="">All statuses</option><% for (const [value,label] of Object.entries(statusLabel)) { %><option value="<%= value %>" <%= it.status===value ? 'selected' : '' %>><%= label %></option><% } %></select></div>
+        <button class="platform-button platform-button--primary" type="submit">Find schools</button>
+        <% if (it.search || it.status) { %><a class="platform-text-link" href="/platform/schools?applicationPage=<%= it.applicationPage %>#schools">Clear filters</a><% } %>
+      </form>
+      <% if (!it.schools.length) { %><div class="platform-empty"><%~ icon('users') %><h3><%= it.search || it.status ? "No matching schools on this page" : "No schools on this page" %></h3><p><%= it.search || it.status ? "Try another school name or clear the filters." : "Approved applications create a pending school workspace." %></p><a class="platform-text-link" href="#applications">View applications</a></div><% } %>
       <ul class="platform-school-list">
       <% for (const school of it.schools) { const policy=policyFor(school.id), canEdit=it.adminSchoolIds.includes(school.id), canRequest=it.businessReady && policy?.approved_at && ['pending','suspended'].includes(school.status); %>
         <li class="platform-school" id="school-<%= school.id %>">
@@ -44,6 +51,7 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
             <% if (school.status==='active' && canEdit) { %><a class="platform-button" href="/s/<%= school.slug %>/">Open workspace <%~ icon('arrow') %></a><% } %>
             <% if (['pending','suspended'].includes(school.status)) { %><form method="post" action="/platform/schools/<%= school.id %>/activate"><button class="platform-button platform-button--primary" type="submit" aria-describedby="school-reason-<%= school.id %>" <%= canRequest ? '' : 'disabled' %>>Request activation</button></form><% } %>
           </div>
+          <details class="platform-school-readiness"><summary>Workspace readiness</summary><ul><li><span><%= policy ? 'Saved' : 'Missing' %></span> School notices and contacts</li><li><span><%= policy?.approved_at ? 'Reviewed' : 'Needs review' %></span> School policy approval</li><li><span><%= it.businessReady ? 'Configured' : 'Incomplete' %></span> Service operator and privacy contact</li><li><span>Checked on request</span> Administrator and school isolation checks</li></ul><% if (policy) { %><a class="platform-text-link" href="#policy-<%= school.id %>">View school policy review</a><% } %></details>
         </li>
       <% } %>
       </ul>

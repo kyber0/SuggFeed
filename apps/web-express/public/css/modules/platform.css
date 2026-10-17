@@ -224,3 +224,23 @@
   .school-directory-section input,.school-directory-section textarea { font-size:16px; }
 }
 @media (prefers-reduced-motion:reduce) { .platform-dashboard * { scroll-behavior:auto !important; transition:none !important; } }
+
+/* Directory controls retain the same reading order on small screens. */
+.platform-filters { display:flex; align-items:flex-end; flex-wrap:wrap; gap:12px; padding:0 24px 24px; border-bottom:1px solid var(--line); }
+.platform-filters>div { display:grid; gap:6px; flex:1 1 190px; min-width:0; }
+.platform-filters label { font-size:13px; font-weight:600; }
+.platform-filters input,.platform-filters select { width:100%; min-width:0; min-height:44px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); color:var(--ink); font:inherit; }
+.platform-school-readiness { grid-column:1/-1; border-top:1px solid var(--line); padding-top:12px; font-size:13px; }
+.platform-school-readiness summary { cursor:pointer; min-height:32px; font-weight:600; color:var(--ink-2); }
+.platform-school-readiness ul { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 24px; list-style:none; padding:8px 0 12px; margin:0; }
+.platform-school-readiness li { display:flex; flex-direction:column; gap:3px; color:var(--platform-muted); }
+.platform-school-readiness li span { color:var(--ink); font-weight:600; }
+.platform-filters input:focus-visible,.platform-filters select:focus-visible,.platform-school-readiness summary:focus-visible { outline:3px solid var(--navy); outline-offset:3px; }
+@media(max-width:600px) { .platform-filters { padding:0 16px 20px; } .platform-filters>div { flex-basis:100%; } .platform-filters>.platform-button { flex:1; } .platform-school-readiness ul { grid-template-columns:1fr; } }
+
+@media(max-width:850px) {
+  .platform-workspace { padding-bottom:14px; }
+  .platform-nav { display:flex; flex-wrap:nowrap; overflow-x:auto; gap:6px; padding:4px 0 8px; }
+  .platform-nav a { flex:0 0 auto; white-space:nowrap; min-height:44px; }
+  .platform-nav a>span { margin-left:4px; }
+}

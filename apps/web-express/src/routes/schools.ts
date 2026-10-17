@@ -82,9 +82,15 @@ router.get('/platform/schools', run(async (req, res) => {
   const page = req.query.page === undefined ? 0 : Number(req.query.page);
   const applicationPage = req.query.applicationPage === undefined ? 0 : Number(req.query.applicationPage);
   if ([page, applicationPage].some(value => !Number.isSafeInteger(value) || value < 0 || value > 10000)) return failed(res, 'Invalid review page', 'Choose a valid school review page.');
+  const search = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+  const status = typeof req.query.status === 'string' ? req.query.status : '';
+  if ((req.query.q !== undefined && typeof req.query.q !== 'string') || search.length > 100 || (req.query.status !== undefined && typeof req.query.status !== 'string') || !['', 'pending', 'active', 'suspended', 'closed'].includes(status)) return failed(res, 'Invalid school filter', 'Use a school name of up to 100 characters and a listed status.');
+  let schoolQuery = supabasePlatform.from('schools').select('id,slug,name,status');
+  if (search) schoolQuery = schoolQuery.ilike('name', '%' + search.replace(/[\\%_]/g, character => '\\' + character) + '%');
+  if (status) schoolQuery = schoolQuery.eq('status', status);
   const [applications, schools] = await Promise.all([
     supabasePlatform.from('school_applications').select('id,name,slug,contact_name,contact_email,authority_statement,created_at').eq('status', 'pending').order('created_at').order('id').range(applicationPage * 12, applicationPage * 12 + 12),
-    supabasePlatform.from('schools').select('id,slug,name,status').order('created_at', { ascending: false }).order('id').range(page * 24, page * 24 + 24),
+    schoolQuery.order('created_at', { ascending: false }).order('id').range(page * 24, page * 24 + 24),
   ]);
   if (applications.error || schools.error) throw Object.assign(new Error('School review unavailable.'), {status:503});
   const visibleSchools = (schools.data || []).slice(0, 24);
@@ -94,7 +100,7 @@ router.get('/platform/schools', run(async (req, res) => {
     supabasePlatform.from('school_memberships').select('school_id').eq('user_id', user.id).eq('role', 'admin').eq('status', 'active').in('school_id', ids),
   ]) : [{ data: [], error: null }, { data: [], error: null }];
   if (settings.error || memberships.error) throw Object.assign(new Error('School policy review unavailable.'), {status:503});
-  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings: settings.data || [], adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1' });
+  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings: settings.data || [], adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1' });
 }));
 router.post('/platform/schools/:id/review', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;
