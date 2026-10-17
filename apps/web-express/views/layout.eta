@@ -25,7 +25,7 @@
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
   <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261015-hover-fix" />
-  <% if (it.platformDashboard || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261017-school-settings" /><% } %>
+  <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261017-system-navigation" /><% } %>
   <script defer src="/js/events.js?v=20261016-school-isolation"></script>
 
   <script src="/js/preferences.js?v=20261016-school-isolation"></script>
@@ -44,7 +44,7 @@
 <%~ include('partials/confirmation', it) %>
 <script defer src="/js/activity.js?v=20261016-school-isolation"></script>
 <%~ include('partials/header', it) %>
-<% if (it.schoolBase) { %>
+<% if (it.schoolBase && !it.accountArea) { %>
 <nav class="workspace-actions care-card" aria-label="Current school">
   <strong><%= it.schoolName || 'Your school' %></strong>
   <a class="workspace-button" href="/schools">Switch school</a>
@@ -56,21 +56,26 @@
 <div id="page-content" tabindex="-1"><%~ it.body ?? '' %></div>
 
 <%~ include('partials/auth-modal', it) %>
+<% if (!it.accountArea && !it.platformDashboard) { %>
 <%~ include('partials/submit-panel', it) %>
 <% if (['/','/feed','/feed/'].includes(it.currentPath || '/')) { %><%~ include('partials/idea-detail-drawer', it) %><% } %>
 <%~ include('partials/report-dialog', it) %>
-<% if (!it.platformDashboard) { %><%~ include('partials/mobile-nav', it) %><% } %>
+<% if (!/^\/admin(?:\/|$)/.test(it.currentPath || '')) { %><%~ include('partials/mobile-nav', it) %><% } %>
+<% } %>
 
 <!-- Client-side auth state sync -->
-<script defer src="/js/auth.js?v=20261016-school-isolation"></script>
+<script defer src="/js/auth.js?v=20261017-system-navigation"></script>
 
 <!-- Theme toggle logic -->
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>
+<% if (!it.accountArea && !it.platformDashboard) { %>
 <script defer src="/js/engagement.js?v=20261016-school-isolation"></script>
 <script defer src="/js/community.js?v=20261016-school-isolation"></script>
 
 <script defer src="/js/public-history.js?v=20261016-school-isolation"></script>
-<script defer src="/js/responsive.js?v=20261016-school-isolation"></script>
+
 <script defer src="/js/scroll-reveal.js?v=20261016-school-isolation"></script>
+<% } %>
+<script defer src="/js/responsive.js?v=20261016-school-isolation"></script>
 </body>
 </html>

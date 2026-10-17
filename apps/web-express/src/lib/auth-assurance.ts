@@ -1,3 +1,4 @@
+import { schoolUser } from './school-scope';
 import type { Request, Response, NextFunction } from 'express';
 
 /** Call only after the provider has verified this exact token with getUser. */
@@ -14,7 +15,7 @@ export function safeSecurityReturnTo(value: unknown): string {
   try {
     const url = new URL(value, 'https://suggfeed.invalid');
     if (!value.startsWith('/') || url.origin !== 'https://suggfeed.invalid' || url.pathname !== value.split(/[?#]/)[0]) return '/schools';
-    if (url.pathname === '/schools' || url.pathname === '/platform/schools') return value;
+    if (url.pathname === '/schools' || /^\/platform\/schools(?:\/[^/]+\/settings)?$/.test(url.pathname) || url.pathname === '/account/home') return value;
     const school = /^\/s\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/|$)/.exec(url.pathname);
     return school && school[1].length >= 3 && school[1].length <= 63 ? value : '/schools';
   } catch { return '/schools'; }
@@ -25,8 +26,18 @@ export function requireStrongAuth(req: Request, res: Response, next: NextFunctio
   if (res.locals.authAssurance === 'aal2') return next();
   const returnTo = safeSecurityReturnTo(req.originalUrl);
   const securityUrl = `/account/security?returnTo=${encodeURIComponent(returnTo)}`;
-  if (['GET', 'HEAD'].includes(req.method) && !req.path.startsWith('/api/') && !req.path.includes('/api/') && !req.is('application/json') && !req.get('accept')?.includes('application/json')) {
+  if (['GET', 'HEAD'].includes(req.method) && !req.path.toLowerCase().startsWith('/api/') && !req.path.toLowerCase().includes('/api/') && !req.is('application/json') && !req.get('accept')?.includes('application/json')) {
     return res.redirect(303, securityUrl);
   }
   return res.status(403).json({ success: false, code: 'MFA_REQUIRED', error: 'Verify your authenticator code to continue.', securityUrl });
+}
+
+/** Express matches route names without case sensitivity; guards must do the same. */
+export function requireStaffAssurance(req: Request, res: Response, next: NextFunction) {
+  const role = schoolUser(req)?.role;
+  const path = req.path.toLowerCase();
+  const privileged = /^\/(?:admin(?:\/|$)|staff(?:\/|$)|api\/(?:staff(?:\/|$)|community\/staff(?:\/|$)|submissions\/[^/]+\/status(?:\/|$)))/.test(path)
+    || (path.startsWith('/api/progress-evidence') && !['GET','HEAD'].includes(req.method));
+  if (privileged && role && ['admin','moderator','staff'].includes(role)) return requireStrongAuth(req, res, next);
+  next();
 }

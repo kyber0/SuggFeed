@@ -77,10 +77,11 @@ test('full-width detail workspaces separate context from history and editing wit
 test('new account and staff menu entries have decorative SVGs backed by the shared sprite',()=>{
   const html=render('/admin/community');
   const account=html.match(/<div class="dropdown-menu"[\s\S]*?<form action="\/auth\/signout"/)![0];
-  for(const target of ['/profile','/notifications','/feed?scope=following','/inbox','/admin']){
+  for(const target of ['/admin','/','/schools','/account/security']){
     const escaped=target.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     assert.match(account,new RegExp('<a href="'+escaped+'"[^>]*>\\s*<svg[^>]*aria-hidden="true"[^>]*><use href="#ws-'));
   }
+  for(const target of ['/profile','/notifications','/inbox'])assert.equal(account.includes('href="'+target+'"'),false);
   const sidebar=html.match(/<aside class="staff-sidebar"[\s\S]*?<\/aside>/)![0];
   assert.match(sidebar,/href="\/admin\/board"[^>]*><svg[^>]*><use href="#ws-board"/);
   assert.match(sidebar,/href="\/admin\/community"[^>]*><svg[^>]*><use href="#ws-care"/);

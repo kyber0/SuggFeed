@@ -63,11 +63,11 @@ test('failed session response does not navigate', async () => {
 test('navigation stays on current origin and logout clears both sessions', async () => {
   const { window, calls } = browser();
   window.sfAuthNavigate('https://attacker.test');
-  assert.equal(calls.some(call => call[0] === 'replace'), false);
+  assert.equal(calls.find(call => call[0] === 'replace')[1], '/account/home?returnTo=%2Ffeed');
   const second = browser();
   await second.window.sfSignOut();
   assert.equal(second.calls.some(call => call[0] === 'signout'), true);
-  assert.equal(second.calls.find(call => call[0] === 'replace')[1], '/');
+  assert.equal(second.calls.find(call => call[0] === 'replace')[1], '/account/home');
 });
 
 export {};

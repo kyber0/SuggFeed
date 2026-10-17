@@ -89,6 +89,7 @@ router.get(
 router.get(
   "/staff",
   requireStaff,
+  (req, res, next) => schoolUser(req)?.role === "admin" ? next() : res.status(403).render("403", { title: "School administrator access required" }),
   asyncHandler(async (req: Request, res: Response) => {
     const [counts, staffMembers, students] = await Promise.all([
       loadModerationCounts(),

@@ -3,7 +3,7 @@ import { supabasePlatform } from "../lib/supabase";
 import { sameOriginOnly } from "../lib/security";
 
 const router = Router();
-router.use((_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
+router.use((_req, res, next) => { res.setHeader("Cache-Control", "no-store"); res.locals.accountArea = true; next(); });
 
 // PKCE verifiers live in the initiating browser. Exchange the code there exactly
 // once, then verify the resulting access token before issuing the server session.

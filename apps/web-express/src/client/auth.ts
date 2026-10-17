@@ -58,7 +58,7 @@
     navigating = true;
     // Keep all app navigation on the current origin.
     if (path && path.startsWith('/') && !path.startsWith('//') && !path.includes('\\') && !/[\u0000-\u0020\u007f]/.test(path)) window.location.replace(window.sfSchoolPath?.(path) || path);
-    else window.location.reload();
+    else window.location.replace('/account/home?returnTo=' + encodeURIComponent(window.location.pathname + window.location.search));
   };
 
   window.sfCompleteSignIn = async function (session) {
@@ -81,7 +81,7 @@
     // Clear this browser's Supabase session too, so it cannot silently log back in.
     await window.sfClearSchoolState?.();
     await sb.auth.signOut({ scope: 'local' });
-    window.sfAuthNavigate('/');
+    window.sfAuthNavigate('/account/home');
   };
   document.querySelectorAll<HTMLFormElement>('form[action="/auth/signout"]').forEach(function (form) {
     form.addEventListener('submit', function (event) {

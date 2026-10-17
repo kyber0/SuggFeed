@@ -7,19 +7,19 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
 <main class="platform-dashboard" id="platform-dashboard">
   <aside class="platform-sidebar" aria-label="Super admin workspace">
     <div class="platform-workspace"><span class="platform-icon"><%~ icon('crown') %></span><div><strong>SuggFeed</strong><span>Super admin workspace</span></div></div>
-    <nav class="platform-nav" aria-label="Dashboard sections">
+    <nav class="platform-nav" data-section-navigation aria-label="Dashboard sections">
       <a href="#overview" class="is-current"><%~ icon('board') %> Overview</a>
       <a href="#schools"><%~ icon('users') %> Schools <span><%= it.schools.length %></span></a>
       <a href="#applications"><%~ icon('inbox') %> Applications <span><%= it.applications.length %></span></a>
       <a href="#policies"><%~ icon('list') %> Policy reviews</a>
       <a href="#setup"><%~ icon('shield') %> Service setup</a>
     </nav>
-    <div class="platform-sidebar-footer"><span class="platform-role"><%~ icon('shield') %> Super admin</span><p>Platform permissions are separate from school memberships.</p><a href="/schools">Back to your schools <%~ icon('arrow') %></a></div>
+    <div class="platform-sidebar-footer"><span class="platform-role"><%~ icon('shield') %> Super admin</span><p>Platform permissions are separate from school memberships.</p><a href="/platform/schools">Platform overview <%~ icon('arrow') %></a></div>
   </aside>
   <div class="platform-content">
     <header class="platform-page-header" id="overview">
       <div><p class="platform-eyebrow">Platform administration</p><h1>Platform overview</h1><p>Your schools, reviews, and next steps in one place.</p></div>
-      <a class="platform-button platform-button--primary" href="#applications"><%~ icon('inbox') %> Review applications</a>
+      <a class="platform-button platform-button--primary" href="<%= !it.businessReady ? '#setup' : it.applications.length ? '#applications' : '#schools' %>"><%~ icon('inbox') %> <%= !it.businessReady ? 'Complete service setup' : it.applications.length ? 'Review applications' : 'Manage schools' %></a>
     </header>
     <% if (it.saved) { %><div class="platform-feedback" role="status"><%~ icon('shield') %> Your review was saved successfully.</div><% } %>
     <section class="platform-stats" aria-label="Current page summary">
@@ -45,10 +45,10 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
       <% for (const school of it.schools) { const policy=policyFor(school.id), canEdit=it.adminSchoolIds.includes(school.id), canRequest=it.businessReady && policy?.approved_at && ['pending','suspended'].includes(school.status); %>
         <li class="platform-school" id="school-<%= school.id %>">
           <div class="platform-school-identity"><span class="platform-school-avatar" aria-hidden="true"><%= school.name.slice(0,1).toUpperCase() %></span><div><h3><%= school.name %></h3><p>/s/<%= school.slug %></p></div></div>
-          <div class="platform-school-state"><span class="platform-badge platform-badge--<%= school.status %>"><%= statusLabel[school.status] || school.status %></span><p id="school-reason-<%= school.id %>"><%= school.status==='active' ? 'Workspace is open' : !policy ? 'School policies have not been saved' : !policy.approved_at ? 'Policy review is required' : !it.businessReady ? 'Service setup is incomplete' : 'Final activation checks are required' %></p></div>
+          <div class="platform-school-state"><span class="platform-badge platform-badge--<%= school.status %>"><%= statusLabel[school.status] || school.status %></span><p id="school-reason-<%= school.id %>"><%= school.status==='active' ? 'Workspace is open' : school.status==='closed' ? 'This workspace is closed' : school.status==='suspended' ? 'This workspace is suspended' : !policy ? 'School policies have not been saved' : !policy.approved_at ? 'Policy review is required' : !it.businessReady ? 'Service setup is incomplete' : 'Final activation checks are required' %></p></div>
           <div class="platform-school-actions">
-            <% if (canEdit) { %><a class="platform-button" href="/s/<%= school.slug %>/admin/school-settings">School settings</a><% } %>
-            <% if (school.status==='active' && canEdit) { %><a class="platform-button" href="/s/<%= school.slug %>/">Open workspace <%~ icon('arrow') %></a><% } %>
+            <% if (canEdit) { %><a class="platform-button" href="/platform/schools/<%= school.id %>/settings">School settings</a><% } %>
+
             <% if (['pending','suspended'].includes(school.status)) { %><form method="post" action="/platform/schools/<%= school.id %>/activate"><button class="platform-button platform-button--primary" type="submit" aria-describedby="school-reason-<%= school.id %>" <%= canRequest ? '' : 'disabled' %>>Request activation</button></form><% } %>
           </div>
           <details class="platform-school-readiness"><summary>Workspace readiness</summary><ul><li><span><%= policy ? 'Saved' : 'Missing' %></span> School notices and contacts</li><li><span><%= policy?.approved_at ? 'Reviewed' : 'Needs review' %></span> School policy approval</li><li><span><%= it.businessReady ? 'Configured' : 'Incomplete' %></span> Service operator and privacy contact</li><li><span>Checked on request</span> Administrator and school isolation checks</li></ul><% if (policy) { %><a class="platform-text-link" href="#policy-<%= school.id %>">View school policy review</a><% } %></details>
@@ -80,6 +80,6 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
       <% if (!it.settings.length) { %><div class="platform-empty"><%~ icon('list') %><h3>No saved school policies yet</h3><p>A school administrator needs to save its notices, contacts, and age policy before you can record a review.</p><a class="platform-text-link" href="#schools">Go to school directory</a></div><% } %>
       <% for (const settings of it.settings) { const school=it.schools.find(s=>s.id===settings.school_id); %><details class="platform-policy" id="policy-<%= settings.school_id %>"><summary><span><strong><%= school?.name || 'School policy' %></strong><span>Version <%= settings.version %> · <%= settings.publication_policy==='public' ? 'Public workspace' : 'Private workspace' %></span></span><span class="platform-badge <%= settings.approved_at ? 'platform-badge--active' : 'platform-badge--pending' %>"><%= settings.approved_at ? 'Reviewed' : 'Review needed' %></span></summary><div class="platform-policy-body"><dl class="platform-facts"><div><dt>Institutional contact</dt><dd><%= settings.school_contact || 'Not provided' %></dd></div><div><dt>Privacy contact</dt><dd><%= settings.privacy_contact || 'Not provided' %></dd></div><div><dt>Retention</dt><dd><%= settings.retention_days %> days</dd></div></dl><h3>Privacy notice</h3><p class="platform-preserve-text"><%= settings.privacy_notice %></p><h3>Terms</h3><p class="platform-preserve-text"><%= settings.terms_notice %></p><h3>Age policy</h3><p class="platform-preserve-text"><%= settings.age_policy %></p><form method="post" action="/platform/schools/<%= settings.school_id %>/policies"><input type="hidden" name="version" value="<%= settings.version %>" /><label for="policy-reference-<%= settings.school_id %>">Policy and agreement review reference</label><textarea id="policy-reference-<%= settings.school_id %>" name="reference" rows="3" required minlength="10" maxlength="2000" placeholder="Record the completed review and agreement reference."></textarea><button class="platform-button platform-button--primary" type="submit">Record completed review</button></form></div></details><% } %>
     </section>
-    <footer class="platform-footer"><p>Super admin permissions manage the platform. Each school's access rules still apply.</p><a href="/schools">Your schools</a></footer>
+    <footer class="platform-footer"><p>Super admin permissions manage the platform. Each school's access rules still apply.</p><a href="/platform/schools">Platform overview</a></footer>
   </div>
 </main>

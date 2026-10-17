@@ -1,0 +1,963 @@
+{
+  "templates": [
+    {
+      "view": "403.eta",
+      "destinations": [
+        "/"
+      ]
+    },
+    {
+      "view": "404.eta",
+      "destinations": [
+        "/account/home"
+      ]
+    },
+    {
+      "view": "500.eta",
+      "destinations": [
+        "/"
+      ]
+    },
+    {
+      "view": "account-security.eta",
+      "destinations": [
+        "/schools"
+      ]
+    },
+    {
+      "view": "admin-analytics.eta",
+      "destinations": [
+        "/roadmap"
+      ]
+    },
+    {
+      "view": "admin-staff.eta",
+      "destinations": [
+        "/roadmap"
+      ]
+    },
+    {
+      "view": "admin.eta",
+      "destinations": [
+        "/admin/board",
+        "/admin",
+        "/admin?status=<%= status %>",
+        "/admin?status=all",
+        "/admin?status=pending&assignment=mine",
+        "/admin?status=pending&assignment=unassigned",
+        "/admin?status=all&priority=high",
+        "/admin?status=all&overdue=true",
+        "/admin/community",
+        "/roadmap"
+      ]
+    },
+    {
+      "view": "auth-callback.eta",
+      "destinations": [
+        "/"
+      ]
+    },
+    {
+      "view": "digest-unsubscribe.eta",
+      "destinations": []
+    },
+    {
+      "view": "feed.eta",
+      "destinations": [
+        "/feed?scope=following",
+        "/notifications",
+        "/inbox",
+        "/",
+        "/feed",
+        "/roadmap",
+        "/profile",
+        "/idea/<%= encodeURIComponent(item.id) %>",
+        "/privacy"
+      ]
+    },
+    {
+      "view": "home.eta",
+      "destinations": [
+        "/idea/<%= item.id %>",
+        "/feed",
+        "/privacy",
+        "/terms",
+        "/roadmap",
+        "/admin"
+      ]
+    },
+    {
+      "view": "idea.eta",
+      "destinations": [
+        "/feed",
+        "/inbox"
+      ]
+    },
+    {
+      "view": "layout.eta",
+      "destinations": [
+        "/branding/favicon.ico",
+        "/branding/icon-32.png",
+        "/branding/icon-180.png",
+        "/manifest.json?v=20261013-sf",
+        "/fonts/inter-latin.woff2",
+        "/css/base.bundle.css?v=20261014-ui-audit",
+        "/css/profile.bundle.css?v=20261014-profile-mobile",
+        "/css/staff.bundle.css?v=20261014-open-workspace",
+        "/css/enhancements.bundle.css?v=20261015-hover-fix",
+        "/css/platform.bundle.css?v=20261017-system-navigation",
+        "/schools"
+      ]
+    },
+    {
+      "view": "notifications.eta",
+      "destinations": [
+        "/roadmap",
+        "/feed?scope=following",
+        "/inbox"
+      ]
+    },
+    {
+      "view": "partials/auth-modal.eta",
+      "destinations": [
+        "/privacy",
+        "/terms",
+        "/auth/recovery"
+      ]
+    },
+    {
+      "view": "partials/confirmation.eta",
+      "destinations": []
+    },
+    {
+      "view": "partials/feed-card.eta",
+      "destinations": []
+    },
+    {
+      "view": "partials/header.eta",
+      "destinations": [
+        "/account/home",
+        "/platform/schools",
+        "/schools",
+        "/admin",
+        "/",
+        "/feed",
+        "/roadmap",
+        "/profile",
+        "/notifications",
+        "/feed?scope=following",
+        "/inbox",
+        "/account/security",
+        "/auth/signout"
+      ]
+    },
+    {
+      "view": "partials/idea-detail-drawer.eta",
+      "destinations": []
+    },
+    {
+      "view": "partials/mobile-nav.eta",
+      "destinations": [
+        "/",
+        "/feed",
+        "/roadmap",
+        "/profile"
+      ]
+    },
+    {
+      "view": "partials/navigation-skeleton.eta",
+      "destinations": []
+    },
+    {
+      "view": "partials/report-dialog.eta",
+      "destinations": []
+    },
+    {
+      "view": "partials/staff-board-lane.eta",
+      "destinations": [
+        "/admin?idea=<%= item.id %>",
+        "/admin/board#board-lane-<%= lane.status %>"
+      ]
+    },
+    {
+      "view": "partials/staff-progress.eta",
+      "destinations": []
+    },
+    {
+      "view": "partials/staff-review.eta",
+      "destinations": [
+        "/admin/community"
+      ]
+    },
+    {
+      "view": "partials/staff-sidebar.eta",
+      "destinations": [
+        "/admin",
+        "/admin/board",
+        "/admin/community",
+        "/admin/analytics",
+        "/admin/staff",
+        "/admin/school-settings"
+      ]
+    },
+    {
+      "view": "partials/submission-picker.eta",
+      "destinations": []
+    },
+    {
+      "view": "partials/submit-panel.eta",
+      "destinations": [
+        "/privacy",
+        "/terms"
+      ]
+    },
+    {
+      "view": "partials/toast.eta",
+      "destinations": []
+    },
+    {
+      "view": "partials/work-record.eta",
+      "destinations": [
+        "/roadmap"
+      ]
+    },
+    {
+      "view": "partials/workspace-icons.eta",
+      "destinations": []
+    },
+    {
+      "view": "platform-schools.eta",
+      "destinations": [
+        "/platform/schools",
+        "/platform/schools#schools",
+        "/platform/schools?applicationPage=<%= it.applicationPage %>#schools",
+        "/platform/schools/<%= school.id %>/settings",
+        "/platform/schools/<%= school.id %>/activate",
+        "/platform/schools/<%= application.id %>/review",
+        "/account/security?returnTo=%2Fplatform%2Fschools",
+        "/platform/schools/<%= settings.school_id %>/policies"
+      ]
+    },
+    {
+      "view": "privacy.eta",
+      "destinations": [
+        "/",
+        "/terms"
+      ]
+    },
+    {
+      "view": "private-inbox.eta",
+      "destinations": [
+        "/profile"
+      ]
+    },
+    {
+      "view": "profile.eta",
+      "destinations": [
+        "/admin",
+        "/notifications",
+        "/inbox",
+        "/feed?scope=following",
+        "/idea/<%= item.id %>",
+        "/feed"
+      ]
+    },
+    {
+      "view": "roadmap.eta",
+      "destinations": [
+        "/roadmap",
+        "/feed?action=share",
+        "/feed",
+        "/notifications"
+      ]
+    },
+    {
+      "view": "school-directory.eta",
+      "destinations": [
+        "/platform/schools",
+        "/s/<%= school.slug %>/<%= membership.role==='moderator' ? 'admin' : '' %>",
+        "/s/<%= school.slug %>/admin<%= school.status==='active' ? '' : '/school-settings' %>",
+        "/privacy",
+        "/schools/apply"
+      ]
+    },
+    {
+      "view": "school-invitation.eta",
+      "destinations": [
+        "/schools/invitations/<%= it.token %>"
+      ]
+    },
+    {
+      "view": "school-message.eta",
+      "destinations": []
+    },
+    {
+      "view": "school-notice.eta",
+      "destinations": [
+        "/s/<%= it.school.slug %>/",
+        "/platform/privacy",
+        "/platform/terms"
+      ]
+    },
+    {
+      "view": "school-settings.eta",
+      "destinations": [
+        "/platform/schools#policy-<%= it.school.id %>",
+        "/platform/schools#school-<%= it.school.id %>",
+        "/s/<%= it.school.slug %>/admin/invitations"
+      ]
+    },
+    {
+      "view": "staff-board.eta",
+      "destinations": [
+        "/admin",
+        "/admin/board",
+        "/roadmap"
+      ]
+    },
+    {
+      "view": "staff-community.eta",
+      "destinations": [
+        "/admin",
+        "/admin?idea=<%= alert.id %>",
+        "/admin?idea=<%= parentId %>",
+        "/admin?idea=<%= request.submission_id %>",
+        "/roadmap"
+      ]
+    },
+    {
+      "view": "staff-login.eta",
+      "destinations": [
+        "/",
+        "/roadmap"
+      ]
+    },
+    {
+      "view": "terms.eta",
+      "destinations": [
+        "/",
+        "/privacy"
+      ]
+    }
+  ],
+  "missing_render_templates": [],
+  "declared_routes": [
+    {
+      "source": "src/routes/account-security.ts",
+      "line": 5,
+      "router": "router",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "source": "src/routes/admin.ts",
+      "line": 29,
+      "router": "router",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "source": "src/routes/admin.ts",
+      "line": 70,
+      "router": "router",
+      "method": "GET",
+      "path": "/analytics"
+    },
+    {
+      "source": "src/routes/admin.ts",
+      "line": 89,
+      "router": "router",
+      "method": "GET",
+      "path": "/staff"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 44,
+      "router": "router",
+      "method": "POST",
+      "path": "/vote/:id"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 88,
+      "router": "router",
+      "method": "POST",
+      "path": "/track"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 90,
+      "router": "router",
+      "method": "GET",
+      "path": "/track/:code"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 93,
+      "router": "router",
+      "method": "GET",
+      "path": "/submission-context"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 98,
+      "router": "router",
+      "method": "POST",
+      "path": "/submission-receipt"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 110,
+      "router": "router",
+      "method": "POST",
+      "path": "/submit"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 183,
+      "router": "router",
+      "method": "PATCH",
+      "path": "/submissions/:id/status"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 227,
+      "router": "router",
+      "method": "GET",
+      "path": "/feed"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 248,
+      "router": "router",
+      "method": "POST",
+      "path": "/comments/:id"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 323,
+      "router": "router",
+      "method": "POST",
+      "path": "/bookmarks/:id"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 360,
+      "router": "router",
+      "method": "GET",
+      "path": "/categories"
+    },
+    {
+      "source": "src/routes/api.ts",
+      "line": 377,
+      "router": "router",
+      "method": "GET",
+      "path": "/idea/:id"
+    },
+    {
+      "source": "src/routes/auth.ts",
+      "line": 15,
+      "router": "router",
+      "method": "GET",
+      "path": "/session"
+    },
+    {
+      "source": "src/routes/auth.ts",
+      "line": 19,
+      "router": "router",
+      "method": "POST",
+      "path": "/session"
+    },
+    {
+      "source": "src/routes/auth.ts",
+      "line": 55,
+      "router": "router",
+      "method": "POST",
+      "path": "/signout"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 14,
+      "router": "communityRouter",
+      "method": "GET",
+      "path": "/similar"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 15,
+      "router": "communityRouter",
+      "method": "POST",
+      "path": "/inbox"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 16,
+      "router": "communityRouter",
+      "method": "POST",
+      "path": "/reply"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 17,
+      "router": "communityRouter",
+      "method": "POST",
+      "path": "/report"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 24,
+      "router": "communityRouter",
+      "method": "GET",
+      "path": "/report-history"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 28,
+      "router": "communityRouter",
+      "method": "GET",
+      "path": "/merges/:id"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 31,
+      "router": "communityRouter",
+      "method": "POST",
+      "path": "/staff/:action"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 55,
+      "router": "communityRouter",
+      "method": "GET",
+      "path": "/staff/idea/:id"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 59,
+      "router": "communityRouter",
+      "method": "GET",
+      "path": "/staff/board"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 64,
+      "router": "communityPages",
+      "method": "GET",
+      "path": "/inbox"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 65,
+      "router": "communityPages",
+      "method": "GET",
+      "path": "/admin/community"
+    },
+    {
+      "source": "src/routes/community.ts",
+      "line": 72,
+      "router": "communityPages",
+      "method": "GET",
+      "path": "/admin/board"
+    },
+    {
+      "source": "src/routes/digests.ts",
+      "line": 7,
+      "router": "router",
+      "method": "GET",
+      "path": "/internal/weekly-digests"
+    },
+    {
+      "source": "src/routes/digests.ts",
+      "line": 19,
+      "router": "router",
+      "method": "GET",
+      "path": "/digest/unsubscribe"
+    },
+    {
+      "source": "src/routes/digests.ts",
+      "line": 23,
+      "router": "router",
+      "method": "GET",
+      "path": "/digest/unsubscribed"
+    },
+    {
+      "source": "src/routes/digests.ts",
+      "line": 27,
+      "router": "router",
+      "method": "POST",
+      "path": "/digest/unsubscribe"
+    },
+    {
+      "source": "src/routes/engagement.ts",
+      "line": 17,
+      "router": "router",
+      "method": "GET",
+      "path": "/follows/:id"
+    },
+    {
+      "source": "src/routes/engagement.ts",
+      "line": 26,
+      "router": "router",
+      "method": "POST",
+      "path": "/follows/:id"
+    },
+    {
+      "source": "src/routes/engagement.ts",
+      "line": 40,
+      "router": "router",
+      "method": "GET",
+      "path": "/notifications/preferences"
+    },
+    {
+      "source": "src/routes/engagement.ts",
+      "line": 43,
+      "router": "router",
+      "method": "POST",
+      "path": "/notifications/preferences"
+    },
+    {
+      "source": "src/routes/engagement.ts",
+      "line": 57,
+      "router": "router",
+      "method": "GET",
+      "path": "/notifications"
+    },
+    {
+      "source": "src/routes/engagement.ts",
+      "line": 65,
+      "router": "router",
+      "method": "PATCH",
+      "path": "/notifications/:id/read"
+    },
+    {
+      "source": "src/routes/feed.ts",
+      "line": 18,
+      "router": "router",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "source": "src/routes/home.ts",
+      "line": 14,
+      "router": "router",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "source": "src/routes/idea.ts",
+      "line": 16,
+      "router": "router",
+      "method": "GET",
+      "path": "/:id"
+    },
+    {
+      "source": "src/routes/notifications.ts",
+      "line": 5,
+      "router": "router",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "source": "src/routes/profile.ts",
+      "line": 19,
+      "router": "router",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "source": "src/routes/profile.ts",
+      "line": 54,
+      "router": "router",
+      "method": "GET",
+      "path": "/bookmarks"
+    },
+    {
+      "source": "src/routes/profile.ts",
+      "line": 59,
+      "router": "router",
+      "method": "POST",
+      "path": "/preferences"
+    },
+    {
+      "source": "src/routes/profile.ts",
+      "line": 71,
+      "router": "router",
+      "method": "POST",
+      "path": "/activity"
+    },
+    {
+      "source": "src/routes/profile.ts",
+      "line": 128,
+      "router": "router",
+      "method": "POST",
+      "path": "/shared/:id"
+    },
+    {
+      "source": "src/routes/progress-evidence.ts",
+      "line": 20,
+      "router": "router",
+      "method": "GET",
+      "path": "/:id"
+    },
+    {
+      "source": "src/routes/progress-evidence.ts",
+      "line": 29,
+      "router": "router",
+      "method": "POST",
+      "path": "/reserve"
+    },
+    {
+      "source": "src/routes/progress-evidence.ts",
+      "line": 30,
+      "router": "router",
+      "method": "POST",
+      "path": "/:id/finalize"
+    },
+    {
+      "source": "src/routes/progress-evidence.ts",
+      "line": 31,
+      "router": "router",
+      "method": "POST",
+      "path": "/finalize"
+    },
+    {
+      "source": "src/routes/progress-evidence.ts",
+      "line": 35,
+      "router": "router",
+      "method": "DELETE",
+      "path": "/:id"
+    },
+    {
+      "source": "src/routes/public-history.ts",
+      "line": 6,
+      "router": "router",
+      "method": "GET",
+      "path": "/idea/:id/history"
+    },
+    {
+      "source": "src/routes/roadmap.ts",
+      "line": 13,
+      "router": "router",
+      "method": "GET",
+      "path": "/idea/:id"
+    },
+    {
+      "source": "src/routes/roadmap.ts",
+      "line": 22,
+      "router": "router",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "source": "src/routes/saved-searches.ts",
+      "line": 14,
+      "router": "router",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "source": "src/routes/saved-searches.ts",
+      "line": 19,
+      "router": "router",
+      "method": "POST",
+      "path": "/"
+    },
+    {
+      "source": "src/routes/saved-searches.ts",
+      "line": 30,
+      "router": "router",
+      "method": "PATCH",
+      "path": "/:id"
+    },
+    {
+      "source": "src/routes/saved-searches.ts",
+      "line": 41,
+      "router": "router",
+      "method": "DELETE",
+      "path": "/:id"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 55,
+      "router": "router",
+      "method": "GET",
+      "path": "/account/home"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 69,
+      "router": "router",
+      "method": "GET",
+      "path": "/schools"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 84,
+      "router": "router",
+      "method": "POST",
+      "path": "/schools/apply"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 94,
+      "router": "router",
+      "method": "GET",
+      "path": "/platform"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 95,
+      "router": "router",
+      "method": "GET",
+      "path": "/platform/schools/:id/activate"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 96,
+      "router": "router",
+      "method": "GET",
+      "path": "/platform/schools"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 121,
+      "router": "router",
+      "method": "POST",
+      "path": "/platform/schools/:id/review"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 130,
+      "router": "router",
+      "method": "POST",
+      "path": "/platform/schools/:id/policies"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 138,
+      "router": "router",
+      "method": "POST",
+      "path": "/platform/schools/:id/activate"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 174,
+      "router": "router",
+      "method": "POST",
+      "path": "/s/:schoolSlug/admin/invitations"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 185,
+      "router": "router",
+      "method": "GET",
+      "path": "/schools/invitations/:token"
+    },
+    {
+      "source": "src/routes/schools.ts",
+      "line": 190,
+      "router": "router",
+      "method": "POST",
+      "path": "/schools/invitations/:token"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 22,
+      "router": "router",
+      "method": "GET",
+      "path": "/submissions/:id"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 33,
+      "router": "router",
+      "method": "GET",
+      "path": "/submission-search"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 40,
+      "router": "router",
+      "method": "POST",
+      "path": "/submissions/:id/actions"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 45,
+      "router": "router",
+      "method": "POST",
+      "path": "/submissions/:id/work-dates"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 46,
+      "router": "router",
+      "method": "GET",
+      "path": "/analytics"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 50,
+      "router": "router",
+      "method": "GET",
+      "path": "/members"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 54,
+      "router": "router",
+      "method": "PATCH",
+      "path": "/members/:memberId/role"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 66,
+      "router": "router",
+      "method": "GET",
+      "path": "/students"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 71,
+      "router": "router",
+      "method": "POST",
+      "path": "/invite"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 83,
+      "router": "router",
+      "method": "PATCH",
+      "path": "/submissions/:id/review"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 110,
+      "router": "router",
+      "method": "GET",
+      "path": "/submissions/:id/activity"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 120,
+      "router": "router",
+      "method": "POST",
+      "path": "/submissions/:id/notes"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 129,
+      "router": "router",
+      "method": "POST",
+      "path": "/views"
+    },
+    {
+      "source": "src/routes/staff-workspace.ts",
+      "line": 139,
+      "router": "router",
+      "method": "DELETE",
+      "path": "/views/:id"
+    }
+  ],
+  "limits": "Literal route and template destination inventory; dynamic IDs, array-declared routes and delegated actions are additionally covered by feature tests and manual source review."
+}

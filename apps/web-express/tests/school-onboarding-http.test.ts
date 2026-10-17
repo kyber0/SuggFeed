@@ -28,7 +28,7 @@ before(async()=>{
    if(filters.school_ids)rows=rows.filter(row=>filters.school_ids.includes(row.school_id));
    return read.start===undefined?rows:rows.slice(read.start,(read.end??read.start)+1);
   };
-  const query:any={select(){return query;},eq(key:string,value:any){filters[key]=value;return query;},in(key:string,values:any[]){if(key==='school_id')filters.school_ids=values;return query;},not(){return query;},order(){return query;},limit(){return query;},range(start:number,end:number){read.start=start;read.end=end;return query;},async maybeSingle(){return {data:data()[0]||null,error:null};},then(resolve:any,reject:any){return Promise.resolve({data:data(),error:null}).then(resolve,reject);}};
+  const query:any={select(){return query;},eq(key:string,value:any){filters[key]=value;return query;},in(key:string,values:any[]){if(key==='school_id')filters.school_ids=values;return query;},ilike(key:string,value:string){filters[key+'_pattern']=value;return query;},not(){return query;},order(){return query;},limit(){return query;},range(start:number,end:number){read.start=start;read.end=end;return query;},async maybeSingle(){return {data:data()[0]||null,error:null};},then(resolve:any,reject:any){return Promise.resolve({data:data(),error:null}).then(resolve,reject);}};
   return query;
  }) as any;
  const app=express();app.use(express.urlencoded({extended:false}));app.use(sameOriginOnly);
@@ -68,7 +68,7 @@ test('verified application uses only session actor, redirects after success and 
 test('global admin role grants no platform operator or other school authority',async()=>{
  const denied=await fetch(origin+'/platform/schools');assert.equal(denied.status,403);
  const crossSchool=await fetch(origin+'/s/school-a/admin/school-settings',{headers:{'x-user':'user-b'}});assert.equal(crossSchool.status,403);
- const operatorDirectory=await fetch(origin+'/schools',{headers:{'x-user':'operator'}});assert.match(await operatorDirectory.text(),/Platform school review/);
+ const operatorDirectory=await fetch(origin+'/schools',{redirect:'manual',headers:{'x-user':'operator'}});assert.equal(operatorDirectory.status,303);assert.equal(operatorDirectory.headers.get('location'),'/platform/schools');
  const platform=await fetch(origin+'/platform/schools',{headers:{'x-user':'operator'}});assert.equal(platform.status,200);assert.match(await platform.text(),/School policy review/);
  const invalidPage=await fetch(origin+'/platform/schools?page=-1',{headers:{'x-user':'operator'}});assert.equal(invalidPage.status,400);
 });
@@ -92,7 +92,7 @@ test('super admin dashboard shows school setup blockers, scoped actions and dash
  const html=await response.text();
  assert.match(html,/Super admin workspace/);assert.match(html,/Platform overview/);assert.match(html,/School directory/);
  assert.match(html,/Authenticator verified for this visit/);
- assert.match(html,/href="\/s\/school-a\/admin\/school-settings"/);
+ assert.match(html,/href="\/platform\/schools\/school-a\/settings"/);
  assert.match(html,/<button[^>]+disabled[^>]*>Request activation<\/button>/);
  assert.doesNotMatch(html,/class="mobile-tab-bar"/);
  assert.match(html,/platform\.bundle\.css/);
@@ -119,7 +119,7 @@ test('dashboard pages schools and applications independently and only loads poli
   assert.doesNotMatch(html,/<script>unsafe<\/script>/);assert.match(html,/&lt;script&gt;unsafe/);
   const policies=reads.find(read=>read.table==='school_settings')!;
   assert.equal(policies.filters.school_ids.length,24);assert.equal(policies.filters.school_ids.includes('school-24'),false);
-  assert.deepEqual(reads.filter(read=>read.start!==undefined).map(read=>[read.table,read.start,read.end]),[['school_applications',0,12],['schools',0,24]]);
+  assert.deepEqual(reads.filter(read=>read.start!==undefined).map(read=>[read.table,read.start,read.end]),[['schools',0,24],['school_applications',0,12]]);
   const second=await fetch(origin+'/platform/schools?page=1&applicationPage=0',{headers:{'x-user':'operator'}});const secondHtml=await second.text();
   assert.match(secondHtml,/school-24/);assert.match(secondHtml,/Version 2/);assert.doesNotMatch(secondHtml,/id="school-school-0"/);
   assert.equal((await fetch(origin+'/platform/schools?applicationPage=-1',{headers:{'x-user':'operator'}})).status,400);
@@ -140,5 +140,25 @@ test('a reviewed school still honors a database activation rejection and keeps t
   const response=await post('/platform/schools/school-a/activate',{}, {'x-user':'operator'});
   assert.equal(response.status,409);const html=await response.text();
   assert.match(html,/Activation locked/);assert.match(html,/Back to super admin dashboard/);
+ }finally{supabasePlatform.rpc=rpc;policyRows=[policy];}
+});
+
+test('account home honors role landing and platform settings remain inside the platform shell',async()=>{
+ const platform=await fetch(origin+'/account/home',{redirect:'manual',headers:{'x-user':'operator'}});assert.equal(platform.headers.get('location'),'/platform/schools');
+ const pending=await fetch(origin+'/account/home',{redirect:'manual'});assert.equal(pending.headers.get('location'),'/s/school-a/admin/school-settings');
+ const settings=await fetch(origin+'/platform/schools/school-a/settings',{headers:{'x-user':'operator'}});assert.equal(settings.status,200);const html=await settings.text();
+ assert.match(html,/action="\/platform\/schools\/school-a\/settings"/);assert.doesNotMatch(html,/id="school-invitations"|class="mobile-tab-bar"/);
+ const denied=await fetch(origin+'/platform/schools/school-a/settings');assert.equal(denied.status,403);
+ const filters=await fetch(origin+'/platform/schools?q=School&status=pending',{headers:{'x-user':'operator'}});assert.equal(filters.status,200);assert.ok(reads.some(r=>r.filters.name_pattern==='%School%'&&r.filters.status==='pending'));
+});
+
+test('rejected policy edits retain input while readiness reflects only persisted settings',async()=>{
+ const rpc=supabasePlatform.rpc;
+ supabasePlatform.rpc=(async(name:string,args:any)=>name==='update_school_settings'?{data:null,error:{code:'40001'}}:rpc.call(supabasePlatform,name,args)) as any;
+ const fields={version:'2',privacy_notice:'Unsaved notice text that must remain editable.',terms_notice:'Unsaved terms text that must remain editable.',age_policy:'Adult evaluators only.',privacy_contact:'privacy@example.test',school_contact:'school@example.test',publication_policy:'private',retention_days:'30'};
+ policyRows=[];
+ try{
+  const response=await post('/s/school-a/admin/school-settings',fields);assert.equal(response.status,400);const html=await response.text();
+  assert.match(html,/Unsaved notice text/);assert.match(html,/Complete and save school settings first/);assert.doesNotMatch(html,/Awaiting review of the saved policy version/);
  }finally{supabasePlatform.rpc=rpc;policyRows=[policy];}
 });

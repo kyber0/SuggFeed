@@ -119,7 +119,7 @@
                 const destination = page.dataset.returnTo || '/schools';
                 const url = new URL(destination, window.location.origin);
                 const school = /^\/s\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/|$)/.exec(url.pathname);
-                const allowed = url.pathname === '/schools' || url.pathname === '/platform/schools' || (school && school[1].length >= 3 && school[1].length <= 63);
+                const allowed = url.pathname === '/schools' || /^\/platform\/schools(?:\/[^/]+\/settings)?$/.test(url.pathname) || url.pathname === '/account/home' || (school && school[1].length >= 3 && school[1].length <= 63);
                 window.location.assign(destination.startsWith('/') && url.origin === window.location.origin && !/[\\\x00-\x20\x7f]|%(?:2f|5c|25|2e)/i.test(destination) && url.pathname === destination.split(/[?#]/)[0] && allowed ? destination : '/schools');
             }
             catch (error) {

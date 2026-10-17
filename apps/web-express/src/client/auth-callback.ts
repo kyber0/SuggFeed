@@ -149,8 +149,8 @@
       if (expired) return;
       let destination = '/schools';
       try { destination = sessionStorage.getItem('sf-auth-return') || destination; sessionStorage.removeItem('sf-auth-return'); } catch {}
-      if (!/^\/s\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/|[?#]|$)/.test(destination) || destination.includes('\\') || /[\u0000-\u0020\u007f]/.test(destination)) destination = '/schools';
-      window.sfAuthNavigate(destination);
+      if (!/^\/(?:s\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/|[?#]|$)|platform\/schools(?:[/?#]|$)|schools\/invitations\/[^/]+$|account\/security(?:[?#]|$))/.test(destination) || destination.includes('\\') || /[\u0000-\u0020\u007f]/.test(destination)) destination = '/schools';
+      window.sfAuthNavigate('/account/home?returnTo=' + encodeURIComponent(destination));
     } catch (error) {
       forgetRecovery(); spinner.hidden = true;
       title.textContent = recovery ? 'Password reset could not be started' : 'Sign-in could not be completed';

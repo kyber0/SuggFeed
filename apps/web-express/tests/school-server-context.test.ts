@@ -74,7 +74,8 @@ test('school middleware ignores legacy roles, fails closed for private/unreviewe
   publication='public';assert.equal((await resolve()).status,200);
   approved=false;assert.equal((await resolve()).status,503);
   status='suspended';assert.equal((await resolve('/digest/unsubscribe?token=private')).status,200);
-  assert.equal((await resolve()).status,404);
+  memberRole='student';assert.equal((await resolve()).status,403);
+  memberRole=null;assert.equal((await resolve()).status,404);
  }finally{supabasePlatform.from=originalFrom;}
 });
 

@@ -1,5 +1,30 @@
 "use strict";
 (() => {
+    function updateSectionNavigation() {
+        let target = null;
+        try {
+            target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        }
+        catch { /* Invalid fragments do not change navigation. */ }
+        if (target instanceof HTMLDetailsElement)
+            target.open = true;
+        for (const nav of document.querySelectorAll('[data-section-navigation]')) {
+            const links = [...nav.querySelectorAll('a[href^="#"]')];
+            const active = links.find(link => {
+                const section = document.getElementById(link.hash.slice(1));
+                return section && target && (section === target || section.contains(target));
+            }) || links[0];
+            for (const link of links) {
+                link.classList.toggle('is-current', link === active);
+                if (link === active)
+                    link.setAttribute('aria-current', 'location');
+                else
+                    link.removeAttribute('aria-current');
+            }
+        }
+    }
+    updateSectionNavigation();
+    window.addEventListener('hashchange', updateSectionNavigation);
     const shell = document.getElementById('navigation-skeleton');
     const content = document.getElementById('page-content');
     const title = document.getElementById('navigation-title');
@@ -23,6 +48,12 @@
         }
         if (path.startsWith('/roadmap/idea/') || path.startsWith('/idea/'))
             return ['idea', 'Idea details'];
+        if (path.startsWith('/platform/'))
+            return ['document', 'Platform administration'];
+        if (path === '/schools' || path === '/account/home')
+            return ['document', 'Your workspace'];
+        if (path === '/admin/school-settings')
+            return ['document', 'School settings'];
         if (path === '/profile')
             return ['profile', 'Your profile'];
         if (path === '/notifications')

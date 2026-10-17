@@ -1,4 +1,6 @@
 import "dotenv/config";
+import { requireStaffAssurance } from './lib/auth-assurance';
+import { navigationContext } from './lib/navigation-context';
 import express, { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import cookieParser from "cookie-parser";
@@ -14,7 +16,6 @@ import { SupabaseSessionStore } from "./lib/session-store";
 import { sameOriginOnly, browserSecurityHeaders } from "./lib/security";
 import { safeRequestPath } from "./lib/request-path";
 import accountSecurityRouter from './routes/account-security';
-import { requireStrongAuth } from './lib/auth-assurance';
 import { validateIdentity } from "./lib/identity";
 import { startFeedAccountState } from "./lib/feed-account";
 import { startPublicNavigation, warmPublicNavigation, publicFeedTotal } from "./lib/navigation-data";
@@ -243,28 +244,26 @@ app.get(["/health", "/api/health"], async (_req: Request, res: Response) => {
 /* Global identity and school onboarding routes. */
 app.use('/auth', sharedAuthBudget, (req,res,next) => req.method === 'POST' ? authLimiter(req,res,next) : next(), authRouter);
 app.use(['/schools','/platform','/s/:schoolSlug/admin'],sharedAuthBudget);
+app.use(navigationContext);
 app.use('/account/security', accountSecurityRouter);
 app.use('/', schoolsRouter);
 app.use('/', digestRouter); // only global internal cron matches without a school
 app.get('/internal/progress-evidence-cleanup', cleanupHandler);
 app.use('/', legalRouter);
-app.get('/', (_req,res) => res.redirect(302, '/schools'));
+app.get('/', (_req,res) => res.redirect(302, '/account/home'));
 // Legacy entry points cannot silently choose a customer's school.
 app.use((req,res,next) => {
   if (req.path === '/s' || req.path.startsWith('/s/')) return next();
-  if (['GET','HEAD'].includes(req.method)) return res.redirect(302, '/schools');
+  if (['GET','HEAD'].includes(req.method)) {
+    if (['/feed','/roadmap','/profile','/notifications','/inbox','/admin','/admin/board','/admin/community','/admin/analytics','/admin/staff'].includes(req.path.replace(/\/$/, ''))) return res.redirect(302, '/account/home');
+    return res.status(404).render('404', { title: 'Page not found' });
+  }
   return res.status(410).json({success:false,error:'Choose a school and use its current address.'});
 });
 app.use(resolveSchool);
 app.use((req,res,next) => {res.locals.currentPath=req.path;res.locals.user=schoolUser(req);next();});
 // Scope and freshly verified membership precede privileged assurance checks.
-app.use((req,res,next) => {
-  const role = schoolUser(req)?.role;
-  const privileged = /^\/(?:admin(?:\/|$)|staff(?:\/|$)|api\/(?:staff(?:\/|$)|community\/staff(?:\/|$)|submissions\/[^/]+\/status(?:\/|$)))/.test(req.path)
-    || (req.path.startsWith('/api/progress-evidence') && !['GET','HEAD'].includes(req.method));
-  if (privileged && role && ['admin','moderator','staff'].includes(role)) return requireStrongAuth(req,res,next);
-  next();
-});
+app.use(requireStaffAssurance);
 app.use(startFeedAccountState);
 app.use(startPublicNavigation);
 app.get('/api/navigation-cache',generalApiLimiter,warmPublicNavigation);

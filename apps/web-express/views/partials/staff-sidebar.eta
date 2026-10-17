@@ -25,7 +25,7 @@
   <p class="workspace-kicker">ADMINISTRATION</p>
   <nav aria-label="Administration">
     <a class="staff-nav-item<%= activeSection === 'analytics' ? ' is-current' : '' %>" href="/admin/analytics" <%= activeSection === 'analytics' ? 'aria-current="page"' : '' %>><%~ icon('chart') %> Analytics</a>
-    <a class="staff-nav-item<%= activeSection === 'staff' ? ' is-current' : '' %>" href="/admin/staff" <%= activeSection === 'staff' ? 'aria-current="page"' : '' %>><%~ icon('users') %> Manage staff</a>
+    <% if (it.user?.role === 'admin') { %><a class="staff-nav-item<%= activeSection === 'staff' ? ' is-current' : '' %>" href="/admin/staff" <%= activeSection === 'staff' ? 'aria-current="page"' : '' %>><%~ icon('users') %> Manage staff</a><a class="staff-nav-item" href="/admin/school-settings"><%~ icon('shield') %> School settings &amp; invitations</a><% } %>
   </nav>
   <% if (activeSection === 'queue') { %>
   <p class="workspace-kicker">YOUR QUEUES</p>
@@ -39,6 +39,7 @@
     <div class="staff-saved-view"><a class="staff-nav-item<%= sameView(view.filters) ? ' is-current' : '' %>" href="<%= viewUrl(view.filters) %>"><%= view.name %></a><button type="button" class="staff-remove-view" data-delete-view="<%= view.id %>" aria-label="Remove saved view: <%= view.name %>">×</button></div>
   <% } %><% if(!it.savedViews?.length) { %><p class="staff-sidebar-hint">Save a filter combination for quick access. Your views are private to you.</p><% } %></div>
   <% } %>
+  <a class="staff-nav-item" href="/"><%~ icon('users') %> View school community</a>
   <div class="staff-identity"><span class="staff-brand-mark" aria-hidden="true"><%= (it.user?.display_name || 'S').slice(0,1).toUpperCase() %></span><div><strong><%= it.user?.display_name || 'School staff' %></strong><small><%= it.user?.role==='admin' ? 'Administrator' : 'Moderator' %></small></div></div>
   </div>
   </details>

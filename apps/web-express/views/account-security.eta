@@ -17,4 +17,4 @@
   </form>
   <a href="/schools" class="am-btn-ghost">Return to schools</a>
 </main>
-<script defer src="/js/account-security.js?v=20261016-mfa"></script>
+<script defer src="/js/account-security.js?v=20261017-system-navigation"></script>

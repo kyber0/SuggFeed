@@ -43,7 +43,7 @@ test('recovery resumes after reload only with a recent marker for the same sessi
  const missing=harness('?type=recovery','',null);await missing.open();assert.equal(missing.node('auth-reset-form').hidden,true);assert.equal(missing.synced.length,0);assert.match(missing.node('auth-callback-message').textContent,/missing or has expired/);
 });
 test('OAuth keeps its return page; expired recovery links never use existing sign-in',async()=>{
- const h=harness('?code=fixture','',null);h.stored.set('sf-auth-return','/s/demo/feed');await h.open();assert.equal(h.synced.length,1);assert.deepEqual(h.navigation,['/s/demo/feed']);
+ const h=harness('?code=fixture','',null);h.stored.set('sf-auth-return','/s/demo/feed');await h.open();assert.equal(h.synced.length,1);assert.deepEqual(h.navigation,['/account/home?returnTo=%2Fs%2Fdemo%2Ffeed']);
  const expired=harness();expired.setExchangeError();await expired.open();assert.equal(expired.synced.length,0);assert.equal(expired.navigation.length,0);assert.equal(expired.node('auth-reset-form').hidden,true);
 });
 
@@ -66,6 +66,6 @@ test('invalid, expired and reused recovery codes cannot reuse an existing sessio
 test('OAuth rejects unscoped, auth, and external callback return destinations', async () => {
  for (const destination of ['/feed', '/auth/callback', '//other.test', '/s/school-a/\\other.test', '/s/school-a/feed\n']) {
   const h=harness('?code=fixture','',null);h.stored.set('sf-auth-return',destination);await h.open();
-  assert.deepEqual(h.navigation,['/schools']);
+  assert.deepEqual(h.navigation,['/account/home?returnTo=%2Fschools']);
  }
 });

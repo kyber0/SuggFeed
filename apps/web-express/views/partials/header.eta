@@ -1,13 +1,19 @@
-<% const menuIcon=name=>'<svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-'+name+'"></use></svg>'; %>
+<% const accountArea = it.accountArea || it.platformDashboard || it.currentPath === '/schools' || /^\/account(?:\/|$)/.test(it.currentPath || '') || /\/admin\/school-settings$/.test(it.currentPath || ''); const staffArea = !accountArea && /^\/admin(?:\/|$)/.test(it.currentPath || ''); const isStaff = ['admin','moderator','staff'].includes(it.user?.role); const menuIcon=name=>'<svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-'+name+'"></use></svg>'; %>
 <header class="site-header">
-  <a class="brand" href="/" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>
+  <a class="brand" href="/account/home" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>
   <nav aria-label="Primary navigation">
-    <% if (it.platformDashboard) { %><a href="/schools" class="nav-link-hide-mobile">Your schools</a><% } else { %>
-    <a href="/" aria-current="<%= it.currentPath === '/' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>">Home</a>
-    <a href="/feed" aria-current="<%= it.currentPath === '/feed' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/feed' ? ' active' : '' %>">Community ideas</a>
-    <a href="/roadmap" aria-current="<%= it.currentPath === '/roadmap' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/roadmap' ? ' active' : '' %>">Roadmap</a>
+    <% if (it.platformDashboard) { %>
+      <a href="/platform/schools" class="nav-link-hide-mobile">Platform dashboard</a>
+    <% } else if (accountArea) { %>
+      <a href="/schools" class="nav-link-hide-mobile">Your schools</a>
+    <% } else if (staffArea) { %>
+      <a href="/admin" class="nav-link-hide-mobile">School administration</a><a href="/" class="nav-link-hide-mobile">View school community</a>
+    <% } else { %>
+      <a href="/" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>" aria-current="<%= it.currentPath === '/' ? 'page' : 'false' %>">Home</a>
+      <a href="/feed" class="nav-link-hide-mobile<%= it.currentPath === '/feed' ? ' active' : '' %>" aria-current="<%= it.currentPath === '/feed' ? 'page' : 'false' %>">Ideas</a>
+      <a href="/roadmap" aria-current="<%= it.currentPath === '/roadmap' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/roadmap' ? ' active' : '' %>">Roadmap</a>
+      <% if (isStaff) { %><a href="/admin" class="nav-link-hide-mobile">School administration</a><% } %>
     <% } %>
-    <% if (it.isPlatformOperator) { %><a href="/platform/schools" class="nav-link-hide-mobile<%= it.platformDashboard ? ' active' : '' %>" aria-current="<%= it.platformDashboard ? 'page' : 'false' %>">Super admin</a><% } else { %><a href="/admin" aria-current="<%= it.currentPath.startsWith('/admin') ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath.startsWith('/admin') ? ' active' : '' %>">Staff portal</a><% } %>
 
     <% if (it.user) { %>
       <!-- Authenticated: avatar chip with dropdown -->
@@ -28,17 +34,15 @@
             <% if(it.user.email) { %><div class="dropdown-user-email"><%= it.user.email %></div><% } %>
           </div>
           <div class="divider"></div>
-          <a href="/profile" class="dropdown-link">
-            <%~ menuIcon('user') %>
-            My Profile &amp; Ideas
-          </a>
+          <% if (!accountArea && !staffArea) { %>
+          <a href="/profile" class="dropdown-link"><%~ menuIcon('user') %> My profile &amp; ideas</a>
           <a href="/notifications" class="dropdown-link"><%~ menuIcon('bell') %> School updates</a>
           <a href="/feed?scope=following" class="dropdown-link"><%~ menuIcon('bookmark') %> Following</a>
           <a href="/inbox" class="dropdown-link"><%~ menuIcon('message') %> Private school messages</a>
-          <a href="<%= it.isPlatformOperator ? '/platform/schools' : '/admin' %>" class="dropdown-link dropdown-link--staff">
-            <%~ menuIcon('shield') %>
-            <%= it.isPlatformOperator ? 'Super admin dashboard' : 'Staff Portal' %>
-          </a>
+          <% } %>
+          <% if (!accountArea && isStaff) { %><a href="/admin" class="dropdown-link dropdown-link--staff"><%~ menuIcon('shield') %> School administration</a><% } %>
+          <% if (staffArea) { %><a href="/" class="dropdown-link"><%~ menuIcon('users') %> View school community</a><% } %>
+          <% if (it.isPlatformOperator) { %><a href="/platform/schools" class="dropdown-link"><%~ menuIcon('shield') %> Platform dashboard</a><% } else { %><a href="/schools" class="dropdown-link"><%~ menuIcon('users') %> Your schools</a><% } %>
           <a href="/account/security" class="dropdown-link"><%~ menuIcon('shield') %> Account security</a>
           <div class="divider"></div>
           <form action="/auth/signout" method="POST" class="dropdown-form">
@@ -51,9 +55,9 @@
       </div>
     <% } else { %>
       <!-- Anonymous: Profile link + Sign in -->
-      <a href="/profile" aria-label="Your profile" class="btn-ghost header-profile-link<%= it.currentPath === '/profile' ? ' active' : '' %>">
+      <a href="/schools" aria-label="Choose a school" class="btn-ghost header-profile-link<%= it.currentPath === '/profile' ? ' active' : '' %>">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span class="profile-label">Profile</span>
+        <span class="profile-label">Your schools</span>
       </a>
       <button class="btn-primary-sm" id="header-signin-btn" type="button" data-sf-click="action-94">
         Sign in

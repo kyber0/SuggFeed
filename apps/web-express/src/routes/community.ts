@@ -65,14 +65,14 @@ communityPages.get('/inbox',(_req,res)=>{res.setHeader('Cache-Control','private,
 communityPages.get('/admin/community',run(async(req,res)=>{
   const user=schoolUser(req);
   if(!user) return res.redirect('/admin');
-  if(!staffRole(user.role)) return res.status(403).render('error',{title:'Access denied',message:'Staff access required.'});
+  if(!staffRole(user.role)) return res.status(403).render('school-message',{title:'Access denied',message:'Staff access required.'});
   res.setHeader('Cache-Control','private, no-store');
   res.render('staff-community',{title:'Follow-ups — SuggFeed',activeSection:'community',mergeSelected:req.query.task==='merge' && user.role==='admin',submissionId:typeof req.query.idea==='string' && /^[a-f0-9-]{36}$/i.test(req.query.idea) ? req.query.idea : '',...await staffCommunity(user,req.query),members:await loadStaffMembers()});
 }));
 communityPages.get('/admin/board',run(async(req,res)=>{
   const user=schoolUser(req);
   if(!user) return res.redirect('/admin');
-  if(!staffRole(user.role)) return res.status(403).render('error',{title:'Access denied',message:'Staff access required.'});
+  if(!staffRole(user.role)) return res.status(403).render('school-message',{title:'Access denied',message:'Staff access required.'});
   res.setHeader('Cache-Control','private, no-store');
   const [board,members]=await Promise.all([loadStaffBoard(boardFilters(req.query), WORK_STAGES),loadStaffMembers()]);
   res.render('staff-board',{title:'Work board — SuggFeed',activeSection:'board',...board,members});
