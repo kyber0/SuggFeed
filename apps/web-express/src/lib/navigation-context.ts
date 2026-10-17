@@ -14,7 +14,7 @@ export function navigationContext(req: Request, res: Response, next: NextFunctio
   if (/^\/(?:auth|health|api\/health|internal)(?:\/|$)/.test(pathname)) return next();
   void (async () => {
     const operator = await platformAuthority(req, res);
-    res.locals.accountArea = !pathname.startsWith('/s/');
+    res.locals.accountArea = true; // A school shell is enabled only after its registry and access checks pass.
     res.locals.platformDashboard = operator;
     if (operator && (pathname.startsWith('/s/') || pathname.startsWith('/schools/'))) {
       if (['GET','HEAD'].includes(req.method)) return res.redirect(303, '/platform/schools');
