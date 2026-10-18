@@ -46,6 +46,7 @@
 <%~ include('partials/header', it) %>
 <% if (it.schoolBase && !it.accountArea) { %>
 <nav class="workspace-actions care-card" aria-label="Current school">
+  <% if (it.demoWorkspace) { %><span><strong>Fictional demo</strong> · Use invented content only. Sample contact emails are not monitored.</span><% } %>
   <strong><%= it.schoolName || 'Your school' %></strong>
   <a class="workspace-button" href="/schools">Switch school</a>
   <% if (it.user?.role === 'admin') { %><a class="workspace-button" href="<%= it.schoolBase %>/admin/school-settings">School settings</a><% } %>

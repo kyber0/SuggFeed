@@ -1,3 +1,4 @@
+import { DEMO_SCHOOL_ID } from './school-onboarding';
 import type { Request, Response, NextFunction } from 'express';
 import { supabasePlatform } from './supabase';
 import { schoolPath } from './school-path';
@@ -31,6 +32,7 @@ export function resolveSchool(req: Request, res: Response, next: NextFunction) {
     if(!settings?.approved_at && !unsubscribe) { res.locals.accountArea = true; return res.status(503).render('school-message',{title:'School temporarily unavailable',message:'The school must complete its current policy review before community access resumes.', nextHref: role === 'admin' ? '/s/' + school.slug + '/admin/school-settings' : '/schools', nextLabel: role === 'admin' ? 'Review school setup' : 'Your schools' }); }
     if(!role && settings?.publication_policy!=='public' && !unsubscribe) return res.status(403).render('school-message',{title:'School membership required',message:'This school is available to its members. Sign in or ask your school administrator for an invitation.'});
     res.locals.accountArea = false;
+    res.locals.demoWorkspace = school.id === DEMO_SCHOOL_ID;
     res.locals.schoolBase = '/s/' + school.slug;
     const redirect = res.redirect.bind(res);
     res.redirect = ((first: string | number, second?: string) => typeof first === 'number' ? redirect(first, schoolPath(res.locals.schoolBase, second || '/')) : redirect(schoolPath(res.locals.schoolBase, first))) as typeof res.redirect;

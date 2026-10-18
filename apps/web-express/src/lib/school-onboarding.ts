@@ -1,6 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { legalDetails } from './legal';
 
+export const DEMO_SCHOOL_ID = '00000000-0000-4000-8000-000000000001';
+
 export function schoolApplicationsConfigured(env: NodeJS.ProcessEnv = process.env) {
   const legal = legalDetails(env);
   return Boolean(legal.operatorName && legal.privacyEmail);

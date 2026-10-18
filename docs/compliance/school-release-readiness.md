@@ -1,5 +1,8 @@
 # SuggFeed: Philippine school release register
 
+> 2026-10-18 update: the shared-school schema is now hosted (45 migrations). The [hosted verification record](../operations/2026-10-18-hosted-isolation-verification.md) supersedes earlier pending technical-check notes below for its measured scope. Only the fictional demo is cleared for synthetic evaluation. Real-school business identity, institutional approvals, monitored contacts, and remaining operational checks stay open.
+
+
 **Assessment date:** 2026-10-15. **Release status: NOT CLEARED.** This is an engineering assessment and implementation guide, not a legal opinion or certification. Current official texts and applicability need review by the adopting school's DPO/legal adviser. The user clarified that this is a generic product available to schools, not a deployment for a named school.
 
 ## Deployment boundary and responsibilities

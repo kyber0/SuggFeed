@@ -18,7 +18,7 @@ let schoolRows:any[]=[school], applicationRows:any[]=[], policyRows:any[]=[polic
 let reads:{table:string;filters:Record<string,any>;start?:number;end?:number}[]=[];
 before(async()=>{
  process.env.PLATFORM_OPERATOR_NAME='Test Business';process.env.PRIVACY_CONTACT_EMAIL='privacy@example.test';
- supabasePlatform.rpc=(async(name:string,args:any)=>{calls.push({name,args});return {data:name==='platform_operator_active'?args.p_actor==='operator':'school-a',error:null};}) as any;
+ supabasePlatform.rpc=(async(name:string,args:any)=>{calls.push({name,args});return {data:name==='platform_operator_active'?args.p_actor==='operator':name==='school_release_status'?{isolation_verified:false}:'school-a',error:null};}) as any;
  supabasePlatform.auth.getUser=(async(token:string)=>({data:{user:{id:token.replace('unverified:',''),email:'account@example.test',email_confirmed_at:token.startsWith('unverified:')?null:'2026-10-01'}},error:null})) as any;
  supabasePlatform.from=((table:string)=>{
   const filters:Record<string,any>={};
@@ -147,7 +147,7 @@ test('account home honors role landing and platform settings remain inside the p
  const platform=await fetch(origin+'/account/home',{redirect:'manual',headers:{'x-user':'operator'}});assert.equal(platform.headers.get('location'),'/platform/schools');
  const pending=await fetch(origin+'/account/home',{redirect:'manual'});assert.equal(pending.headers.get('location'),'/s/school-a/admin/school-settings');
  const settings=await fetch(origin+'/platform/schools/school-a/settings',{headers:{'x-user':'operator'}});assert.equal(settings.status,200);const html=await settings.text();
- assert.match(html,/action="\/platform\/schools\/school-a\/settings"/);assert.doesNotMatch(html,/id="school-invitations"|class="mobile-tab-bar"/);
+ assert.match(html,/action="\/platform\/schools\/school-a\/settings"/);assert.doesNotMatch(html,/class="mobile-tab-bar"/);assert.match(html,/action="\/platform\/schools\/school-a\/invitations"/);
  const denied=await fetch(origin+'/platform/schools/school-a/settings');assert.equal(denied.status,403);
  const filters=await fetch(origin+'/platform/schools?q=School&status=pending',{headers:{'x-user':'operator'}});assert.equal(filters.status,200);assert.ok(reads.some(r=>r.filters.name_pattern==='%School%'&&r.filters.status==='pending'));
 });
@@ -161,4 +161,16 @@ test('rejected policy edits retain input while readiness reflects only persisted
   const response=await post('/s/school-a/admin/school-settings',fields);assert.equal(response.status,400);const html=await response.text();
   assert.match(html,/Unsaved notice text/);assert.match(html,/Complete and save school settings first/);assert.doesNotMatch(html,/Awaiting review of the saved policy version/);
  }finally{supabasePlatform.rpc=rpc;policyRows=[policy];}
+});
+
+test('only the reserved fictional demo can activate without real-school business configuration',async()=>{
+ const originalRpc=supabasePlatform.rpc;const originalFrom=supabasePlatform.from;
+ delete process.env.PLATFORM_OPERATOR_NAME;
+ supabasePlatform.from=((table:string)=>table==='school_settings'?{select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{approved_at:'2026-10-17'},error:null})}:originalFrom.call(supabasePlatform,table)) as any;
+ try{
+  const response=await post('/platform/schools/00000000-0000-4000-8000-000000000001/activate',{}, {'x-user':'operator'});assert.equal(response.status,303);
+  const real=await post('/platform/schools/school-a/activate',{}, {'x-user':'operator'});assert.equal(real.status,400);
+  supabasePlatform.rpc=(async(name:string,args:any)=>name==='change_school_status'?{data:null,error:{code:'42501'}}:originalRpc.call(supabasePlatform,name,args)) as any;
+  const locked=await post('/platform/schools/00000000-0000-4000-8000-000000000001/activate',{}, {'x-user':'operator'});assert.equal(locked.status,409);
+ }finally{supabasePlatform.rpc=originalRpc;supabasePlatform.from=originalFrom;process.env.PLATFORM_OPERATOR_NAME='Test Business';}
 });
