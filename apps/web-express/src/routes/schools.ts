@@ -1,3 +1,4 @@
+import {schoolEmailDomain,schoolDomainProofPresent} from '../lib/school-domains';
 import { platformAuthority, schoolLanding, safeAccountReturn } from '../lib/navigation-context';
 import { invitationEmailConfigured, invitationRoles, sendSchoolInvitation, type InvitationRole } from '../lib/invitation-email';
 import { Router, type Request, type Response, type NextFunction } from 'express';
@@ -6,7 +7,7 @@ import { requireStrongAuth } from '../lib/auth-assurance';
 import { legalDetails } from '../lib/legal';
 import { DEMO_SCHOOL_ID, allowSchoolApplication, invitationHash, invitationToken, schoolApplicationsConfigured, schoolSettingFields, validInvitationToken } from '../lib/school-onboarding';
 
-declare module 'express-session' { interface SessionData { invitationReturn?: {path:string;expires:number}; schoolInvitation?: { schoolId: string; token: string; email?: string; role?: InvitationRole; expires?: string; delivery?: string; warning?: string }; } }
+declare module 'express-session' { interface SessionData { schoolDomainNotice?:string; invitationReturn?: {path:string;expires:number}; schoolInvitation?: { schoolId: string; token: string; email?: string; role?: InvitationRole; expires?: string; delivery?: string; warning?: string }; } }
 
 const router = Router();
 const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { void fn(req, res).catch(next); };
@@ -29,7 +30,7 @@ async function confirmedAccount(req: Request, res: Response) {
   if (error || !data.user || data.user.id !== user.id || !data.user.email_confirmed_at || !data.user.email) {
     res.status(403).render('school-message', { title: 'Verified email required', message: 'Confirm your account email before continuing.' }); return null;
   }
-  return user;
+  return {...user,email:data.user.email};
 }
 async function schoolAdmin(req: Request, res: Response) {
   const user = account(req, res); if (!user) return null;
@@ -50,7 +51,7 @@ async function schoolAdmin(req: Request, res: Response) {
 }
 function failed(res: Response, title: string, message: string, status = 400) { return res.status(status).render('school-message', { title, message }); }
 router.use((req, res, next) => {
-  if (/^\/(?:schools|platform\/schools)(?:\/|$)/.test(req.path) || /^\/s\/[^/]+\/(?:privacy|terms|admin\/(?:school-settings|invitations))(?:\/|$)/.test(req.path)) res.setHeader('Cache-Control', 'no-store');
+  if (/^\/(?:schools|platform\/schools)(?:\/|$)/.test(req.path) || /^\/s\/[^/]+\/(?:privacy|terms|admin\/(?:school-settings|invitations|domains))(?:\/|$)/.test(req.path)) res.setHeader('Cache-Control', 'no-store');
   next();
 });
 router.get('/account/home', run(async (req, res) => {
@@ -69,18 +70,32 @@ router.get('/account/home', run(async (req, res) => {
 }));
 router.get('/schools', run(async (req, res) => {
   const user = req.session.user;
-  let schools: unknown[] = [], applications: unknown[] = [];
+  let schools: unknown[] = [], applications: unknown[] = [], joinOptions: unknown[] = [];
   if (user) {
     if (await platformAuthority(req, res)) return res.redirect(303, '/platform/schools');
-    const [membership, pending] = await Promise.all([
+    const [membership, pending, eligible] = await Promise.all([
       supabasePlatform.from('school_memberships').select('school_id,role,status,schools(id,slug,name,status)').eq('user_id', user.id).eq('status', 'active'),
       supabasePlatform.from('school_applications').select('id,name,slug,status,created_at').eq('applicant_id', user.id).order('created_at', { ascending: false }).limit(20),
+      supabasePlatform.rpc('school_email_join_options',{p_actor:user.id}),
     ]);
-    if (membership.error || pending.error) throw Object.assign(new Error('School directory unavailable.'), {status:503});
+    if (membership.error || pending.error || eligible.error) throw Object.assign(new Error('School directory unavailable.'), {status:503});
 
-    schools = membership.data || []; applications = pending.data || [];
+    schools = membership.data || []; applications = pending.data || [];joinOptions=eligible.data || [];
   }
-  return res.render('school-directory', { title: 'Your schools — SuggFeed', schools, applications, applicationEnabled: schoolApplicationsConfigured(), legal: legalDetails(), saved: req.query.saved === '1' });
+  return res.render('school-directory', { title: 'Your schools — SuggFeed', schools, applications, joinOptions, applicationEnabled: schoolApplicationsConfigured(), legal: legalDetails(), saved: req.query.saved === '1' });
+}));
+router.post('/schools/join',run(async(req,res)=>{
+  const user=await confirmedAccount(req,res);if(!user)return;
+  if(await platformAuthority(req,res))return failed(res,'Use platform administration','This account manages schools from the platform dashboard.',403);
+  const id=req.body?.domainId;
+  if(typeof id!=='string' || !/^[a-f0-9-]{36}$/i.test(id))return failed(res,'Choose your school','Return to Your schools and choose a school matched to your verified email.');
+  const emailDomain=user.email.toLowerCase().split('@')[1];
+  const {data:domain,error}=await supabasePlatform.from('school_email_domains').select('domain,verification_token').eq('id',id).eq('domain',emailDomain).eq('join_enabled',true).not('verified_at','is',null).maybeSingle();
+  if(error)throw Object.assign(new Error('School joining unavailable.'),{status:503});
+  if(!domain || !await schoolDomainProofPresent(domain.domain,domain.verification_token))return failed(res,'School joining unavailable','Your school’s domain verification may have changed. Ask its administrator to check Email domains, or use a school invitation.',409);
+  const {data:school,error:joinError}=await supabasePlatform.rpc('join_school_by_email_domain',{p_actor:user.id,p_domain:id});
+  if(joinError || !school)return failed(res,'Could not join this school','Your email, school readiness, or membership access changed. Return to Your schools or contact the school administrator.',409);
+  return res.redirect(303,schoolLanding(school,school.role));
 }));
 router.post('/schools/apply', run(async (req, res) => {
   const user = await confirmedAccount(req, res); if (!user) return;
@@ -147,12 +162,13 @@ router.post('/platform/schools/:id/activate', run(async (req, res) => {
   return res.redirect(303, '/platform/schools?saved=1');
 }));
 async function renderSettings(req: Request, res: Response, context: NonNullable<Awaited<ReturnType<typeof schoolAdmin>>>, submitted?: Record<string, string | number>, errorMessage?: string) {
-  const { data, error } = await supabasePlatform.from('school_settings').select('*').eq('school_id', context.school.id).maybeSingle();
-  if (error) throw Object.assign(new Error('School settings unavailable.'), {status:503});
+  const [{data,error},domains]=await Promise.all([supabasePlatform.from('school_settings').select('*').eq('school_id',context.school.id).maybeSingle(),supabasePlatform.from('school_email_domains').select('id,domain,verification_token,verified_at,join_enabled').eq('school_id',context.school.id).order('created_at')]);
+  if (error || domains.error) throw Object.assign(new Error('School settings unavailable.'), {status:503});
   // Keep form Origin valid without exposing invitation paths in Referer.
   res.setHeader('Referrer-Policy', 'strict-origin');
   const displayedSettings = submitted ? { ...(data || {}), ...submitted } : data;
-  return res.status(errorMessage ? 400 : 200).render('school-settings', { title: 'School settings — ' + context.school.name, school: context.school, savedSettings: data, settings: displayedSettings || { version: 1, publication_policy: 'private', retention_days: 365 }, settingsAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings', invitationAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/invitations' : '/s/' + context.school.slug + '/admin/invitations', saved: !errorMessage && req.query.saved === '1', errorMessage });
+  const domainNotice=req.session.schoolDomainNotice || '';delete req.session.schoolDomainNotice;
+  return res.status(errorMessage ? 400 : 200).render('school-settings', { title: 'School settings — ' + context.school.name, school: context.school, domains:domains.data || [],domainAction:invitationBase(req,context.school)+'/domains',domainNotice, savedSettings: data, settings: displayedSettings || { version: 1, publication_policy: 'private', retention_days: 365 }, settingsAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings', invitationAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/invitations' : '/s/' + context.school.slug + '/admin/invitations', saved: !errorMessage && req.query.saved === '1', errorMessage });
 }
 router.get(['/s/:schoolSlug/admin/school-settings', '/platform/schools/:id/settings'], run(async (req, res) => {
   const context = await schoolAdmin(req, res); if (!context) return;
@@ -170,6 +186,30 @@ router.post(['/s/:schoolSlug/admin/school-settings', '/platform/schools/:id/sett
   const { error } = await supabasePlatform.rpc('update_school_settings', { p_school: context.school.id, p_actor: context.user.id, p_version: version, p_settings: settings });
   if (error) return renderSettings(req, res, context, { ...settings, version }, 'Your changes were not saved. Check required fields and valid emails. If another administrator saved a newer version, reload this page before trying again. Your entered text is retained below.');
   return res.redirect(303, (req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings') + '?saved=1');
+}));
+router.post(['/s/:schoolSlug/admin/domains','/platform/schools/:id/domains'],run(async(req,res)=>{
+  const context=await schoolAdmin(req,res);if(!context)return;
+  const domain=schoolEmailDomain(req.body?.domain);
+  if(!domain)return failed(res,'Use a school email domain','Enter only a school-controlled domain, such as my.cspc.edu.ph. Personal email providers and @ prefixes are not supported.');
+  const {error}=await supabasePlatform.rpc('request_school_email_domain',{p_school:context.school.id,p_actor:context.user.id,p_domain:domain,p_token:invitationToken()});
+  req.session.schoolDomainNotice=error?'Domain was not added. It may already be listed, or the school has reached its ten-domain limit.':'Domain added. Publish its DNS TXT record, verify it, then enable student joining.';
+  return res.redirect(303,invitationBase(req,context.school)+(req.path.toLowerCase().startsWith('/platform/')?'/settings':'/school-settings')+'#school-domains');
+}));
+router.post(['/s/:schoolSlug/admin/domains/:domainId','/platform/schools/:id/domains/:domainId'],run(async(req,res)=>{
+  const context=await schoolAdmin(req,res);if(!context)return;
+  const {domainId}=req.params,action=req.body?.action;
+  if(typeof domainId!=='string' || !/^[a-f0-9-]{36}$/i.test(domainId) || !['verify','enable','disable','remove'].includes(action))return failed(res,'Choose a domain action','Return to School settings to manage this domain.');
+  if(action==='verify' || action==='enable'){
+    const {data:domain,error}=await supabasePlatform.from('school_email_domains').select('domain,verification_token').eq('school_id',context.school.id).eq('id',domainId).maybeSingle();
+    if(error)throw Object.assign(new Error('School domain unavailable.'),{status:503});
+    if(!domain || !await schoolDomainProofPresent(domain.domain,domain.verification_token)){
+      req.session.schoolDomainNotice='DNS verification failed. Add the exact TXT host and value below, wait for DNS propagation, then retry. No settings were changed.';
+      return res.redirect(303,invitationBase(req,context.school)+(req.path.toLowerCase().startsWith('/platform/')?'/settings':'/school-settings')+'#school-domains');
+    }
+  }
+  const {error}=await supabasePlatform.rpc('configure_school_email_domain',{p_school:context.school.id,p_actor:context.user.id,p_domain:domainId,p_action:action});
+  req.session.schoolDomainNotice=error?'The domain change was not saved. Verification requires an unclaimed domain; enabling also requires an active school with reviewed policies.':{verify:'Domain verified. You can now enable student joining.',enable:'Student joining is enabled for this exact email domain.',disable:'Student joining is disabled. Existing members keep their access.',remove:'Domain removed. Existing members keep their access.'}[action as string];
+  return res.redirect(303,invitationBase(req,context.school)+(req.path.toLowerCase().startsWith('/platform/')?'/settings':'/school-settings')+'#school-domains');
 }));
 function invitationBase(req: Request, school: {id:string;slug:string}) {
   return req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/'+school.id : '/s/'+school.slug+'/admin';

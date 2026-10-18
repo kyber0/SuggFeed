@@ -321,3 +321,20 @@
 @media(max-width:480px){.invites-heading{flex-direction:column;gap:0}.invites-heading>.platform-badge{margin-top:0}.invites-card{padding:20px 16px}.invites-choice{padding:14px 12px}.invites-guide ol{grid-template-columns:minmax(0,1fr)}.invites-guide li{padding-left:38px;padding-top:0}.invites-copy{flex-direction:column}.invites-copy button,.invites-submit button{width:100%;min-height:48px}.invites-card input[type=email],.invites-copy input{font-size:16px}.invites-feedback{padding:20px 16px}.invites-person{flex-basis:100%}.invites-history>header{flex-direction:column}.invitation-page{width:calc(100% - 32px);margin-top:24px}.invitation-card{padding:24px 20px;border-radius:16px}.invitation-card .school-settings-primary{font-size:14px}}
 
 .invites-layout .invites-card>header{display:block}.invites-layout .invites-card>header h2{margin-bottom:8px}.invites-choice small{font-weight:400}.invites-choice:has(input:checked){background:var(--surface);background:color-mix(in srgb,var(--accent) 6%,var(--surface));box-shadow:inset 0 0 0 1px var(--navy)}.invites-guide summary{font-size:17px;font-weight:700;cursor:pointer;min-height:44px;display:list-item;line-height:1.6;list-style-position:inside}.invites-guide li:before{background:var(--surface)}.invitation-access{background:var(--surface);background:color-mix(in srgb,var(--navy) 5%,var(--surface))}
+/* Domain enrollment reuses the school settings hierarchy and native form flow. */
+.domain-steps {padding-left:22px;color:var(--ink-2);line-height:1.8;margin-bottom:18px;}
+.domain-add {border-block:1px solid var(--line);padding-block:20px;margin-block:20px;}
+.domain-card {border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:20px;min-width:0;}
+.domain-card-heading {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.domain-card h3 {overflow-wrap:anywhere;margin:0;}
+.domain-card label {display:block;font-size:.85rem;font-weight:650;margin:14px 0 6px;}
+.domain-card textarea {resize:vertical;overflow-wrap:anywhere;}
+.domain-actions {display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+.school-join-section > h2 {margin-top:8px;}
+.school-join-card {display:flex;align-items:center;gap:20px;padding:20px;margin-top:20px;border:1px solid var(--line);border-radius:16px;background:var(--bg);}
+.school-join-card > div {flex:1;min-width:0;}
+.school-join-card h3 {margin:0;overflow-wrap:anywhere;}
+.school-join-card p {font-size:.875rem;margin:8px 0 0;line-height:1.6;}
+.school-join-card p a {text-decoration:underline;text-underline-offset:3px;}
+.school-join-card .sf-empty-mark {margin:0;}
+@media(max-width:600px){.school-join-card {align-items:flex-start;flex-wrap:wrap;gap:14px;padding:16px;}.school-join-card form {width:100%;}.school-join-card button {width:100%;}.domain-card {padding:16px;}.domain-actions button {flex:1 1 140px;}}
