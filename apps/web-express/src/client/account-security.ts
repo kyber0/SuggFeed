@@ -11,7 +11,7 @@
     const code = document.getElementById('security-code') as HTMLInputElement;
     const verify = document.getElementById('security-verify') as HTMLButtonElement;
     let factorId: string | null = null, unfinishedId: string | null = null, busy = false;
-    const fail = (message: string) => { feedback.textContent = message; };
+    const fail = (message: string, error = false) => { feedback.textContent = message; feedback.dataset.state = error ? 'error' : 'info'; };
     function controls(disabled: boolean) { busy = disabled; enroll.disabled = replace.disabled = verify.disabled = code.disabled = disabled; }
     async function ownAccount() {
       const result = await window._sb.auth.getUser();
@@ -34,6 +34,7 @@
     async function start(replacing: boolean) {
       if (busy) return;
       controls(true);
+      fail('Preparing your authenticator setup…');
       try {
         const all = await factors();
         if (all.some(factor => factor.status === 'verified')) { await load(); return; }
@@ -51,7 +52,7 @@
         qr.src = image; secret.textContent = result.data.totp.secret;
         setup.hidden = false; form.hidden = false; enroll.hidden = replace.hidden = true;
         fail('Add this account to your authenticator app, then verify its code.'); code.focus();
-      } catch (error) { fail(error.message || 'Authenticator setup failed. Reload to try again.'); }
+      } catch (error) { fail(error.message || 'Authenticator setup failed. Reload to try again.', true); }
       finally { controls(false); }
     }
     enroll.addEventListener('click', () => start(false));
@@ -59,8 +60,9 @@
     form.addEventListener('submit', async event => {
       event.preventDefault(); if (busy || !factorId) return;
       const value = code.value.trim();
-      if (!/^[0-9]{6}$/.test(value)) { fail('Enter the six digit code from your authenticator app.'); code.focus(); return; }
+      if (!/^[0-9]{6}$/.test(value)) { fail('Enter the six digit code from your authenticator app.', true); code.focus(); return; }
       controls(true);
+      fail('Verifying your code…');
       try {
         await ownAccount();
         const challenge = await window._sb.auth.mfa.challenge({factorId});
@@ -79,10 +81,10 @@
         const school = /^\/s\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/|$)/.exec(url.pathname);
         const allowed = url.pathname === '/schools' || /^\/platform\/schools(?:\/[^/]+\/settings)?$/.test(url.pathname) || url.pathname === '/account/home' || (school && school[1].length >= 3 && school[1].length <= 63);
         window.location.assign(destination.startsWith('/') && url.origin === window.location.origin && !/[\\\x00-\x20\x7f]|%(?:2f|5c|25|2e)/i.test(destination) && url.pathname === destination.split(/[?#]/)[0] && allowed ? destination : '/schools');
-      } catch (error) { code.value = ''; fail(error.message || 'Verification failed. Please try again.'); }
+      } catch (error) { code.value = ''; fail(error.message || 'Verification failed. Please try again.', true); }
       finally { controls(false); }
     });
     try { await window.sfAuthReady; await load(); }
-    catch (error) { fail(error.message || 'Could not load account security. Reload to try again.'); }
+    catch (error) { fail(error.message || 'Could not load account security. Reload to try again.', true); }
   });
 })();

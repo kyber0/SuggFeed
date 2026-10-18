@@ -12,7 +12,7 @@
         const code = document.getElementById('security-code');
         const verify = document.getElementById('security-verify');
         let factorId = null, unfinishedId = null, busy = false;
-        const fail = (message) => { feedback.textContent = message; };
+        const fail = (message, error = false) => { feedback.textContent = message; feedback.dataset.state = error ? 'error' : 'info'; };
         function controls(disabled) { busy = disabled; enroll.disabled = replace.disabled = verify.disabled = code.disabled = disabled; }
         async function ownAccount() {
             const result = await window._sb.auth.getUser();
@@ -40,6 +40,7 @@
             if (busy)
                 return;
             controls(true);
+            fail('Preparing your authenticator setup…');
             try {
                 const all = await factors();
                 if (all.some(factor => factor.status === 'verified')) {
@@ -77,7 +78,7 @@
                 code.focus();
             }
             catch (error) {
-                fail(error.message || 'Authenticator setup failed. Reload to try again.');
+                fail(error.message || 'Authenticator setup failed. Reload to try again.', true);
             }
             finally {
                 controls(false);
@@ -91,11 +92,12 @@
                 return;
             const value = code.value.trim();
             if (!/^[0-9]{6}$/.test(value)) {
-                fail('Enter the six digit code from your authenticator app.');
+                fail('Enter the six digit code from your authenticator app.', true);
                 code.focus();
                 return;
             }
             controls(true);
+            fail('Verifying your code…');
             try {
                 await ownAccount();
                 const challenge = await window._sb.auth.mfa.challenge({ factorId });
@@ -124,7 +126,7 @@
             }
             catch (error) {
                 code.value = '';
-                fail(error.message || 'Verification failed. Please try again.');
+                fail(error.message || 'Verification failed. Please try again.', true);
             }
             finally {
                 controls(false);
@@ -135,7 +137,7 @@
             await load();
         }
         catch (error) {
-            fail(error.message || 'Could not load account security. Reload to try again.');
+            fail(error.message || 'Could not load account security. Reload to try again.', true);
         }
     });
 })();

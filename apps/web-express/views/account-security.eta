@@ -1,20 +1,28 @@
 <% layout('layout') %>
-<main class="sf-main auth-callback-container" id="account-security" data-user-id="<%= it.securityUserId %>" data-return-to="<%= it.securityReturnTo %>">
-  <h1 class="auth-callback-title">Account security</h1>
-  <p class="auth-callback-sub">School staff and platform operators must verify an authenticator code before opening their workspace. Anyone can protect their own account here.</p>
-  <p id="security-feedback" class="auth-reset-feedback" role="status" aria-live="polite">Loading your account security…</p>
-  <button id="security-enroll" class="am-btn-primary" type="button" hidden>Set up authenticator</button>
-  <button id="security-replace" class="am-btn-ghost" type="button" hidden>Replace unfinished authenticator setup</button>
-  <section id="security-setup" hidden aria-label="Authenticator setup">
-    <p>Scan this QR code with your authenticator app, or enter the setup key below. Keep the key private.</p>
-    <img id="security-qr" width="200" height="200" alt="Authenticator setup QR code" />
-    <p>Setup key: <code id="security-secret"></code></p>
+<main class="sf-main auth-callback-container account-flow" id="account-security" data-user-id="<%= it.securityUserId %>" data-return-to="<%= it.securityReturnTo %>" aria-labelledby="security-title">
+ <section class="account-flow-card">
+  <header class="account-flow-header">
+   <span class="account-flow-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><use href="#ws-shield"/></svg></span>
+   <p class="account-flow-eyebrow">Protect your account</p>
+   <h1 class="auth-callback-title" id="security-title">Account security</h1>
+   <p class="auth-callback-sub">Verify with your authenticator app to continue securely to your workspace.</p>
+  </header>
+  <p id="security-feedback" class="auth-reset-feedback account-flow-feedback" role="status" aria-live="polite">Loading your account security…</p>
+  <div class="account-flow-actions">
+   <button id="security-enroll" class="am-btn-primary" type="button" hidden>Set up authenticator</button>
+   <button id="security-replace" class="am-btn-ghost" type="button" hidden>Replace unfinished authenticator setup</button>
+  </div>
+  <section id="security-setup" class="account-flow-setup" hidden aria-labelledby="security-setup-title">
+   <h2 id="security-setup-title">Connect your authenticator</h2>
+   <p>Scan this QR code with your authenticator app, then enter its six-digit code below.</p>
+   <div class="account-flow-qr"><img id="security-qr" width="200" height="200" alt="Authenticator setup QR code" /></div>
+   <details class="account-flow-manual"><summary>Can’t scan the QR code?</summary><p>Enter this setup key in your app. Keep it private.</p><code id="security-secret"></code></details>
   </section>
   <form id="security-form" class="auth-reset-form am-form" novalidate hidden>
-    <div class="am-field"><label class="am-label" for="security-code">Authenticator code</label><input id="security-code" class="am-input" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required aria-describedby="security-code-help security-feedback" /></div>
-    <p id="security-code-help">Enter the current six digit code from your authenticator app.</p>
-    <button id="security-verify" class="am-btn-primary" type="submit">Verify and continue</button>
+   <div class="am-field"><label class="am-label" for="security-code">Authenticator code</label><input id="security-code" class="am-input account-code-input" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required aria-describedby="security-code-help security-feedback" /><p class="account-field-hint" id="security-code-help">Use the current six-digit code from your authenticator app.</p></div>
+   <button id="security-verify" class="am-btn-primary" type="submit">Verify and continue</button>
   </form>
-  <a href="/schools" class="am-btn-ghost">Return to schools</a>
+  <footer class="account-flow-footer"><a href="/schools" class="account-flow-back">Return to your schools</a><p>Two-step verification is required for school staff and platform operators.</p></footer>
+ </section>
 </main>
-<script defer src="/js/account-security.js?v=20261017-system-navigation"></script>
+<script defer src="/js/account-security.js?v=20261018-account-ui"></script>

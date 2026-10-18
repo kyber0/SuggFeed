@@ -1,2 +1,14 @@
 <% layout('layout') %>
-<main class="<%= it.platformDashboard ? 'platform-message' : 'sf-legal-page' %>"><div class="<%= it.platformDashboard ? '' : 'sf-legal-container' %>"><% if (it.platformDashboard) { %><p class="eyebrow">Super admin workspace</p><% } %><h1><%= it.title %></h1><p role="status"><%= it.message %></p><% if (it.nextHref) { %><p><a class="platform-button" href="<%= it.nextHref %>"><%= it.nextLabel %></a></p><% } %><% if (it.invitationUrl) { %><label for="invitation-url">One-time invitation path</label><input id="invitation-url" readonly value="<%= it.invitationUrl %>" size="80" /><p><a href="<%= it.invitationUrl %>">Open invitation</a></p><% } %><p><a href="<%= it.platformDashboard ? '/platform/schools' : '/schools' %>"><%= it.platformDashboard ? 'Back to super admin dashboard' : 'Your schools' %></a></p></div></main>
+<main class="sf-main account-flow" aria-labelledby="account-message-title">
+ <section class="account-flow-card">
+  <header class="account-flow-header">
+   <span class="account-flow-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><use href="#ws-message"/></svg></span>
+   <p class="account-flow-eyebrow"><%= it.platformDashboard ? 'Super admin workspace' : 'Your SuggFeed account' %></p>
+   <h1 class="auth-callback-title" id="account-message-title"><%= it.title %></h1>
+   <p class="auth-callback-sub" role="status"><%= it.message %></p>
+  </header>
+  <% if (it.nextHref) { %><a class="am-btn-primary" href="<%= it.nextHref %>"><%= it.nextLabel %></a><% } %>
+  <% if (it.invitationUrl) { %><div class="am-field"><label class="am-label" for="invitation-url">One-time invitation path</label><input class="am-input account-invitation-path" id="invitation-url" readonly value="<%= it.invitationUrl %>" /><a class="am-btn-ghost" href="<%= it.invitationUrl %>">Open invitation</a></div><% } %>
+  <footer class="account-flow-footer"><a class="account-flow-back" href="<%= it.platformDashboard ? '/platform/schools' : '/schools' %>"><%= it.platformDashboard ? 'Back to super admin dashboard' : 'Return to your schools' %></a></footer>
+ </section>
+</main>

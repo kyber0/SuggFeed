@@ -67,6 +67,7 @@
             event.preventDefault();
             if (saving)
                 return;
+            codeFeedback.dataset.state = 'error';
             const email = codeEmail.value.trim(), token = codeInput.value.trim();
             if (!email || !codeEmail.checkValidity()) {
                 codeFeedback.textContent = 'Enter the email address used to request this reset.';
@@ -83,6 +84,7 @@
             codeResend.disabled = true;
             codeEmail.disabled = true;
             codeInput.disabled = true;
+            codeFeedback.dataset.state = 'info';
             codeFeedback.textContent = 'Verifying reset code…';
             try {
                 const result = await window._sb.auth.verifyOtp({ email, token, type: 'recovery' });
@@ -92,6 +94,7 @@
                 codeFeedback.textContent = '';
             }
             catch (error) {
+                codeFeedback.dataset.state = 'error';
                 codeFeedback.textContent = error.message || 'The code could not be verified. Please try again.';
             }
             finally {

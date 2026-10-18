@@ -1,12 +1,13 @@
 <% layout('layout') %>
-
-<main class="sf-main error-page-container">
-  <div class="error-page-code">404</div>
-  <h1 class="error-page-title">Page Not Found</h1>
-  <p class="error-page-desc">
-    The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
-  </p>
-  <a href="/account/home" class="btn-primary error-page-btn">
-    Return to your workspace
-  </a>
+<main class="sf-main account-flow" aria-labelledby="not-found-title">
+ <section class="account-flow-card">
+  <header class="account-flow-header">
+   <span class="account-flow-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><use href="#ws-search"/></svg></span>
+   <p class="account-flow-eyebrow">Error 404</p>
+   <h1 class="auth-callback-title" id="not-found-title">This page isn’t here</h1>
+   <p class="auth-callback-sub">The link may have changed or the page may no longer be available. Return to your workspace to find what you need.</p>
+  </header>
+  <a href="/account/home" class="am-btn-primary">Return to your workspace</a>
+  <footer class="account-flow-footer"><a class="account-flow-back" href="/schools">Choose a school</a></footer>
+ </section>
 </main>

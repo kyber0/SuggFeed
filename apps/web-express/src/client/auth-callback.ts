@@ -50,17 +50,18 @@
     }
     codeForm.addEventListener('submit', async event => {
       event.preventDefault(); if (saving) return;
+      codeFeedback.dataset.state = 'error';
       const email = codeEmail.value.trim(), token = codeInput.value.trim();
       if (!email || !codeEmail.checkValidity()) {codeFeedback.textContent = 'Enter the email address used to request this reset.'; codeEmail.focus(); return;}
       if (!/^[0-9]{6,10}$/.test(token)) {codeFeedback.textContent = 'Enter the numeric password reset code from your email.'; codeInput.focus(); return;}
       saving = true; codeSubmit.disabled = true; codeResend.disabled = true; codeEmail.disabled = true; codeInput.disabled = true;
-      codeFeedback.textContent = 'Verifying reset code…';
+      codeFeedback.dataset.state = 'info'; codeFeedback.textContent = 'Verifying reset code…';
       try {
         const result = await window._sb.auth.verifyOtp({email, token, type:'recovery'});
         if (result.error || !result.data.session) throw new Error('That reset code could not be verified. Check the email address and code, or request a fresh reset email.');
         showReset(result.data.session);
         codeFeedback.textContent = '';
-      } catch (error) {codeFeedback.textContent = error.message || 'The code could not be verified. Please try again.';}
+      } catch (error) {codeFeedback.dataset.state = 'error'; codeFeedback.textContent = error.message || 'The code could not be verified. Please try again.';}
       finally {saving = false; codeSubmit.disabled = false; codeResend.disabled = false; codeEmail.disabled = false; codeInput.disabled = false;}
     });
     codeResend.addEventListener('click', () => {if (!saving) window.openAuthModal('forgot');});
