@@ -18,7 +18,7 @@
   <%~ include('partials/staff-sidebar', it) %>
   <div class="staff-main">
     <header class="workspace-heading">
-      <div><p class="workspace-kicker">WORKSPACE / REVIEW</p><h1>Review submissions<span class="workspace-title-dot">.</span></h1><p>Make a decision on pending suggestions. Delivery and public updates belong in <a href="/admin/board">Manage work</a>.</p></div>
+      <div><p class="workspace-kicker">WORKSPACE / REVIEW</p><h1>Review submissions<span class="workspace-title-dot" aria-hidden="true">.</span></h1><p>Make a decision on pending suggestions. Delivery and public updates belong in <a href="/admin/board">Manage work</a>.</p></div>
       <div class="workspace-actions"><button class="workspace-button" id="staff-refresh" type="button"><%~ icon('refresh') %> Refresh</button><button class="workspace-button" id="staff-export" type="button" <%= it.submissions.length ? '' : 'disabled' %>><%~ icon('export') %> Export page</button></div>
     </header>
     <div class="staff-overview-caption"><span>School-wide overview</span><span>All submissions · independent of queue filters</span></div>

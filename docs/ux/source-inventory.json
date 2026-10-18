@@ -1,0 +1,5691 @@
+{
+  "scope": "Express app; source definitions, not every data instance. See full-product-audit.md for state and runtime evidence.",
+  "surfaces": [
+    {
+      "file": "apps/web-express/views/403.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 3
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/404.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 3
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/500.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 3
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/account-security.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": "account-security",
+          "line": 2
+        },
+        {
+          "element": "button",
+          "id": "security-enroll",
+          "line": 6
+        },
+        {
+          "element": "button",
+          "id": "security-replace",
+          "line": 7
+        },
+        {
+          "element": "section",
+          "id": "security-setup",
+          "line": 8
+        },
+        {
+          "element": "form",
+          "id": "security-form",
+          "line": 13
+        },
+        {
+          "element": "input",
+          "id": "security-code",
+          "line": 14
+        },
+        {
+          "element": "button",
+          "id": "security-verify",
+          "line": 16
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/admin-analytics.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 3
+        },
+        {
+          "element": "main",
+          "id": null,
+          "line": 16
+        },
+        {
+          "element": "button",
+          "id": "analytics-refresh-btn",
+          "line": 26
+        },
+        {
+          "element": "button",
+          "id": "analytics-export-csv",
+          "line": 27
+        },
+        {
+          "element": "form",
+          "id": "analytics-filters",
+          "line": 32
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 34
+        },
+        {
+          "element": "select",
+          "id": "analytics-category-select",
+          "line": 36
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 37
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 43
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 98
+        },
+        {
+          "element": "button",
+          "id": "btn-toggle-daily",
+          "line": 105
+        },
+        {
+          "element": "button",
+          "id": "btn-toggle-cum",
+          "line": 106
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 113
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 113
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 122
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 145
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 170
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 178
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 210
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/admin-staff.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 3
+        },
+        {
+          "element": "main",
+          "id": null,
+          "line": 9
+        },
+        {
+          "element": "button",
+          "id": "staff-refresh-btn",
+          "line": 19
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 24
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 53
+        },
+        {
+          "element": "input",
+          "id": "staff-search-input",
+          "line": 66
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 69
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 70
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 71
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 77
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 98
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 102
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 106
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 121
+        },
+        {
+          "element": "form",
+          "id": "student-search-form",
+          "line": 128
+        },
+        {
+          "element": "input",
+          "id": "student-search-input",
+          "line": 131
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 133
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 147
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 148
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 159
+        },
+        {
+          "element": "dialog",
+          "id": "staff-revoke-dialog",
+          "line": 173
+        },
+        {
+          "element": "button",
+          "id": "btn-revoke-cancel-x",
+          "line": 176
+        },
+        {
+          "element": "button",
+          "id": "btn-revoke-cancel",
+          "line": 182
+        },
+        {
+          "element": "button",
+          "id": "btn-revoke-confirm",
+          "line": 183
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 187
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/admin.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 14
+        },
+        {
+          "element": "main",
+          "id": null,
+          "line": 17
+        },
+        {
+          "element": "button",
+          "id": "staff-refresh",
+          "line": 22
+        },
+        {
+          "element": "button",
+          "id": "staff-export",
+          "line": 22
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 25
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 33
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 37
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 38
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 39
+        },
+        {
+          "element": "select",
+          "id": null,
+          "line": 40
+        },
+        {
+          "element": "select",
+          "id": null,
+          "line": 41
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 42
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 43
+        },
+        {
+          "element": "button",
+          "id": "staff-open-save-view",
+          "line": 53
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 58
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 59
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 64
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 69
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 71
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 72
+        },
+        {
+          "element": "dialog",
+          "id": "staff-save-view-dialog",
+          "line": 79
+        },
+        {
+          "element": "form",
+          "id": "staff-save-view",
+          "line": 79
+        },
+        {
+          "element": "button",
+          "id": "staff-close-save-view",
+          "line": 79
+        },
+        {
+          "element": "input",
+          "id": "staff-view-name",
+          "line": 79
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 79
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 81
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/auth-callback.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 3
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 5
+        },
+        {
+          "element": "form",
+          "id": "auth-code-form",
+          "line": 9
+        },
+        {
+          "element": "input",
+          "id": "auth-code-email",
+          "line": 10
+        },
+        {
+          "element": "input",
+          "id": "auth-recovery-code",
+          "line": 11
+        },
+        {
+          "element": "button",
+          "id": "auth-code-submit",
+          "line": 14
+        },
+        {
+          "element": "button",
+          "id": "auth-code-resend",
+          "line": 15
+        },
+        {
+          "element": "form",
+          "id": "auth-reset-form",
+          "line": 17
+        },
+        {
+          "element": "input",
+          "id": "auth-reset-password",
+          "line": 18
+        },
+        {
+          "element": "input",
+          "id": "auth-reset-confirm",
+          "line": 19
+        },
+        {
+          "element": "button",
+          "id": "auth-reset-submit",
+          "line": 22
+        },
+        {
+          "element": "button",
+          "id": "auth-reset-cancel",
+          "line": 23
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/digest-unsubscribe.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 1
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 1
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 1
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 1
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 1
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/feed.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "nav",
+          "id": null,
+          "line": 25
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 29
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 30
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 32
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 38
+        },
+        {
+          "element": "main",
+          "id": null,
+          "line": 45
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 52
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 52
+        },
+        {
+          "element": "form",
+          "id": "feed-search-form",
+          "line": 55
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 56
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 57
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 58
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 59
+        },
+        {
+          "element": "input",
+          "id": "feed-search",
+          "line": 60
+        },
+        {
+          "element": "button",
+          "id": "feed-search-clear",
+          "line": 61
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 62
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 66
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 67
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 69
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 69
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 73
+        },
+        {
+          "element": "details",
+          "id": "saved-search-panel",
+          "line": 88
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 89
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 89
+        },
+        {
+          "element": "button",
+          "id": "saved-search-add",
+          "line": 91
+        },
+        {
+          "element": "form",
+          "id": "saved-search-form",
+          "line": 92
+        },
+        {
+          "element": "input",
+          "id": "saved-search-name",
+          "line": 92
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 92
+        },
+        {
+          "element": "button",
+          "id": "saved-search-cancel",
+          "line": 92
+        },
+        {
+          "element": "button",
+          "id": "saved-search-retry",
+          "line": 93
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 105
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 106
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 111
+        },
+        {
+          "element": "button",
+          "id": "feed-loader",
+          "line": 115
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 121
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 130
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 131
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 136
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 148
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-28",
+        "action-49",
+        "action-31",
+        "action-32",
+        "action-33",
+        "action-35",
+        "action-37",
+        "action-48",
+        "open-detail"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/home.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 3
+        },
+        {
+          "element": "section",
+          "id": "top",
+          "line": 5
+        },
+        {
+          "element": "section",
+          "id": "action-hub",
+          "line": 36
+        },
+        {
+          "element": "button",
+          "id": "tab-share",
+          "line": 41
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 51
+        },
+        {
+          "element": "button",
+          "id": "tab-track",
+          "line": 57
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 67
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 79
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 81
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 92
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 104
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 105
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 111
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 112
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 117
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 118
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 123
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 124
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 130
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 131
+        },
+        {
+          "element": "form",
+          "id": "panel-track",
+          "line": 142
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 152
+        },
+        {
+          "element": "input",
+          "id": "tracking-input",
+          "line": 156
+        },
+        {
+          "element": "button",
+          "id": "tracking-clear",
+          "line": 167
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 168
+        },
+        {
+          "element": "button",
+          "id": "track-submit-btn",
+          "line": 174
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 175
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 191
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 212
+        },
+        {
+          "element": "section",
+          "id": "feed",
+          "line": 226
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 233
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 234
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 246
+        },
+        {
+          "element": "input",
+          "id": "home-search",
+          "line": 250
+        },
+        {
+          "element": "button",
+          "id": "search-clear-btn",
+          "line": 259
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 260
+        },
+        {
+          "element": "button",
+          "id": "home-sort-btn",
+          "line": 269
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 270
+        },
+        {
+          "element": "svg",
+          "id": "home-sort-chevron",
+          "line": 279
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 284
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 286
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 290
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 293
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 301
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 307
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 325
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 331
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 338
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 367
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 373
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 382
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 399
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 401
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 408
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-58",
+        "action-59",
+        "action-60",
+        "action-61",
+        "action-62",
+        "action-63",
+        "action-64",
+        "action-65",
+        "action-66",
+        "action-67",
+        "action-68",
+        "action-69",
+        "action-70",
+        "action-71",
+        "action-72",
+        "action-73",
+        "action-74",
+        "action-75",
+        "action-76",
+        "action-77",
+        "action-78",
+        "action-79",
+        "action-80",
+        "action-81"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/idea.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 54
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 58
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 70
+        },
+        {
+          "element": "button",
+          "id": "share-btn",
+          "line": 84
+        },
+        {
+          "element": "svg",
+          "id": "share-icon",
+          "line": 92
+        },
+        {
+          "element": "button",
+          "id": "mob-tab-details",
+          "line": 99
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 107
+        },
+        {
+          "element": "button",
+          "id": "mob-tab-comments",
+          "line": 110
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 118
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 133
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 139
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 150
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 152
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 154
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 156
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 180
+        },
+        {
+          "element": "button",
+          "id": "detail-vote-btn",
+          "line": 194
+        },
+        {
+          "element": "svg",
+          "id": "detail-vote-icon",
+          "line": 202
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 221
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 222
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 223
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 227
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 237
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 242
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 258
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 270
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 287
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 311
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 312
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 313
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 340
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 341
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 342
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 357
+        },
+        {
+          "element": "form",
+          "id": "comment-composer",
+          "line": 362
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 371
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 374
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 375
+        },
+        {
+          "element": "textarea",
+          "id": "comment-input",
+          "line": 381
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 399
+        },
+        {
+          "element": "button",
+          "id": "comment-submit-btn",
+          "line": 400
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 401
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-82",
+        "action-83",
+        "action-84",
+        "action-85",
+        "action-86",
+        "action-87",
+        "action-88",
+        "action-89",
+        "action-90",
+        "action-91",
+        "action-92",
+        "action-93"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/layout.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "nav",
+          "id": null,
+          "line": 49
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/notifications.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 11
+        },
+        {
+          "element": "button",
+          "id": "notification-retry",
+          "line": 16
+        },
+        {
+          "element": "button",
+          "id": "notification-more",
+          "line": 16
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 18
+        },
+        {
+          "element": "form",
+          "id": "notification-preferences",
+          "line": 20
+        },
+        {
+          "element": "select",
+          "id": null,
+          "line": 21
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 22
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 23
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 26
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 31
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/auth-modal.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "dialog",
+          "id": "auth-dialog",
+          "line": 3
+        },
+        {
+          "element": "button",
+          "id": "auth-modal-close",
+          "line": 8
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 9
+        },
+        {
+          "element": "button",
+          "id": "tab-signin",
+          "line": 14
+        },
+        {
+          "element": "button",
+          "id": "tab-signup",
+          "line": 15
+        },
+        {
+          "element": "button",
+          "id": "btn-google-auth",
+          "line": 33
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 34
+        },
+        {
+          "element": "form",
+          "id": "form-signin",
+          "line": 47
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 51
+        },
+        {
+          "element": "input",
+          "id": "signin-email",
+          "line": 52
+        },
+        {
+          "element": "button",
+          "id": "btn-to-forgot",
+          "line": 59
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 62
+        },
+        {
+          "element": "input",
+          "id": "signin-password",
+          "line": 63
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 64
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 65
+        },
+        {
+          "element": "button",
+          "id": "btn-signin",
+          "line": 70
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 72
+        },
+        {
+          "element": "button",
+          "id": "link-to-signup",
+          "line": 76
+        },
+        {
+          "element": "form",
+          "id": "form-signup",
+          "line": 83
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 87
+        },
+        {
+          "element": "input",
+          "id": "signup-name",
+          "line": 88
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 95
+        },
+        {
+          "element": "input",
+          "id": "signup-email",
+          "line": 96
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 103
+        },
+        {
+          "element": "input",
+          "id": "signup-password",
+          "line": 104
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 105
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 106
+        },
+        {
+          "element": "button",
+          "id": "btn-signup",
+          "line": 111
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 113
+        },
+        {
+          "element": "button",
+          "id": "link-to-signin",
+          "line": 117
+        },
+        {
+          "element": "form",
+          "id": "form-forgot",
+          "line": 124
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 128
+        },
+        {
+          "element": "input",
+          "id": "forgot-email",
+          "line": 129
+        },
+        {
+          "element": "button",
+          "id": "btn-forgot-submit",
+          "line": 133
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 135
+        },
+        {
+          "element": "button",
+          "id": "btn-back-signin",
+          "line": 140
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 141
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/confirmation.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "dialog",
+          "id": "sf-confirm-dialog",
+          "line": 1
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 5
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 5
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/empty-state.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 7
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "<%= action.event %>"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/partials/feed-card.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "article",
+          "id": null,
+          "line": 18
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 20
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 27
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 28
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 32
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 35
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 36
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 40
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 41
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 54
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 55
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 56
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 58
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 58
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 59
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 59
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 60
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 60
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "bookmark-feed",
+        "share-feed",
+        "open-detail",
+        "stop",
+        "vote-feed",
+        "comment-feed"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/partials/header.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 1
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 4
+        },
+        {
+          "element": "button",
+          "id": "header-avatar-btn",
+          "line": 21
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 29
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 48
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 49
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 59
+        },
+        {
+          "element": "button",
+          "id": "header-signin-btn",
+          "line": 62
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 70
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 71
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 72
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-94",
+        "action-95"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/partials/idea-detail-drawer.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 20
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 39
+        },
+        {
+          "element": "button",
+          "id": "drawer-share-btn",
+          "line": 43
+        },
+        {
+          "element": "svg",
+          "id": "drawer-share-icon",
+          "line": 51
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 55
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 62
+        },
+        {
+          "element": "button",
+          "id": "drawer-mob-tab-details",
+          "line": 69
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 77
+        },
+        {
+          "element": "button",
+          "id": "drawer-mob-tab-comments",
+          "line": 80
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 88
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 112
+        },
+        {
+          "element": "button",
+          "id": "drawer-vote-btn",
+          "line": 151
+        },
+        {
+          "element": "svg",
+          "id": "drawer-vote-icon",
+          "line": 158
+        },
+        {
+          "element": "section",
+          "id": "drawer-public-history",
+          "line": 172
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 175
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 185
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 190
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 207
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 220
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 232
+        },
+        {
+          "element": "form",
+          "id": "drawer-comment-composer",
+          "line": 237
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 246
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 249
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 250
+        },
+        {
+          "element": "textarea",
+          "id": "drawer-comment-input",
+          "line": 256
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 274
+        },
+        {
+          "element": "button",
+          "id": "drawer-comment-submit-btn",
+          "line": 279
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 284
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-96",
+        "action-97",
+        "action-98",
+        "action-99",
+        "action-100",
+        "action-101",
+        "action-102",
+        "action-103",
+        "action-104",
+        "action-105",
+        "action-106",
+        "action-107"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/partials/mobile-nav.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "nav",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 4
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 9
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 13
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 14
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 19
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 24
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-108"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/partials/navigation-skeleton.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "section",
+          "id": "navigation-skeleton",
+          "line": 39
+        },
+        {
+          "element": "button",
+          "id": "navigation-cancel",
+          "line": 41
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/report-dialog.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "dialog",
+          "id": "content-report-dialog",
+          "line": 1
+        },
+        {
+          "element": "form",
+          "id": "content-report-form",
+          "line": 2
+        },
+        {
+          "element": "textarea",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "button",
+          "id": "content-report-cancel",
+          "line": 2
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 2
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/staff-board-lane.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "section",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 6
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 7
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 9
+        },
+        {
+          "element": "select",
+          "id": null,
+          "line": 9
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 14
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 16
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 17
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 18
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 18
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/staff-progress.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "button",
+          "id": "staff-progress-refresh",
+          "line": 3
+        },
+        {
+          "element": "form",
+          "id": "staff-progress-form",
+          "line": 8
+        },
+        {
+          "element": "select",
+          "id": "staff-progress-kind",
+          "line": 12
+        },
+        {
+          "element": "select",
+          "id": "staff-progress-visibility",
+          "line": 13
+        },
+        {
+          "element": "textarea",
+          "id": "staff-progress-body",
+          "line": 18
+        },
+        {
+          "element": "select",
+          "id": "staff-progress-percent",
+          "line": 21
+        },
+        {
+          "element": "select",
+          "id": "staff-progress-blocked-reason",
+          "line": 22
+        },
+        {
+          "element": "details",
+          "id": "staff-progress-advanced",
+          "line": 24
+        },
+        {
+          "element": "input",
+          "id": "staff-progress-next-step",
+          "line": 25
+        },
+        {
+          "element": "input",
+          "id": "staff-progress-date",
+          "line": 26
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 28
+        },
+        {
+          "element": "input",
+          "id": "staff-progress-files",
+          "line": 32
+        },
+        {
+          "element": "section",
+          "id": "staff-progress-preview",
+          "line": 37
+        },
+        {
+          "element": "input",
+          "id": "staff-progress-notify",
+          "line": 43
+        },
+        {
+          "element": "button",
+          "id": "staff-progress-clear",
+          "line": 44
+        },
+        {
+          "element": "button",
+          "id": "staff-progress-post",
+          "line": 44
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 48
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/staff-review.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "dialog",
+          "id": "staff-review-dialog",
+          "line": 2
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 3
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 8
+        },
+        {
+          "element": "section",
+          "id": "review-panel-decision",
+          "line": 10
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 11
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 11
+        },
+        {
+          "element": "form",
+          "id": "work-date-repair-form",
+          "line": 12
+        },
+        {
+          "element": "input",
+          "id": "repair-start",
+          "line": 14
+        },
+        {
+          "element": "input",
+          "id": "repair-end",
+          "line": 15
+        },
+        {
+          "element": "textarea",
+          "id": "repair-source",
+          "line": 16
+        },
+        {
+          "element": "textarea",
+          "id": "repair-reason",
+          "line": 17
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 18
+        },
+        {
+          "element": "form",
+          "id": "staff-review-form",
+          "line": 21
+        },
+        {
+          "element": "select",
+          "id": "staff-response-template",
+          "line": 22
+        },
+        {
+          "element": "input",
+          "id": "review-status",
+          "line": 25
+        },
+        {
+          "element": "button",
+          "id": "review-assign-me",
+          "line": 28
+        },
+        {
+          "element": "select",
+          "id": "review-assignee",
+          "line": 28
+        },
+        {
+          "element": "select",
+          "id": "review-priority",
+          "line": 29
+        },
+        {
+          "element": "input",
+          "id": "review-target-date",
+          "line": 30
+        },
+        {
+          "element": "textarea",
+          "id": "review-note",
+          "line": 33
+        },
+        {
+          "element": "section",
+          "id": "review-panel-progress",
+          "line": 37
+        },
+        {
+          "element": "section",
+          "id": "review-panel-notes",
+          "line": 40
+        },
+        {
+          "element": "form",
+          "id": "staff-internal-note-form",
+          "line": 43
+        },
+        {
+          "element": "textarea",
+          "id": "review-internal-note",
+          "line": 43
+        },
+        {
+          "element": "button",
+          "id": "review-add-note",
+          "line": 43
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 44
+        },
+        {
+          "element": "section",
+          "id": "review-panel-history",
+          "line": 47
+        },
+        {
+          "element": "button",
+          "id": "review-retry-activity",
+          "line": 48
+        },
+        {
+          "element": "button",
+          "id": "review-retry-detail",
+          "line": 54
+        },
+        {
+          "element": "button",
+          "id": "review-keep-editing",
+          "line": 55
+        },
+        {
+          "element": "button",
+          "id": "review-discard-confirm",
+          "line": 55
+        },
+        {
+          "element": "button",
+          "id": "review-dismiss",
+          "line": 56
+        },
+        {
+          "element": "button",
+          "id": "review-save-next",
+          "line": 56
+        },
+        {
+          "element": "button",
+          "id": "review-save",
+          "line": 56
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/staff-sidebar.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "button",
+          "id": "staff-sidebar-toggle",
+          "line": 11
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 12
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 16
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 20
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 26
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 32
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 39
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/submission-picker.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "input",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 3
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/submit-panel.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "button",
+          "id": null,
+          "line": 22
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 23
+        },
+        {
+          "element": "button",
+          "id": "step-btn-1",
+          "line": 34
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 37
+        },
+        {
+          "element": "button",
+          "id": "step-btn-2",
+          "line": 49
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 52
+        },
+        {
+          "element": "button",
+          "id": "step-btn-3",
+          "line": 64
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 67
+        },
+        {
+          "element": "form",
+          "id": "submit-idea-form",
+          "line": 76
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 78
+        },
+        {
+          "element": "input",
+          "id": "sip-remember-draft",
+          "line": 81
+        },
+        {
+          "element": "button",
+          "id": "sip-restore-draft",
+          "line": 83
+        },
+        {
+          "element": "button",
+          "id": "sip-discard-draft",
+          "line": 83
+        },
+        {
+          "element": "button",
+          "id": "sip-check-receipt",
+          "line": 83
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 97
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 99
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 116
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 118
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 134
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 136
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 152
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 154
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 172
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 174
+        },
+        {
+          "element": "input",
+          "id": "sip-title",
+          "line": 208
+        },
+        {
+          "element": "textarea",
+          "id": "sip-description",
+          "line": 234
+        },
+        {
+          "element": "input",
+          "id": "sip-anon",
+          "line": 258
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 276
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 277
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 296
+        },
+        {
+          "element": "input",
+          "id": "sip-consent",
+          "line": 309
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 311
+        },
+        {
+          "element": "button",
+          "id": "sip-queue-btn",
+          "line": 322
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 328
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 342
+        },
+        {
+          "element": "button",
+          "id": "sip-copy-btn",
+          "line": 352
+        },
+        {
+          "element": "svg",
+          "id": "sip-copy-icon",
+          "line": 353
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 363
+        },
+        {
+          "element": "button",
+          "id": "sip-save-code",
+          "line": 369
+        },
+        {
+          "element": "button",
+          "id": "sip-clear-codes",
+          "line": 369
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 372
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 382
+        },
+        {
+          "element": "button",
+          "id": "sip-prev-btn",
+          "line": 391
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 392
+        },
+        {
+          "element": "button",
+          "id": "sip-next-btn",
+          "line": 401
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 404
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 407
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 411
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-109",
+        "action-110",
+        "action-111",
+        "action-112",
+        "action-113",
+        "action-114",
+        "action-115",
+        "action-116",
+        "action-117",
+        "action-118",
+        "action-119",
+        "action-120",
+        "action-121",
+        "action-122",
+        "action-123",
+        "action-124",
+        "action-125",
+        "action-126",
+        "action-127",
+        "action-128",
+        "action-129",
+        "action-130",
+        "action-131"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/partials/toast.eta",
+      "kind": "shared component",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/work-record.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "dialog",
+          "id": "work-record-dialog",
+          "line": 1
+        },
+        {
+          "element": "button",
+          "id": "work-record-close",
+          "line": 4
+        },
+        {
+          "element": "button",
+          "id": "work-record-retry",
+          "line": 10
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 13
+        },
+        {
+          "element": "section",
+          "id": "work-record-outcome-section",
+          "line": 19
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 20
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 21
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 22
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/partials/workspace-icons.eta",
+      "kind": "shared component",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 1
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/platform-schools.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "main",
+          "id": "platform-dashboard",
+          "line": 7
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 10
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 25
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 26
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 27
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 28
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 29
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "section",
+          "id": "schools",
+          "line": 34
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 36
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 37
+        },
+        {
+          "element": "input",
+          "id": "school-search",
+          "line": 38
+        },
+        {
+          "element": "select",
+          "id": "school-status",
+          "line": 39
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 40
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 52
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 52
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 54
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 58
+        },
+        {
+          "element": "section",
+          "id": "applications",
+          "line": 61
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 64
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 64
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 64
+        },
+        {
+          "element": "textarea",
+          "id": null,
+          "line": 64
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 64
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 64
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 65
+        },
+        {
+          "element": "section",
+          "id": "setup",
+          "line": 67
+        },
+        {
+          "element": "section",
+          "id": "policies",
+          "line": 78
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 81
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 81
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 81
+        },
+        {
+          "element": "textarea",
+          "id": null,
+          "line": 81
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 81
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/privacy.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 3
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 5
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 7
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 8
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 14
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 25
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 36
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 41
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 46
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 53
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 57
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/private-inbox.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 4
+        },
+        {
+          "element": "form",
+          "id": "private-code-form",
+          "line": 5
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 5
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 5
+        },
+        {
+          "element": "section",
+          "id": "private-messages",
+          "line": 8
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 9
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/profile.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 21
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 34
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 46
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 50
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 54
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 58
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 65
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 70
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 77
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 82
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 92
+        },
+        {
+          "element": "button",
+          "id": "profile-activity-retry",
+          "line": 97
+        },
+        {
+          "element": "button",
+          "id": "prof-settings-header",
+          "line": 102
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 104
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 108
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 117
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 118
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 121
+        },
+        {
+          "element": "input",
+          "id": "prof-display-name",
+          "line": 133
+        },
+        {
+          "element": "select",
+          "id": "profile-text-size",
+          "line": 146
+        },
+        {
+          "element": "input",
+          "id": "prof-anon-toggle",
+          "line": 152
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 154
+        },
+        {
+          "element": "input",
+          "id": "prof-notifs-toggle",
+          "line": 164
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 166
+        },
+        {
+          "element": "button",
+          "id": "btn-save-prefs",
+          "line": 175
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 187
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 188
+        },
+        {
+          "element": "button",
+          "id": "tab-btn-submissions",
+          "line": 191
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 201
+        },
+        {
+          "element": "button",
+          "id": "tab-btn-bookmarks",
+          "line": 206
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 216
+        },
+        {
+          "element": "button",
+          "id": "tab-btn-shared",
+          "line": 221
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 231
+        },
+        {
+          "element": "button",
+          "id": "tab-btn-voted",
+          "line": 236
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 246
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 256
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 259
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 278
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 282
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 285
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 298
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 320
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 324
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 327
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 339
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 350
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-132",
+        "action-133",
+        "action-134",
+        "action-135",
+        "action-136",
+        "action-137",
+        "action-138",
+        "action-139",
+        "action-140",
+        "action-141"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/roadmap.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 14
+        },
+        {
+          "element": "main",
+          "id": null,
+          "line": 25
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 47
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 48
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 50
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 57
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 58
+        },
+        {
+          "element": "input",
+          "id": "roadmap-view-input",
+          "line": 59
+        },
+        {
+          "element": "input",
+          "id": "roadmap-search",
+          "line": 62
+        },
+        {
+          "element": "select",
+          "id": "roadmap-category",
+          "line": 66
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 73
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 90
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 97
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 102
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 104
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 118
+        },
+        {
+          "element": "select",
+          "id": "timeline-zoom",
+          "line": 120
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 120
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 120
+        },
+        {
+          "element": "button",
+          "id": "timeline-jump-today",
+          "line": 122
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 133
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 135
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 151
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 153
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 161
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 170
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 182
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 193
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 205
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 224
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 230
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 231
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 250
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 253
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 265
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 288
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 294
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 302
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 304
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 317
+        },
+        {
+          "element": "dialog",
+          "id": "roadmap-dialog",
+          "line": 338
+        },
+        {
+          "element": "button",
+          "id": "roadmap-close",
+          "line": 341
+        },
+        {
+          "element": "button",
+          "id": "roadmap-detail-retry",
+          "line": 348
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 367
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 382
+        },
+        {
+          "element": "button",
+          "id": "roadmap-detail-vote",
+          "line": 393
+        },
+        {
+          "element": "button",
+          "id": "roadmap-follow",
+          "line": 398
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/school-directory.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 5
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 7
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 11
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 11
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 12
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 15
+        },
+        {
+          "element": "input",
+          "id": "school-name",
+          "line": 15
+        },
+        {
+          "element": "input",
+          "id": "school-slug",
+          "line": 15
+        },
+        {
+          "element": "input",
+          "id": "contact-name",
+          "line": 15
+        },
+        {
+          "element": "textarea",
+          "id": "authority",
+          "line": 15
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 15
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 15
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/school-invitation.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 9
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 9
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 10
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 10
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 10
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 11
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 11
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-94",
+        "action-135"
+      ]
+    },
+    {
+      "file": "apps/web-express/views/school-invitations.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 6
+        },
+        {
+          "element": "input",
+          "id": "invitation-url",
+          "line": 6
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 6
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 8
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 10
+        },
+        {
+          "element": "input",
+          "id": "invite-email",
+          "line": 11
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 12
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 13
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 13
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 14
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 17
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 19
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 20
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 20
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/school-message.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "input",
+          "id": "invitation-url",
+          "line": 2
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/school-notice.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 2
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/school-settings.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 8
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 8
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 10
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 17
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 17
+        },
+        {
+          "element": "section",
+          "id": "school-policies",
+          "line": 18
+        },
+        {
+          "element": "textarea",
+          "id": null,
+          "line": 19
+        },
+        {
+          "element": "section",
+          "id": "school-contacts",
+          "line": 21
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 22
+        },
+        {
+          "element": "section",
+          "id": "school-access",
+          "line": 24
+        },
+        {
+          "element": "select",
+          "id": "publication",
+          "line": 25
+        },
+        {
+          "element": "input",
+          "id": "retention",
+          "line": 26
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 28
+        },
+        {
+          "element": "section",
+          "id": "school-invitations",
+          "line": 30
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/staff-board.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 12
+        },
+        {
+          "element": "form",
+          "id": "staff-board-filters",
+          "line": 14
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 15
+        },
+        {
+          "element": "select",
+          "id": null,
+          "line": 16
+        },
+        {
+          "element": "select",
+          "id": null,
+          "line": 17
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 18
+        },
+        {
+          "element": "button",
+          "id": "staff-board-retry",
+          "line": 22
+        },
+        {
+          "element": "select",
+          "id": "staff-bulk-assignee",
+          "line": 25
+        },
+        {
+          "element": "button",
+          "id": "staff-bulk-assign",
+          "line": 26
+        },
+        {
+          "element": "button",
+          "id": "staff-clear-selection",
+          "line": 26
+        },
+        {
+          "element": "section",
+          "id": "staff-flow-board",
+          "line": 29
+        },
+        {
+          "element": "details",
+          "id": null,
+          "line": 33
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 42
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/staff-community.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "main",
+          "id": null,
+          "line": 3
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 6
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 9
+        },
+        {
+          "element": "section",
+          "id": "care-reminders",
+          "line": 10
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 11
+        },
+        {
+          "element": "section",
+          "id": "care-reports",
+          "line": 14
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 15
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 16
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 16
+        },
+        {
+          "element": "select",
+          "id": null,
+          "line": 16
+        },
+        {
+          "element": "textarea",
+          "id": null,
+          "line": 16
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 16
+        },
+        {
+          "element": "section",
+          "id": "care-clarification",
+          "line": 19
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 20
+        },
+        {
+          "element": "textarea",
+          "id": null,
+          "line": 20
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 20
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 21
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 21
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 21
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 21
+        },
+        {
+          "element": "section",
+          "id": "care-merges",
+          "line": 23
+        },
+        {
+          "element": "form",
+          "id": null,
+          "line": 24
+        },
+        {
+          "element": "input",
+          "id": null,
+          "line": 24
+        },
+        {
+          "element": "textarea",
+          "id": null,
+          "line": 24
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 24
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 31
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/staff-login.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 2
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 3
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 4
+        },
+        {
+          "element": "form",
+          "id": "staff-login-form",
+          "line": 7
+        },
+        {
+          "element": "input",
+          "id": "staff-email",
+          "line": 8
+        },
+        {
+          "element": "input",
+          "id": "staff-password",
+          "line": 9
+        },
+        {
+          "element": "button",
+          "id": "staff-password-toggle",
+          "line": 9
+        },
+        {
+          "element": "button",
+          "id": "staff-login-submit",
+          "line": 10
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 15
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/views/terms.eta",
+      "kind": "screen",
+      "definitions": [
+        {
+          "element": "main",
+          "id": null,
+          "line": 3
+        },
+        {
+          "element": "nav",
+          "id": null,
+          "line": 5
+        },
+        {
+          "element": "article",
+          "id": null,
+          "line": 7
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 8
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 13
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 14
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 20
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 21
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 22
+        },
+        {
+          "element": "section",
+          "id": null,
+          "line": 23
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/account-security.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/activity.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/admin-analytics.ts",
+      "kind": "browser module",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 82
+        }
+      ],
+      "dynamicElements": [
+        {
+          "expression": "'a'",
+          "line": 141
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/admin-staff.ts",
+      "kind": "browser module",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 52
+        },
+        {
+          "element": "article",
+          "id": "${sfEscapeAttribute(member.id)}",
+          "line": 89
+        },
+        {
+          "element": "button",
+          "id": "${sfEscapeAttribute(member.id)}",
+          "line": 106
+        },
+        {
+          "element": "button",
+          "id": "${sfEscapeAttribute(member.id)}",
+          "line": 110
+        },
+        {
+          "element": "button",
+          "id": "${sfEscapeAttribute(member.id)}",
+          "line": 114
+        },
+        {
+          "element": "button",
+          "id": "${sfEscapeAttribute(s.id)}",
+          "line": 250
+        },
+        {
+          "element": "button",
+          "id": "${sfEscapeAttribute(s.id)}",
+          "line": 251
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/auth-callback.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/auth-modal.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/auth.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/community.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'button'",
+          "line": 20
+        },
+        {
+          "expression": "'button'",
+          "line": 59
+        },
+        {
+          "expression": "'article'",
+          "line": 73
+        },
+        {
+          "expression": "'h2'",
+          "line": 74
+        },
+        {
+          "expression": "'p'",
+          "line": 75
+        },
+        {
+          "expression": "'p'",
+          "line": 76
+        },
+        {
+          "expression": "'blockquote'",
+          "line": 78
+        },
+        {
+          "expression": "'form'",
+          "line": 80
+        },
+        {
+          "expression": "'label'",
+          "line": 81
+        },
+        {
+          "expression": "'textarea'",
+          "line": 82
+        },
+        {
+          "expression": "'button'",
+          "line": 83
+        },
+        {
+          "expression": "'blockquote'",
+          "line": 86
+        },
+        {
+          "expression": "'p'",
+          "line": 105
+        },
+        {
+          "expression": "'button'",
+          "line": 106
+        },
+        {
+          "expression": "'p'",
+          "line": 115
+        },
+        {
+          "expression": "'button'",
+          "line": 116
+        },
+        {
+          "expression": "'h4'",
+          "line": 154
+        },
+        {
+          "expression": "'p'",
+          "line": 155
+        },
+        {
+          "expression": "'a'",
+          "line": 156
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/confirmation.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/empty-state.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'div'",
+          "line": 3
+        },
+        {
+          "expression": "'span'",
+          "line": 5
+        },
+        {
+          "expression": "ns, 'svg'",
+          "line": 6
+        },
+        {
+          "expression": "ns, 'use'",
+          "line": 6
+        },
+        {
+          "expression": "'h3'",
+          "line": 9
+        },
+        {
+          "expression": "'p'",
+          "line": 10
+        },
+        {
+          "expression": "'div'",
+          "line": 13
+        },
+        {
+          "expression": "'a'",
+          "line": 14
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/engagement.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/events.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/feed.ts",
+      "kind": "browser module",
+      "definitions": [
+        {
+          "element": "article",
+          "id": "${id}",
+          "line": 281
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 283
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 290
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 291
+        },
+        {
+          "element": "button",
+          "id": "${id}",
+          "line": 294
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 295
+        },
+        {
+          "element": "button",
+          "id": "${id}",
+          "line": 298
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 299
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 303
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 304
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 316
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 319
+        },
+        {
+          "element": "button",
+          "id": "${id}",
+          "line": 320
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 321
+        },
+        {
+          "element": "button",
+          "id": "${id}",
+          "line": 323
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 324
+        },
+        {
+          "element": "button",
+          "id": "${id}",
+          "line": 326
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 327
+        },
+        {
+          "element": "button",
+          "id": "${id}",
+          "line": 329
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 330
+        }
+      ],
+      "dynamicElements": [
+        {
+          "expression": "'button'",
+          "line": 171
+        },
+        {
+          "expression": "'div'",
+          "line": 427
+        }
+      ],
+      "bindings": [
+        "bookmark-feed",
+        "share-feed",
+        "open-detail",
+        "stop",
+        "vote-feed",
+        "comment-feed"
+      ]
+    },
+    {
+      "file": "apps/web-express/src/client/header.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/home.ts",
+      "kind": "browser module",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 216
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 330
+        }
+      ],
+      "dynamicElements": [
+        {
+          "expression": "'span'",
+          "line": 66
+        },
+        {
+          "expression": "'span'",
+          "line": 73
+        },
+        {
+          "expression": "'button'",
+          "line": 168
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/idea-detail-drawer.ts",
+      "kind": "browser module",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 27
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 36
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 45
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 54
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 136
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 171
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 237
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 310
+        },
+        {
+          "element": "button",
+          "id": "${sfEscapeAttribute(String(c.id))}",
+          "line": 311
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 312
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 371
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 518
+        }
+      ],
+      "dynamicElements": [
+        {
+          "expression": "'div'",
+          "line": 104
+        },
+        {
+          "expression": "'p'",
+          "line": 105
+        },
+        {
+          "expression": "'button'",
+          "line": 106
+        },
+        {
+          "expression": "'div'",
+          "line": 258
+        },
+        {
+          "expression": "'div'",
+          "line": 290
+        }
+      ],
+      "bindings": [
+        "reply-drawer"
+      ]
+    },
+    {
+      "file": "apps/web-express/src/client/idea.ts",
+      "kind": "browser module",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 63
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 157
+        },
+        {
+          "element": "button",
+          "id": "${sfEscapeAttribute(String(c.id))}",
+          "line": 158
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 159
+        },
+        {
+          "element": "svg",
+          "id": null,
+          "line": 245
+        }
+      ],
+      "dynamicElements": [
+        {
+          "expression": "'div'",
+          "line": 137
+        },
+        {
+          "expression": "'div'",
+          "line": 213
+        }
+      ],
+      "bindings": [
+        "reply-idea"
+      ]
+    },
+    {
+      "file": "apps/web-express/src/client/invitations.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/navigation-cache.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/navigation.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/notifications.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'button'",
+          "line": 10
+        },
+        {
+          "expression": "'li'",
+          "line": 45
+        },
+        {
+          "expression": "'span'",
+          "line": 48
+        },
+        {
+          "expression": "'a'",
+          "line": 50
+        },
+        {
+          "expression": "'p'",
+          "line": 53
+        },
+        {
+          "expression": "'button'",
+          "line": 58
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/preferences.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/profile.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'div'",
+          "line": 43
+        },
+        {
+          "expression": "'div'",
+          "line": 46
+        },
+        {
+          "expression": "'a'",
+          "line": 47
+        },
+        {
+          "expression": "'h3'",
+          "line": 48
+        },
+        {
+          "expression": "'p'",
+          "line": 49
+        },
+        {
+          "expression": "'button'",
+          "line": 52
+        },
+        {
+          "expression": "'div'",
+          "line": 77
+        },
+        {
+          "expression": "'p'",
+          "line": 78
+        },
+        {
+          "expression": "'button'",
+          "line": 79
+        },
+        {
+          "expression": "'button'",
+          "line": 86
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/public-history.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'h3'",
+          "line": 6
+        },
+        {
+          "expression": "'p'",
+          "line": 7
+        },
+        {
+          "expression": "'ol'",
+          "line": 16
+        },
+        {
+          "expression": "'li'",
+          "line": 18
+        },
+        {
+          "expression": "'strong'",
+          "line": 18
+        },
+        {
+          "expression": "'p'",
+          "line": 18
+        },
+        {
+          "expression": "'p'",
+          "line": 22
+        },
+        {
+          "expression": "'button'",
+          "line": 29
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/responsive.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/roadmap-timeline.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'li'",
+          "line": 70
+        },
+        {
+          "expression": "'details'",
+          "line": 71
+        },
+        {
+          "expression": "'summary'",
+          "line": 72
+        },
+        {
+          "expression": "'strong'",
+          "line": 73
+        },
+        {
+          "expression": "'time'",
+          "line": 75
+        },
+        {
+          "expression": "'p'",
+          "line": 79
+        },
+        {
+          "expression": "'p'",
+          "line": 82
+        },
+        {
+          "expression": "'p'",
+          "line": 86
+        },
+        {
+          "expression": "'a'",
+          "line": 90
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/roadmap-views.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'a'",
+          "line": 11
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/roadmap.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'button'",
+          "line": 142
+        },
+        {
+          "expression": "'li'",
+          "line": 209
+        },
+        {
+          "expression": "'h4'",
+          "line": 209
+        },
+        {
+          "expression": "'p'",
+          "line": 209
+        },
+        {
+          "expression": "'div'",
+          "line": 209
+        },
+        {
+          "expression": "'figure'",
+          "line": 211
+        },
+        {
+          "expression": "'img'",
+          "line": 211
+        },
+        {
+          "expression": "'figcaption'",
+          "line": 211
+        },
+        {
+          "expression": "'li'",
+          "line": 216
+        },
+        {
+          "expression": "'h4'",
+          "line": 218
+        },
+        {
+          "expression": "'p'",
+          "line": 220
+        },
+        {
+          "expression": "'p'",
+          "line": 223
+        },
+        {
+          "expression": "'p'",
+          "line": 227
+        },
+        {
+          "expression": "'p'",
+          "line": 233
+        },
+        {
+          "expression": "'p'",
+          "line": 238
+        },
+        {
+          "expression": "'ul'",
+          "line": 244
+        },
+        {
+          "expression": "'li'",
+          "line": 248
+        },
+        {
+          "expression": "'a'",
+          "line": 249
+        },
+        {
+          "expression": "'li'",
+          "line": 314
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/saved-searches.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'http://www.w3.org/2000/svg','svg'",
+          "line": 32
+        },
+        {
+          "expression": "'http://www.w3.org/2000/svg','path'",
+          "line": 34
+        },
+        {
+          "expression": "'div'",
+          "line": 38
+        },
+        {
+          "expression": "'span'",
+          "line": 42
+        },
+        {
+          "expression": "'button'",
+          "line": 75
+        },
+        {
+          "expression": "'li'",
+          "line": 80
+        },
+        {
+          "expression": "'a'",
+          "line": 81
+        },
+        {
+          "expression": "'span'",
+          "line": 82
+        },
+        {
+          "expression": "'span'",
+          "line": 83
+        },
+        {
+          "expression": "'span'",
+          "line": 85
+        },
+        {
+          "expression": "'form'",
+          "line": 88
+        },
+        {
+          "expression": "'label'",
+          "line": 89
+        },
+        {
+          "expression": "'input'",
+          "line": 90
+        },
+        {
+          "expression": "'button'",
+          "line": 91
+        },
+        {
+          "expression": "'button'",
+          "line": 92
+        },
+        {
+          "expression": "'div'",
+          "line": 106
+        },
+        {
+          "expression": "'li'",
+          "line": 125
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/school-context.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/scroll-reveal.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/staff-login.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/staff-progress.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'option'",
+          "line": 75
+        },
+        {
+          "expression": "'option'",
+          "line": 76
+        },
+        {
+          "expression": "'option'",
+          "line": 78
+        },
+        {
+          "expression": "'a'",
+          "line": 98
+        },
+        {
+          "expression": "'li'",
+          "line": 123
+        },
+        {
+          "expression": "'div'",
+          "line": 124
+        },
+        {
+          "expression": "'strong'",
+          "line": 125
+        },
+        {
+          "expression": "'span'",
+          "line": 126
+        },
+        {
+          "expression": "'figure'",
+          "line": 128
+        },
+        {
+          "expression": "'img'",
+          "line": 128
+        },
+        {
+          "expression": "'figcaption'",
+          "line": 128
+        },
+        {
+          "expression": "'label'",
+          "line": 129
+        },
+        {
+          "expression": "'input'",
+          "line": 130
+        },
+        {
+          "expression": "'p'",
+          "line": 134
+        },
+        {
+          "expression": "'div'",
+          "line": 136
+        },
+        {
+          "expression": "'button'",
+          "line": 138
+        },
+        {
+          "expression": "'button'",
+          "line": 142
+        },
+        {
+          "expression": "'article'",
+          "line": 256
+        },
+        {
+          "expression": "'div'",
+          "line": 257
+        },
+        {
+          "expression": "'strong'",
+          "line": 258
+        },
+        {
+          "expression": "'span'",
+          "line": 259
+        },
+        {
+          "expression": "'p'",
+          "line": 260
+        },
+        {
+          "expression": "'time'",
+          "line": 261
+        },
+        {
+          "expression": "'p'",
+          "line": 267
+        },
+        {
+          "expression": "'small'",
+          "line": 268
+        },
+        {
+          "expression": "'div'",
+          "line": 269
+        },
+        {
+          "expression": "'button'",
+          "line": 271
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/staff-review.ts",
+      "kind": "browser module",
+      "definitions": [
+        {
+          "element": "dialog",
+          "id": null,
+          "line": 172
+        }
+      ],
+      "dynamicElements": [
+        {
+          "expression": "'details'",
+          "line": 41
+        },
+        {
+          "expression": "'summary'",
+          "line": 41
+        },
+        {
+          "expression": "'button'",
+          "line": 43
+        },
+        {
+          "expression": "'a'",
+          "line": 44
+        },
+        {
+          "expression": "'a'",
+          "line": 96
+        },
+        {
+          "expression": "'article'",
+          "line": 282
+        },
+        {
+          "expression": "'strong'",
+          "line": 283
+        },
+        {
+          "expression": "'time'",
+          "line": 284
+        },
+        {
+          "expression": "'p'",
+          "line": 286
+        },
+        {
+          "expression": "'a'",
+          "line": 409
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/staff-tools.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'div'",
+          "line": 133
+        },
+        {
+          "expression": "'strong'",
+          "line": 134
+        },
+        {
+          "expression": "'span'",
+          "line": 135
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/submission-recovery.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'li'",
+          "line": 58
+        },
+        {
+          "expression": "'p'",
+          "line": 58
+        },
+        {
+          "expression": "'button'",
+          "line": 61
+        },
+        {
+          "expression": "'button'",
+          "line": 62
+        },
+        {
+          "expression": "'li'",
+          "line": 70
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/submission-storage.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/submit-panel.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/system-ux.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'p'",
+          "line": 19
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/theme-init.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/theme.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/client/toast.ts",
+      "kind": "browser module",
+      "definitions": [],
+      "dynamicElements": [
+        {
+          "expression": "'http://www.w3.org/2000/svg', 'svg'",
+          "line": 16
+        },
+        {
+          "expression": "el.namespaceURI, 'path'",
+          "line": 18
+        },
+        {
+          "expression": "'div'",
+          "line": 25
+        },
+        {
+          "expression": "'div'",
+          "line": 27
+        },
+        {
+          "expression": "'span'",
+          "line": 28
+        },
+        {
+          "expression": "'div'",
+          "line": 29
+        },
+        {
+          "expression": "'div'",
+          "line": 33
+        },
+        {
+          "expression": "'div'",
+          "line": 35
+        },
+        {
+          "expression": "'button'",
+          "line": 36
+        }
+      ],
+      "bindings": []
+    },
+    {
+      "file": "supabase/templates/confirmation.html",
+      "kind": "email",
+      "definitions": [
+        {
+          "element": "table",
+          "id": null,
+          "line": 27
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 36
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 68
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "supabase/templates/email_change.html",
+      "kind": "email",
+      "definitions": [
+        {
+          "element": "table",
+          "id": null,
+          "line": 27
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 36
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 68
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "supabase/templates/invite.html",
+      "kind": "email",
+      "definitions": [
+        {
+          "element": "table",
+          "id": null,
+          "line": 27
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 36
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 72
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "supabase/templates/magic_link.html",
+      "kind": "email",
+      "definitions": [
+        {
+          "element": "table",
+          "id": null,
+          "line": 27
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 36
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 65
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "supabase/templates/recovery.html",
+      "kind": "email",
+      "definitions": [
+        {
+          "element": "table",
+          "id": null,
+          "line": 27
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 31
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 36
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 68
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/public/offline.html",
+      "kind": "offline shell",
+      "definitions": [
+        {
+          "element": "svg",
+          "id": null,
+          "line": 35
+        },
+        {
+          "element": "button",
+          "id": null,
+          "line": 38
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": [
+        "action-162"
+      ]
+    },
+    {
+      "file": "apps/web-express/src/lib/invitation-email.ts",
+      "kind": "email",
+      "definitions": [
+        {
+          "element": "table",
+          "id": null,
+          "line": 18
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 18
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 18
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    },
+    {
+      "file": "apps/web-express/src/lib/digest-email.ts",
+      "kind": "email",
+      "definitions": [
+        {
+          "element": "table",
+          "id": null,
+          "line": 29
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 30
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 37
+        },
+        {
+          "element": "table",
+          "id": null,
+          "line": 38
+        }
+      ],
+      "dynamicElements": [],
+      "bindings": []
+    }
+  ]
+}

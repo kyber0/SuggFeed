@@ -12,7 +12,7 @@
     <header class="workspace-heading">
       <div>
         <p class="workspace-kicker">PORTAL GOVERNANCE</p>
-        <h1>Staff & access management<span class="workspace-title-dot">.</span></h1>
+        <h1>Staff & access management<span class="workspace-title-dot" aria-hidden="true">.</span></h1>
         <p>Manage moderator roles, promote student leaders, and invite faculty.</p>
       </div>
       <div class="workspace-actions">
@@ -66,9 +66,9 @@
             <input class="workspace-search-input" type="search" id="staff-search-input" placeholder="Search staff by name or email…" aria-label="Filter staff members" />
           </label>
           <div class="staff-filter-pills" id="staff-role-filter-pills">
-            <button type="button" class="staff-filter-pill is-active" data-filter="all">All</button>
-            <button type="button" class="staff-filter-pill" data-filter="admin">Admins</button>
-            <button type="button" class="staff-filter-pill" data-filter="moderator">Moderators</button>
+            <button type="button" class="staff-filter-pill is-active" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="staff-filter-pill" data-filter="admin" aria-pressed="false">Admins</button>
+            <button type="button" class="staff-filter-pill" data-filter="moderator" aria-pressed="false">Moderators</button>
           </div>
         </div>
 
@@ -192,4 +192,4 @@
 </section>
 <script id="staff-roster-data" type="application/json"><%~ JSON.stringify(it.staffMembers || []).replace(/</g, '\\u003c') %></script>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({ id: it.user?.id || '', role: it.user?.role || '' }).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/admin-staff.js?v=20261018-empty-states"></script>
+<script defer src="/js/admin-staff.js?v=20261018-full-ux-audit"></script>

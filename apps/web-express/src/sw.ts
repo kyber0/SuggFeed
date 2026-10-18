@@ -8,7 +8,7 @@
 (() => {
   const worker = self as unknown as ServiceWorkerGlobalScope;
 
-  const CACHE_VERSION = "cv-v13-school-isolation-assets";
+  const CACHE_VERSION = "cv-v14-product-ux-assets";
   const STATIC_CACHE = `${CACHE_VERSION}-static`;
   const MAX_STATIC_ENTRIES = 200;
 

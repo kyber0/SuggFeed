@@ -44,3 +44,5 @@
 
 @import url('./modules/interactions.css?v=20261015-hover-fix');
 @import url('./modules/empty-states.css?v=20261018-empty-states');
+
+@import url('./modules/system-ux.css?v=20261018-full-ux-audit');

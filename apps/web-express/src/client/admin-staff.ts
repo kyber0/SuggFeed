@@ -45,6 +45,7 @@
   const studentResultsList = document.getElementById('student-results-list');
 
   let activeFilter = 'all';
+  let searchRequest:AbortController | null=null;
   let memberPendingRevoke: { id: string; name: string } | null = null;
 
   function icon(name: string) {
@@ -85,32 +86,32 @@
       const initial = (member.display_name || member.email || 'S').slice(0, 1).toUpperCase();
       const isAdmin = member.role === 'admin';
       return `
-        <article class="staff-member-card" data-id="${member.id}" data-role="${member.role}">
-          <div class="staff-member-avatar staff-member-avatar--${member.role}" aria-hidden="true">${initial}</div>
+        <article class="staff-member-card" data-id="${sfEscapeAttribute(member.id)}" data-role="${sfEscapeAttribute(member.role)}">
+          <div class="staff-member-avatar staff-member-avatar--${sfEscapeAttribute(member.role)}" aria-hidden="true">${sfEscapeAttribute(initial)}</div>
           <div class="staff-member-info">
             <div class="staff-member-name-row">
-              <h3 class="staff-member-name">${member.display_name || member.email?.split('@')[0] || 'Staff Member'}</h3>
+              <h3 class="staff-member-name">${sfEscapeAttribute(member.display_name || member.email?.split('@')[0] || 'Staff Member')}</h3>
               ${isSelf ? '<span class="staff-you-badge">You</span>' : ''}
             </div>
             <div class="staff-member-meta">
-              <span class="staff-role-badge staff-role-badge--${member.role}">
+              <span class="staff-role-badge staff-role-badge--${sfEscapeAttribute(member.role)}">
                 ${icon(isAdmin ? 'crown' : 'shield')}
                 <span>${isAdmin ? 'Administrator' : 'Moderator'}</span>
               </span>
-              ${member.email ? `<span class="staff-member-email">${icon('mail')} ${member.email}</span>` : ''}
+              ${member.email ? `<span class="staff-member-email">${icon('mail')} ${sfEscapeAttribute(member.email)}</span>` : ''}
             </div>
           </div>
           <div class="staff-member-actions">
             ${!isAdmin ? `
-              <button type="button" class="workspace-button staff-action-btn" data-action="make-admin" data-id="${member.id}" data-name="${member.display_name || 'Staff member'}">
+              <button type="button" class="workspace-button staff-action-btn" data-action="make-admin" data-id="${sfEscapeAttribute(member.id)}" data-name="${sfEscapeAttribute(member.display_name || 'Staff member')}">
                 ${icon('crown')} Make Admin
               </button>
             ` : `
-              <button type="button" class="workspace-button staff-action-btn" data-action="demote-mod" data-id="${member.id}" data-name="${member.display_name || 'Staff member'}" ${isSelf ? 'disabled title="You cannot demote yourself"' : ''}>
+              <button type="button" class="workspace-button staff-action-btn" data-action="demote-mod" data-id="${sfEscapeAttribute(member.id)}" data-name="${sfEscapeAttribute(member.display_name || 'Staff member')}" ${isSelf ? 'disabled title="You cannot demote yourself"' : ''}>
                 ${icon('shield')} Demote
               </button>
             `}
-            <button type="button" class="workspace-button workspace-button--danger staff-action-btn" data-action="revoke-access" data-id="${member.id}" data-name="${member.display_name || 'Staff member'}" ${isSelf ? 'disabled title="You cannot revoke your own access"' : ''} aria-label="Revoke staff access">
+            <button type="button" class="workspace-button workspace-button--danger staff-action-btn" data-action="revoke-access" data-id="${sfEscapeAttribute(member.id)}" data-name="${sfEscapeAttribute(member.display_name || 'Staff member')}" ${isSelf ? 'disabled title="You cannot revoke your own access"' : ''} aria-label="Revoke staff access">
               Revoke
             </button>
           </div>
@@ -121,7 +122,8 @@
 
   async function updateRole(memberId: string, newRole: 'admin' | 'moderator' | 'student') {
     try {
-      const res = await sfSchoolFetch(`/api/staff/members/${memberId}/role`, {
+      const res = await sfSchoolFetch(`/api/staff/members/${encodeURIComponent(memberId)}/role`, {
+        signal:AbortSignal.timeout(15000),
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
@@ -131,7 +133,8 @@
         window.sfToast?.(data.error || 'Failed to update staff role.', 'error');
         return false;
       }
-      await refreshRoster();
+      const refreshed=await refreshRoster();
+      if(!refreshed)window.sfToast?.('Role saved, but the roster could not refresh. Use Refresh before making another change.','warning');
       return true;
     } catch (e: any) {
       window.sfToast?.(e?.message || 'Network error updating role.', 'error');
@@ -140,16 +143,15 @@
   }
 
   async function refreshRoster() {
+    rosterList?.setAttribute('aria-busy','true');
     try {
-      const res = await sfSchoolFetch('/api/staff/members');
+      const res = await sfSchoolFetch('/api/staff/members',{signal:AbortSignal.timeout(15000)});
       const data = await res.json();
-      if (data.success && Array.isArray(data.members)) {
-        members = data.members;
-        renderRoster();
-      }
+      if(!res.ok || !data.success || !Array.isArray(data.members))throw new Error('The staff list could not refresh. Your current list is still shown. Try Refresh again.');
+      members=data.members;renderRoster();return true;
     } catch {
-      // ignore
-    }
+      window.sfToast?.('The staff list could not refresh. Your current list is still shown. Try Refresh again.','error');return false;
+    } finally {rosterList?.removeAttribute('aria-busy');}
   }
 
   searchInput?.addEventListener('input', () => renderRoster());
@@ -157,8 +159,8 @@
   filterPills?.addEventListener('click', (e) => {
     const pill = (e.target as Element).closest<HTMLButtonElement>('[data-filter]');
     if (!pill) return;
-    filterPills.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('is-active'));
-    pill.classList.add('is-active');
+    filterPills.querySelectorAll('[data-filter]').forEach(b => {b.classList.remove('is-active');b.setAttribute('aria-pressed','false');});
+    pill.classList.add('is-active');pill.setAttribute('aria-pressed','true');
     activeFilter = pill.dataset.filter || 'all';
     renderRoster();
   });
@@ -179,10 +181,12 @@
 
     if (action === 'make-admin') {
       btn.disabled = true;
-      await updateRole(id, 'admin');
+      if(!await window.sfConfirm('Give '+name+' administrator access to school settings, invitations, and staff management?',{title:'Grant administrator access',confirmLabel:'Grant administrator access'})){btn.disabled=false;return;}
+      if(!await updateRole(id,'admin'))btn.disabled=false;
     } else if (action === 'demote-mod') {
       btn.disabled = true;
-      await updateRole(id, 'moderator');
+      if(!await window.sfConfirm('Change '+name+' to moderator? They will lose administrator controls.',{title:'Change school access',confirmLabel:'Change to moderator',danger:true})){btn.disabled=false;return;}
+      if(!await updateRole(id,'moderator'))btn.disabled=false;
     } else if (action === 'revoke-access') {
       memberPendingRevoke = { id, name };
       if (revokeMsg) revokeMsg.textContent = `Revoke staff credentials for ${name}? Their account will revert to a student role.`;
@@ -214,16 +218,19 @@
     e.preventDefault();
     const query = (studentSearchInput?.value || '').trim();
     if (!studentResultsList) return;
-    studentResultsList.innerHTML = '<div class="staff-empty-hint">Searching student accounts…</div>';
+    searchRequest?.abort();const controller=new AbortController();searchRequest=controller;
+    studentResultsList.setAttribute('aria-busy','true');studentResultsList.textContent='Searching student accounts…';
 
     try {
-      const res = await sfSchoolFetch(`/api/staff/students?search=${encodeURIComponent(query)}`);
+      const res = await sfSchoolFetch(`/api/staff/students?search=${encodeURIComponent(query)}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])});
       const data = await res.json();
+      if(searchRequest!==controller)return;
       if (!res.ok || !data.success || !Array.isArray(data.students)) {
         studentResultsList.innerHTML = '<div class="staff-empty-hint">Search failed. Please try again.</div>';
         return;
       }
 
+      if(searchRequest!==controller)return;
       const students: StudentMember[] = data.students;
       if (!students.length) {
         studentResultsList.replaceChildren(sfEmptyState({compact:true,icon:'search',heading:'No matching students',description:'No students found matching “'+query+'”. Try another name or email address.'}));
@@ -233,22 +240,22 @@
       studentResultsList.innerHTML = students.map(s => {
         const initial = (s.display_name || s.email || 'S').slice(0, 1).toUpperCase();
         return `
-          <div class="student-result-card" data-id="${s.id}">
-            <div class="student-avatar" aria-hidden="true">${initial}</div>
+          <div class="student-result-card" data-id="${sfEscapeAttribute(s.id)}">
+            <div class="student-avatar" aria-hidden="true">${sfEscapeAttribute(initial)}</div>
             <div class="student-info">
-              <strong>${s.display_name || s.email?.split('@')[0] || 'Student'}</strong>
-              <small>${s.email || 'No email'}</small>
+              <strong>${sfEscapeAttribute(s.display_name || s.email?.split('@')[0] || 'Student')}</strong>
+              <small>${sfEscapeAttribute(s.email || 'No email')}</small>
             </div>
             <div class="student-actions">
-              <button type="button" class="workspace-button staff-promote-btn" data-promote-role="moderator" data-user-id="${s.id}" data-name="${s.display_name || 'Student'}">+ Mod</button>
-              <button type="button" class="workspace-button staff-promote-btn" data-promote-role="admin" data-user-id="${s.id}" data-name="${s.display_name || 'Student'}">+ Admin</button>
+              <button type="button" class="workspace-button staff-promote-btn" data-promote-role="moderator" data-user-id="${sfEscapeAttribute(s.id)}" data-name="${sfEscapeAttribute(s.display_name || 'Student')}">+ Mod</button>
+              <button type="button" class="workspace-button staff-promote-btn" data-promote-role="admin" data-user-id="${sfEscapeAttribute(s.id)}" data-name="${sfEscapeAttribute(s.display_name || 'Student')}">+ Admin</button>
             </div>
           </div>
         `;
       }).join('');
     } catch {
-      studentResultsList.innerHTML = '<div class="staff-empty-hint">Error searching students.</div>';
-    }
+      if(searchRequest===controller)studentResultsList.textContent='Student search could not finish. Submit the search again to retry.';
+    } finally {if(searchRequest===controller)studentResultsList.removeAttribute('aria-busy');}
   });
 
   studentResultsList?.addEventListener('click', async (e) => {
@@ -260,10 +267,13 @@
     if (!id || !role) return;
 
     btn.disabled = true;
+    const allowed=await window.sfConfirm('Give '+name+' '+(role==='admin'?'administrator access, including school settings and member management':'moderator access to review and update school ideas')+'?',{title:'Change school access',confirmLabel:'Grant access'});
+    if(!allowed){btn.disabled=false;return;}
     const ok = await updateRole(id, role);
     if (ok) {
       const card = btn.closest('.student-result-card');
       card?.remove();
+      if(!studentResultsList.querySelector('.student-result-card'))studentResultsList.replaceChildren(sfEmptyState({compact:true,icon:'check',heading:'Search results updated',description:'The selected member is now on the staff list. Search again to find another student.'}));
     } else {
       btn.disabled = false;
     }

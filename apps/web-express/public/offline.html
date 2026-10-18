@@ -20,19 +20,21 @@
     .brand { font-size: 22px; font-weight: 800; color: #0b3857; text-decoration: none; }
     .brand span { color: #e86e4a; }
     .retry {
-      background: #e86e4a; color: white; border: 0; border-radius: 6px;
+      background: #0b3857; color: white; border: 0; border-radius: 6px;
       padding: 12px 24px; font-size: 15px; font-weight: bold; cursor: pointer;
     }
     .retry:hover { opacity: .9; }
-    .note { margin-top: 20px; font-size: 13px; color: #9ab; }
+    .retry:focus-visible,a:focus-visible {outline:3px solid #b84524;outline-offset:4px;}
+    @media(prefers-color-scheme:dark){body{background:#061a2b;color:#e2e8f0}h1,.brand{color:#e2e8f0}p,.note{color:#bcccdc}.retry{background:#2563eb}}
+    .note { margin-top: 20px; font-size: 13px; color: #486581; }
   </style>
   <script src="/js/events.js?v=20261010-ts"></script>
 </head>
 <body>
   <a class="brand" href="/" aria-label="SuggFeed home"><img src="/branding/sf-monogram.png" width="90" height="60" alt="" style="display:block;margin:auto;object-fit:contain" />Sugg<span>Feed</span></a>
-  <div class="icon">📡</div>
+  <div class="icon" aria-hidden="true"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m2 2 20 20M8 8a10 10 0 0 1 12 3M4 11a10 10 0 0 1 1.5-1.2M8 15a6 6 0 0 1 8 0M12 19h.01"/></svg></div>
   <h1>You're offline</h1>
-  <p>SuggFeed needs an internet connection to load the latest ideas or submit feedback. Suggestions are not saved or sent while you are offline.</p>
+  <p>SuggFeed needs an internet connection to load the latest ideas or submit feedback. Previously saved drafts and retry queues stay on the device where you created them. This offline page does not send submissions.</p>
   <button class="retry" data-sf-click="action-162">Try again</button>
   <p class="note">Reconnect before submitting. If you have unsent text, copy it somewhere safe before leaving this page.</p>
 </body>

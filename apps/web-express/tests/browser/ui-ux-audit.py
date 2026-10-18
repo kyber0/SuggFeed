@@ -59,4 +59,34 @@ class UIAudit(unittest.TestCase):
   self.visit('/feed');self.page.evaluate('openSubmitPanel()');self.page.locator('input[name="sip-category"]').first.focus();self.assertNotEqual(self.page.locator('.sip-cat-card').first.evaluate('(e)=>getComputedStyle(e).outlineStyle'),'none')
  def test_content_legal_prose(self):
   for path in ['/privacy','/terms']:self.visit(path);self.assertNotIn('{" "}',self.page.locator('main').inner_text())
+ def test_staff_names_are_text_and_search_failure_is_recoverable(self):
+  self.visit('/admin/staff');name='<img src=x onerror="window.injected=true"> & "Student"'
+  self.page.route('**/api/staff/students?*',lambda r:r.fulfill(json={'success':True,'students':[{'id':'00000000-0000-4000-8000-000000000099','display_name':name,'email':'student@example.test'}]}))
+  self.page.locator('#student-search-input').fill('student');self.page.locator('#student-search-form button').click()
+  expect(self.page.locator('.student-info strong')).to_have_text(name);expect(self.page.locator('#student-results-list img')).to_have_count(0);self.assertEqual(self.page.locator('[data-promote-role]').first.get_attribute('data-name'),name)
+  self.page.route('**/api/staff/members',lambda r:r.fulfill(status=503,json={'success':False}))
+  self.page.locator('#staff-refresh-btn').click();expect(self.page.locator('.sf-toast__message')).to_contain_text('could not refresh');expect(self.page.locator('#staff-refresh-btn')).to_be_enabled()
+ def test_comment_authors_are_literal_and_both_composers_are_named(self):
+  name='<img src=x onerror="window.injected=true"> & "Author"'
+  for path,fn in [('/idea/00000000-0000-4000-8000-000000000002','sfCreateStandaloneCommentCardEl'),('/feed','sfCreateCommentCardEl')]:
+   self.visit(path);result=self.page.evaluate("""([fn,name])=>{const card=window[fn]({id:'comment-id',display_name:name,body:'A constructive perspective',created_at:new Date().toISOString()});return {name:card.querySelector('.comment-author-name').textContent,images:card.querySelectorAll('img').length}}""",[fn,name]);self.assertEqual(result,{'name':name,'images':0})
+   reply=self.page.evaluate("""([fn,name])=>{const drawer=fn==='sfCreateCommentCardEl';window[drawer?'sfDrawerReplyTo':'sfReplyTo']('comment-id',name);return {banner:document.getElementById(drawer?'drawer-replying-author':'replying-author').textContent,placeholder:document.getElementById(drawer?'drawer-comment-input':'comment-input').placeholder}}""",[fn,name]);self.assertEqual(reply,{'banner':'@'+name,'placeholder':'Reply to @'+name+'…'})
+  self.visit('/idea/00000000-0000-4000-8000-000000000002');self.page.locator('#mob-tab-comments').click();expect(self.page.get_by_role('textbox',name='Your comment',exact=True)).to_be_visible()
+ def test_analytics_filters_share_scope_and_have_accessible_data(self):
+  self.visit('/admin/analytics');self.page.locator('#analytics-category-select').select_option('Learning');self.page.locator('input[name=range][value="90d"]').check();self.page.get_by_role('button',name='Apply filters',exact=True).click()
+  expect(self.page).to_have_url(__import__('re').compile('range=90d&category=Learning'));expect(self.page.locator('#kpi-total-subs')).to_have_text('18')
+  expect(self.page.locator('#analytics-table-body tr')).to_have_count(1);self.page.get_by_text('View chart data as a table',exact=True).click();expect(self.page.get_by_role('table').first).to_be_visible()
+  self.page.locator('#btn-toggle-cum').click();expect(self.page.locator('#btn-toggle-cum')).to_have_attribute('aria-pressed','true')
+  self.assertGreaterEqual(self.page.locator('.analytics-btn-toggle').first.bounding_box()['height'],44);self.assertGreater(self.page.locator('.analytics-table-wrap').last.evaluate('(e)=>e.scrollWidth'),self.page.locator('.analytics-table-wrap').last.evaluate('(e)=>e.clientWidth'))
+ def test_offline_feedback_preserves_form_and_unsaved_warning(self):
+  self.visit('/preview/school-settings');field=self.page.locator('#privacy_notice');initial=field.input_value();field.fill(initial+' Extra draft text.')
+  expect(self.page.locator('.form-change-status')).to_contain_text('unsaved changes');self.assertTrue(self.page.evaluate("const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);e.defaultPrevented"))
+  self.context.set_offline(True);expect(self.page.locator('#connection-status')).to_contain_text('offline');self.page.locator('.school-settings-save button').click();expect(self.page.locator('.form-change-status')).to_contain_text('Reconnect before saving');self.assertIn('/preview/school-settings',self.page.url);self.assertTrue(field.input_value().endswith('Extra draft text.'))
+  self.context.set_offline(False);expect(self.page.locator('#connection-status')).to_contain_text('Connection restored');field.fill(initial);self.assertFalse(self.page.evaluate("const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);e.defaultPrevented"))
+ def test_school_platform_states_and_zoom_reflow(self):
+  for width in [320,720,1440]:
+   self.page.set_viewport_size({'width':width,'height':900})
+   for path in ['/schools','/schools?member=1','/preview/school-settings','/preview/invitations','/preview/invitation?state=expired','/preview/platform','/preview/school-notice','/preview/message','/account/security']:
+    for theme in ['light','dark']:
+     with self.subTest(width=width,path=path,theme=theme):self.visit(path,theme);self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))
 if __name__=='__main__':unittest.main(verbosity=2)

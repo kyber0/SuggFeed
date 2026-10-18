@@ -312,15 +312,15 @@
             : sfAvatarGrad(author);
         card.innerHTML = `
       <div class="comment-card-header">
-        <div class="comment-avatar" style="background:${grad}">${author[0].toUpperCase()}</div>
-        <strong class="comment-author-name">${author}</strong>
+        <div class="comment-avatar" style="background:${grad}">${sfEscapeAttribute(String(author[0].toUpperCase()))}</div>
+        <strong class="comment-author-name">${sfEscapeAttribute(String(author))}</strong>
         ${isStaff ? '<span class="comment-staff-tag">STAFF</span>' : ''}
         <span class="comment-date">${sfRelTime(c.created_at)}</span>
       </div>
       <div class="comment-body">${(c.body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
       <div class="comment-actions">
         <button type="button" class="care-report" data-report-comment="${String(c.id).replace(/[^a-f0-9-]/gi, '')}">Report</button>
-        <button type="button" class="comment-reply-btn" data-sf-click="reply-drawer" data-reply-id="${c.id}" data-reply-author="${sfEscapeAttribute(author)}">
+        <button type="button" class="comment-reply-btn" data-sf-click="reply-drawer" data-reply-id="${sfEscapeAttribute(String(c.id))}" data-reply-author="${sfEscapeAttribute(author)}">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
           Reply
         </button>

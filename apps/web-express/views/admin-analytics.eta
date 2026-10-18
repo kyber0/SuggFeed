@@ -11,6 +11,7 @@
   };
   const categories = a.categories || [];
   const funnel = a.funnel || [];
+  const filters=a.filters || {range:'30d',category:'all'};const categoryOptions=a.categoryOptions || categories.map(cat=>cat.name);const comparisons=filters.range!=='all' && (a.comparisonCount ?? 0)>0;
 %>
 <main class="staff-workspace">
   <%~ include('partials/staff-sidebar', it) %>
@@ -18,41 +19,33 @@
     <header class="workspace-heading">
       <div>
         <p class="workspace-kicker">CAMPUS / INSIGHTS</p>
-        <h1>Analytics & metrics<span class="workspace-title-dot">.</span></h1>
+        <h1>Analytics & metrics<span class="workspace-title-dot" aria-hidden="true">.</span></h1>
         <p>Engagement, submission trends, and resolution performance across campus.</p>
       </div>
       <div class="workspace-actions">
-        <button class="workspace-button" id="analytics-refresh-btn" type="button"><%~ icon('refresh') %> Refresh</button>
+        <button class="workspace-button" id="analytics-refresh-btn" type="submit" form="analytics-filters"><%~ icon('refresh') %> Refresh snapshot</button>
         <button class="workspace-button" id="analytics-export-csv" type="button"><%~ icon('export') %> Export CSV</button>
       </div>
     </header>
 
     <!-- Filter & Time Range Bar -->
-    <div class="analytics-filter-bar">
-      <div class="analytics-time-pills" id="analytics-time-pills" role="radiogroup" aria-label="Select analytics time window">
-        <button type="button" class="analytics-pill" data-range="7d" role="radio" aria-checked="false">7 days</button>
-        <button type="button" class="analytics-pill is-active" data-range="30d" role="radio" aria-checked="true">30 days</button>
-        <button type="button" class="analytics-pill" data-range="90d" role="radio" aria-checked="false">90 days</button>
-        <button type="button" class="analytics-pill" data-range="all" role="radio" aria-checked="false">All time</button>
-      </div>
-      <div class="analytics-filter-select-wrap">
-        <label for="analytics-category-select" class="visually-hidden">Filter category</label>
-        <select id="analytics-category-select" class="workspace-input">
-          <option value="all">All categories</option>
-          <% for (const cat of categories) { %>
-            <option value="<%= cat.name %>"><%= cat.name %> (<%= cat.count %>)</option>
-          <% } %>
-        </select>
-      </div>
-    </div>
+    <form class="analytics-filter-bar" id="analytics-filters" method="get" action="/admin/analytics">
+      <fieldset class="analytics-time-pills" id="analytics-time-pills"><legend class="visually-hidden">Analytics period</legend>
+        <% for(const [value,label] of [['7d','7 days'],['30d','30 days'],['90d','90 days'],['all','Available history']]) { %><label class="analytics-pill<%= filters.range===value?' is-active':'' %>"><input type="radio" name="range" value="<%= value %>" <%= filters.range===value?'checked':'' %> /> <%= label %></label><% } %>
+      </fieldset>
+      <div class="analytics-filter-select-wrap"><label for="analytics-category-select">Category</label><select id="analytics-category-select" class="workspace-input" name="category"><option value="all">All categories</option><% for(const name of categoryOptions) { %><option value="<%= name %>" <%= filters.category===name?'selected':'' %>><%= name %></option><% } %><% if(filters.category!=='all' && !categoryOptions.includes(filters.category)) { %><option selected value="<%= filters.category %>"><%= filters.category %> (no records)</option><% } %></select></div>
+      <button type="submit" class="workspace-button workspace-button--primary">Apply filters</button>
+    </form>
+    <p class="staff-footnote" id="analytics-scope">Snapshot of the latest <%= a.snapshotCount ?? 0 %> available school records (read limit: <%= a.recordLimit || 2000 %>). Filters apply to this snapshot; these figures may exclude older records. Dates use Philippine time. Current vote totals are grouped by the idea’s submission date.</p>
+    <% if(!comparisons) { %><p class="staff-footnote"><%= filters.range==='all'?'Available history has no previous-period comparison.':'No records in the prior equal period of this snapshot. A percentage comparison is unavailable.' %></p><% } %>
 
     <!-- Top KPI Metrics Cards -->
     <section class="staff-metrics analytics-kpi-grid" aria-label="Key Performance Indicators">
       <div class="staff-metric">
         <div>
           <span>Total Suggestions</span>
-          <small class="analytics-delta <%= kpis.totalSubmissions.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
-            <%= kpis.totalSubmissions.delta >= 0 ? '+' : '' %><%= kpis.totalSubmissions.delta %>% vs previous
+          <small <%= !comparisons?'hidden':'' %> class="analytics-delta <%= kpis.totalSubmissions.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.totalSubmissions.delta===null ? 'No prior total' : (kpis.totalSubmissions.delta>=0?'+':'')+kpis.totalSubmissions.delta+'% vs prior period' %>
           </small>
         </div>
         <strong id="kpi-total-subs"><%= kpis.totalSubmissions.value.toLocaleString() %></strong>
@@ -61,8 +54,8 @@
       <div class="staff-metric">
         <div>
           <span>Approval Rate</span>
-          <small class="analytics-delta <%= kpis.approvalRate.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
-            <%= kpis.approvalRate.delta >= 0 ? '+' : '' %><%= kpis.approvalRate.delta %>% vs previous
+          <small <%= !comparisons?'hidden':'' %> class="analytics-delta <%= kpis.approvalRate.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.approvalRate.delta===null ? 'No prior total' : (kpis.approvalRate.delta>=0?'+':'')+kpis.approvalRate.delta+' points vs prior period' %>
           </small>
         </div>
         <strong id="kpi-approval-rate" style="color:var(--success)"><%= kpis.approvalRate.value %>%</strong>
@@ -71,8 +64,8 @@
       <div class="staff-metric">
         <div>
           <span>Community Votes</span>
-          <small class="analytics-delta <%= kpis.totalVotes.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
-            <%= kpis.totalVotes.delta >= 0 ? '+' : '' %><%= kpis.totalVotes.delta %>% vs previous
+          <small <%= !comparisons?'hidden':'' %> class="analytics-delta <%= kpis.totalVotes.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.totalVotes.delta===null ? 'No prior total' : (kpis.totalVotes.delta>=0?'+':'')+kpis.totalVotes.delta+'% vs prior period' %>
           </small>
         </div>
         <strong id="kpi-total-votes" style="color:#0284c7"><%= kpis.totalVotes.value.toLocaleString() %></strong>
@@ -81,8 +74,8 @@
       <div class="staff-metric">
         <div>
           <span>Resolution Rate</span>
-          <small class="analytics-delta <%= kpis.resolutionRate.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
-            <%= kpis.resolutionRate.delta >= 0 ? '+' : '' %><%= kpis.resolutionRate.delta %>% vs previous
+          <small <%= !comparisons?'hidden':'' %> class="analytics-delta <%= kpis.resolutionRate.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.resolutionRate.delta===null ? 'No prior total' : (kpis.resolutionRate.delta>=0?'+':'')+kpis.resolutionRate.delta+' points vs prior period' %>
           </small>
         </div>
         <strong id="kpi-resolution-rate" style="color:var(--navy)"><%= kpis.resolutionRate.value %>%</strong>
@@ -91,8 +84,8 @@
       <div class="staff-metric">
         <div>
           <span>Avg Votes / Idea</span>
-          <small class="analytics-delta <%= kpis.avgVotes.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
-            <%= kpis.avgVotes.delta >= 0 ? '+' : '' %><%= kpis.avgVotes.delta %>% vs previous
+          <small <%= !comparisons?'hidden':'' %> class="analytics-delta <%= kpis.avgVotes.delta >= 0 ? 'analytics-delta--pos' : 'analytics-delta--neg' %>">
+            <%= kpis.avgVotes.delta===null ? 'No prior total' : (kpis.avgVotes.delta>=0?'+':'')+kpis.avgVotes.delta+'% vs prior period' %>
           </small>
         </div>
         <strong id="kpi-avg-votes"><%= kpis.avgVotes.value %></strong>
@@ -106,17 +99,18 @@
         <div class="analytics-card-header">
           <div>
             <h2 id="timeline-heading" class="analytics-card-title">Activity & Volume Trends</h2>
-            <p class="analytics-card-subtitle">Daily submission inflow and approved suggestions over time.</p>
+            <p class="analytics-card-subtitle">Ideas by submission date and their current approval and support totals.</p>
           </div>
           <div class="analytics-chart-toggle">
-            <button type="button" class="analytics-btn-toggle is-active" id="btn-toggle-daily">Daily</button>
-            <button type="button" class="analytics-btn-toggle" id="btn-toggle-cum">Cumulative</button>
+            <button type="button" class="analytics-btn-toggle is-active" id="btn-toggle-daily" aria-pressed="true">Daily</button>
+            <button type="button" class="analytics-btn-toggle" id="btn-toggle-cum" aria-pressed="false">Cumulative</button>
           </div>
         </div>
         <div class="analytics-chart-container" id="analytics-timeline-chart" aria-label="Visual submission timeline">
           <!-- Dynamically generated SVG chart rendered via client script -->
           <div class="analytics-chart-loading">Rendering chart…</div>
         </div>
+        <details class="analytics-data"><summary>View chart data as a table</summary><div class="analytics-table-wrap"><table class="analytics-table"><caption>Daily counts for the selected snapshot, Philippine time</caption><thead><tr><th scope="col">Submission date</th><th scope="col">Ideas</th><th scope="col">Currently approved</th><th scope="col">Current votes</th></tr></thead><tbody><% for(const row of a.timeline || []) { %><tr><th scope="row"><%= row.fullDate %></th><td><%= row.submissions %></td><td><%= row.approved %></td><td><%= row.votes %></td></tr><% } %><% if(!a.timeline?.length) { %><tr><td colspan="4">No activity in this snapshot.</td></tr><% } %></tbody></table></div></details>
         <div class="analytics-legend">
           <span class="analytics-legend-item"><span class="analytics-dot analytics-dot--blue"></span> Submissions</span>
           <span class="analytics-legend-item"><span class="analytics-dot analytics-dot--green"></span> Approved / Active</span>
@@ -128,8 +122,8 @@
       <section class="analytics-card" aria-labelledby="funnel-heading">
         <div class="analytics-card-header">
           <div>
-            <h2 id="funnel-heading" class="analytics-card-title">Moderation Pipeline</h2>
-            <p class="analytics-card-subtitle">Current status breakdown and progress through stages.</p>
+            <h2 id="funnel-heading" class="analytics-card-title">Status distribution</h2>
+            <p class="analytics-card-subtitle">Current status distribution for the selected records. Stages are not a conversion funnel.</p>
           </div>
         </div>
         <div class="analytics-funnel-list" id="analytics-funnel-list"><% if(!funnel.length) { %><%~ include('partials/empty-state',{compact:true,icon:'board',heading:'No pipeline activity yet',description:'Review stages will appear here as ideas move through the school’s workflow.'}) %><% } %>
@@ -180,7 +174,7 @@
           <p class="analytics-card-subtitle">Detailed breakdown of review progress and completion rates by department.</p>
         </div>
       </div>
-      <div class="analytics-table-wrap">
+      <p class="analytics-table-hint">Scroll across the table to see all columns.</p><div class="analytics-table-wrap">
         <table class="analytics-table">
           <thead>
             <tr>
@@ -210,7 +204,7 @@
       </div>
     </section>
 
-    <p class="staff-footnote">Analytics are updated in real-time as students submit ideas and cast votes.</p>
+    <p class="staff-footnote">Refresh the snapshot to include the latest available submissions and support totals.</p>
   </div>
 </main>
 <section class="staff-mobile-notice">
@@ -220,4 +214,4 @@
   <a class="workspace-button" href="/roadmap">Explore the campus roadmap →</a>
 </section>
 <script id="analytics-data-json" type="application/json"><%~ JSON.stringify(it.analytics || {}).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/admin-analytics.js?v=20261018-empty-states"></script>
+<script defer src="/js/admin-analytics.js?v=20261018-full-ux-audit"></script>

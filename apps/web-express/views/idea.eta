@@ -377,6 +377,7 @@
                 </div>
 
                 <div class="comment-input-main">
+                  <label class="visually-hidden" for="comment-input">Your comment</label>
                   <textarea
                     id="comment-input"
                     class="comment-textarea-compact"
@@ -412,4 +413,4 @@
 </main>
 
 <div id="sf-idea-config" hidden data-id="<%= it.submission.id %>" data-status="<%= it.submission.status %>"></div>
-<script defer src="/js/idea.js?v=20261016-school-isolation"></script>
+<script defer src="/js/idea.js?v=20261018-full-ux-audit"></script>

@@ -73,7 +73,7 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const [counts, analytics] = await Promise.all([
       loadModerationCounts(),
-      loadAnalyticsData(),
+      loadAnalyticsData(req.query),
     ]);
 
     res.render("admin-analytics", {

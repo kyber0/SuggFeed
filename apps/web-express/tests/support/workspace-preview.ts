@@ -1,3 +1,4 @@
+import {summarizeAnalytics} from '../../src/lib/analytics';
 import { DEFAULT_DIGEST_KINDS, nextDigestWindow } from '../../src/lib/digest-preferences';
 // Local-only visual harness with in-memory fixtures. Never mounted in production.
 import express from 'express';
@@ -129,13 +130,7 @@ export function createWorkspacePreview() {
  });
  app.get('/admin/analytics',(req,res)=>{
   const counts=Object.fromEntries(['pending','approved','in_progress','resolved','rejected'].map(s=>[s,items.filter(i=>i.status===s).length]));
-  const analytics={
-    kpis:{totalSubmissions:{value:items.length,delta:12},approvalRate:{value:75,delta:5},totalVotes:{value:340,delta:18},resolutionRate:{value:33,delta:2},avgVotes:{value:9.4,delta:6}},
-    timeline:[{date:'Oct 1',fullDate:'October 1, 2026',submissions:4,approved:3,votes:30},{date:'Oct 10',fullDate:'October 10, 2026',submissions:10,approved:8,votes:95}],
-    categories:[{name:'Facilities',count:18,votes:190,approved:12,resolved:4,pct:50},{name:'Learning',count:18,votes:150,approved:10,resolved:3,pct:50}],
-    funnel:[{status:'pending',label:'Needs review',count:counts['pending'],pct:100},{status:'approved',label:'Planned',count:counts['approved'],pct:50},{status:'in_progress',label:'In progress',count:counts['in_progress'],pct:30},{status:'resolved',label:'Completed',count:counts['resolved'],pct:20},{status:'rejected',label:'Declined',count:counts['rejected'],pct:10}],
-    rawSubmissions:items.map(i=>({id:i.id,title:i.title,category:i.category,status:i.status,vote_count:i.vote_count,created_at:i.created_at})),
-  };
+  const analytics=summarizeAnalytics(items.map(item=>({...item,categories:{name:item.category},created_at:'2026-10-16T10:00:00Z'})),req.query,new Date('2026-10-18T05:00:00Z'));
   res.send(eta.render('admin-analytics',{currentPath:'/admin/analytics',user:{id:staffId,display_name:'Alex Reyes',role:'admin'},counts:{...counts,all:items.length},analytics,activeSection:'analytics'}));
  });
  app.get('/admin/staff',(req,res)=>{

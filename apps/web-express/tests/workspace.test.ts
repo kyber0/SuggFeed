@@ -28,7 +28,7 @@ test('staff and roadmap render populated, empty, and login screens', async () =>
     const analytics = await get('/admin/analytics');
     assert.match(analytics, /Analytics & metrics/);
     assert.match(analytics, /Activity & Volume Trends/);
-    assert.match(analytics, /Moderation Pipeline/);
+    assert.match(analytics, /Status distribution/);
     assert.match(analytics, /Category Distribution/);
     assert.match(analytics, /admin-analytics\.js/);
     const staffMgmt = await get('/admin/staff');
@@ -43,7 +43,7 @@ test('staff and roadmap render populated, empty, and login screens', async () =>
     const roadmap = await get('/roadmap');
     assert.match(roadmap, /Completed/);
     assert.doesNotMatch(roadmap, /Effort:|Q3 2026|Campus Ops|Staff Editor/);
-    assert.match(await get('/roadmap?empty=1'), /Nothing here yet/);
+    assert.match(await get('/roadmap?empty=1'), /No planned ideas yet/);
     const feed = await get('/feed');
     assert.match(feed, /Community ideas/);
     assert.match(feed, /id="feed-search-form"/);

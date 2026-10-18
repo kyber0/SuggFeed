@@ -252,7 +252,8 @@
           </div>
 
           <div class="comment-input-main">
-            <textarea
+            <label class="visually-hidden" for="drawer-comment-input">Your comment</label>
+                  <textarea
               id="drawer-comment-input"
               class="comment-textarea-compact"
               rows="1"
@@ -291,4 +292,4 @@
   </div>
 </aside>
 
-<script defer src="/js/idea-detail-drawer.js?v=20261018-empty-states"></script>
+<script defer src="/js/idea-detail-drawer.js?v=20261018-full-ux-audit"></script>

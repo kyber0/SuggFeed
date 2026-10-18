@@ -43,8 +43,8 @@ router.post('/submissions/:id/actions',run(async(req,res)=>{
   catch(error){console.warn(JSON.stringify({event:'workflow_action',action,result:'failed',code:error instanceof ProgressError?error.code || 'INVALID_ACTION':'UNEXPECTED',durationMs:Date.now()-began}));throw error;}
 }));
 router.post('/submissions/:id/work-dates',run(async(req,res)=>res.json({success:true,...await repairDates(req.params.id as string,schoolUser(req)!.id,req.body)})));
-router.get('/analytics', run(async (_req, res) => {
-  const data = await loadAnalyticsData();
+router.get('/analytics', run(async (req, res) => {
+  const data = await loadAnalyticsData(req.query);
   return res.json({ success: true, data });
 }));
 router.get('/members', run(async (_req, res) => {

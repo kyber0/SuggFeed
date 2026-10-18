@@ -1,5 +1,5 @@
 (() => {
-  interface TimelineItem { date: string; fullDate: string; submissions: number; approved: number; votes: number }
+  interface TimelineItem { key?:string; date: string; fullDate: string; submissions: number; approved: number; votes: number }
   interface CategoryItem { name: string; count: number; votes: number; approved: number; resolved: number; pct: number }
   interface FunnelItem { status: string; label: string; count: number; pct: number }
   interface RawItem { id: string; title: string; category: string; status: string; vote_count: number; created_at: string }
@@ -25,30 +25,19 @@
     data = {};
   }
 
-  let currentRange = '30d';
-  let currentCategory = 'all';
   let isCumulative = false;
-
   const chartContainer = document.getElementById('analytics-timeline-chart');
   const btnDaily = document.getElementById('btn-toggle-daily');
   const btnCum = document.getElementById('btn-toggle-cum');
-  const refreshBtn = document.getElementById('analytics-refresh-btn');
   const exportBtn = document.getElementById('analytics-export-csv');
-  const timePills = document.getElementById('analytics-time-pills');
-  const categorySelect = document.getElementById('analytics-category-select') as HTMLSelectElement | null;
+  const filters=document.getElementById('analytics-filters');
+  filters?.addEventListener('change',()=>filters.querySelectorAll<HTMLLabelElement>('.analytics-pill').forEach(label=>label.classList.toggle('is-active',!!label.querySelector<HTMLInputElement>('input')?.checked)));
 
   function renderChart() {
     if (!chartContainer) return;
-    const rawTimeline = data.timeline || [];
-    let sliceDays = 30;
-    if (currentRange === '7d') sliceDays = 7;
-    else if (currentRange === '90d') sliceDays = 90;
-    else if (currentRange === 'all') sliceDays = rawTimeline.length;
-
-    const timeline = rawTimeline.slice(-sliceDays);
-    if (!timeline.length) {
-      chartContainer.replaceChildren(sfEmptyState({icon:'chart',heading:'No activity in this time window',description:'Try a wider date range. New submissions and community support will appear here.'}));
-      return;
+    const timeline = data.timeline || [];
+    if(!timeline.length || !timeline.some(item=>item.submissions || item.approved || item.votes)){
+      chartContainer.replaceChildren(sfEmptyState({icon:'chart',heading:'No activity in this snapshot',description:'Try another category or a wider date range. New school ideas will appear here.'}));return;
     }
 
     let cumSubs = 0;
@@ -60,7 +49,7 @@
       cumApp += item.approved;
       cumVotes += item.votes;
       return {
-        date: item.date,
+        key:item.key, date: item.date,
         fullDate: item.fullDate,
         subs: isCumulative ? cumSubs : item.submissions,
         approved: isCumulative ? cumApp : item.approved,
@@ -76,7 +65,8 @@
     const plotW = w - padX * 2;
     const plotH = h - padY * 2;
 
-    const getX = (idx: number) => padX + (idx / Math.max(1, points.length - 1)) * plotW;
+    const first=Date.parse(points[0].key || ''),last=Date.parse(points[points.length-1].key || '');
+    const getX = (idx: number) => points.length===1?w/2:padX+(Number.isFinite(first) && last>first?(Date.parse(points[idx].key || '')-first)/(last-first):idx/Math.max(1,points.length-1))*plotW;
     const getY = (val: number) => h - padY - (val / maxVal) * plotH;
 
     const subsPath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${getX(i).toFixed(1)},${getY(p.subs).toFixed(1)}`).join(' ');
@@ -89,7 +79,7 @@
     const xLabels = points.filter((_, i) => i % stepLabel === 0 || i === points.length - 1);
 
     chartContainer.innerHTML = `
-      <svg class="analytics-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <svg role="img" aria-label="Submission and current support trends. The chart data table provides exact values." class="analytics-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
         <defs>
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#0284c7" stop-opacity="0.25"/>
@@ -114,65 +104,28 @@
         <path d="${appPath}" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="${votesPath}" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="4,3" stroke-linecap="round" stroke-linejoin="round"/>
 
+        ${points.map((p,i)=>`<circle cx="${getX(i)}" cy="${getY(p.subs)}" r="3" fill="#0284c7"/><circle cx="${getX(i)}" cy="${getY(p.approved)}" r="2" fill="#10b981"/>`).join('')}
         <!-- X Axis Labels -->
         ${xLabels.map(p => {
           const idx = points.indexOf(p);
-          return `<text x="${getX(idx)}" y="${h - 6}" font-size="10" fill="var(--muted)" text-anchor="middle">${p.date}</text>`;
+          return `<text x="${getX(idx)}" y="${h - 6}" font-size="10" fill="var(--muted)" text-anchor="middle">${sfEscapeAttribute(p.date)}</text>`;
         }).join('')}
       </svg>
     `;
   }
 
-  function applyFilters() {
-    renderChart();
-  }
-
-  timePills?.addEventListener('click', (e) => {
-    const btn = (e.target as Element).closest<HTMLButtonElement>('[data-range]');
-    if (!btn) return;
-    timePills.querySelectorAll('[data-range]').forEach(b => {
-      b.classList.remove('is-active');
-      b.setAttribute('aria-checked', 'false');
-    });
-    btn.classList.add('is-active');
-    btn.setAttribute('aria-checked', 'true');
-    currentRange = btn.dataset.range || '30d';
-    applyFilters();
-  });
-
-  categorySelect?.addEventListener('change', () => {
-    currentCategory = categorySelect.value;
-    applyFilters();
-  });
-
   btnDaily?.addEventListener('click', () => {
     isCumulative = false;
-    btnDaily.classList.add('is-active');
+    btnDaily.classList.add('is-active');btnDaily.setAttribute('aria-pressed','true');btnCum?.setAttribute('aria-pressed','false');
     btnCum?.classList.remove('is-active');
     renderChart();
   });
 
   btnCum?.addEventListener('click', () => {
     isCumulative = true;
-    btnCum.classList.add('is-active');
+    btnCum.classList.add('is-active');btnCum.setAttribute('aria-pressed','true');btnDaily?.setAttribute('aria-pressed','false');
     btnDaily?.classList.remove('is-active');
     renderChart();
-  });
-
-  refreshBtn?.addEventListener('click', async () => {
-    refreshBtn.setAttribute('disabled', 'true');
-    try {
-      const res = await sfSchoolFetch('/api/staff/analytics');
-      const json = await res.json();
-      if (json.success && json.data) {
-        data = json.data;
-        renderChart();
-      }
-    } catch {
-      // ignore
-    } finally {
-      refreshBtn.removeAttribute('disabled');
-    }
   });
 
   exportBtn?.addEventListener('click', () => {
@@ -180,7 +133,8 @@
     let csv = 'Category,Total Ideas,Community Votes,Approved Count,Resolved Count,Approval Rate (%)\n';
     categories.forEach(c => {
       const rate = c.count > 0 ? Math.round((c.approved / c.count) * 100) : 0;
-      csv += `"${c.name}",${c.count},${c.votes},${c.approved},${c.resolved},${rate}\n`;
+      const name='\"'+(/^(?:\s*[=+@-]|[\t\r\n])/.test(c.name)?"'":'')+c.name.replace(/\"/g,'\"\"')+'\"';
+      csv += `${name},${c.count},${c.votes},${c.approved},${c.resolved},${rate}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

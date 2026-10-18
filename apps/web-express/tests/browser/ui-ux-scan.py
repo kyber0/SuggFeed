@@ -5,12 +5,12 @@ explicit assertions in ui-ux-audit.py. External network requests are blocked.
 import json
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-paths=['/','/feed','/feed?empty=1','/roadmap','/roadmap?view=timeline','/roadmap?view=tree','/roadmap?view=done','/profile?persona=guest','/profile?persona=long','/notifications','/inbox','/idea/00000000-0000-4000-8000-000000000002','/admin','/admin/board','/admin/analytics','/admin/staff','/admin/community','/staff-login','/privacy','/terms','/403','/404','/500','/digest/unsubscribe','/auth/callback','/auth/recovery']
+paths=['/','/feed','/feed?empty=1','/roadmap','/roadmap?view=timeline','/roadmap?view=tree','/roadmap?view=done','/profile?persona=guest','/profile?persona=long','/notifications','/inbox','/idea/00000000-0000-4000-8000-000000000002','/admin','/admin/board','/admin/analytics','/admin/staff','/admin/community','/staff-login','/privacy','/terms','/403','/404','/500','/digest/unsubscribe','/auth/callback','/auth/recovery','/schools','/schools?member=1','/preview/school-settings','/preview/invitations','/preview/invitation?state=expired','/preview/platform','/preview/school-notice','/preview/message','/account/security']
 measure='''()=>{
  const visible=e=>e.checkVisibility();
  const name=e=>e.getAttribute('aria-label') || (e.getAttribute('aria-labelledby') || '').split(' ').map(id=>document.getElementById(id)?.textContent || '').join(' ').trim() || Array.from(e.labels || []).map(l=>l.textContent).join(' ').trim() || e.innerText?.trim() || e.getAttribute('title') || e.querySelector('img')?.alt;
  const controls=Array.from(document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea')).filter(visible);
- const rgb=s=>{const v=s.match(/[\\d.]+/g);return v?v.map(Number):[0,0,0,0]};
+ const rgb=s=>{const v=s.match(/[\\d.]+/g);return v?v.map((n,i)=>Number(n)*(s.startsWith('color(srgb ') && i<3?255:1)):[0,0,0,0]};
  const lum=c=>c.slice(0,3).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
  const contrast=[];
  for(const e of document.querySelectorAll('p,small,label,button,a,span,h1,h2,h3,h4')){
@@ -33,5 +33,8 @@ with sync_playwright() as p:
     pg.add_style_tag(content='*,*::before,*::after{transition:none!important;animation:none!important}');result=pg.evaluate(measure);out.append({'path':path,'theme':theme,**result})
  # Reproduce overlapping custom modal keyboard handlers.
  pg.goto('http://127.0.0.1:4319/feed');pg.evaluate('openSubmitPanel()');pg.evaluate('openAuthModal("signin")');pg.locator('#signin-email').focus();pg.keyboard.press('Tab');modalFocus=pg.evaluate('document.querySelector("#auth-modal").contains(document.activeElement)')
- Path('/tmp/suggfeed-ui-audit.json').write_text(json.dumps({'screens':out,'errors':errors,'nestedAuthFocus':modalFocus},indent=2));b.close()
+ Path('/tmp/suggfeed-ui-audit.json').write_text(json.dumps({'screens':out,'errors':errors,'nestedAuthFocus':modalFocus},indent=2));
+ for width,theme,path,name in [(390,'light','/admin/analytics','analytics-mobile'),(1440,'dark','/admin/analytics','analytics-dark'),(390,'dark','/preview/school-settings','settings-mobile'),(1440,'light','/preview/platform','platform-desktop')]:
+  pg.set_viewport_size({'width':width,'height':900});pg.goto('http://127.0.0.1:4319'+path);pg.evaluate('(t)=>{document.documentElement.dataset.theme=t}',theme);pg.add_style_tag(content='*,*::before,*::after{transition:none!important;animation:none!important}');pg.screenshot(path='/tmp/sf-product-'+name+'.png',full_page=True)
+ b.close()
  print(json.dumps({'cases':len(out),'overflow':[(r['path'],r['width'],r['theme']) for r in out if r['overflow']],'unnamed':[(r['path'],r['width'],r['unnamed']) for r in out if r['unnamed']][:14],'contrastExamples':[(r['path'],r['theme'],r['contrast']) for r in out if r['contrast']][:6],'nestedAuthFocus':modalFocus,'errors':list(set(errors))},indent=2))
