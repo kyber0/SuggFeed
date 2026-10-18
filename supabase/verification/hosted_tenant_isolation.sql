@@ -8,7 +8,7 @@ DECLARE school_a uuid:=gen_random_uuid(); school_b uuid:=gen_random_uuid();
  actor_a uuid:=gen_random_uuid(); actor_b uuid:=gen_random_uuid();
  idea_a uuid:=gen_random_uuid(); idea_b uuid:=gen_random_uuid(); category_a uuid; category_b uuid;
  update_a uuid:=gen_random_uuid(); update_b uuid:=gen_random_uuid();
- item record; n integer; blocked boolean; result jsonb;
+ item record; n integer; blocked boolean; result jsonb; receipt uuid:=gen_random_uuid(); submitted_id uuid; submission_args jsonb;
 BEGIN
  -- These fields are transaction-local and invisible to other connections.
  INSERT INTO auth.users(id,email,email_confirmed_at,raw_user_meta_data)
@@ -116,6 +116,16 @@ BEGIN
  END;
  INSERT INTO isolation_probe_results VALUES('gateway_rejects_foreign_resource_id',blocked);
  INSERT INTO isolation_probe_results VALUES('gateway_restores_scope_after_failure',current_setting('suggfeed.school_id')=school_b::text AND current_setting('suggfeed.actor_id')=actor_b::text);
+ -- Exercise the same write/receipt gateway used by the submission API.
+ submission_args:=jsonb_build_object('p_owner_hash',repeat('a',64),'p_request_id',receipt,'p_payload_hash',repeat('b',64),'p_title','Rollback submission check','p_description','Synthetic backend check, rolled back after verification.','p_category_id',category_a,'p_user_id',actor_a,'p_tracking_hash',NULL);
+ result:=public.tenant_rpc(school_a,actor_a,'create_submission_once',submission_args);
+ submitted_id:=(result->>'id')::uuid;
+ SELECT count(*) INTO n FROM public.submissions WHERE id=submitted_id AND school_id=school_a AND user_id=actor_a AND status='pending';
+ INSERT INTO isolation_probe_results VALUES('submission_gateway_records_pending_idea',n=1 AND result->>'replayed'='false');
+ result:=public.tenant_rpc(school_a,actor_a,'create_submission_once',submission_args);
+ INSERT INTO isolation_probe_results VALUES('submission_gateway_replays_without_duplicate',result->>'id'=submitted_id::text AND result->>'replayed'='true');
+ result:=public.tenant_rpc(school_a,actor_a,'read_submission_receipt',jsonb_build_object('p_owner_hash',repeat('a',64),'p_request_id',receipt));
+ INSERT INTO isolation_probe_results VALUES('submission_gateway_recovers_receipt',result->>'id'=submitted_id::text);
  UPDATE public.school_memberships SET status='revoked' WHERE school_id=school_a AND user_id=actor_a;
  blocked:=false;
  BEGIN PERFORM public.tenant_rpc(school_a,actor_a,'set_idea_follow',jsonb_build_object('p_submission_id',idea_a,'p_following',true));
@@ -131,4 +141,4 @@ SELECT jsonb_build_object('checks',jsonb_agg(jsonb_build_object('name',check_nam
 ROLLBACK;
 
 -- The management API returns the last result; prior assertions must succeed to reach this statement.
-SELECT jsonb_build_object('all_passed',true,'check_count',21,'fixture_persistence','rolled_back') AS verification;
+SELECT jsonb_build_object('all_passed',true,'check_count',24,'fixture_persistence','rolled_back') AS verification;

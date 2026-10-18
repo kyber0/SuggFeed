@@ -16,13 +16,14 @@ class UIAudit(unittest.TestCase):
  def test_navigation_staff_links_remain_visible(self):
   for w in [320,390,768]:
    with self.subTest(width=w):
-    self.page.set_viewport_size({'width':w,'height':900});self.visit('/admin');self.page.locator('.staff-navigation-disclosure summary').click()
+    self.page.set_viewport_size({'width':w,'height':900});self.visit('/admin')
+    if not self.page.locator('.staff-navigation-disclosure').evaluate('(el)=>el.open'):self.page.locator('.staff-navigation-disclosure summary').click()
     for label in ['Review submissions','Manage work','Follow-ups','Analytics','Manage staff']:expect(self.page.locator('.staff-navigation-body').get_by_role('link',name=label,exact=False)).to_be_visible()
  def test_navigation_long_header_and_guest_name(self):
   self.page.set_viewport_size({'width':320,'height':900})
   for path in ['/profile?persona=long','/notifications','/inbox','/admin/analytics','/admin/staff']:
    with self.subTest(path=path):self.visit(path);self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),path)
-  self.visit('/feed');expect(self.page.get_by_role('link',name='Your profile',exact=True)).to_be_visible()
+  self.visit('/feed');expect(self.page.get_by_role('link',name='Choose a school',exact=True)).to_be_visible()
  def test_navigation_landscape_tablet(self):
   for width in [801,844,900,1024]:
    self.page.set_viewport_size({'width':width,'height':390})

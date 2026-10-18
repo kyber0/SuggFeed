@@ -12,12 +12,12 @@ router.get('/internal/weekly-digests',async(req,res,next)=>{
   try {const result=await deliverAllSchoolDigests();return res.status(result.failed ? 503 : 200).json({success:!result.failed,...result});}catch(e){next(e);}
 });
 router.use('/digest',(_req,res,next)=>{
-  res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','no-referrer');
+  res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','strict-origin');
   if(!currentSchool()) return res.status(410).send('Choose your school to manage weekly emails.');
   next();
 });
 router.get('/digest/unsubscribe',(req,res)=>{
-  res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','no-referrer');
+  res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','strict-origin');
   res.render('digest-unsubscribe',{title:'Stop weekly emails — SuggFeed',token:unsubscribeUser(req.query.token) ? req.query.token : '',valid:!!unsubscribeUser(req.query.token)});
 });
 router.get('/digest/unsubscribed',(_req,res)=>{

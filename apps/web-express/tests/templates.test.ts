@@ -28,11 +28,12 @@ test('all Eta templates compile, including authenticated staff view', () => {
   }
 });
 
-test('mobile navigation has no staff entry; responsive styles hide other staff links', () => {
+test('mobile tabs omit staff and header-only hiding preserves workspace links', () => {
   const nav = fs.readFileSync(path.join(__dirname, '../views/partials/mobile-nav.eta'), 'utf8');
   assert.equal(nav.includes('/admin'), false);
   const css = fs.readFileSync(path.join(__dirname, '../public/css/modules/components.css'), 'utf8');
-  assert.match(css, /@media \(max-width: 800px\)\s*\{[^}]*\}[^}]*a\[href="\/admin"\][^{]*\{\s*display: none !important;/);
+  assert.ok(css.includes('.site-header :is(a[href="/admin"], a[href^="/admin/"])'));
+  assert.doesNotMatch(css,/\n\s*a\[href="\/admin"\]/);
 });
 
 test('callback failure shows a retry message and does not navigate', async () => {

@@ -11,7 +11,7 @@ test('the hosted isolation probe passes locally and rolls back every synthetic r
   const sql=readFileSync(path.resolve(__dirname,'../../../supabase/verification/hosted_tenant_isolation.sql'),'utf8');
   const results=await db.exec(sql);
   const result=results.flatMap(r=>r.rows).find((r:any)=>r.verification) as any;
-  assert.equal(result.verification.all_passed,true);assert.equal(result.verification.checks.length,21);
+  assert.equal(result.verification.all_passed,true);assert.equal(result.verification.checks.length,24);
   assert.equal(result.verification.checks.find((check:any)=>check.name==='gateway_restores_scope_after_success')?.passed,true);
   assert.equal(result.verification.checks.find((check:any)=>check.name==='gateway_restores_scope_after_failure')?.passed,true);
   assert.deepEqual((await db.query('SELECT count(*)::int n FROM auth.users')).rows,before.rows);

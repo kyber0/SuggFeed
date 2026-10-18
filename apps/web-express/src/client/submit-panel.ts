@@ -321,7 +321,7 @@ let sipCurrentStep = 1;
         if (window.sfToast) sfToast('Please accept the community guidelines notice.', 'warning');
         return;
       }
-      (document.getElementById('submit-idea-form') as HTMLFormElement).dispatchEvent(new Event('submit', { cancelable: true }));
+      (document.getElementById('submit-idea-form') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     }
   }
 

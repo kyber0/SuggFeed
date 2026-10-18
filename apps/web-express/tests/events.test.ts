@@ -90,3 +90,11 @@ test('modified clicks preserve native browser navigation', () => {
   }
   assert.equal(calls.length, 0);
 });
+
+// Keep server-rendered controls and the shared delegation registry in sync.
+test('every declarative template action has a registered event handler',()=>{
+ const source=fs.readFileSync(path.resolve(__dirname,'../src/client/events.ts'),'utf8');
+ const actions=new Set([...source.matchAll(/^'([^']+)':/gm)].map(match=>match[1]));
+ function walk(dir:string){for(const file of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,file.name);if(file.isDirectory())walk(full);else if(file.name.endsWith('.eta')){for(const match of fs.readFileSync(full,'utf8').matchAll(/data-sf-(?:click|input|change|submit|keydown|focusin)="([^"<]+)"/g))assert.ok(actions.has(match[1]),full+': '+match[1]);}}}
+ walk(path.resolve(__dirname,'../views'));
+});

@@ -56,7 +56,7 @@ function post(url:string,values:Record<string,string>,headers:Record<string,stri
 
 test('directory and settings render functional forms, pending workspace and private policy',async()=>{
  const directory=await fetch(origin+'/schools');assert.equal(directory.status,200);const html=await directory.text();assert.match(html,/School A/);assert.match(html,/action="\/schools\/apply"/);assert.match(html,/pending/);
- const settings=await fetch(origin+'/s/school-a/admin/school-settings');assert.equal(settings.status,200);const policyHtml=await settings.text();assert.match(policyHtml,/name="version" value="2"/);assert.match(policyHtml,/admin\/invitations/);
+ const settings=await fetch(origin+'/s/school-a/admin/school-settings');assert.equal(settings.status,200);assert.equal(settings.headers.get('referrer-policy'),'strict-origin');const policyHtml=await settings.text();assert.match(policyHtml,/name="version" value="2"/);assert.match(policyHtml,/admin\/invitations/);
 });
 test('verified application uses only session actor, redirects after success and rejects missing business setup',async()=>{
  calls=[];const response=await post('/schools/apply',body);assert.equal(response.status,303);assert.equal(response.headers.get('location'),'/schools?saved=1');
@@ -173,4 +173,9 @@ test('only the reserved fictional demo can activate without real-school business
   supabasePlatform.rpc=(async(name:string,args:any)=>name==='change_school_status'?{data:null,error:{code:'42501'}}:originalRpc.call(supabasePlatform,name,args)) as any;
   const locked=await post('/platform/schools/00000000-0000-4000-8000-000000000001/activate',{}, {'x-user':'operator'});assert.equal(locked.status,409);
  }finally{supabasePlatform.rpc=originalRpc;supabasePlatform.from=originalFrom;process.env.PLATFORM_OPERATOR_NAME='Test Business';}
+});
+
+test('invitation acceptance preserves form origin without exposing the token path in referrers',async()=>{
+ const response=await fetch(origin+'/schools/invitations/'+'a'.repeat(64));
+ assert.equal(response.status,200);assert.equal(response.headers.get('referrer-policy'),'strict-origin');
 });
