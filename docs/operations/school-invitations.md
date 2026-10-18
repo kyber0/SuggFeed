@@ -38,3 +38,5 @@ The email includes school, role, access description, accept button, expiry in Ph
 - Probe SHA-256: `bed1b1e39589dc62b823f602f93edf0d1ccc3413b78c9a38d8632f4d2ad2918c`. Captured 2026-10-18T04:15:19.242Z UTC.
 - Independent read-only review found no material blocker in permissions, token privacy, acceptance/revocation locking, redirects or email status handling.
 - No real mailbox delivery was exercised. Sender credentials were not available in the execution environment.
+
+Live deployment: `259401e` pushed to `main`. Production health returned 200; the invitation manager required sign-in (401); an unknown token showed the new unavailable screen (404); the new invitation assets and confirmation-return markup were present; strict-origin privacy headers and foreign-origin rejection (403) were retained. These checks created no invitation and sent no email.
