@@ -23,3 +23,19 @@ Only student access can be created through this flow. Existing staff roles are p
 Apply `202610180002_school_email_domains.sql` before deploying the app. The domain registry has RLS and no anonymous/authenticated privileges. The service role can read registrations; only the narrowly scoped service RPCs can change them or enroll students. Domain changes and new memberships are recorded in school registry events.
 
 No school domain is pre-verified or enabled by this migration. CSPC requires its own DNS ownership proof; its mailbox suffix alone is not verification.
+
+## Optional enrollment roster
+
+Open **School settings → Student enrollment**. The default **School email or invitation** rule preserves existing behavior. To restrict students to current enrollment:
+
+1. Copy the approved email column from the school's enrollment list, one address per line (no heading or other columns).
+2. Paste the complete list, up to 1,000 unique emails. Addresses are normalized to lowercase; blank lines and duplicates are ignored.
+3. Select **Require a match on the enrollment roster**, review the impact, check the confirmation, and save.
+
+Every save replaces the complete roster atomically. Invalid lists change nothing; stale versions are rejected. An empty roster in required mode pauses all students. Missing students see a paused-access explanation; matching nonmembers can join through the existing verified-domain flow. Adding an address to a roster does not itself create an account or membership. Invitations cannot bypass required roster eligibility, including for personal email addresses.
+
+Eligibility is checked against the account's confirmed email in `auth.users`, not a browser-supplied address or stale session email. School routes, shared database membership/role checks, joining, invitations and account navigation honor the rule. Staff roles are exempt. A membership's explicit revoked status remains authoritative after an email returns to the roster. Existing submissions, accounts and memberships are retained.
+
+Only MFA-authenticated school administrators can read or replace their own school's roster. The new tables have RLS and no app-role direct privileges; service RPCs authorize the actor and school. Audit records contain version, mode and counts, not the address list. The school must keep this roster current; there is no enrollment-provider synchronization. SSO integration remains deferred.
+
+Apply `202610180003_school_enrollment_rosters.sql` before deploying the roster UI. No existing school is switched to roster mode during deployment. The first release supports 1,000 unique emails per school; use paged roster administration before increasing this limit.

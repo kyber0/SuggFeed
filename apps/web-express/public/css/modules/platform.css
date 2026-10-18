@@ -338,3 +338,22 @@
 .school-join-card p a {text-decoration:underline;text-underline-offset:3px;}
 .school-join-card .sf-empty-mark {margin:0;}
 @media(max-width:600px){.school-join-card {align-items:flex-start;flex-wrap:wrap;gap:14px;padding:16px;}.school-join-card form {width:100%;}.school-join-card button {width:100%;}.domain-card {padding:16px;}.domain-actions button {flex:1 1 140px;}}
+
+/* Enrollment lists stay private inside school administration. */
+.enrollment-summary {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:16px;margin-bottom:20px;border:1px solid var(--line);border-radius:12px;background:var(--bg);}
+.enrollment-summary span,.enrollment-summary strong {display:block;overflow-wrap:anywhere;}
+.enrollment-summary span {font-size:12px;color:var(--muted);margin-bottom:6px;}
+.enrollment-summary strong {font-size:14px;}
+.enrollment-form {margin-top:24px;}
+.enrollment-form>label:not(.enrollment-confirm) {font-weight:600;font-size:14px;}
+.enrollment-form textarea {font-family:monospace;line-height:1.7;resize:vertical;min-height:180px;}
+.enrollment-impact {padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font-size:14px;}
+.enrollment-impact p {margin:8px 0 0;line-height:1.7;}
+.enrollment-form .enrollment-confirm {display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.7;cursor:pointer;}
+.enrollment-form .enrollment-confirm input {width:20px;height:20px;padding:0;flex:none;min-width:20px;min-height:20px;margin-top:3px;accent-color:var(--navy);}
+@media(max-width:600px){.enrollment-summary{grid-template-columns:minmax(0,1fr);}.enrollment-form :is(select,textarea){font-size:16px;}}
+
+.school-join-card .school-directory-notice {flex:1;min-width:0;}
+@media(max-width:600px){.school-join-card .school-directory-notice {flex-basis:100%;}}
+
+.enrollment-form>p {margin:0;}

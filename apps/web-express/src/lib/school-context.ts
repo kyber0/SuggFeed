@@ -27,8 +27,13 @@ export function resolveSchool(req: Request, res: Response, next: NextFunction) {
       if (role === 'admin' && school.status === 'pending' && ['GET','HEAD'].includes(req.method)) return res.redirect(303, '/s/' + school.slug + '/admin/school-settings');
       return res.status(403).render('school-message', { title: 'School workspace unavailable', message: school.status === 'pending' ? 'Your school is being set up. Your school administrator will invite members when it is ready.' : 'Access to this school is currently unavailable. Contact your school administrator for help.' });
     }
-    const {data:settings,error:settingsError}=await supabasePlatform.from('school_settings').select('approved_at,publication_policy').eq('school_id',school.id).maybeSingle();
-    if(settingsError) throw Object.assign(new Error('School policy unavailable.'), {status:503});
+    const [policy,eligibility]=await Promise.all([
+      supabasePlatform.from('school_settings').select('approved_at,publication_policy').eq('school_id',school.id).maybeSingle(),
+      role==='student' && !unsubscribe ? supabasePlatform.rpc('school_student_eligible',{p_school:school.id,p_actor:userId}) : Promise.resolve({data:true,error:null}),
+    ]);
+    const {data:settings,error:settingsError}=policy;
+    if(settingsError || eligibility.error) throw Object.assign(new Error('School access checks unavailable.'), {status:503});
+    if(eligibility.data!==true){res.locals.accountArea=true;return res.status(403).render('school-message',{title:'School access is paused',message:'Your school requires a current enrollment roster, and your confirmed account email is not on it. Ask your school administrator to check your email and enrollment. Your account and submitted ideas have not been deleted.',nextHref:'/schools',nextLabel:'View your schools'});}
     if(!settings?.approved_at && !unsubscribe) { res.locals.accountArea = true; return res.status(503).render('school-message',{title:'School temporarily unavailable',message:'The school must complete its current policy review before community access resumes.', nextHref: role === 'admin' ? '/s/' + school.slug + '/admin/school-settings' : '/schools', nextLabel: role === 'admin' ? 'Review school setup' : 'Your schools' }); }
     if(!role && settings?.publication_policy!=='public' && !unsubscribe) return res.status(403).render('school-message',{title:'School membership required',message:'This school is available to its members. Sign in or ask your school administrator for an invitation.'});
     res.locals.accountArea = false;

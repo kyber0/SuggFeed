@@ -1,0 +1,19 @@
+<% const enrollment=it.enrollment || {mode:'email',version:0,emails:[]}; const draft=it.enrollmentDraft; %>
+<section class="school-settings-card" id="school-enrollment" aria-labelledby="school-enrollment-title">
+ <header><span class="school-settings-step" aria-hidden="true"><svg class="workspace-svg"><use href="#ws-users"/></svg></span><div><h2 id="school-enrollment-title">Student enrollment</h2><p>Choose whether students need a place on your approved enrollment roster.</p></div></header>
+ <div class="school-settings-card-body">
+  <% if(it.enrollmentNotice) { %><p class="school-settings-feedback" role="status"><%= it.enrollmentNotice %></p><% } %>
+  <div class="enrollment-summary"><div><span>Current access rule</span><strong><%= enrollment.mode==='roster'?'Enrollment roster required':'School email or invitation' %></strong></div><div><span>Saved roster</span><strong><%= enrollment.emails.length %> email<%= enrollment.emails.length===1?'':'s' %> · version <%= enrollment.version %></strong></div></div>
+  <p>School email matching still requires a verified domain and a confirmed account email. Invitations remain available for personal email addresses. Staff roles are always managed by administrators.</p>
+  <form method="post" action="<%= it.enrollmentAction %>" class="care-form enrollment-form">
+   <input type="hidden" name="version" value="<%= draft?draft.version:enrollment.version %>" />
+   <label for="enrollment-mode">Student access rule</label><select class="workspace-input" id="enrollment-mode" name="mode" aria-describedby="enrollment-rule-help"><option value="email" <%= (draft?.mode || enrollment.mode)==='email'?'selected':'' %>>School email or invitation — no roster check</option><option value="roster" <%= (draft?.mode || enrollment.mode)==='roster'?'selected':'' %>>Require a match on the enrollment roster</option></select>
+   <p class="staff-footnote" id="enrollment-rule-help">Roster mode applies to all student memberships, including invited students. It does not affect administrators or moderators.</p>
+   <label for="enrollment-emails">Complete approved email roster</label><textarea class="workspace-input" id="enrollment-emails" name="emails" rows="8" maxlength="260000" spellcheck="false" autocapitalize="none" aria-describedby="enrollment-roster-help enrollment-impact" placeholder="student1@my.cspc.edu.ph&#10;student2@my.cspc.edu.ph"><%= draft?draft.text:enrollment.emails.join('\n') %></textarea>
+   <p class="staff-footnote" id="enrollment-roster-help">Paste the email column from your enrollment list, one address per line. Up to 1,000 unique emails. Do not include names, student IDs, headings or other columns. Duplicates and capitalization are normalized.</p>
+   <div class="enrollment-impact" id="enrollment-impact"><strong>This replaces the entire saved roster.</strong><p>When roster mode is enabled, students missing from this list have their school access paused. An empty list pauses all students. Accounts and submitted ideas stay saved. Adding a student's verified email back restores eligibility unless their membership was revoked.</p></div>
+   <label class="enrollment-confirm"><input type="checkbox" name="reviewed" value="yes" required /><span>I reviewed the complete roster and understand how this rule affects student access.</span></label>
+   <button class="school-settings-primary" type="submit">Save enrollment settings</button>
+  </form>
+ </div>
+</section>

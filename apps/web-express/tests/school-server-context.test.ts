@@ -54,7 +54,8 @@ test('rendered school paths scope business links without rewriting assets, text 
 });
 
 test('school middleware ignores legacy roles, fails closed for private/unreviewed schools and preserves unsubscribe',async()=>{
- const originalFrom=supabasePlatform.from;
+ const originalFrom=supabasePlatform.from,originalRpc=supabasePlatform.rpc;
+ supabasePlatform.rpc=(async()=>({data:true,error:null})) as any;
  let approved=true,publication='private',memberRole:string|null='student',status='active',outage=false;
  supabasePlatform.from=((table:string)=>{
   const data=table==='schools'?{id:A.id,slug:A.slug,name:A.name,status}:table==='school_memberships'?(memberRole?{role:memberRole}:null):{approved_at:approved?'2026-10-16':null,publication_policy:publication};
@@ -76,7 +77,7 @@ test('school middleware ignores legacy roles, fails closed for private/unreviewe
   status='suspended';assert.equal((await resolve('/digest/unsubscribe?token=private')).status,200);
   memberRole='student';assert.equal((await resolve()).status,403);
   memberRole=null;assert.equal((await resolve()).status,404);
- }finally{supabasePlatform.from=originalFrom;}
+ }finally{supabasePlatform.from=originalFrom;supabasePlatform.rpc=originalRpc;}
 });
 
 test('school total counts stay private even when a caller was allowed to read the school',async()=>{
