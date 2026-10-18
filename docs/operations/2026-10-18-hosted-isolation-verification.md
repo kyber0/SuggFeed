@@ -28,3 +28,17 @@ Private bucket configuration was checked live. Actual signed-file download and r
 Only reserved fictional demo UUID `00000000-0000-4000-8000-000000000001` may operate without final business configuration. It remains private and invitation-based, for synthetic content and adult evaluation. Gmail eligibility text does not automatically admit accounts. Sample contact addresses are unmonitored and prominently labeled.
 
 CSPC remains pending, with no institutional policy approval. Real-school activation continues to require reviewed policies and service business configuration. The release gate requires a timestamp, enabled operator identity, and this evidence reference; application roles cannot write that gate.
+
+## Release result
+
+Implementation pushed to `main` as `6f120f5`. The hosted release transaction recorded the evidence, approved demo policy version 3 explicitly for fictional demonstration, and changed only `demo` to `active`. CSPC remained `pending`, version 1 unapproved. No invitations were issued.
+
+Post-release live checks:
+
+- `/health`: 200.
+- `/s/demo/feed` without sign-in: 403, school membership required.
+- `/s/cspc/feed` without sign-in: 404, pending workspace unavailable.
+- Platform demo settings without sign-in: 401.
+- New platform invitation POST without sign-in: 401 with sign-in-required page, confirming the new route is live without creating an invitation.
+
+Super admins manage the demo from platform settings. A separate invited/member account is required to explore the school-facing interface; platform authority does not grant entry to member UI.
