@@ -47,7 +47,7 @@
 
     const timeline = rawTimeline.slice(-sliceDays);
     if (!timeline.length) {
-      chartContainer.innerHTML = '<div class="analytics-chart-loading">No activity in this time window.</div>';
+      chartContainer.replaceChildren(sfEmptyState({icon:'chart',heading:'No activity in this time window',description:'Try a wider date range. New submissions and community support will appear here.'}));
       return;
     }
 

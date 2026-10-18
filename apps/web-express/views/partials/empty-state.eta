@@ -1,0 +1,10 @@
+<div class="sf-empty<%= it.compact ? ' sf-empty--compact' : '' %><%= it.hero ? ' sf-empty--hero' : '' %>">
+  <span class="sf-empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><use href="#ws-<%= it.icon || 'inbox' %>"/></svg></span>
+  <% if(it.eyebrow) { %><span class="sf-empty-eyebrow"><%= it.eyebrow %></span><% } %>
+  <% if(it.hero) { %><h2><%= it.heading %></h2><% } else { %><h3><%= it.heading %></h3><% } %>
+  <p><%= it.description %></p>
+  <% if(it.actions?.length) { %><div class="sf-empty-actions"><% for(const action of it.actions) { %>
+    <% if(action.href) { %><a class="sf-empty-action<%= action.secondary ? ' sf-empty-action--secondary' : '' %>" href="<%= action.href %>"><%= action.label %></a><% } else { %><button type="button" class="sf-empty-action<%= action.secondary ? ' sf-empty-action--secondary' : '' %>" data-sf-click="<%= action.event %>"><%= action.label %></button><% } %>
+  <% } %></div><% } %>
+  <% if(it.hint) { %><small class="sf-empty-hint"><%= it.hint %></small><% } %>
+</div>

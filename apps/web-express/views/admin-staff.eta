@@ -110,7 +110,7 @@
             </article>
           <% } %>
           <% if (!staff.length) { %>
-            <div class="workspace-empty"><p>No staff members found.</p></div>
+            <%~ include('partials/empty-state',{icon:'users',heading:'Build your school’s team',description:'Invite an administrator or moderator to help manage ideas. Their account appears here after they accept.',actions:[{label:'Manage invitations',href:'/admin/invitations'}]}) %>
           <% } %>
         </div>
       </section>
@@ -150,7 +150,7 @@
               </div>
             <% } %>
             <% if (!it.students?.length) { %>
-              <p class="staff-empty-hint">Type a name or email address above to search students.</p>
+              <%~ include('partials/empty-state',{compact:true,icon:'search',heading:'Find a school member',description:'Search by name or email above to find students already in this school.'}) %>
             <% } %>
           </div>
         </section>
@@ -192,4 +192,4 @@
 </section>
 <script id="staff-roster-data" type="application/json"><%~ JSON.stringify(it.staffMembers || []).replace(/</g, '\\u003c') %></script>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({ id: it.user?.id || '', role: it.user?.role || '' }).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/admin-staff.js?v=20261018-invitations"></script>
+<script defer src="/js/admin-staff.js?v=20261018-empty-states"></script>

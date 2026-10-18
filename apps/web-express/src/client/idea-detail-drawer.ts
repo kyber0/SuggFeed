@@ -235,7 +235,7 @@ let sfCurrentIdea = null;
       list.innerHTML = `
         <div class="comment-empty-state" id="drawer-comment-empty">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="comment-empty-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <p class="comment-empty-text">No comments yet. Be the first to share your constructive perspective!</p>
+          <h3>Start a constructive conversation</h3><p class="comment-empty-text">No comments yet. Share a helpful perspective using the comment box below.</p>
         </div>
       `;
       return;

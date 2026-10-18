@@ -22,7 +22,7 @@
             if (requests.get(container) !== controller)
                 return;
             const entries = [...data.history.map(item => ({ time: item.created_at, title: (item.old_status ? labels[item.old_status] + ' → ' : '') + labels[item.new_status], body: '', occurred: null })), ...data.updates.map(item => ({ time: item.created_at, title: labels[item.kind] || 'School update', body: item.body, occurred: item.occurred_on }))].sort((a, b) => Date.parse(b.time) - Date.parse(a.time));
-            status.textContent = entries.length ? `${data.history.length} recorded status changes and ${data.updates.length} public updates shown (up to ${data.limit} of each).` : 'No public changes or updates have been recorded yet.';
+            status.textContent = entries.length ? `${data.history.length} recorded status changes and ${data.updates.length} public updates shown (up to ${data.limit} of each).` : '';
             const list = document.createElement('ol');
             list.className = 'public-history-list';
             for (const entry of entries) {
@@ -39,6 +39,8 @@
                 }
                 list.append(item);
             }
+            if (!entries.length)
+                container.append(sfEmptyState({ compact: true, icon: 'clock', heading: 'No public history yet', description: 'Published status changes and work updates will appear here, with their recorded dates.' }));
             container.append(list);
         }
         catch (e) {

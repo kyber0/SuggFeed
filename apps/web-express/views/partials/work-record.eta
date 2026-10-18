@@ -18,7 +18,7 @@
    </section>
    <section class="work-record-latest" id="work-record-outcome-section" aria-labelledby="work-record-outcome-title" hidden><h3 id="work-record-outcome-title">School outcome</h3><p id="work-record-outcome"></p></section>
    <section class="work-record-latest" aria-labelledby="work-record-latest-title"><h3 id="work-record-latest-title">Latest school update</h3><p id="work-record-latest-body"></p><p id="work-record-next" hidden></p></section>
-   <section aria-labelledby="work-record-history-title"><div class="work-record-section-heading"><h3 id="work-record-history-title">Work history &amp; evidence</h3><span id="work-record-history-count"></span></div><p id="work-record-empty" hidden>No public work updates have been posted yet.</p><ol class="work-record-history" id="work-record-history"></ol></section>
+   <section aria-labelledby="work-record-history-title"><div class="work-record-section-heading"><h3 id="work-record-history-title">Work history &amp; evidence</h3><span id="work-record-history-count"></span></div><div id="work-record-empty" hidden><%~ include('./empty-state',{compact:true,icon:'calendar',heading:'No public work updates yet',description:'Verified progress and evidence will appear here when the school publishes an update.'}) %></div><ol class="work-record-history" id="work-record-history"></ol></section>
    <details class="work-record-context"><summary>Original idea</summary><p id="work-record-description"></p></details>
   </div>
  </div>

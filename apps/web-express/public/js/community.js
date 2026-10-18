@@ -193,6 +193,8 @@
                 }
                 messages.append(card);
             }
+            if (!data.requests.length)
+                messages.append(sfEmptyState({ icon: 'message', heading: 'No private questions right now', description: 'When staff need more detail about your submission, their question will appear here. Public updates are on the roadmap.', href: '/roadmap', label: 'Explore the roadmap' }));
             notify(data.requests.length ? `${data.requests.length} private requests shown.` : 'No clarification requests for these submissions.');
         }
         catch (error) {
@@ -218,6 +220,8 @@
             try {
                 const data = await request('merges/' + encodeURIComponent(container.dataset.mergeHistory || ''));
                 container.replaceChildren();
+                if (!data.merges.length)
+                    container.append(sfEmptyState({ compact: true, icon: 'merge', heading: 'No merged ideas', description: 'Related ideas that staff merge into this one will be listed here, with the reason.' }));
                 for (const merge of data.merges) {
                     const p = document.createElement('p');
                     p.textContent = `Merged idea: ${merge.source_title} · ${merge.reason}`;
@@ -237,14 +241,17 @@
         void loadMerges();
     });
     if (history) {
-        if (!signedIn)
-            history.textContent = 'Sign in to see decisions on your reports.';
+        if (!signedIn) {
+            history.replaceChildren(sfEmptyState({ compact: true, icon: 'shield', heading: 'Your reports stay private', description: 'Sign in using the button in the header to see staff decisions on your reports.' }));
+        }
         else {
             const loadReports = async () => {
                 history.textContent = 'Loading report decisions…';
                 try {
                     const data = await request('report-history');
-                    history.textContent = data.reports.length ? '' : 'No reports submitted.';
+                    history.replaceChildren();
+                    if (!data.reports.length)
+                        history.append(sfEmptyState({ compact: true, icon: 'shield', heading: 'No reports submitted', description: 'If you report inappropriate content on an idea or comment, the staff decision will appear here.' }));
                     for (const report of data.reports) {
                         const p = document.createElement('p');
                         p.textContent = `${report.resolution || 'Awaiting staff review'} · ${report.resolution_reason || report.reason}`;
@@ -288,8 +295,12 @@
             await request('staff/' + action, body);
             notify('Saved. Refresh this page to see the updated queue.');
             form.reset();
-            if (action === 'close' || action === 'resolve')
-                form.closest('article')?.remove();
+            if (action === 'close' || action === 'resolve') {
+                const card = form.closest('article'), section = card?.closest('section');
+                card?.remove();
+                if (section && !section.querySelector('.care-row'))
+                    section.append(sfEmptyState({ compact: true, icon: action === 'resolve' ? 'shield' : 'message', heading: action === 'resolve' ? 'No open reports' : 'No open private questions', description: 'You’re all caught up. New follow-ups will appear here.' }));
+            }
         }
         catch (error) {
             notify(fail(error));

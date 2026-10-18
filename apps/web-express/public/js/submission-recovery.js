@@ -129,7 +129,7 @@
         }
         if (!list.children.length) {
             const empty = document.createElement('li');
-            empty.textContent = 'No queued ideas.';
+            empty.append(sfEmptyState({ compact: true, icon: 'check', heading: 'Nothing waiting to send', description: 'Ideas kept on this device for retry will appear here. Successfully submitted ideas are tracked separately.' }));
             list.append(empty);
         }
     }

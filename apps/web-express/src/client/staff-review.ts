@@ -319,8 +319,8 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
       }
       events.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)).forEach(e => activityCard(history, e.heading, e.body, e.created_at));
       for (const entry of data.notes || []) activityCard(notes, entry.actor?.display_name || 'Staff member', entry.body, entry.created_at);
-      if (!events.length) history.textContent = 'No review changes recorded yet.';
-      if (!data.notes?.length) notes.textContent = 'No internal notes yet.';
+      if (!events.length) history.append(sfEmptyState({compact:true,icon:'clock',heading:'No review changes yet',description:'Saved assignments and review decisions will create a record here.'}));
+      if (!data.notes?.length) notes.append(sfEmptyState({compact:true,icon:'message',heading:'A space for staff context',description:'Add a private note above to help other staff. These notes never appear in the community feed.'}));
       activityMessage.textContent = '';
       document.getElementById('review-notes-state')!.textContent = '';
     } catch (error) {

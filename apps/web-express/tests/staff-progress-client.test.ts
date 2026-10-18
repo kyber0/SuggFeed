@@ -24,7 +24,7 @@ function harness() {
   let snapshot:any={id:'00000000-0000-4000-8000-000000000001',status:'in_progress',updated_at:'2026-10-11T10:00:00Z',staff_note:'Current review',assignee_id:null,priority:'normal',target_date:null,progress_percent:25,started_at:'2026-10-10',is_blocked:false,resolved_at:null};
   const posts:any[]=[];const applied:any[]=[];let updates:any[]=[];let reply='network';let allowPost=true;let sequence=0;
   const evidenceRequests:any[]=[];const reservations=new Map<string,any>();let evidenceFailure='';let uploadReply=200;
-  const context:any={document:{getElementById:node,createElement:(tag:string)=>node('new-'+tag+'-'+(++sequence))},window:{},Intl,Date,JSON,Number,String,Array,Error,TypeError,URL,AbortController,setTimeout,clearTimeout,
+  const context:any={document:{getElementById:node,createElement:(tag:string)=>node('new-'+tag+'-'+(++sequence)),createElementNS:(_ns:string,tag:string)=>node('new-'+tag+'-'+(++sequence))},window:{},Intl,Date,JSON,Number,String,Array,Error,TypeError,URL,AbortController,setTimeout,clearTimeout,
     crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},
     fetch:async (_url:string,options:any)=>{
       if(_url.startsWith('https://storage.example/')){evidenceRequests.push({url:_url,method:options.method,body:options.body});return {ok:uploadReply===200,status:uploadReply};}
@@ -52,7 +52,8 @@ function harness() {
     }
   };
   context.sfSchoolPath=(value:string)=>value;context.sfSchoolRoute=(value:string)=>value;context.sfSchoolFetch=context.fetch;
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../public/js/staff-progress.js'),'utf8'),context);
+  vm.createContext(context);
+  for(const file of ['empty-state','staff-progress'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../public/js/'+file+'.js'),'utf8'),context);
   const controller=context.window.sfStaffProgress;
   controller.bind({canPost:()=>allowPost,applySnapshot:(s:any)=>{applied.push(s);return true;},afterPost:async()=>{},changed(){},posting(){}});
   const flush=async()=>{await new Promise(resolve=>setImmediate(resolve));};

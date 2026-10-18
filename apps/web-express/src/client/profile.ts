@@ -41,7 +41,7 @@
  function draw(tab:string,rows:any[],hasMore:boolean){
   const pane=document.getElementById('prof-pane-'+tab)!;
   pane.replaceChildren();const grid=document.createElement('div');grid.className='prof-activity-grid';
-  if(!rows.length){const empty=document.createElement('p');empty.className='prof-empty-state';empty.textContent=hasMore?'No public ideas found in this part of your activity. You can check more below.':'No '+({bookmarks:'saved',shared:'shared',voted:'supported'}[tab])+' public ideas in this list yet.';pane.append(empty);}
+  if(!rows.length){const names={bookmarks:'saved',shared:'shared',voted:'supported'};const guidance={bookmarks:'Save an idea from the community feed to return to it here.',shared:'Share a public idea with classmates to help more people discover it.',voted:'Support ideas you care about. Your public activity will appear here.'};pane.append(sfEmptyState({icon:tab==='bookmarks'?'bookmark':tab==='shared'?'users':'care',heading:hasMore?'No public ideas in this part of your activity':'No '+names[tab]+' ideas yet',description:hasMore?'Some activity may no longer be public. Check the next page below.':guidance[tab],href:'/feed',label:'Explore community ideas'}));}
   for(const row of rows){
    const wrap=document.createElement('div');wrap.className='prof-activity-card-wrap';
    const link=document.createElement('a');link.className='prof-activity-card';link.href=sfSchoolPath('/idea/'+encodeURIComponent(row.id));

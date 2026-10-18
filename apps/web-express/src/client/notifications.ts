@@ -74,7 +74,9 @@
         list!.append(entry);
       }
       cursor = payload.nextCursor || null; more.hidden = !cursor;
-      summary.textContent = seen.size ? `${payload.unreadCount} unread · ${seen.size} updates shown` : 'You’re all caught up. Follow an idea on the roadmap to receive its next school update here.';
+      document.getElementById('notification-empty')?.remove();
+      if(!seen.size){const empty=sfEmptyState({icon:'bell',heading:'Your next update starts with a follow',description:'Follow an idea on the roadmap. When your school shares progress, its updates will appear here.',href:'/roadmap',label:'Find ideas to follow'});empty.id='notification-empty';list!.after(empty);}
+      summary.textContent = seen.size ? `${payload.unreadCount} unread · ${seen.size} updates shown` : '';
     } catch (failure) {
       error.hidden = false; error.textContent = failure instanceof Error && failure.name !== 'AbortError' ? failure.message : 'Loading timed out. Please try again.'; retry.hidden = false;
     } finally { clearTimeout(timer); loading = false; more.disabled = false; retry.disabled = false; list!.removeAttribute('aria-busy'); }

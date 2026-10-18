@@ -401,10 +401,7 @@
         history.replaceChildren();
         document.getElementById('staff-progress-history-limit').hidden = updates.length < 100;
         if (!updates.length) {
-            const empty = document.createElement('p');
-            empty.className = 'staff-progress-empty';
-            empty.textContent = 'No progress updates yet. Add the first update when there is something to share.';
-            history.append(empty);
+            history.append(sfEmptyState({ compact: true, icon: 'calendar', heading: 'The work story starts here', description: 'Use the update form to share a verified milestone, blocker, or completed improvement when there is news.' }));
             return;
         }
         for (const update of updates) {

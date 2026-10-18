@@ -6,7 +6,7 @@
   <p class="error-page-desc">
     An unexpected error occurred while processing your request. Please try again in a few moments.
   </p>
-  <a href="/" class="btn-primary error-page-btn">
-    Return Home
+  <a href="/account/home" class="btn-primary error-page-btn">
+    Return to your workspace
   </a>
 </main>

@@ -67,7 +67,7 @@
         try{await storage.remove(row.key);await renderQueue();tell('Queue item removed.');}catch(e){tell(e.message);}
       });item.append(send,remove);list.append(item);
     }
-    if(!list.children.length){const empty=document.createElement('li');empty.textContent='No queued ideas.';list.append(empty);}
+    if(!list.children.length){const empty=document.createElement('li');empty.append(sfEmptyState({compact:true,icon:'check',heading:'Nothing waiting to send',description:'Ideas kept on this device for retry will appear here. Successfully submitted ideas are tracked separately.'}));list.append(empty);}
   }
   async function sendQueued(row:any){
     if(busy)return;busy=true;await renderQueue();tell('Sending queued idea…');

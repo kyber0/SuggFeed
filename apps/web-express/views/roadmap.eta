@@ -144,7 +144,8 @@
       </div>
       <p class="work-timeline-scroll-hint">Scroll across the calendar · Select a card to open its work record.</p>
      <% } else { %>
-      <div class="roadmap-lane-empty"><h3>No work dates recorded yet</h3><p>When the school posts a Started update, its recorded work will appear on this calendar.</p></div>
+      <div class="roadmap-lane-empty">
+        <% if(filtered) { %><a class="workspace-text-link" data-roadmap-state-link href="<%= urlFor({search:'',category:'all',stage:'all',page:'1'}) %>">Clear filters</a><% } %><h3>No work dates recorded yet</h3><p>When the school posts a Started update, its recorded work will appear on this calendar.</p></div>
      <% } %>
      <% if (workTimeline.undated.length) { %>
       <section class="work-timeline-unscheduled" aria-labelledby="work-unscheduled-title">
@@ -200,8 +201,9 @@
       <% } %>
       <% if (!laneItems.length) { %>
        <div class="roadmap-lane-empty">
-        <span aria-hidden="true">◌</span>
-        <h3><%= (counts[stage.key] || 0) > 0 ? 'No more ideas in this stage on this page' : filtered ? 'No matching ideas' : 'Nothing here yet' %></h3>
+        <% if(filtered) { %><a class="workspace-text-link" data-roadmap-state-link href="<%= urlFor({search:'',category:'all',stage:'all',page:'1'}) %>">Clear filters</a><% } %>
+        <span class="sf-empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ws-board"/></svg></span>
+        <h3><%= (counts[stage.key] || 0) > 0 ? 'No more ideas in this stage on this page' : filtered ? 'No matching ideas' : 'No '+stage.label.toLowerCase()+' ideas yet' %></h3>
         <p><%= (counts[stage.key] || 0) > 0 ? 'Explore this stage from the first page.' : filtered ? 'Try a different category or search phrase.' : stage.empty %></p>
         <% if ((counts[stage.key] || 0) > 0) { %>
          <a class="workspace-text-link" data-roadmap-state-link href="<%= urlFor({ stage: stage.key, page: '1' }) %>">Explore <%= stage.label.toLowerCase() %> →</a>
@@ -218,8 +220,9 @@
    <div class="roadmap-view-tree-container" aria-label="Category branches">
     <% if (!treeData.length) { %>
      <div class="roadmap-lane-empty">
-      <span aria-hidden="true">◌</span>
-      <h3><%= filtered ? 'No matching ideas' : 'Nothing here yet' %></h3>
+        <% if(filtered) { %><a class="workspace-text-link" data-roadmap-state-link href="<%= urlFor({search:'',category:'all',stage:'all',page:'1'}) %>">Clear filters</a><% } %>
+      <span class="sf-empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ws-board"/></svg></span>
+      <h3><%= filtered ? 'No matching ideas' : 'No planned improvements yet' %></h3>
       <p><%= filtered ? 'Try a different category or search phrase.' : 'Newly approved ideas will appear here.' %></p>
      </div>
     <% } else { %>
@@ -281,8 +284,9 @@
    <div class="roadmap-view-timeline-container" aria-label="Completed campus improvements">
     <% if (!timelineData.length) { %>
      <div class="roadmap-lane-empty">
-      <span aria-hidden="true">◌</span>
-      <h3><%= filtered ? 'No completed ideas match your filters' : 'Nothing here yet' %></h3>
+        <% if(filtered) { %><a class="workspace-text-link" data-roadmap-state-link href="<%= urlFor({search:'',category:'all',stage:'all',page:'1'}) %>">Clear filters</a><% } %>
+      <span class="sf-empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ws-board"/></svg></span>
+      <h3><%= filtered ? 'No completed ideas match your filters' : 'No completed improvements yet' %></h3>
       <p><%= filtered ? 'Try clearing your filters to see past improvements.' : 'Completed community improvements will appear here.' %></p>
      </div>
     <% } else { %>

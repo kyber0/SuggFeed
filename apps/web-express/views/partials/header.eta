@@ -5,7 +5,7 @@
     <% if (it.platformDashboard) { %>
       <a href="/platform/schools" class="nav-link-hide-mobile">Platform dashboard</a>
     <% } else if (accountArea) { %>
-      <a href="/schools" class="nav-link-hide-mobile">Your schools</a>
+      <% if(it.user) { %><a href="/schools" class="nav-link-hide-mobile">Your schools</a><% } %>
     <% } else if (staffArea) { %>
       <a href="/admin" class="nav-link-hide-mobile">School administration</a><a href="/" class="nav-link-hide-mobile">View school community</a>
     <% } else { %>

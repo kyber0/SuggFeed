@@ -326,8 +326,8 @@
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
             </div>
-            <h3 class="sf-empty-head">No suggestions found</h3>
-            <p class="sf-empty-msg">Be the first student or faculty member to submit an idea for this category.</p>
+            <h3 class="sf-empty-head">Great changes start with one idea</h3>
+            <p class="sf-empty-msg">Share a constructive improvement for your school. Published ideas will appear here after review.</p>
             <button type="button" class="sf-btn-empty-action" data-sf-click="action-79">
               Submit the first idea
             </button>
@@ -396,7 +396,7 @@
     </div>
 
     <div class="sf-filter-empty" id="sf-filter-empty" role="status" hidden>
-      <h3>No ideas match those filters</h3>
+      <span class="sf-empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ws-search"/></svg></span><h3>No ideas match those filters</h3>
       <p>Try another search or show all categories.</p>
       <button type="button" class="sf-filter-reset" data-sf-click="action-81">Clear filters</button>
     </div>

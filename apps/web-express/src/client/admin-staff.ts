@@ -75,7 +75,8 @@
     if (countTag) countTag.textContent = `${members.length} members`;
 
     if (!filtered.length) {
-      rosterList.innerHTML = '<div class="workspace-empty"><p>No staff members match your filter.</p></div>';
+      const filtering=!!q || activeFilter!=='all';
+      rosterList.replaceChildren(sfEmptyState({icon:filtering?'search':'users',heading:filtering?'No matching staff':'Build your school’s team',description:filtering?'Try a different name, email, or role filter.':'Invite an administrator or moderator to help manage ideas. They appear here after accepting.',href:filtering?'/admin/staff':'/admin/invitations',label:filtering?'Clear staff filters':'Manage invitations'}));
       return;
     }
 
@@ -225,7 +226,7 @@
 
       const students: StudentMember[] = data.students;
       if (!students.length) {
-        studentResultsList.innerHTML = `<div class="staff-empty-hint">No students found matching “${query}”.</div>`;
+        studentResultsList.replaceChildren(sfEmptyState({compact:true,icon:'search',heading:'No matching students',description:'No students found matching “'+query+'”. Try another name or email address.'}));
         return;
       }
 

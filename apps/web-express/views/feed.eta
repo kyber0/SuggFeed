@@ -104,9 +104,9 @@ const feedUrl = (changes = {}) => {
       <% if (!feed.length) { %>
         <section class="feed-empty-state">
           <span class="feed-empty-icon" aria-hidden="true"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ws-search"/></svg></span>
-          <h2><%= filtered ? 'No ideas match your search' : it.following ? 'Your following feed is waiting' : 'The next great idea could be yours' %></h2>
-          <p><%= filtered ? 'Try a shorter phrase or another topic. You can also clear your filters to explore all ideas.' : it.following ? 'Choose Follow on a roadmap idea to keep it here. School updates and unread changes are in School updates.' : 'Published ideas will appear here after review. Share a constructive suggestion to get the conversation started.' %></p>
-          <div class="feed-empty-actions">
+          <h2><%= it.page>1 ? 'No more ideas on this page' : filtered ? 'No ideas match your search' : it.following ? 'Your following feed is waiting' : 'The next great idea could be yours' %></h2>
+          <p><%= it.page>1 ? 'The list may have changed since your last visit. Return to the first page to see the latest results.' : filtered ? 'Try a shorter phrase or another topic. You can also clear your filters to explore all ideas.' : it.following ? 'Choose Follow on a roadmap idea to keep it here. School updates and unread changes are in School updates.' : 'Published ideas will appear here after review. Share a constructive suggestion to get the conversation started.' %></p>
+          <div class="feed-empty-actions"><% if(it.page>1) { %><a class="btn-clear-filters" href="<%= feedUrl({page:1}) %>">Back to first page</a><% } %>
             <% if(it.following) { %><a href="/roadmap" class="btn-clear-filters">Find ideas to follow</a><% } %>
             <% if (filtered) { %><a class="btn-clear-filters" href="<%= feedUrl({search: '', category: 'All'}) %>">Explore all ideas</a><% } else { %><button type="button" class="btn-empty-create" data-sf-click="action-49">Share an idea</button><% } %>
           </div>
@@ -163,4 +163,4 @@ const feedUrl = (changes = {}) => {
 <div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total ?? '' %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
 <script defer src="/js/feed.js?v=20261016-school-isolation"></script>
 
-<script defer src="/js/saved-searches.js?v=20261016-school-isolation"></script>
+<script defer src="/js/saved-searches.js?v=20261018-empty-states"></script>

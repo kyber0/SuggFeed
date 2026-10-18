@@ -106,3 +106,5 @@ declare function fallbackCopy(...args: any[]): any;
 declare function sfToggleSettings(...args: any[]): any;
 declare function sfSetProfileTab(...args: any[]): any;
 declare function sfSaveProfilePrefs(...args: any[]): any;
+
+interface SFEmptyStateOptions { heading: string; description: string; icon?: string; compact?: boolean; href?: string; label?: string; }

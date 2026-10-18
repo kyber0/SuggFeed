@@ -222,14 +222,7 @@
         if (!items.length) {
             const empty = document.createElement('li');
             empty.className = 'saved-search-empty';
-            const mark = document.createElement('span');
-            mark.className = 'saved-search-empty-mark';
-            mark.append(icon('bookmark'));
-            const title = document.createElement('strong');
-            title.textContent = 'Keep useful views close';
-            const help = document.createElement('p');
-            help.textContent = 'Save a topic, keyword or sort order and return to it with one click.';
-            empty.append(mark, title, help);
+            empty.append(sfEmptyState({ compact: true, icon: 'bookmark', heading: 'Keep useful views close', description: 'Choose your filters, then save this search above. Your saved topics and keywords will appear here.' }));
             list.append(empty);
         }
         controls();

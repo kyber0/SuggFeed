@@ -9,7 +9,7 @@
    <div class="staff-card-bottom"><span class="staff-card-assignee" title="<%= item.assignee_name || 'Unassigned' %>"><%= item.assignee_name || 'Unassigned' %></span><details class="staff-card-move"><summary>Move <span aria-hidden="true">⌄</span></summary><label><span>Move <%= item.title %> to</span><select class="workspace-input" data-stage-select="<%= item.id %>" aria-label="Move <%= item.title %> to"><% for(const [status,label] of [['approved','Planned'],['in_progress','In progress'],['resolved','Completed']]) { %><option value="<%= status %>" <%= item.status===status?'selected':'' %>><%= label %></option><% } %></select></label></details></div>
   </article>
   <% } %>
-  <% if(!lane.items.length) { %><div class="staff-lane-empty"><span aria-hidden="true">—</span><p><%= lane.count ? 'This page changed. Refresh to see the latest cards.' : 'Nothing here yet.' %></p></div><% } %>
+  <% if(!lane.items.length) { %><div class="staff-lane-empty"><%~ include('./empty-state',{compact:true,icon:lane.count?'refresh':'board',heading:lane.count?'This page has changed':'No '+lane.label.toLowerCase()+' ideas',description:lane.count?'Refresh the board to see the latest cards.':'Ideas appear here when they reach this stage and match your filters. Use Move on a card to review a stage change.'}) %></div><% } %>
  </div>
  <nav class="staff-lane-pagination" aria-label="<%= lane.label %> pages">
   <% if(lane.hasPrevious) { %><a href="<%= it.urlFor(lane.status,lane.page-1) %>" data-board-page="<%= lane.status %>" aria-label="Previous <%= lane.label %> page" title="Previous page">‹</a><% } else { %><span aria-disabled="true" aria-label="No previous <%= lane.label %> page">‹</span><% } %>

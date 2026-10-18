@@ -602,9 +602,9 @@
             for (const entry of data.notes || [])
                 activityCard(notes, entry.actor?.display_name || 'Staff member', entry.body, entry.created_at);
             if (!events.length)
-                history.textContent = 'No review changes recorded yet.';
+                history.append(sfEmptyState({ compact: true, icon: 'clock', heading: 'No review changes yet', description: 'Saved assignments and review decisions will create a record here.' }));
             if (!data.notes?.length)
-                notes.textContent = 'No internal notes yet.';
+                notes.append(sfEmptyState({ compact: true, icon: 'message', heading: 'A space for staff context', description: 'Add a private note above to help other staff. These notes never appear in the community feed.' }));
             activityMessage.textContent = '';
             document.getElementById('review-notes-state').textContent = '';
         }

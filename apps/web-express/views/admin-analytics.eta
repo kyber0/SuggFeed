@@ -132,7 +132,7 @@
             <p class="analytics-card-subtitle">Current status breakdown and progress through stages.</p>
           </div>
         </div>
-        <div class="analytics-funnel-list" id="analytics-funnel-list">
+        <div class="analytics-funnel-list" id="analytics-funnel-list"><% if(!funnel.length) { %><%~ include('partials/empty-state',{compact:true,icon:'board',heading:'No pipeline activity yet',description:'Review stages will appear here as ideas move through the school’s workflow.'}) %><% } %>
           <% for (const step of funnel) { %>
             <div class="analytics-funnel-step">
               <div class="analytics-funnel-info">
@@ -156,6 +156,7 @@
           </div>
         </div>
         <div class="analytics-category-list" id="analytics-category-list">
+<% if(!categories.length) { %><%~ include('partials/empty-state',{compact:true,icon:'chart',heading:'No category activity yet',description:'Category totals will appear when there are submissions in this time window.'}) %><% } %>
           <% for (const cat of categories) { %>
             <div class="analytics-cat-row">
               <div class="analytics-cat-info">
@@ -191,7 +192,7 @@
               <th scope="col">Approval Rate</th>
             </tr>
           </thead>
-          <tbody id="analytics-table-body">
+          <tbody id="analytics-table-body"><% if(!categories.length) { %><tr><td colspan="6"><%~ include('partials/empty-state',{compact:true,icon:'list',heading:'No category results',description:'Try a wider date range to view category performance.'}) %></td></tr><% } %>
             <% for (const cat of categories) { %>
               <tr>
                 <td><strong><%= cat.name %></strong></td>
@@ -219,4 +220,4 @@
   <a class="workspace-button" href="/roadmap">Explore the campus roadmap →</a>
 </section>
 <script id="analytics-data-json" type="application/json"><%~ JSON.stringify(it.analytics || {}).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/admin-analytics.js?v=20261016-school-isolation"></script>
+<script defer src="/js/admin-analytics.js?v=20261018-empty-states"></script>

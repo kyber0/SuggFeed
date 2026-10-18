@@ -22,6 +22,7 @@ function harness(initial=''){
     showModal(){this.open=true;}
     close(){this.open=false;for(const fn of this.events.get('close')||[])fn();}
     replaceChildren(){}
+    append(..._children:unknown[]){}
     after(){}
     reportValidity(){return true;}
     closest(selector:string){return selector==='[data-review]' && this.dataset.review?this:null;}
@@ -32,9 +33,9 @@ function harness(initial=''){
   const scroll=new Element(),tabs=['decision','progress','notes','history'].map(key=>Object.assign(new Element(),{dataset:{reviewTab:key}}));
   const panels=tabs.map(tab=>Object.assign(new Element(),{id:'review-panel-'+tab.dataset.reviewTab}));
   nodes.get('review-retry-detail').hidden=true;
-  const document:any={activeElement:new Element(),getElementById:(key:string)=>nodes.get(key),querySelector:()=>null,querySelectorAll:()=>[],addEventListener:(name:string,fn:Function)=>listeners.set(name,[...(listeners.get(name)||[]),fn]),createElement:()=>new Element()};
+  const document:any={activeElement:new Element(),getElementById:(key:string)=>nodes.get(key),querySelector:()=>null,querySelectorAll:()=>[],addEventListener:(name:string,fn:Function)=>listeners.set(name,[...(listeners.get(name)||[]),fn]),createElement:()=>new Element(),createElementNS:()=>new Element()};
   const window:any={location:{href:'https://www.suggfeed.me/admin/board'+initial,pathname:initial?'/admin':'/admin/board'},addEventListener(){},getSelection:()=>null};
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../public/js/staff-review.js'),'utf8'),{
+  vm.runInNewContext(['empty-state','staff-review'].map(file=>fs.readFileSync(path.join(__dirname,'../public/js/'+file+'.js'),'utf8')).join('\n'),{
     sfSchoolPath: (value:string)=>value, sfSchoolRoute:(value:string)=>value, document,window,HTMLElement:Element,URL,AbortController,setTimeout,clearTimeout,
     sfSchoolFetch:(url:string,options:any)=>url.endsWith('/activity')?Promise.resolve({ok:true,json:async()=>({success:true,history:[],notes:[],transitions:[]})}):new Promise(resolve=>pending.push({url,signal:options.signal,resolve})),
   });

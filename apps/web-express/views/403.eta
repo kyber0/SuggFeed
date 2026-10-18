@@ -4,5 +4,5 @@
   <div class="error-page-code">403</div>
   <h1 class="error-page-title">Staff access required</h1>
   <p class="error-page-desc">You are signed in, but this account does not have a staff, moderator, or admin role.</p>
-  <a href="/" class="btn-primary error-page-btn">Return to community</a>
+  <a href="/account/home" class="btn-primary error-page-btn">Choose your workspace</a>
 </main>
