@@ -151,7 +151,8 @@ async function renderSettings(req: Request, res: Response, context: NonNullable<
   const invitation = req.session.schoolInvitation;
   const invitationUrl = invitation && invitation.schoolId === context.school.id ? '/schools/invitations/' + invitation.token : null;
   if (invitationUrl) delete req.session.schoolInvitation;
-  res.setHeader('Referrer-Policy', 'no-referrer');
+  // Keep form Origin valid without exposing invitation paths in Referer.
+  res.setHeader('Referrer-Policy', 'strict-origin');
   const displayedSettings = submitted ? { ...(data || {}), ...submitted } : data;
   return res.status(errorMessage ? 400 : 200).render('school-settings', { title: 'School settings — ' + context.school.name, school: context.school, savedSettings: data, settings: displayedSettings || { version: 1, publication_policy: 'private', retention_days: 365 }, settingsAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings', invitationAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/invitations' : '/s/' + context.school.slug + '/admin/invitations', saved: !errorMessage && req.query.saved === '1', errorMessage, invitationUrl });
 }
@@ -184,7 +185,8 @@ router.post(['/s/:schoolSlug/admin/invitations', '/platform/schools/:id/invitati
   return res.redirect(303, req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings');
 }));
 router.get('/schools/invitations/:token', (req, res) => {
-  res.setHeader('Referrer-Policy', 'no-referrer');
+  // Keep form Origin valid without exposing invitation paths in Referer.
+  res.setHeader('Referrer-Policy', 'strict-origin');
   if (!validInvitationToken(req.params.token)) return failed(res, 'Invitation unavailable', 'Check your invitation link.', 404);
   return res.render('school-invitation', { title: 'Accept school invitation', token: req.params.token });
 });
