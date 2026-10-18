@@ -9,7 +9,7 @@ import { sameOriginOnly } from '../src/lib/security';
 import schools from '../src/routes/schools';
 import '../src/types';
 
-const original={from:supabasePlatform.from,rpc:supabasePlatform.rpc,getUser:supabasePlatform.auth.getUser,name:process.env.PLATFORM_OPERATOR_NAME,email:process.env.PRIVACY_CONTACT_EMAIL};
+const original={from:supabasePlatform.from,rpc:supabasePlatform.rpc,getUser:supabasePlatform.auth.getUser,name:process.env.PLATFORM_OPERATOR_NAME,email:process.env.PRIVACY_CONTACT_EMAIL,resend:process.env.RESEND_API_KEY,sender:process.env.RESEND_FROM_EMAIL,origin:process.env.APP_ORIGIN};
 let server:Server,origin:string;
 let calls:{name:string,args:any}[]=[];
 const school={id:'school-a',slug:'school-a',name:'School A',status:'pending'};
@@ -17,8 +17,9 @@ const policy={school_id:'school-a',version:2,...Object.fromEntries(['privacy_not
 let schoolRows:any[]=[school], applicationRows:any[]=[], policyRows:any[]=[policy];
 let reads:{table:string;filters:Record<string,any>;start?:number;end?:number}[]=[];
 before(async()=>{
+ delete process.env.RESEND_API_KEY;
  process.env.PLATFORM_OPERATOR_NAME='Test Business';process.env.PRIVACY_CONTACT_EMAIL='privacy@example.test';
- supabasePlatform.rpc=(async(name:string,args:any)=>{calls.push({name,args});return {data:name==='platform_operator_active'?args.p_actor==='operator':name==='school_release_status'?{isolation_verified:false}:'school-a',error:null};}) as any;
+ supabasePlatform.rpc=(async(name:string,args:any)=>{calls.push({name,args});return {data:name==='platform_operator_active'?args.p_actor==='operator':name==='school_release_status'?{isolation_verified:false}:name==='list_school_member_invitations'?[]:name==='create_school_member_invitation'?{id:'30000000-0000-4000-8000-000000000001',expires_at:'2026-10-20T00:00:00Z'}:name==='school_invitation_preview'?{school_name:'School A',school_slug:'school-a',role:'student',state:'pending',recipient:'a•••@example.test',email_matches:args.p_actor==='user-a',expires_at:'2026-10-20T00:00:00Z',can_enter:false}:'school-a',error:null};}) as any;
  supabasePlatform.auth.getUser=(async(token:string)=>({data:{user:{id:token.replace('unverified:',''),email:'account@example.test',email_confirmed_at:token.startsWith('unverified:')?null:'2026-10-01'}},error:null})) as any;
  supabasePlatform.from=((table:string)=>{
   const filters:Record<string,any>={};
@@ -46,6 +47,7 @@ before(async()=>{
  origin='http://127.0.0.1:'+(server.address() as any).port;
 });
 after(async()=>{
+ for(const [key,value]of Object.entries({RESEND_API_KEY:original.resend,RESEND_FROM_EMAIL:original.sender,APP_ORIGIN:original.origin})){if(value===undefined)delete process.env[key];else process.env[key]=value;}
  supabasePlatform.from=original.from;supabasePlatform.rpc=original.rpc;supabasePlatform.auth.getUser=original.getUser;
  if(original.name===undefined)delete process.env.PLATFORM_OPERATOR_NAME;else process.env.PLATFORM_OPERATOR_NAME=original.name;
  if(original.email===undefined)delete process.env.PRIVACY_CONTACT_EMAIL;else process.env.PRIVACY_CONTACT_EMAIL=original.email;
@@ -147,7 +149,7 @@ test('account home honors role landing and platform settings remain inside the p
  const platform=await fetch(origin+'/account/home',{redirect:'manual',headers:{'x-user':'operator'}});assert.equal(platform.headers.get('location'),'/platform/schools');
  const pending=await fetch(origin+'/account/home',{redirect:'manual'});assert.equal(pending.headers.get('location'),'/s/school-a/admin/school-settings');
  const settings=await fetch(origin+'/platform/schools/school-a/settings',{headers:{'x-user':'operator'}});assert.equal(settings.status,200);const html=await settings.text();
- assert.match(html,/action="\/platform\/schools\/school-a\/settings"/);assert.doesNotMatch(html,/class="mobile-tab-bar"/);assert.match(html,/action="\/platform\/schools\/school-a\/invitations"/);
+ assert.match(html,/action="\/platform\/schools\/school-a\/settings"/);assert.doesNotMatch(html,/class="mobile-tab-bar"/);assert.match(html,/href="\/platform\/schools\/school-a\/invitations"/);
  const denied=await fetch(origin+'/platform/schools/school-a/settings');assert.equal(denied.status,403);
  const filters=await fetch(origin+'/platform/schools?q=School&status=pending',{headers:{'x-user':'operator'}});assert.equal(filters.status,200);assert.ok(reads.some(r=>r.filters.name_pattern==='%School%'&&r.filters.status==='pending'));
 });
@@ -178,4 +180,34 @@ test('only the reserved fictional demo can activate without real-school business
 test('invitation acceptance preserves form origin without exposing the token path in referrers',async()=>{
  const response=await fetch(origin+'/schools/invitations/'+'a'.repeat(64));
  assert.equal(response.status,200);assert.equal(response.headers.get('referrer-policy'),'strict-origin');
+});
+
+test('dedicated invitation manager explains roles, keeps validation input, and creates email-bound links for all roles',async()=>{
+ const view=await fetch(origin+'/platform/schools/school-a/invitations',{headers:{'x-user':'operator'}});assert.equal(view.status,200);const html=await view.text();
+ assert.match(html,/Invite your community/);assert.match(html,/Recent invitations/);assert.match(html,/Full school administration access/);assert.match(html,/Email delivery is not set up/);assert.match(html,/action="\/platform\/schools\/school-a\/invitations"/);
+ for(const role of ['student','moderator','admin']){
+  calls=[];const response=await post('/platform/schools/school-a/invitations',{email:' Person@example.test ',role,delivery:'link'},{'x-user':'operator'});
+  assert.equal(response.status,303);assert.equal(response.headers.get('location'),'/platform/schools/school-a/invitations');
+  const call=calls.find(call=>call.name==='create_school_member_invitation')!;assert.equal(call.args.p_role,role);assert.equal(call.args.p_actor,'operator');assert.equal(call.args.p_email,'person@example.test');assert.equal(call.args.p_hash.length,64);
+ }
+ calls=[];const invalid=await post('/platform/schools/school-a/invitations',{email:'person@example.test',role:'owner',delivery:'link'},{'x-user':'operator'});assert.equal(invalid.status,400);assert.match(await invalid.text(),/value="person@example.test"/);assert.equal(calls.some(call=>call.name==='create_school_member_invitation'),false);
+ const denied=await post('/platform/schools/school-a/invitations',{email:'person@example.test',role:'admin',delivery:'link'},{'x-user':'user-b'});assert.equal(denied.status,403);
+});
+test('invitation acceptance explains wrong accounts and continues directly into the school',async()=>{
+ const token='a'.repeat(64);
+ const wrong=await fetch(origin+'/schools/invitations/'+token,{headers:{'x-user':'user-b'}});assert.match(await wrong.text(),/Switch account/);
+ const guest=await fetch(origin+'/schools/invitations/'+token,{headers:{'x-user':'anonymous'}});assert.match(await guest.text(),/Sign in to accept/);
+ const accepted=await post('/schools/invitations/'+token,{});assert.equal(accepted.status,303);assert.equal(accepted.headers.get('location'),'/s/school-a/');
+});
+
+test('email invitations use the branded transport and record provider acceptance without sending a real email',async()=>{
+ const transport=global.fetch;const previous={key:process.env.RESEND_API_KEY,from:process.env.RESEND_FROM_EMAIL,app:process.env.APP_ORIGIN};
+ Object.assign(process.env,{RESEND_API_KEY:'synthetic-only',RESEND_FROM_EMAIL:'Invites <invites@example.test>',APP_ORIGIN:'https://school-service.example.test'});
+ let sent=0;
+ global.fetch=(async(input:any,options:any)=>{
+  if(String(input)==='https://api.resend.com/emails'){sent++;const email=JSON.parse(options.body);assert.deepEqual(email.to,['new@example.test']);assert.match(email.html,/School A/);assert.match(email.html,/Administrator/);assert.match(email.html,/https:\/\/school-service\.example\.test\/schools\/invitations\/[a-f0-9]{64}/);return Response.json({id:'synthetic-provider-id'});}
+  return transport(input,options);
+ }) as typeof fetch;
+ try{calls=[];const result=await post('/platform/schools/school-a/invitations',{email:'new@example.test',role:'admin',delivery:'email'},{'x-user':'operator'});assert.equal(result.status,303);assert.equal(sent,1);assert.equal(calls.find(call=>call.name==='record_school_invitation_delivery')?.args.p_state,'sent');}
+ finally{global.fetch=transport;for(const [key,value]of Object.entries({RESEND_API_KEY:previous.key,RESEND_FROM_EMAIL:previous.from,APP_ORIGIN:previous.app})){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
 });

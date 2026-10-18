@@ -10,7 +10,7 @@ test('assurance decoder fails closed and reads only the verified token assurance
 });
 
 test('security return destinations reject redirects, path confusion and unscoped pages', () => {
-  for (const destination of ['/schools','/platform/schools','/s/school-a/staff?tab=work','/s/abc/admin']) assert.equal(safeSecurityReturnTo(destination), destination);
+  for (const destination of ['/schools','/platform/schools','/platform/schools/demo/invitations','/s/school-a/staff?tab=work','/s/abc/admin']) assert.equal(safeSecurityReturnTo(destination), destination);
   for (const destination of [undefined, '//attacker.test', 'https://attacker.test', '/s/abc/\\attacker.test', '/s/abc/%2f%2fattacker.test', '/s/abc/%255c', '/s/abc/%2e%2e/admin', '/s/abc/../admin', '/s/a/feed', '/feed', '/auth/callback', '/schools\n', '/platform/schools-other']) assert.equal(safeSecurityReturnTo(destination), '/schools');
 });
 

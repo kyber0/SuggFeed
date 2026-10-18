@@ -8,7 +8,7 @@ DECLARE school_a uuid:=gen_random_uuid(); school_b uuid:=gen_random_uuid();
  actor_a uuid:=gen_random_uuid(); actor_b uuid:=gen_random_uuid();
  idea_a uuid:=gen_random_uuid(); idea_b uuid:=gen_random_uuid(); category_a uuid; category_b uuid;
  update_a uuid:=gen_random_uuid(); update_b uuid:=gen_random_uuid();
- item record; n integer; blocked boolean; result jsonb; receipt uuid:=gen_random_uuid(); submitted_id uuid; submission_args jsonb;
+ item record; n integer; blocked boolean; result jsonb; receipt uuid:=gen_random_uuid(); submitted_id uuid; submission_args jsonb; invitation_id uuid; invitation_hash text:=md5(gen_random_uuid()::text)||md5(gen_random_uuid()::text);
 BEGIN
  -- These fields are transaction-local and invisible to other connections.
  INSERT INTO auth.users(id,email,email_confirmed_at,raw_user_meta_data)
@@ -126,6 +126,20 @@ BEGIN
  INSERT INTO isolation_probe_results VALUES('submission_gateway_replays_without_duplicate',result->>'id'=submitted_id::text AND result->>'replayed'='true');
  result:=public.tenant_rpc(school_a,actor_a,'read_submission_receipt',jsonb_build_object('p_owner_hash',repeat('a',64),'p_request_id',receipt));
  INSERT INTO isolation_probe_results VALUES('submission_gateway_recovers_receipt',result->>'id'=submitted_id::text);
+ EXECUTE 'SET LOCAL ROLE service_role';
+ result:=public.create_school_member_invitation(school_a,actor_a,invitation_hash,actor_b::text||'@example.invalid','moderator','link');
+ invitation_id:=(result->>'id')::uuid;
+ result:=public.list_school_member_invitations(school_a,actor_a);
+ INSERT INTO isolation_probe_results VALUES('invitation_manager_omits_token_hashes',jsonb_array_length(result)=1 AND result->0->>'token_hash' IS NULL AND result->0->>'role'='moderator');
+ result:=public.school_invitation_preview(invitation_hash,actor_b);
+ INSERT INTO isolation_probe_results VALUES('invitation_preview_matches_verified_recipient',result->>'email_matches'='true' AND result->>'state'='pending' AND result->>'email' IS NULL);
+ PERFORM public.revoke_school_member_invitation(school_a,actor_a,invitation_id);
+ blocked:=false;
+ BEGIN PERFORM public.accept_school_invitation(actor_b,invitation_hash);
+ EXCEPTION WHEN insufficient_privilege THEN blocked:=true;
+ END;
+ INSERT INTO isolation_probe_results VALUES('revoked_invitation_cannot_grant_membership',blocked);
+ EXECUTE 'RESET ROLE';
  UPDATE public.school_memberships SET status='revoked' WHERE school_id=school_a AND user_id=actor_a;
  blocked:=false;
  BEGIN PERFORM public.tenant_rpc(school_a,actor_a,'set_idea_follow',jsonb_build_object('p_submission_id',idea_a,'p_following',true));
@@ -141,4 +155,4 @@ SELECT jsonb_build_object('checks',jsonb_agg(jsonb_build_object('name',check_nam
 ROLLBACK;
 
 -- The management API returns the last result; prior assertions must succeed to reach this statement.
-SELECT jsonb_build_object('all_passed',true,'check_count',24,'fixture_persistence','rolled_back') AS verification;
+SELECT jsonb_build_object('all_passed',true,'check_count',27,'fixture_persistence','rolled_back') AS verification;

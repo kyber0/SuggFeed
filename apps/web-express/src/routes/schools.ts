@@ -1,11 +1,12 @@
 import { platformAuthority, schoolLanding, safeAccountReturn } from '../lib/navigation-context';
+import { invitationEmailConfigured, invitationRoles, sendSchoolInvitation, type InvitationRole } from '../lib/invitation-email';
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { supabasePlatform } from '../lib/supabase';
 import { requireStrongAuth } from '../lib/auth-assurance';
 import { legalDetails } from '../lib/legal';
 import { DEMO_SCHOOL_ID, allowSchoolApplication, invitationHash, invitationToken, schoolApplicationsConfigured, schoolSettingFields, validInvitationToken } from '../lib/school-onboarding';
 
-declare module 'express-session' { interface SessionData { schoolInvitation?: { schoolId: string; token: string }; } }
+declare module 'express-session' { interface SessionData { invitationReturn?: {path:string;expires:number}; schoolInvitation?: { schoolId: string; token: string; email?: string; role?: InvitationRole; expires?: string; delivery?: string; warning?: string }; } }
 
 const router = Router();
 const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { void fn(req, res).catch(next); };
@@ -148,13 +149,10 @@ router.post('/platform/schools/:id/activate', run(async (req, res) => {
 async function renderSettings(req: Request, res: Response, context: NonNullable<Awaited<ReturnType<typeof schoolAdmin>>>, submitted?: Record<string, string | number>, errorMessage?: string) {
   const { data, error } = await supabasePlatform.from('school_settings').select('*').eq('school_id', context.school.id).maybeSingle();
   if (error) throw Object.assign(new Error('School settings unavailable.'), {status:503});
-  const invitation = req.session.schoolInvitation;
-  const invitationUrl = invitation && invitation.schoolId === context.school.id ? '/schools/invitations/' + invitation.token : null;
-  if (invitationUrl) delete req.session.schoolInvitation;
   // Keep form Origin valid without exposing invitation paths in Referer.
   res.setHeader('Referrer-Policy', 'strict-origin');
   const displayedSettings = submitted ? { ...(data || {}), ...submitted } : data;
-  return res.status(errorMessage ? 400 : 200).render('school-settings', { title: 'School settings — ' + context.school.name, school: context.school, savedSettings: data, settings: displayedSettings || { version: 1, publication_policy: 'private', retention_days: 365 }, settingsAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings', invitationAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/invitations' : '/s/' + context.school.slug + '/admin/invitations', saved: !errorMessage && req.query.saved === '1', errorMessage, invitationUrl });
+  return res.status(errorMessage ? 400 : 200).render('school-settings', { title: 'School settings — ' + context.school.name, school: context.school, savedSettings: data, settings: displayedSettings || { version: 1, publication_policy: 'private', retention_days: 365 }, settingsAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings', invitationAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/invitations' : '/s/' + context.school.slug + '/admin/invitations', saved: !errorMessage && req.query.saved === '1', errorMessage });
 }
 router.get(['/s/:schoolSlug/admin/school-settings', '/platform/schools/:id/settings'], run(async (req, res) => {
   const context = await schoolAdmin(req, res); if (!context) return;
@@ -173,30 +171,72 @@ router.post(['/s/:schoolSlug/admin/school-settings', '/platform/schools/:id/sett
   if (error) return renderSettings(req, res, context, { ...settings, version }, 'Your changes were not saved. Check required fields and valid emails. If another administrator saved a newer version, reload this page before trying again. Your entered text is retained below.');
   return res.redirect(303, (req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings') + '?saved=1');
 }));
-router.post(['/s/:schoolSlug/admin/invitations', '/platform/schools/:id/invitations'], run(async (req, res) => {
-  const context = await schoolAdmin(req, res); if (!context) return;
-  const email = req.body?.email, role = req.body?.role;
-  if (typeof email !== 'string' || email.length > 254 || !['student', 'moderator', 'admin'].includes(role)) return failed(res, 'Check invitation', 'Provide an account email and a school role.');
-  const token = invitationToken();
-  const { error } = await supabasePlatform.rpc('issue_school_invitation', { p_school: context.school.id, p_actor: context.user.id, p_hash: invitationHash(token), p_email: email, p_role: role });
-  if (error) return failed(res, 'Invitation unavailable', 'An active school and current administrator are required. The school can issue at most 100 invitations per day.');
-  req.session.schoolInvitation = { schoolId: context.school.id, token };
-  await new Promise<void>((resolve, reject) => req.session.save(error => error ? reject(error) : resolve()));
-  return res.redirect(303, req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings');
+function invitationBase(req: Request, school: {id:string;slug:string}) {
+  return req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/'+school.id : '/s/'+school.slug+'/admin';
+}
+async function renderInvitations(req: Request,res: Response,context: NonNullable<Awaited<ReturnType<typeof schoolAdmin>>>,submitted?:{email:string;role:string;delivery:string},errorMessage?:string) {
+  const [history,settings]=await Promise.all([
+    supabasePlatform.rpc('list_school_member_invitations',{p_school:context.school.id,p_actor:context.user.id}),
+    supabasePlatform.from('school_settings').select('approved_at').eq('school_id',context.school.id).maybeSingle(),
+  ]);
+  if(history.error || settings.error)throw Object.assign(new Error('Invitations unavailable.'),{status:503});
+  const receipt=req.session.schoolInvitation?.schoolId===context.school.id?req.session.schoolInvitation:null;
+  if(receipt){receipt.delivery ||= 'link';delete req.session.schoolInvitation;}
+  const base=invitationBase(req,context.school);
+  res.setHeader('Referrer-Policy','strict-origin');res.setHeader('Cache-Control','no-store');
+  return res.status(errorMessage?400:200).render('school-invitations',{title:'Member invitations — '+context.school.name,school:context.school,roles:invitationRoles,invitations:history.data || [],receipt,submitted,errorMessage,emailReady:invitationEmailConfigured(),ready:context.school.status==='active' && !!settings.data?.approved_at,action:base+'/invitations',settingsUrl:base+(req.path.toLowerCase().startsWith('/platform/')?'/settings':'/school-settings'),revoked:req.query.revoked==='1'});
+}
+router.get(['/s/:schoolSlug/admin/invitations','/platform/schools/:id/invitations'],run(async(req,res)=>{
+  const context=await schoolAdmin(req,res);if(!context)return;return renderInvitations(req,res,context);
 }));
-router.get('/schools/invitations/:token', (req, res) => {
-  // Keep form Origin valid without exposing invitation paths in Referer.
-  res.setHeader('Referrer-Policy', 'strict-origin');
-  if (!validInvitationToken(req.params.token)) return failed(res, 'Invitation unavailable', 'Check your invitation link.', 404);
-  return res.render('school-invitation', { title: 'Accept school invitation', token: req.params.token });
-});
-router.post('/schools/invitations/:token', run(async (req, res) => {
-  const user = await confirmedAccount(req, res); if (!user) return;
-  const token = req.params.token;
-  if (typeof token !== 'string' || !validInvitationToken(token)) return failed(res, 'Invitation unavailable', 'Check your invitation link.', 404);
-  const { error } = await supabasePlatform.rpc('accept_school_invitation', { p_actor: user.id, p_hash: invitationHash(token) });
-  if (error) return failed(res, 'Invitation unavailable', 'This invitation is expired, already used, revoked through its inviter, or intended for another verified email.');
-  return res.redirect(303, '/schools?saved=1');
+router.post(['/s/:schoolSlug/admin/invitations','/platform/schools/:id/invitations'],run(async(req,res)=>{
+  const context=await schoolAdmin(req,res);if(!context)return;
+  const values={email:typeof req.body?.email==='string'?req.body.email.trim().toLowerCase():'',role:typeof req.body?.role==='string'?req.body.role:'student',delivery:typeof req.body?.delivery==='string'?req.body.delivery:'link'};
+  if(values.email.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email) || !Object.prototype.hasOwnProperty.call(invitationRoles,values.role) || !['email','link'].includes(values.delivery))return renderInvitations(req,res,context,values,'Enter a valid email address and choose a role and invitation method.');
+  if(values.delivery==='email' && !invitationEmailConfigured())return renderInvitations(req,res,context,values,'Email delivery is not available yet. Choose “Copy a link” to invite this person.');
+  const token=invitationToken();
+  const result=await supabasePlatform.rpc('create_school_member_invitation',{p_school:context.school.id,p_actor:context.user.id,p_hash:invitationHash(token),p_email:values.email,p_role:values.role,p_delivery:values.delivery});
+  if(result.error)return renderInvitations(req,res,context,values,result.error.code==='23505'?'A pending invitation already exists for this email. Check the recent invitations below; revoke the old one before replacing it.':result.error.code==='22023'?'This account may already be a member, or the school policies need review. Check your members and school settings.':'The invitation could not be created. Check that the school is active and try again.');
+  const receipt={schoolId:context.school.id,token,email:values.email,role:values.role as InvitationRole,expires:result.data.expires_at,delivery:values.delivery==='email'?'sending':'link',warning:''};
+  req.session.schoolInvitation=receipt;
+  await new Promise<void>((resolve,reject)=>req.session.save(error=>error?reject(error):resolve()));
+  if(values.delivery==='email'){
+    receipt.delivery=await sendSchoolInvitation({id:result.data.id,school:context.school.name,email:values.email,role:values.role as InvitationRole,token,expires:result.data.expires_at});
+    const recorded=await supabasePlatform.rpc('record_school_invitation_delivery',{p_school:context.school.id,p_actor:context.user.id,p_invitation:result.data.id,p_state:receipt.delivery});
+    if(recorded.error)receipt.warning='The email result is shown here, but the activity list could not be updated.';
+    req.session.schoolInvitation=receipt;
+    await new Promise<void>((resolve,reject)=>req.session.save(error=>error?reject(error):resolve()));
+  }
+  return res.redirect(303,invitationBase(req,context.school)+'/invitations');
+}));
+router.post(['/s/:schoolSlug/admin/invitations/:invitation/revoke','/platform/schools/:id/invitations/:invitation/revoke'],run(async(req,res)=>{
+  const context=await schoolAdmin(req,res);if(!context)return;
+  if(typeof req.params.invitation!=='string' || !/^[a-f0-9-]{36}$/i.test(req.params.invitation))return renderInvitations(req,res,context,undefined,'Choose an invitation from the list.');
+  const result=await supabasePlatform.rpc('revoke_school_member_invitation',{p_school:context.school.id,p_actor:context.user.id,p_invitation:req.params.invitation});
+  if(result.error)return renderInvitations(req,res,context,undefined,'This invitation could not be revoked. It may have been accepted already.');
+  return res.redirect(303,invitationBase(req,context.school)+'/invitations?revoked=1');
+}));
+router.get('/schools/invitations/:token',run(async(req,res)=>{
+  res.setHeader('Referrer-Policy','strict-origin');
+  const token=req.params.token;
+  if(typeof token!=='string' || !validInvitationToken(token))return failed(res,'Invitation unavailable','Check your invitation link.',404);
+  const {data,error}=await supabasePlatform.rpc('school_invitation_preview',{p_hash:invitationHash(token),p_actor:req.session.user?.id || null});
+  if(error)throw Object.assign(new Error('Invitation unavailable.'),{status:503});
+  if(data?.state==='pending'){
+    req.session.invitationReturn={path:'/schools/invitations/'+token,expires:new Date(data.expires_at).getTime()};
+    await new Promise<void>((resolve,reject)=>req.session.save(error=>error?reject(error):resolve()));
+  }
+  return res.status(data?200:404).render('school-invitation',{title:'School invitation — SuggFeed',token,invitation:data,roles:invitationRoles});
+}));
+router.post('/schools/invitations/:token',run(async(req,res)=>{
+  const user=await confirmedAccount(req,res);if(!user)return;
+  const token=req.params.token;
+  if(typeof token!=='string' || !validInvitationToken(token))return failed(res,'Invitation unavailable','Check your invitation link.',404);
+  const {data:preview,error:previewError}=await supabasePlatform.rpc('school_invitation_preview',{p_hash:invitationHash(token),p_actor:user.id});
+  if(previewError)throw Object.assign(new Error('Invitation unavailable.'),{status:503});
+  const {error}=await supabasePlatform.rpc('accept_school_invitation',{p_actor:user.id,p_hash:invitationHash(token)});
+  if(error)return res.status(400).render('school-invitation',{title:'School invitation — SuggFeed',token,invitation:preview,roles:invitationRoles,errorMessage:'Your membership was not changed. Check that you are using the invited, confirmed email account. If the invitation expired or was revoked, ask for a new one.'});
+  return res.redirect(303,schoolLanding({slug:preview.school_slug,status:'active'},preview.role));
 }));
 router.get(['/s/:schoolSlug/privacy', '/s/:schoolSlug/terms'], run(async (req, res) => {
   const { data: school, error } = await supabasePlatform.from('schools').select('id,slug,name,status').eq('slug', req.params.schoolSlug).eq('status', 'active').maybeSingle();

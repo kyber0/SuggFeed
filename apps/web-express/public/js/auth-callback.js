@@ -277,7 +277,7 @@
             await window.sfSyncSession(session);
             if (expired)
                 return;
-            let destination = '/schools';
+            let destination = title.dataset?.returnTo || '/schools';
             try {
                 destination = sessionStorage.getItem('sf-auth-return') || destination;
                 sessionStorage.removeItem('sf-auth-return');

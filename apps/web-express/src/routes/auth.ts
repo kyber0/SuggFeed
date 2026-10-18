@@ -1,3 +1,4 @@
+import { safeAccountReturn } from '../lib/navigation-context';
 import { Router, Request, Response, NextFunction } from "express";
 import { supabasePlatform } from "../lib/supabase";
 import { sameOriginOnly } from "../lib/security";
@@ -7,9 +8,11 @@ router.use((_req, res, next) => { res.setHeader("Cache-Control", "no-store"); re
 
 // PKCE verifiers live in the initiating browser. Exchange the code there exactly
 // once, then verify the resulting access token before issuing the server session.
-router.get(["/callback", "/callback/client", "/recovery"], (_req, res) => {
+router.get(["/callback", "/callback/client", "/recovery"], (req, res) => {
   res.setHeader("Referrer-Policy", "no-referrer");
-  res.render("auth-callback", { title: "Signing in… — SuggFeed" });
+  const pending=req.session.invitationReturn;
+  const returnTo=pending && pending.expires>Date.now()?safeAccountReturn(pending.path):null;
+  res.render("auth-callback", { title: "Signing in… — SuggFeed", returnTo });
 });
 
 router.get("/session", (req, res) => {
@@ -57,7 +60,7 @@ router.post("/signout", sameOriginOnly, (req, res, next) => {
     if (err) return next(err);
     res.clearCookie("connect.sid", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
     if (req.is("application/json")) return res.json({ success: true });
-    return res.redirect(303, "/");
+    return res.redirect(303, safeAccountReturn(req.body?.returnTo) || "/");
   });
 });
 

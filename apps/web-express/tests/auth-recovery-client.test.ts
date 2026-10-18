@@ -78,3 +78,9 @@ test('OAuth provider failures explain the category without exposing raw provider
  assert.match(credentials.node('auth-callback-message').textContent,/Google sign-in configuration/);assert.doesNotMatch(credentials.node('auth-callback-message').textContent,/secret-value/);
  const unknown=harness('?error=server_error&error_description=private-token-value','',null);await unknown.open();assert.doesNotMatch(unknown.node('auth-callback-message').textContent,/private-token-value/);
 });
+
+test('email confirmation in a new tab restores the server-held invitation destination',async()=>{
+ const h=harness('?code=fixture','',null);const destination='/schools/invitations/'+'a'.repeat(64);
+ h.node('auth-callback-title').dataset={returnTo:destination};await h.open();assert.deepEqual(h.navigation,['/account/home?returnTo='+encodeURIComponent(destination)]);
+ const invalid=harness('?code=fixture','',null);invalid.node('auth-callback-title').dataset={returnTo:'https://attacker.example'};await invalid.open();assert.deepEqual(invalid.navigation,['/account/home?returnTo=%2Fschools']);
+});

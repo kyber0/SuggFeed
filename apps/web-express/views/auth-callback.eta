@@ -4,7 +4,7 @@
   <div class="auth-callback-spinner-wrap">
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
   </div>
-  <h1 class="auth-callback-title" id="auth-callback-title">Signing you in…</h1>
+  <h1 class="auth-callback-title" id="auth-callback-title" data-return-to="<%= it.returnTo || '' %>">Signing you in…</h1>
   <p class="auth-callback-sub" id="auth-callback-message" role="status" aria-live="polite">Completing your sign-in, please wait a moment.</p>
   <form id="auth-code-form" class="auth-reset-form am-form" novalidate hidden>
     <div class="am-field"><label class="am-label" for="auth-code-email">Account email address</label><input class="am-input" id="auth-code-email" type="email" autocomplete="email" required maxlength="254" /></div>
@@ -25,4 +25,4 @@
   <a class="btn-primary" id="auth-callback-retry" href="/schools" hidden>Return to sign in</a>
 </main>
 
-<script defer src="/js/auth-callback.js?v=20261017-oauth-errors"></script>
+<script defer src="/js/auth-callback.js?v=20261018-invitation-return"></script>

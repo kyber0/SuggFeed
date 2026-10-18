@@ -49,7 +49,7 @@ before(async () => {
   };
   for (let i = 0; i < 2; i++) {
     const app = express();
-    app.use(express.json());
+    app.use(express.json(),express.urlencoded({extended:false}));
     app.use(session({ secret, store: new SupabaseSessionStore(database, secret), resave: false, saveUninitialized: false, cookie: { httpOnly: true, sameSite: 'lax', maxAge: 60000 } }));
     app.use(validateIdentity);
     app.use('/auth', auth);
@@ -185,3 +185,10 @@ test('global profile admin does not grant a school moderator role', async () => 
  } finally {schoolRoleOverride=null;}
 });
 export {};
+
+test('switching invitation accounts returns to that invitation and rejects external return addresses',async()=>{
+ for(const [destination,expected]of [['/schools/invitations/'+'a'.repeat(64),'/schools/invitations/'+'a'.repeat(64)],['https://attacker.example/','/']]){
+  const cookie=await login();const response=await fetch(origins[0]+'/auth/signout',{method:'POST',redirect:'manual',headers:{Origin:origins[0],Cookie:cookie},body:new URLSearchParams({returnTo:destination})});
+  assert.equal(response.status,303);assert.equal(response.headers.get('location'),expected);
+ }
+});

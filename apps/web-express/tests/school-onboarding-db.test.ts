@@ -17,7 +17,7 @@ async function fixture(){
   await db.query('INSERT INTO auth.users VALUES($1,$2,$3)',[id,`user${i+1}@school.example`,id===unverified?null:new Date().toISOString()]);
   await db.query("INSERT INTO profiles VALUES($1,'admin')",[id]);
  }
- for(const file of ['202610160001_school_registry.sql','202610160003_school_onboarding.sql']) await db.exec(readFileSync(path.resolve(__dirname,'../../../supabase/migrations',file),'utf8'));
+ for(const file of ['202610160001_school_registry.sql','202610160003_school_onboarding.sql','202610180001_school_invitations.sql']) await db.exec(readFileSync(path.resolve(__dirname,'../../../supabase/migrations',file),'utf8'));
  await db.query('INSERT INTO platform_operators(user_id) VALUES($1)',[op]);return db;
 }
 async function service<T=Record<string,unknown>>(db:PGlite,sql:string,args:unknown[]=[]){await db.exec('SET ROLE service_role');try{return(await db.query<T>(sql,args)).rows;}finally{await db.exec('RESET ROLE');}}
@@ -115,5 +115,35 @@ test('complete historical migration chain supports pending onboarding, reviewed 
   await db.exec('UPDATE school_release_gate SET isolation_verified=true');
   await service(db,"SELECT change_school_status($1,$2,'active')",[school,op]);
   assert.equal((await db.query<{status:string}>('SELECT status FROM schools WHERE id=$1',[school])).rows[0].status,'active');
+ }finally{await db.close();}
+});
+
+test('invitation management scopes history, blocks duplicates, hides tokens, and enforces revocation',async()=>{
+ const db=await fixture();try{
+  const school=await approve(db,await application(db,a,'managed-invitations'));
+  await save(db,school,a);await service(db,"SELECT approve_school_settings($1,$2,2,'Synthetic reviewed settings')",[school,op]);
+  await db.exec('UPDATE school_release_gate SET isolation_verified=true');await service(db,"SELECT change_school_status($1,$2,'active')",[school,op]);
+  const token=invitationToken();
+  const create=()=>service<any>(db,"SELECT create_school_member_invitation($1,$2,$3,$4,'moderator','email') result",[school,a,invitationHash(token),'user4@school.example']);
+  const result=(await create())[0].result;
+  await assert.rejects(create(),/pending invitation already exists/);
+  await assert.rejects(service(db,"SELECT list_school_member_invitations($1,$2)",[school,b]),/administrator required/);
+  let list=(await service<any>(db,'SELECT list_school_member_invitations($1,$2) result',[school,a]))[0].result;
+  assert.equal(list.length,1);assert.equal(list[0].delivery_state,'sending');assert.equal(list[0].token_hash,undefined);
+  await service(db,"SELECT record_school_invitation_delivery($1,$2,$3,'sent')",[school,a,result.id]);
+  const preview=(await service<any>(db,'SELECT school_invitation_preview($1,$2) result',[invitationHash(token),student]))[0].result;
+  assert.equal(preview.email_matches,true);assert.equal(preview.role,'moderator');assert.equal(preview.recipient,'u•••@school.example');assert.equal(preview.email,undefined);
+  await assert.rejects(service(db,'SELECT revoke_school_member_invitation($1,$2,$3)',[school,b,result.id]),/administrator required/);
+  await service(db,'SELECT revoke_school_member_invitation($1,$2,$3)',[school,a,result.id]);
+  await assert.rejects(accept(db,student,token),/Invitation unavailable/);
+  const revoked=(await service<any>(db,'SELECT school_invitation_preview($1,$2) result',[invitationHash(token),student]))[0].result;
+  assert.equal(revoked.state,'revoked');
+  const fresh=invitationToken();await service(db,"SELECT create_school_member_invitation($1,$2,$3,$4,'student','link')",[school,a,invitationHash(fresh),'user4@school.example']);
+  await accept(db,student,fresh);
+  const joined=(await service<any>(db,'SELECT school_invitation_preview($1,$2) result',[invitationHash(fresh),student]))[0].result;assert.equal(joined.can_enter,true);
+  await db.query("UPDATE school_memberships SET role='admin' WHERE school_id=$1 AND user_id=$2",[school,student]);
+  assert.equal((await service<any>(db,'SELECT school_invitation_preview($1,$2) result',[invitationHash(fresh),student]))[0].result.role,'admin');
+  await assert.rejects(service(db,"SELECT create_school_member_invitation($1,$2,$3,$4,'admin','link')",[school,a,invitationHash(invitationToken()),'user4@school.example']),/already a school member/);
+  await db.exec('SET ROLE authenticated');await assert.rejects(db.query('SELECT school_invitation_preview($1,$2)',[invitationHash(token),student]),/permission denied/);await db.exec('RESET ROLE');
  }finally{await db.close();}
 });

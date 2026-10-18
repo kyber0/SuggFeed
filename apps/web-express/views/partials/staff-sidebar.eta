@@ -25,7 +25,7 @@
   <p class="workspace-kicker">ADMINISTRATION</p>
   <nav aria-label="Administration">
     <a class="staff-nav-item<%= activeSection === 'analytics' ? ' is-current' : '' %>" href="/admin/analytics" <%= activeSection === 'analytics' ? 'aria-current="page"' : '' %>><%~ icon('chart') %> Analytics</a>
-    <% if (it.user?.role === 'admin') { %><a class="staff-nav-item<%= activeSection === 'staff' ? ' is-current' : '' %>" href="/admin/staff" <%= activeSection === 'staff' ? 'aria-current="page"' : '' %>><%~ icon('users') %> Manage staff</a><a class="staff-nav-item" href="/admin/school-settings"><%~ icon('shield') %> School settings &amp; invitations</a><% } %>
+    <% if (it.user?.role === 'admin') { %><a class="staff-nav-item<%= activeSection === 'staff' ? ' is-current' : '' %>" href="/admin/staff" <%= activeSection === 'staff' ? 'aria-current="page"' : '' %>><%~ icon('users') %> Manage staff</a><a class="staff-nav-item" href="/admin/school-settings"><%~ icon('shield') %> School settings</a><a class="staff-nav-item" href="/admin/invitations"><%~ icon('users') %> Member invitations</a><% } %>
   </nav>
   <% if (activeSection === 'queue') { %>
   <p class="workspace-kicker">YOUR QUEUES</p>

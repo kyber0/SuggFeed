@@ -81,7 +81,7 @@ export async function inviteStaffMember(email: string, role: 'admin' | 'moderato
   const school=requireSchool();
   if(!school.actorId || school.role!=='admin') throw new Error('School administrator access required.');
   const token=invitationToken();
-  const {error}=await supabasePlatform.rpc('issue_school_invitation',{p_school:school.id,p_actor:school.actorId,p_email:email.trim().toLowerCase(),p_role:role,p_hash:invitationHash(token)});
+  const {error}=await supabasePlatform.rpc('create_school_member_invitation',{p_school:school.id,p_actor:school.actorId,p_email:email.trim().toLowerCase(),p_role:role,p_hash:invitationHash(token),p_delivery:'link'});
   if(error) throw error;
   return {success:true,isExisting:false,email:email.trim().toLowerCase(),role,inviteUrl:'/schools/invitations/'+token};
 }

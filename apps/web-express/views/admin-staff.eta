@@ -160,42 +160,10 @@
           <div class="staff-mgmt-header">
             <div>
               <h2 id="invite-heading" class="staff-mgmt-title">Invite Team Member</h2>
-              <p class="staff-mgmt-subtitle">Generate an authorized access link for school staff or faculty.</p>
+              <p class="staff-mgmt-subtitle">Give each person the right access to your school.</p>
             </div>
           </div>
-          <form id="staff-invite-form" class="staff-invite-form">
-            <label class="staff-form-label" for="invite-email-input">
-              <span>University Email Address</span>
-              <input class="workspace-input" type="email" id="invite-email-input" required placeholder="staff.name@cspc.edu.ph" />
-            </label>
-            <div class="staff-role-choice">
-              <span class="staff-field-label">Assigned Role</span>
-              <div class="staff-role-options">
-                <label class="staff-role-option">
-                  <input type="radio" name="invite-role" value="moderator" checked />
-                  <span>Moderator</span>
-                </label>
-                <label class="staff-role-option">
-                  <input type="radio" name="invite-role" value="admin" />
-                  <span>Administrator</span>
-                </label>
-              </div>
-            </div>
-            <button type="submit" class="workspace-button workspace-button--primary" id="btn-invite-submit">
-              <%~ icon('user-plus') %> Generate Invitation Link
-            </button>
-            <p id="staff-invite-status" class="workspace-message" role="status" aria-live="polite"></p>
-          </form>
-
-          <!-- Generated Invite Box -->
-          <div class="staff-invite-output" id="staff-invite-output" hidden>
-            <label for="staff-invite-url" class="staff-field-label">Access Link</label>
-            <div class="staff-invite-link-row">
-              <input type="text" id="staff-invite-url" readonly class="workspace-input" />
-              <button type="button" class="workspace-button" id="btn-copy-invite-url">Copy</button>
-            </div>
-            <p class="staff-invite-hint">Share this link directly with the faculty member or moderator.</p>
-          </div>
+          <p class="staff-mgmt-subtitle">Invite students, moderators, and administrators from one place. Send an email or share a private link, then track acceptance.</p><a class="workspace-button workspace-button--primary" href="/admin/invitations">Manage invitations →</a>
         </section>
       </div>
     </div>
@@ -224,4 +192,4 @@
 </section>
 <script id="staff-roster-data" type="application/json"><%~ JSON.stringify(it.staffMembers || []).replace(/</g, '\\u003c') %></script>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({ id: it.user?.id || '', role: it.user?.role || '' }).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/admin-staff.js?v=20261016-school-isolation"></script>
+<script defer src="/js/admin-staff.js?v=20261018-invitations"></script>

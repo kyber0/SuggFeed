@@ -168,7 +168,7 @@
       forgetRecovery();
       await window.sfSyncSession(session);
       if (expired) return;
-      let destination = '/schools';
+      let destination = title.dataset?.returnTo || '/schools';
       try { destination = sessionStorage.getItem('sf-auth-return') || destination; sessionStorage.removeItem('sf-auth-return'); } catch {}
       if (!/^\/(?:s\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/|[?#]|$)|platform\/schools(?:[/?#]|$)|schools\/invitations\/[^/]+$|account\/security(?:[?#]|$))/.test(destination) || destination.includes('\\') || /[\u0000-\u0020\u007f]/.test(destination)) destination = '/schools';
       window.sfAuthNavigate('/account/home?returnTo=' + encodeURIComponent(destination));

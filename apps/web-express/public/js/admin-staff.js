@@ -28,12 +28,6 @@
     const studentSearchForm = document.getElementById('student-search-form');
     const studentSearchInput = document.getElementById('student-search-input');
     const studentResultsList = document.getElementById('student-results-list');
-    const inviteForm = document.getElementById('staff-invite-form');
-    const inviteEmailInput = document.getElementById('invite-email-input');
-    const inviteStatus = document.getElementById('staff-invite-status');
-    const inviteOutput = document.getElementById('staff-invite-output');
-    const inviteUrlInput = document.getElementById('staff-invite-url');
-    const copyInviteBtn = document.getElementById('btn-copy-invite-url');
     let activeFilter = 'all';
     let memberPendingRevoke = null;
     function icon(name) {
@@ -256,69 +250,6 @@
         }
         else {
             btn.disabled = false;
-        }
-    });
-    inviteForm?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = (inviteEmailInput?.value || '').trim();
-        const roleRadio = inviteForm.querySelector('input[name="invite-role"]:checked');
-        const role = (roleRadio?.value || 'moderator');
-        if (!email)
-            return;
-        if (inviteStatus)
-            inviteStatus.textContent = 'Generating invitation…';
-        try {
-            const res = await sfSchoolFetch('/api/staff/invite', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, role }),
-            });
-            const data = await res.json();
-            if (!res.ok || !data.success) {
-                if (inviteStatus) {
-                    inviteStatus.textContent = data.error || 'Failed to generate invitation.';
-                    inviteStatus.className = 'workspace-message is-error';
-                }
-                return;
-            }
-            if (data.isExisting) {
-                if (inviteStatus) {
-                    inviteStatus.textContent = `User ${email} found and assigned role: ${role}.`;
-                    inviteStatus.className = 'workspace-message is-success';
-                }
-                await refreshRoster();
-            }
-            else {
-                if (inviteStatus) {
-                    inviteStatus.textContent = `Invite ready for ${email}.`;
-                    inviteStatus.className = 'workspace-message is-success';
-                }
-                if (inviteOutput && inviteUrlInput) {
-                    inviteOutput.hidden = false;
-                    const origin = window.location.origin;
-                    inviteUrlInput.value = `${origin}${sfSchoolPath(data.inviteUrl || '/staff-login')}`;
-                }
-            }
-        }
-        catch (err) {
-            if (inviteStatus) {
-                inviteStatus.textContent = err?.message || 'Error creating invitation.';
-                inviteStatus.className = 'workspace-message is-error';
-            }
-        }
-    });
-    copyInviteBtn?.addEventListener('click', async () => {
-        if (!inviteUrlInput)
-            return;
-        try {
-            await navigator.clipboard.writeText(inviteUrlInput.value);
-            copyInviteBtn.textContent = 'Copied!';
-            setTimeout(() => {
-                copyInviteBtn.textContent = 'Copy';
-            }, 2000);
-        }
-        catch {
-            inviteUrlInput.select();
         }
     });
     renderRoster();
