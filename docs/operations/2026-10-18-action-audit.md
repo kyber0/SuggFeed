@@ -22,3 +22,7 @@ The generated submission script and base stylesheet have new versioned URLs to a
 ## Limits
 
 The complete browser-to-database flow was exercised locally; hosted writes were tested inside a rolled-back transaction. No user's authenticated production session was impersonated. This audit did not perform real Google OAuth, deliver emails, or upload/download actual hosted attachment files. Provider configuration and those real-user flows remain separate checks; passing this audit is not a guarantee that every future backend request succeeds.
+
+## Live deployment confirmation
+
+Fix commit: `1f54b0b`, pushed to `main`. Production returned health 200 and served the new versioned submission script (bubbling event confirmed), updated base stylesheet, and `strict-origin` on the unsubscribe page. Foreign and opaque-origin submission requests still returned 403. No authenticated production submission or outbound invitation was created for this check.
