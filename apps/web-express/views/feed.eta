@@ -99,7 +99,7 @@ const feedUrl = (changes = {}) => {
 
     <div class="post-cards-stream">
       <div id="feed-posts-container" class="feed-posts-list">
-        <% for (const item of feed) { %><%~ include('partials/feed-card', {item}) %><% } %>
+        <% for (const item of feed) { %><%~ include('partials/feed-card', {...it,item}) %><% } %>
       </div>
       <% if (!feed.length) { %>
         <section class="feed-empty-state">

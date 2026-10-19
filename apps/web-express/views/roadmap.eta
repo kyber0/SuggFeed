@@ -161,9 +161,10 @@
     <section class="roadmap-lane" data-lane="<%= stage.key %>" aria-labelledby="lane-<%= stage.key %>">
      <header class="roadmap-lane-heading">
       <div class="roadmap-lane-title-group">
-       <h2 id="lane-<%= stage.key %>"><span class="roadmap-stage-dot <%= stage.key === 'in_progress' ? 'roadmap-pulse-dot' : '' %>" data-status="<%= stage.key %>" aria-hidden="true"></span><%= stage.label %></h2>
+       <h2 id="lane-<%= stage.key %>"><span class="roadmap-stage-dot <%= stage.key === 'in_progress' ? 'roadmap-pulse-dot' : '' %>" data-status="<%= stage.key %>" aria-hidden="true"></span><span><%= stage.label %></span></h2>
        <span class="roadmap-lane-count"><%= counts[stage.key] || 0 %></span>
       </div>
+      <p class="roadmap-lane-caption"><%= stage.caption %></p>
      </header>
      <div class="roadmap-lane-cards">
       <% for (const item of laneItems) { %>

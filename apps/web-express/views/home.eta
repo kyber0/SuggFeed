@@ -2,7 +2,7 @@
 
 <main class="sf-main">
   <!-- Hero Section -->
-  <% if(it.schoolCustomizationVersion>0) { %><%~ include('partials/school-welcome',it) %><% } else { %>
+  <% if(it.schoolCustomization && (it.schoolCustomization.displayName || it.schoolCustomization.logo || it.schoolCustomization.cover || Object.entries(it.schoolCustomization.welcome).some(([key,value])=>key==='links'?value.length:!!value))) { %><%~ include('partials/school-welcome',it) %><% } else { %>
   <section class="sf-hero" id="top">
     <div class="sf-hero-orb sf-hero-orb-1" aria-hidden="true"></div>
     <div class="sf-hero-orb sf-hero-orb-2" aria-hidden="true"></div>

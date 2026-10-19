@@ -12,3 +12,5 @@ write('profile.bundle.css',['profile.css']);write('staff.bundle.css',['admin.css
 write('platform.bundle.css',['platform.css']);
 
 write('customization.bundle.css',['customization.css']);
+
+write('school-studio.css',['school-studio.css']);

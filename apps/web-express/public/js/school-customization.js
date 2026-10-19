@@ -1,161 +1,397 @@
 "use strict";
 (() => {
-    const page = document.querySelector('[data-customization-editor]');
-    if (!page)
+    const host = document.querySelector('[data-studio]');
+    if (!host)
         return;
-    const form = document.getElementById('customization-form');
-    const initial = JSON.parse(document.getElementById('customization-data').textContent || '{}');
-    const feedback = document.getElementById('customization-feedback');
-    let revision = Number(page.dataset.revision), dirty = false, busy = false;
-    const say = (message) => { feedback.textContent = message; feedback.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
-    const changed = (event) => { if (event?.target instanceof Element && event.target.hasAttribute('data-publish-confirm'))
-        return; dirty = true; page.querySelector('[data-publish-confirm]').checked = false; page.querySelector('[data-dirty-message]').textContent = 'Unsaved changes. Save before previewing or publishing.'; };
-    const field = (row, name) => row.querySelector('[data-field="' + name + '"]');
-    function configuration() {
-        const p = structuredClone(initial);
-        delete p.formVersion;
-        for (const input of form.querySelectorAll('[data-path]')) {
-            const keys = input.dataset.path.split('.');
-            let target = p;
-            for (const key of keys.slice(0, -1))
-                target = target[key];
-            target[keys[keys.length - 1]] = input instanceof HTMLInputElement && input.type === 'checkbox' ? input.checked : input.value;
-        }
-        p.categories = Array.from(form.querySelectorAll('[data-category]')).map(row => ({ id: field(row, 'id').value, name: field(row, 'name').value, slug: field(row, 'slug').value, description: field(row, 'description').value, icon: field(row, 'icon').value, active: field(row, 'active').checked }));
-        p.form.questions = Array.from(form.querySelectorAll('[data-question]')).map(row => ({ id: field(row, 'id').value, label: field(row, 'label').value, help: field(row, 'help').value, type: field(row, 'type').value, required: field(row, 'required').checked, options: field(row, 'type').value === 'choice' ? field(row, 'options').value.split(/\r?\n/).map(x => x.trim()).filter(Boolean) : [] }));
-        p.welcome.links = Array.from(form.querySelectorAll('[data-link]')).map(row => ({ label: field(row, 'label').value, url: field(row, 'url').value }));
-        return p;
+    const base = host.dataset.base, initial = JSON.parse(document.getElementById('studio-initial').textContent || '{}');
+    const api = window.sfSchoolStudioModel, model = api.create({ configuration: initial.configuration, serverRevision: initial.revision });
+    const frame = document.getElementById('studio-frame'), board = document.getElementById('studio-board'), space = document.getElementById('studio-board-space'), canvas = document.getElementById('studio-canvas-scroll'), loading = document.getElementById('studio-frame-loading');
+    const page = document.getElementById('studio-page'), scenario = document.getElementById('studio-scenario'), theme = document.getElementById('studio-theme'), width = document.getElementById('studio-width'), zoom = document.getElementById('studio-zoom');
+    if (innerWidth >= 1024)
+        width.value = '1440';
+    const preferences = new URLSearchParams(location.search);
+    if (['320', '375', '768', '1440'].includes(preferences.get('width') || ''))
+        width.value = preferences.get('width');
+    if (['light', 'dark'].includes(preferences.get('theme') || ''))
+        theme.value = preferences.get('theme');
+    const search = document.getElementById('studio-search'), tree = document.getElementById('studio-tree'), status = document.getElementById('studio-status');
+    let uploading = false;
+    let instance = '', sequence = 0, incoming = 0, ready = false, busy = false, allowed = true, mode = new URLSearchParams(location.search).get('mode') === 'preview' ? 'preview' : 'edit', view = 'board', renderTimer, renderController = null, renderVersion = 0, renderedKey = '', lastConfiguration = JSON.stringify(model.getState().configuration), lastSelection = '', changes = initial.changes || [], latest = null, returnFocus = null;
+    const say = (text, error = false) => { status.textContent = text; status.parentElement.dataset.error = String(error); };
+    function revoked(message) { allowed = false; renderController?.abort(); clearTimeout(renderTimer); for (const control of host.querySelectorAll('input,select,textarea,button'))
+        control.disabled = true; document.getElementById('studio-copy')?.removeAttribute('disabled'); say(message + ' Your unsaved changes remain in memory. Copy them before leaving.', true); const dialog = document.getElementById('studio-conflict-dialog'); document.getElementById('studio-conflict-sections').textContent = 'Workspace access changed. Further saves and previews are blocked.'; const load = document.getElementById('studio-load-latest'); load.disabled = true; if (!dialog.open)
+        dialog.showModal(); }
+    async function request(action, body) { const response = await fetch(base + '/' + action, { method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(20000), ...(body !== undefined ? { body: JSON.stringify(body) } : {}) }); if ([401, 403].includes(response.status) || response.redirected) {
+        revoked('Your editor access changed.');
+        throw Object.assign(new Error('Editor access is no longer available.'), { status: response.status });
+    } let result; try {
+        result = await response.json();
     }
-    async function request(action, body) { const response = await fetch(page.dataset.base + '/' + action, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); const result = await response.json(); if (!response.ok || !result.success)
-        throw new Error(result.error || 'The change was not saved.'); return result; }
-    async function perform(action, extra = {}) {
-        if (busy)
+    catch {
+        throw new Error('The request could not finish. Your edits are still here.');
+    } if (!response.ok || !result.success) {
+        if ([401, 403].includes(response.status) || result.code === 'STUDIO_DISABLED')
+            revoked(result.error || 'Your editor access changed.');
+        const error = new Error(result.error || 'This change could not be confirmed.');
+        Object.assign(error, { status: response.status, code: result.code });
+        throw error;
+    } return result; }
+    const inspector = window.sfSchoolStudioInspector.mount(document.getElementById('studio-inspector'), model, { ...initial, base, select: (id) => select(id), say, request, uploading: (value) => { uploading = value; } });
+    const registry = () => api.registry(model.getState().configuration, page.value);
+    function find(id) { return registry().find((n) => n.id === id) || ['home', 'feed', 'roadmap', 'idea', 'profile', 'submit'].flatMap(p => api.registry(model.getState().configuration, p)).find((n) => n.id === id); }
+    function send(type, payload = {}) { if (ready && frame.contentWindow)
+        frame.contentWindow.postMessage({ protocol: 1, instanceId: instance, sequence: ++sequence, type, payload }, location.origin); }
+    function layout() { const viewport = Number(width.value), available = Math.max(230, canvas.clientWidth - 56); const scale = zoom.value === 'fit' ? Math.min(1, available / viewport) : Number(zoom.value); const height = Math.max(740, (canvas.clientHeight - 40) / scale); frame.style.width = viewport + 'px'; frame.style.height = height + 'px'; board.style.width = viewport + 'px'; board.style.height = height + 'px'; board.style.transform = 'scale(' + scale + ')'; space.style.width = viewport * scale + 'px'; space.style.height = height * scale + 'px'; document.getElementById('studio-canvas-title').textContent = page.selectedOptions[0].text + ' · ' + viewport + ' px'; }
+    function openPanel(panel, opener) { if (innerWidth < 1024) {
+        returnFocus = opener || document.activeElement;
+        host.dataset.sheet = panel;
+        const target = document.getElementById('studio-' + panel);
+        target.setAttribute('role', 'dialog');
+        target.setAttribute('aria-modal', 'true');
+        document.getElementById('studio-sheet-backdrop').hidden = false;
+        target.querySelector('button,input,select,textarea')?.focus();
+    }
+    else {
+        host.dataset[panel + 'Collapsed'] = 'false';
+        if (innerWidth < 1280)
+            host.dataset[(panel === 'pages' ? 'properties' : 'pages') + 'Collapsed'] = 'true';
+        layout();
+    } }
+    function closePanel(panel) { if (host.dataset.sheet) {
+        const name = host.dataset.sheet;
+        delete host.dataset.sheet;
+        const target = document.getElementById('studio-' + name);
+        target.removeAttribute('role');
+        target.removeAttribute('aria-modal');
+        document.getElementById('studio-sheet-backdrop').hidden = true;
+        const fallback = host.querySelector('[data-open-panel="' + name + '"]');
+        if (returnFocus?.getClientRects().length)
+            returnFocus.focus();
+        else
+            fallback?.focus();
+    }
+    else if (panel) {
+        host.dataset[panel + 'Collapsed'] = 'true';
+        layout();
+    } }
+    function drawTree() { const query = search.value.toLowerCase(); tree.replaceChildren(); for (const n of registry().filter((n) => n.label.toLowerCase().includes(query))) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = n.label;
+        button.dataset.component = n.id;
+        button.setAttribute('aria-pressed', String(model.getState().selection?.componentId === n.id));
+        button.disabled = !allowed;
+        button.addEventListener('click', () => { select(n.id); if (innerWidth < 1024)
+            closePanel(); });
+        tree.append(button);
+    } if (!tree.children.length) {
+        const p = document.createElement('p');
+        p.textContent = 'No matching components.';
+        tree.append(p);
+    } }
+    function select(id, fromFrame = false) {
+        if (!id)
+            id = 'school.identity';
+        const component = find(id);
+        if (!component)
             return;
-        if (dirty && action !== 'save') {
-            say('Save your draft before this action. Your unsaved changes are still here.');
-            return;
+        if (component.pages.length && !component.pages.includes(page.value)) {
+            page.value = component.pages[0];
+            navigate(false);
         }
-        busy = true;
-        form.setAttribute('aria-busy', 'true');
+        model.select({ componentId: id });
+        document.getElementById('studio-selection-title').textContent = component.label;
+        document.getElementById('studio-breadcrumb').textContent = page.selectedOptions[0].text + ' / ' + component.group;
+        document.getElementById('studio-mobile-selection').textContent = component.label;
+        inspector.render();
+        if (innerWidth >= 1024)
+            openPanel('properties');
+        send('select', { componentId: id, scroll: !fromFrame });
+    }
+    const structure = (p) => JSON.stringify({ categories: p.categories.map((c) => [c.id, c.active, c.icon, c.description]), questions: p.form.questions.map((q) => [q.id, q.type, q.required, q.options, !!q.help]), attachments: p.form.attachments, links: p.welcome.links.length, hero: !!(p.displayName || p.logo || p.cover || p.welcome.headline || p.welcome.intro || p.welcome.message || p.welcome.help || p.welcome.links.length), message: !!p.welcome.message, help: !!p.welcome.help, instructions: !!p.form.instructions, example: !!p.form.example, logo: p.logo, cover: p.cover, roadmap: p.features.roadmap, labels: p.labels, stageDescriptions: p.stageDescriptions });
+    async function render() {
+        if (!ready || !allowed)
+            return;
+        const version = ++renderVersion;
+        renderController?.abort();
+        renderController = new AbortController();
+        const configuration = structuredClone(model.getState().configuration), key = structure(configuration), requestPage = page.value, requestInstance = instance;
         try {
-            if (action === 'save' && !form.reportValidity())
-                return;
-            if (action === 'publish' && !page.querySelector('[data-publish-confirm]').checked) {
-                say('Review the changes and confirm publication first.');
+            const response = await fetch(base + '/preview/render', { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, signal: renderController.signal, body: JSON.stringify({ configuration, page: requestPage, scenario: scenario.value, theme: theme.value, view }) });
+            if ([401, 403].includes(response.status) || response.redirected) {
+                revoked('Your editor access changed.');
                 return;
             }
-            const result = await request(action, { revision, ...extra, ...(action === 'save' ? { configuration: configuration() } : {}), ...(action === 'publish' ? { confirmed: true } : {}) });
-            if (action === 'save') {
-                revision = result.revision;
-                dirty = false;
-                page.querySelectorAll('[data-revision-label]').forEach(el => el.textContent = String(revision));
-                page.querySelector('[data-dirty-message]').textContent = 'Saved. Preview and publication use this revision.';
-                for (const link of page.querySelectorAll('[data-preview-link]'))
-                    link.href = page.dataset.base + '/preview?revision=' + revision;
-                const frame = page.querySelector('[data-preview-frame]');
-                if (frame)
-                    frame.src = page.dataset.base + '/preview/content?revision=' + revision;
-                const list = page.querySelector('[data-change-list]');
-                list.replaceChildren();
-                for (const change of result.changes.length ? result.changes : ['No changes from the live version.']) {
-                    const li = document.createElement('li');
-                    li.textContent = change;
-                    list.append(li);
-                }
-                say('Draft saved privately. Preview it, then publish when ready.');
+            const data = await response.json();
+            if (version !== renderVersion || instance !== requestInstance)
+                return;
+            if (!response.ok || !data.success) {
+                if ([401, 403].includes(response.status) || data.code === 'STUDIO_DISABLED')
+                    revoked(data.error || 'Editor access changed.');
+                throw new Error(data.error || 'Complete the property fields to refresh the preview.');
             }
-            else if (action === 'request-review')
-                say('Form review requested. The live workspace is unchanged. A platform operator reviews the form against the approved school policy.');
-            else
-                location.reload();
+            renderedKey = key;
+            send('replace-fragment', { html: data.html, configuration: model.getState().configuration, renderedConfiguration: configuration });
+            loading.hidden = true;
         }
         catch (error) {
-            say(error instanceof Error ? error.message : 'The change could not be saved.');
-        }
-        finally {
-            busy = false;
-            form.removeAttribute('aria-busy');
+            if (error.name !== 'AbortError')
+                say(error instanceof Error ? error.message : 'Preview unavailable. Your changes remain here.', true);
         }
     }
-    form.addEventListener('input', changed);
-    form.addEventListener('change', changed);
-    form.addEventListener('submit', event => { event.preventDefault(); void perform('save'); });
-    page.addEventListener('click', event => {
-        const button = event.target.closest('button');
-        if (!button || button.disabled || busy)
-            return;
-        if (button.dataset.action)
-            void perform(button.dataset.action);
-        if (button.dataset.restore)
-            void perform('restore', { version: Number(button.dataset.restore) });
-        if (button.hasAttribute('data-remove')) {
-            button.closest('[data-question],[data-link]')?.remove();
-            changed();
-        }
-        if (button.dataset.move) {
-            const row = button.closest('.custom-repeat-row');
-            if (!row)
-                return;
-            const sibling = button.dataset.move === 'up' ? row.previousElementSibling : row.nextElementSibling;
-            if (sibling) {
-                if (button.dataset.move === 'up')
-                    row.parentElement.insertBefore(row, sibling);
-                else
-                    row.parentElement.insertBefore(sibling, row);
-                changed();
+    function navigate(resetSelection = true) { if (!allowed)
+        return; ready = false; incoming = 0; sequence = 0; instance = crypto.randomUUID(); renderVersion++; renderController?.abort(); clearTimeout(renderTimer); loading.hidden = false; frame.src = base + '/preview/content?' + new URLSearchParams({ page: page.value, scenario: scenario.value, theme: theme.value, view, instance }); if (resetSelection)
+        model.setPage(page.value); drawTree(); layout(); }
+    let pendingPatch = false;
+    model.subscribe((state) => {
+        document.getElementById('studio-undo').toggleAttribute('disabled', !state.canUndo || !allowed);
+        document.getElementById('studio-redo').toggleAttribute('disabled', !state.canRedo || !allowed);
+        document.getElementById('studio-revision').textContent = 'Revision ' + state.serverRevision;
+        const json = JSON.stringify(state.configuration);
+        if (json !== lastConfiguration) {
+            lastConfiguration = json;
+            drawTree();
+            if (!pendingPatch) {
+                pendingPatch = true;
+                requestAnimationFrame(() => { pendingPatch = false; send('patch', { configuration: model.getState().configuration }); });
             }
+            clearTimeout(renderTimer);
+            if (structure(state.configuration) !== renderedKey)
+                renderTimer = setTimeout(() => void render(), 250);
+            say(state.dirty ? 'Unsaved changes · save privately before publishing.' : 'Draft saved · preview matches the saved configuration.');
         }
-        if (button.dataset.add) {
-            const kind = button.dataset.add, container = page.querySelector('[data-' + (kind === 'category' ? 'categories' : kind === 'question' ? 'questions' : 'links') + ']');
-            const max = kind === 'category' ? 60 : kind === 'question' ? 8 : 5;
-            if (container.children.length >= max) {
-                say('The limit for this list has been reached.');
-                return;
-            }
-            const clone = document.getElementById('custom-' + kind + '-template').content.cloneNode(true);
-            const id = clone.querySelector('[data-field="id"]');
-            if (id)
-                id.value = crypto.randomUUID();
-            container.append(clone);
-            container.lastElementChild?.querySelector('input:not([type="hidden"])')?.focus();
-            changed();
-        }
-        if (button.dataset.assetRemove) {
-            initial[button.dataset.assetRemove] = null;
-            const img = page.querySelector('[data-asset-preview="' + button.dataset.assetRemove + '"]');
-            img.hidden = true;
-            img.removeAttribute('src');
-            changed();
+        if (state.selection?.componentId !== lastSelection) {
+            lastSelection = state.selection?.componentId || '';
+            drawTree();
         }
     });
-    for (const input of page.querySelectorAll('[data-asset-upload]'))
-        input.addEventListener('change', async () => { const file = input.files?.[0]; if (!file || busy)
-            return; const kind = input.dataset.assetUpload; if (file.size > (kind === 'logo' ? 2 : 5) * 1024 * 1024) {
-            say('This image is too large. Logos support 2 MB and covers 5 MB.');
+    async function showConflict() { try {
+        latest = await request('state');
+        const list = document.getElementById('studio-conflict-sections');
+        list.replaceChildren();
+        for (const key of ['displayName', 'palette', 'logo', 'cover', 'welcome', 'categories', 'features', 'form', 'labels', 'stageDescriptions', 'email'])
+            if (JSON.stringify(model.getState().configuration[key]) !== JSON.stringify(latest.draft[key])) {
+                const item = document.createElement('li');
+                item.textContent = { displayName: 'School name', stageDescriptions: 'Progress explanations' }[key] || key;
+                list.append(item);
+            }
+        if (!document.getElementById('studio-conflict-dialog').open)
+            document.getElementById('studio-conflict-dialog').showModal();
+    }
+    catch (error) {
+        say(error.message, true);
+    } }
+    function busyState(value) { busy = value; for (const id of ['studio-save', 'studio-publish', 'studio-request-review', 'studio-review']) {
+        const button = document.getElementById(id);
+        button.disabled = value || !allowed;
+    } host.setAttribute('aria-busy', String(value)); }
+    async function save() { if (busy || !allowed)
+        return; if (uploading)
+        return say('Wait for the image upload to finish before saving.', true); const form = document.getElementById('studio-properties-form'); if (!form.reportValidity()) {
+        openPanel('properties');
+        return;
+    } const sent = structuredClone(model.getState().configuration); busyState(true); say('Saving your private draft…'); try {
+        const result = await request('save', { revision: model.getState().serverRevision, configuration: sent });
+        changes = result.changes;
+        model.markSaved(result.configuration || sent, result.revision, sent);
+        say(model.getState().dirty ? 'Draft saved. Your newer edits are still unsaved.' : 'Draft saved privately. Review changes before publication.');
+    }
+    catch (error) {
+        if (error.status === 409)
+            await showConflict();
+        else
+            say(error.message, true);
+    }
+    finally {
+        busyState(false);
+    } }
+    async function perform(action, extra = {}) { if (busy || !allowed)
+        return; if (uploading)
+        return say('Wait for the image upload to finish.', true); if (model.getState().dirty) {
+        say('Save your draft before ' + action + '. Your changes remain in this workspace.', true);
+        return;
+    } const sent = structuredClone(model.getState().configuration); busyState(true); try {
+        const result = await request(action, { revision: model.getState().serverRevision, ...extra });
+        if (action === 'request-review') {
+            say('Form review requested. The live workspace is unchanged.');
+            document.getElementById('studio-review-dialog').close();
+        }
+        else {
+            const current = await request('state');
+            if (JSON.stringify(model.getState().configuration) === JSON.stringify(sent))
+                model.replaceDraft(current.draft, current.revision);
+            else
+                model.markSaved(current.draft, current.revision, sent);
+            changes = current.history?.[0]?.change_summary || [];
+            inspector.render();
+            navigate(false);
+            say((action === 'publish' ? 'Published. Your school website uses this version.' : 'Historical version restored into a private draft. Review before publication.') + (model.getState().dirty ? ' Your newer local edits remain unsaved.' : ''));
+            for (const d of document.querySelectorAll('dialog[open]'))
+                d.close();
+        }
+    }
+    catch (error) {
+        if (error.status === 409 && error.code === '40001')
+            await showConflict();
+        else
+            say(error.message, true);
+    }
+    finally {
+        busyState(false);
+    } }
+    window.addEventListener('message', event => {
+        const data = event.data;
+        if (event.origin !== location.origin || event.source !== frame.contentWindow || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || JSON.stringify(data).length > 2000)
             return;
-        } busy = true; say('Processing your school image…'); try {
-            const intent = await request('assets/intent', { kind, size: file.size });
-            const uploaded = await fetch(intent.url, { method: 'PUT', headers: { 'Content-Type': file.type, 'x-upsert': 'false' }, body: file });
-            if (!uploaded.ok)
-                throw new Error('The image did not upload. Choose it again.');
-            const result = await request('assets/finalize', { kind, id: intent.id });
-            initial[kind] = result.id;
-            const img = page.querySelector('[data-asset-preview="' + kind + '"]');
-            img.src = result.url;
-            img.hidden = false;
-            changed();
-            say('Image processed. Save the draft to use it.');
+        if (!['ready', 'select', 'navigate', 'render-complete', 'shortcut'].includes(data.type))
+            return;
+        incoming = data.sequence;
+        const payload = data.payload || {};
+        if (data.type === 'ready') {
+            ready = true;
+            loading.hidden = true;
+            send('initialize', { configuration: model.getState().configuration });
+            send('set-mode', { mode });
+            if (model.getState().selection)
+                send('select', { componentId: model.getState().selection.componentId });
+            if (payload.revision === model.getState().serverRevision && !model.getState().dirty)
+                renderedKey = structure(model.getState().configuration);
+            else
+                void render();
         }
-        catch (error) {
-            say(error instanceof Error ? error.message : 'Image upload failed.');
+        if (data.type === 'select' && typeof payload.componentId === 'string')
+            select(payload.componentId, true);
+        if (data.type === 'navigate' && ['home', 'feed', 'roadmap', 'idea', 'profile', 'submit'].includes(payload.page)) {
+            page.value = payload.page;
+            view = ['board', 'tree', 'timeline', 'done'].includes(payload.view) ? payload.view : 'board';
+            navigate();
         }
-        finally {
-            busy = false;
-            input.value = '';
-        } });
-    page.querySelector('[data-section-picker]')?.addEventListener('change', event => document.getElementById(event.target.value)?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
-    window.addEventListener('beforeunload', event => { if (dirty) {
+        if (data.type === 'shortcut') {
+            if (payload.command === 'save')
+                void save();
+            else if (payload.command === 'undo') {
+                model.undo();
+                inspector.render();
+            }
+            else if (payload.command === 'redo') {
+                model.redo();
+                inspector.render();
+            }
+        }
+    });
+    for (const control of [page, scenario, theme])
+        control.addEventListener('change', () => { view = 'board'; navigate(); });
+    for (const control of [width, zoom])
+        control.addEventListener('change', layout);
+    new ResizeObserver(layout).observe(canvas);
+    search.addEventListener('input', drawTree);
+    host.querySelectorAll('[data-open-panel]').forEach(button => button.addEventListener('click', () => openPanel(button.dataset.openPanel, button)));
+    host.querySelectorAll('[data-close-panel]').forEach(button => button.addEventListener('click', () => closePanel(button.dataset.closePanel)));
+    document.getElementById('studio-sheet-backdrop').addEventListener('click', () => closePanel());
+    document.getElementById('studio-save').addEventListener('click', () => void save());
+    document.getElementById('studio-undo').addEventListener('click', () => { model.undo(); inspector.render(); });
+    document.getElementById('studio-redo').addEventListener('click', () => { model.redo(); inspector.render(); });
+    const modeButton = document.getElementById('studio-mode');
+    modeButton.addEventListener('click', () => { mode = mode === 'edit' ? 'preview' : 'edit'; modeButton.setAttribute('aria-pressed', String(mode === 'preview')); modeButton.textContent = mode === 'preview' ? 'Back to editing' : 'Preview'; send('set-mode', { mode }); document.getElementById('studio-canvas-hint').textContent = mode === 'edit' ? 'Click a website component or choose it from the list.' : 'Preview mode · menus and fixture navigation work; real actions remain disabled.'; });
+    document.getElementById('studio-review').addEventListener('click', () => { if (model.getState().dirty)
+        return say('Save your draft before reviewing publication.', true); const list = document.getElementById('studio-changes'); list.replaceChildren(); for (const text of changes.length ? changes : ['No changes from the published version.']) {
+        const li = document.createElement('li');
+        li.textContent = text;
+        list.append(li);
+    } document.getElementById('studio-publish-confirm').checked = false; document.getElementById('studio-review-dialog').showModal(); });
+    document.getElementById('studio-publish').addEventListener('click', () => { if (!document.getElementById('studio-publish-confirm').checked)
+        return say('Confirm that you reviewed the publication effects.', true); void perform('publish', { confirmed: true }); });
+    document.getElementById('studio-request-review').addEventListener('click', () => void perform('request-review'));
+    document.getElementById('studio-history').addEventListener('click', async () => { closePanel(); const dialog = document.getElementById('studio-history-dialog'); try {
+        const current = await request('state');
+        for (const node of dialog.querySelectorAll('.studio-history-row,[data-history-empty]'))
+            node.remove();
+        if (!current.history.length) {
+            const empty = document.createElement('p');
+            empty.dataset.historyEmpty = '';
+            empty.textContent = 'No published customization versions yet.';
+            dialog.append(empty);
+        }
+        for (const version of current.history) {
+            const row = document.createElement('div');
+            row.className = 'studio-history-row';
+            const title = document.createElement('strong');
+            title.textContent = 'Version ' + version.version;
+            const detail = document.createElement('p');
+            detail.textContent = (version.actor_name || 'School administrator') + ' · ' + new Date(version.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+            const summary = document.createElement('small');
+            summary.textContent = (version.change_summary || []).join(', ');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.studioRestore = String(version.version);
+            button.textContent = 'Restore to draft';
+            row.append(title, detail, summary, button);
+            dialog.append(row);
+        }
+        dialog.showModal();
+    }
+    catch (error) {
+        say(error.message, true);
+    } });
+    document.getElementById('studio-history-dialog').addEventListener('click', event => { const button = event.target.closest('[data-studio-restore]'); if (!button)
+        return; if (model.getState().dirty)
+        return say('Save or undo your changes before restoring a version.', true); void perform('restore', { version: Number(button.dataset.studioRestore) }); });
+    document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => button.closest('dialog')?.close()));
+    document.getElementById('studio-copy').addEventListener('click', async () => { const text = JSON.stringify(model.getState().configuration, null, 2); try {
+        await navigator.clipboard.writeText(text);
+        say('Unsaved configuration copied. Keep it private.');
+    }
+    catch {
+        const fallback = document.getElementById('studio-copy-fallback');
+        fallback.hidden = false;
+        fallback.value = text;
+        fallback.focus();
+        fallback.select();
+    } });
+    document.getElementById('studio-load-latest').addEventListener('click', () => { if (!latest)
+        return; model.replaceDraft(latest.draft, latest.revision); inspector.render(); navigate(false); document.getElementById('studio-conflict-dialog').close(); say('Latest saved draft loaded. Your copied changes can be compared manually.'); });
+    window.addEventListener('beforeunload', event => { if (model.getState().dirty) {
         event.preventDefault();
         event.returnValue = '';
     } });
+    document.addEventListener('keydown', event => { const typing = event.target.matches('input,textarea,select,[contenteditable=true]'); if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        void save();
+    } if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !typing) {
+        event.preventDefault();
+        event.shiftKey ? model.redo() : model.undo();
+        inspector.render();
+    } if (event.key === 'Escape')
+        closePanel(); if (event.key === 'Tab' && host.dataset.sheet) {
+        const panel = document.getElementById('studio-' + host.dataset.sheet);
+        const controls = Array.from(panel.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href]')).filter(el => !!el.getClientRects().length);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last?.focus();
+        }
+        else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first?.focus();
+        }
+    } });
+    async function capability() { if (!allowed || document.hidden)
+        return; try {
+        await request('capability');
+    }
+    catch (error) {
+        if (allowed)
+            say('Editor access could not be refreshed. Save will recheck permissions.', true);
+    } }
+    window.addEventListener('focus', () => void capability());
+    setInterval(() => void capability(), 60000);
+    window.addEventListener('resize', () => { if (innerWidth >= 1024 && host.dataset.sheet)
+        closePanel(); layout(); });
+    inspector.render();
+    drawTree();
+    navigate(false);
+    if (mode === 'preview') {
+        modeButton.textContent = 'Back to editing';
+        modeButton.setAttribute('aria-pressed', 'true');
+    }
 })();
