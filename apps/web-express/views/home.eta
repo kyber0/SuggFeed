@@ -2,6 +2,7 @@
 
 <main class="sf-main">
   <!-- Hero Section -->
+  <% if(it.schoolCustomizationVersion>0) { %><%~ include('partials/school-welcome',it) %><% } else { %>
   <section class="sf-hero" id="top">
     <div class="sf-hero-orb sf-hero-orb-1" aria-hidden="true"></div>
     <div class="sf-hero-orb sf-hero-orb-2" aria-hidden="true"></div>
@@ -32,6 +33,7 @@
     </div>
   </section>
 
+  <% } %>
   <!-- Interactive Action Hub / Workspace -->
   <section class="sf-workspace-section" id="action-hub" aria-label="Share feedback or track a submission">
     <div class="sf-workspace-wrapper">
@@ -100,40 +102,7 @@
           <!-- Category Shortcut Chips -->
           <div class="sf-shortcuts-row">
             <span class="sf-shortcuts-label">Quick topics:</span>
-            <div class="sf-shortcuts-list">
-              <button type="button" class="sf-shortcut-chip" data-sf-click="action-61">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="4" y="2" width="16" height="20" rx="2"/>
-                  <path d="M9 22v-4h6v4"/>
-                </svg>
-                Facilities
-              </button>
-              <button type="button" class="sf-shortcut-chip" data-sf-click="action-62">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                </svg>
-                Learning
-              </button>
-              <button type="button" class="sf-shortcut-chip" data-sf-click="action-63">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-                Safety
-              </button>
-              <button type="button" class="sf-shortcut-chip" data-sf-click="action-64">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                </svg>
-                Student life
-              </button>
-              <button type="button" class="sf-shortcut-chip" data-sf-click="action-65">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                </svg>
-                Other
-              </button>
+            <div class="sf-shortcuts-list"><% for(const cat of it.schoolCategories || []) { %><button type="button" class="sf-shortcut-chip" data-school-submit-category="<%= cat.id %>"><%= cat.name %></button><% } %>
             </div>
           </div>
         </div>

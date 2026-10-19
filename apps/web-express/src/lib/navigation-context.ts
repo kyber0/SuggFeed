@@ -30,7 +30,7 @@ export function schoolLanding(school: { slug:string; status:string }, role:strin
 }
 export function safeAccountReturn(value: unknown): string | null {
   if (typeof value !== 'string' || value.length > 2048 || /[\\\x00-\x20\x7f]|%(?:2f|5c|25|2e)/i.test(value)) return null;
-  if (!/^\/s\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/|$)/.test(value) && !/^\/(?:platform\/schools|schools\/invitations\/[^/]+|account\/security)(?:[/?#]|$)/.test(value)) return null;
+  if (!/^\/s\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/|$)/.test(value) && !/^\/(?:platform\/(?:schools|customization)|schools\/invitations\/[^/]+|account\/security)(?:[/?#]|$)/.test(value)) return null;
   const url = new URL(value, 'https://suggfeed.invalid');
   return url.origin === 'https://suggfeed.invalid' && url.pathname === value.split(/[?#]/)[0] ? value : null;
 }

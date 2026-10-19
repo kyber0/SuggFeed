@@ -1,0 +1,9 @@
+<article class="custom-repeat-row" data-question>
+ <div class="custom-row-toolbar"><strong>Additional question</strong><button type="button" class="workspace-button" data-move="up" aria-label="Move question up">↑</button><button type="button" class="workspace-button" data-move="down" aria-label="Move question down">↓</button><button type="button" class="workspace-button" data-remove>Remove</button></div>
+ <input type="hidden" data-field="id" value="<%= it.item.id %>" />
+ <label>Question<input class="workspace-input" data-field="label" value="<%= it.item.label %>" maxlength="120" required /></label>
+ <label>Help text<input class="workspace-input" data-field="help" value="<%= it.item.help %>" maxlength="240" /></label>
+ <label>Answer type<select class="workspace-input" data-field="type"><% for(const [key,label] of [['short','Short text'],['long','Longer text'],['choice','Single choice']]) { %><option value="<%= key %>" <%= key===it.item.type?'selected':'' %>><%= label %></option><% } %></select></label>
+ <label>Choices, one per line<textarea class="workspace-input" data-field="options" rows="3" maxlength="810"><%= it.item.options.join('\n') %></textarea></label><p class="staff-footnote">Only choice questions use this list. Provide 2–10 distinct choices.</p>
+ <label class="custom-check"><input type="checkbox" data-field="required" <%= it.item.required?'checked':'' %> /><span>Answer required</span></label>
+</article>

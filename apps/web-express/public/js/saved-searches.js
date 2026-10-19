@@ -13,8 +13,8 @@
     const key = 'sf:saved-searches:v1';
     let items = [], busy = false, loaded = false, editing = null;
     const clean = (value) => ({
-        sort: ['all', 'latest', 'popular', 'top', 'oldest'].includes(value?.sort) ? value.sort : 'all',
-        category: ['All', 'Facilities', 'Learning', 'Safety', 'Student life', 'Other'].includes(value?.category) ? value.category : 'All',
+        sort: window.sfSchoolCustomization?.features?.voting === false && ['popular', 'top'].includes(value?.sort) ? 'all' : ['all', 'latest', 'popular', 'top', 'oldest'].includes(value?.sort) ? value.sort : 'all',
+        category: typeof value?.category === 'string' && value.category.length <= 80 ? (window.sfSchoolCustomization?.categories?.find((c) => [c.id, c.name, c.slug].includes(value.category))?.id || value.category) : 'All',
         search: typeof value?.search === 'string' ? value.search.trim().slice(0, 120) : '',
         scope: account && value?.scope === 'following' ? 'following' : 'all',
     });
@@ -49,7 +49,7 @@
     function chips(filters) {
         const wrapper = document.createElement('div');
         wrapper.className = 'saved-search-chips';
-        const values = [filters.category === 'All' ? 'All topics' : filters.category, sortLabel(filters.sort)];
+        const values = [filters.category === 'All' ? 'All topics' : (window.sfSchoolCustomization?.categories?.find((c) => c.id === filters.category)?.name || filters.category), sortLabel(filters.sort)];
         if (filters.scope === 'following')
             values.push('Following');
         if (filters.search)

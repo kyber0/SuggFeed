@@ -1,6 +1,8 @@
+import {schoolPresentation} from '../lib/school-customization';
+import {currentSchool} from '../lib/school-scope';
 import { schoolUser } from '../lib/school-scope';
 import { Router } from 'express';
-import { supabaseService } from '../lib/supabase';
+import { supabaseService,supabasePlatform } from '../lib/supabase';
 import { ENGAGEMENT_UUID, loadFollowing, loadNotifications, parseNotificationCursor } from '../lib/engagement';
 import { digestEnabled } from '../lib/digests';
 import { DEFAULT_DIGEST_KINDS, digestPreferenceFields, nextDigestWindow } from '../lib/digest-preferences';
@@ -38,7 +40,7 @@ router.post('/follows/:id', async (req, res, next) => {
 });
 
 router.get('/notifications/preferences',async(req,res,next)=>{
-  try {const {data,error}=await supabaseService.from('notification_preferences').select('update_mode,weekly_digest,digest_paused,digest_kinds').eq('user_id',schoolUser(req)!.id).maybeSingle();if(error) throw error;res.json({success:true,preferences:data || {update_mode:'all',weekly_digest:false,digest_paused:false,digest_kinds:DEFAULT_DIGEST_KINDS},digestAvailable:digestEnabled(),nextDigestWindow:nextDigestWindow()});}catch(e){next(e);}
+  try {const {data,error}=await supabaseService.from('notification_preferences').select('update_mode,weekly_digest,digest_paused,digest_kinds').eq('user_id',schoolUser(req)!.id).maybeSingle();if(error) throw error;res.json({success:true,preferences:data || {update_mode:'all',weekly_digest:false,digest_paused:false,digest_kinds:DEFAULT_DIGEST_KINDS},digestAvailable:digestEnabled()&&schoolPresentation().email.digest==='weekly',nextDigestWindow:nextDigestWindow()});}catch(e){next(e);}
 });
 router.post('/notifications/preferences',async(req,res,next)=>{
   if(!['all','milestones'].includes(req.body.update_mode) || typeof req.body.weekly_digest!=='boolean') return res.status(400).json({success:false,error:'Choose valid notification preferences.'});
@@ -47,7 +49,8 @@ router.post('/notifications/preferences',async(req,res,next)=>{
   try {
     if(req.body.weekly_digest) {
       const previous=await supabaseService.from('notification_preferences').select('weekly_digest').eq('user_id',schoolUser(req)!.id).maybeSingle();if(previous.error) throw previous.error;
-      if(!previous.data?.weekly_digest && !digestEnabled()) return res.status(409).json({success:false,error:'Weekly email delivery is not enabled by your school yet.'});
+      const availability=await supabasePlatform.rpc('school_digest_available',{p_school:currentSchool()!.id});if(availability.error)throw availability.error;
+      if(!previous.data?.weekly_digest && (!digestEnabled()||availability.data!==true)) return res.status(409).json({success:false,error:'Weekly email delivery is not enabled by your school yet.'});
       const identity=await supabaseService.auth.admin.getUserById(schoolUser(req)!.id);if(identity.error) throw identity.error;
       if(!identity.data.user?.email_confirmed_at) return res.status(400).json({success:false,error:'Verify your account email before enabling weekly delivery.'});
     }

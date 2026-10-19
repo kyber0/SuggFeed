@@ -46,7 +46,7 @@
    const wrap=document.createElement('div');wrap.className='prof-activity-card-wrap';
    const link=document.createElement('a');link.className='prof-activity-card';link.href=sfSchoolPath('/idea/'+encodeURIComponent(row.id));
    const heading=document.createElement('h3');heading.className='prof-activity-title';heading.textContent=row.title;
-   const detail=document.createElement('p');detail.textContent=(row.categories?.name || 'Other')+' · '+({approved:'Planned',in_progress:'In progress',resolved:'Completed'}[row.status] || 'Public idea')+' · '+row.vote_count+' supporters';
+   const detail=document.createElement('p');detail.textContent=(row.categories?.name || 'Other')+' · '+((window as any).sfSchoolCustomization?.labels?.[row.status] || {approved:'Planned',in_progress:'In progress',resolved:'Completed'}[row.status] || 'Public idea')+' · '+row.vote_count+' supporters';
    link.append(heading,detail);wrap.append(link);
    if(tab==='bookmarks'){
     const remove=document.createElement('button');remove.type='button';remove.className='workspace-button';remove.textContent='Remove saved idea';

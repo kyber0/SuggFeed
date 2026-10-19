@@ -1,3 +1,4 @@
+import {schoolCategory,schoolCategories} from './school-customization';
 import { supabase } from './supabase';
 import { sanitizeSearch, fetchWithCache, type CacheStatus } from './data';
 
@@ -10,7 +11,7 @@ export function roadmapFilters(input: Record<string, unknown>) {
   const view = input.view === 'tree' || input.view === 'list' ? 'tree' : input.view === 'done' || input.view === 'outcomes' ? 'done' : input.view === 'timeline' ? 'timeline' : 'board';
   return {
     search: typeof input.search === 'string' ? input.search.trim().slice(0, 120) : '',
-    category: typeof input.category === 'string' ? input.category.trim().slice(0, 80) || 'all' : 'all',
+    category: typeof input.category === 'string' ? schoolCategory(input.category)?.id || 'all' : 'all',
     stage: view === 'done' ? 'resolved' : typeof input.stage === 'string' && ROADMAP_STAGES.some(s => s === input.stage) ? input.stage : 'all',
     view,
     page: Number.isSafeInteger(requestedPage) && requestedPage > 0 && requestedPage <= 100000 ? requestedPage : 1,
@@ -61,7 +62,7 @@ async function readRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
     const categoryJoin = filters.category === 'all' ? 'categories(name)' : 'categories!inner(name)';
     const loadItems = filters.view === 'board' && visible;
     let query = supabase.from('submissions').select(`${publicColumns},${categoryJoin}`, { count: 'exact', head: !loadItems }).eq('status', stage);
-    if (filters.category !== 'all') query = query.eq('categories.name', filters.category);
+    if (filters.category !== 'all') query = query.eq('category_id', schoolCategory(filters.category)?.id || filters.category);
     if (filters.search) query = query.or(`title.ilike.%${sanitizeSearch(filters.search)}%,description.ilike.%${sanitizeSearch(filters.search)}%`);
     if (loadItems) {
       if (stage === 'resolved') {
@@ -109,7 +110,7 @@ async function readRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
     pageCount = filters.category === 'all' ? 1 : Math.max(1, Math.ceil(matchingCount / ROADMAP_PER_STAGE));
   } else if (filters.view === 'done') {
     let query = supabase.from('submissions').select(`${publicColumns},${filters.category === 'all' ? 'categories(name)' : 'categories!inner(name)'}`).eq('status', 'resolved');
-    if (filters.category !== 'all') query = query.eq('categories.name', filters.category);
+    if (filters.category !== 'all') query = query.eq('category_id', schoolCategory(filters.category)?.id || filters.category);
     if (filters.search) query = query.or(`title.ilike.%${sanitizeSearch(filters.search)}%,description.ilike.%${sanitizeSearch(filters.search)}%`);
     const { data, error } = await query.order('resolved_at', { ascending: false, nullsFirst: false }).order('id')
       .range((filters.page - 1) * ROADMAP_DONE_PER_PAGE, filters.page * ROADMAP_DONE_PER_PAGE - 1);
@@ -120,7 +121,7 @@ async function readRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
   } else if (filters.view === 'timeline') {
     let query = supabase.from('submissions').select(`${publicColumns},${filters.category === 'all' ? 'categories(name)' : 'categories!inner(name)'}`)
       .in('status', filters.stage === 'all' ? [...ROADMAP_STAGES] : [filters.stage]);
-    if (filters.category !== 'all') query = query.eq('categories.name', filters.category);
+    if (filters.category !== 'all') query = query.eq('category_id', schoolCategory(filters.category)?.id || filters.category);
     if (filters.search) query = query.or(`title.ilike.%${sanitizeSearch(filters.search)}%,description.ilike.%${sanitizeSearch(filters.search)}%`);
     const { data, error } = await query.order('updated_at', { ascending: false }).order('id')
       .range((filters.page - 1) * ROADMAP_TIMELINE_PER_PAGE, filters.page * ROADMAP_TIMELINE_PER_PAGE - 1);
@@ -193,13 +194,7 @@ async function readRecentlyCompleted(): Promise<Array<ReturnType<typeof publicIt
   return (data || []).map(publicItem);
 }
 
-export function loadRoadmapCategories() {
-  return fetchWithCache('categories_roadmap',async()=>{
-    const { data, error } = await supabase.from('categories').select('name').order('name');
-    if (error) throw error;
-    return (data || []).map(c => c.name as string);
-  },300_000);
-}
+export async function loadRoadmapCategories(){return schoolCategories(true).map(c=>c.name);}
 
 export async function loadPublicRoadmapIdea(id: string) {
   const { data, error } = await supabase.from('submissions').select(`${publicColumns},categories(name)`).eq('id', id).in('status', [...ROADMAP_STAGES]).maybeSingle();

@@ -1,6 +1,7 @@
+import {schoolCategories} from '../lib/school-customization';
 import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from "express";
-import { loadPublishedSubmissions, DEFAULT_CATEGORIES } from "../lib/data";
+import { loadPublishedSubmissions } from "../lib/data";
 
 import { feedFilters } from '../lib/feed-filters';
 import { verifiedFeedAccountState } from '../lib/feed-account';
@@ -45,7 +46,7 @@ router.get(
       sortBy,
       category,
       search,
-      categories: DEFAULT_CATEGORIES,
+      categories: schoolCategories().map(c=>c.name),
       following,
       accountState,
     });

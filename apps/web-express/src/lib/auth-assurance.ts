@@ -15,7 +15,7 @@ export function safeSecurityReturnTo(value: unknown): string {
   try {
     const url = new URL(value, 'https://suggfeed.invalid');
     if (!value.startsWith('/') || url.origin !== 'https://suggfeed.invalid' || url.pathname !== value.split(/[?#]/)[0]) return '/schools';
-    if (url.pathname === '/schools' || /^\/platform\/schools(?:\/[^/]+\/(?:settings|invitations))?$/.test(url.pathname) || url.pathname === '/account/home') return value;
+    if (url.pathname === '/schools' || /^\/platform\/schools(?:\/[^/]+\/(?:settings|invitations|customization(?:\/preview(?:\/content)?)?))?$/.test(url.pathname) || url.pathname === '/account/home' || url.pathname === '/platform/customization') return value;
     const school = /^\/s\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/|$)/.exec(url.pathname);
     return school && school[1].length >= 3 && school[1].length <= 63 ? value : '/schools';
   } catch { return '/schools'; }
@@ -36,7 +36,7 @@ export function requireStrongAuth(req: Request, res: Response, next: NextFunctio
 export function requireStaffAssurance(req: Request, res: Response, next: NextFunction) {
   const role = schoolUser(req)?.role;
   const path = req.path.toLowerCase();
-  const privileged = /^\/(?:admin(?:\/|$)|staff(?:\/|$)|api\/(?:staff(?:\/|$)|community\/staff(?:\/|$)|submissions\/[^/]+\/status(?:\/|$)))/.test(path)
+  const privileged = /^\/(?:admin(?:\/|$)|staff(?:\/|$)|submission-details(?:\/|$)|api\/(?:submission-details(?:\/|$)|submission-files(?:\/|$)|staff(?:\/|$)|community\/staff(?:\/|$)|submissions\/[^/]+\/status(?:\/|$)))/.test(path)
     || (path.startsWith('/api/progress-evidence') && !['GET','HEAD'].includes(req.method));
   if (privileged && role && ['admin','moderator','staff'].includes(role)) return requireStrongAuth(req, res, next);
   next();

@@ -16,7 +16,7 @@ function account(req: Request, res: Response) {
   if (!req.session.user) { res.status(401).render('school-message', { title: 'Sign in required', message: 'Sign in with your verified account, then return to this page.' }); return null; }
   return req.session.user;
 }
-async function operator(req: Request, res: Response) {
+export async function operator(req: Request, res: Response) {
   const user = account(req, res); if (!user) return null;
   const allowed = await platformAuthority(req, res);
   if (!allowed) { res.status(403).render('school-message', { title: 'Access denied', message: 'Platform operator permission is required.' }); return null; }
@@ -33,7 +33,7 @@ async function confirmedAccount(req: Request, res: Response) {
   }
   return {...user,email:data.user.email};
 }
-async function schoolAdmin(req: Request, res: Response) {
+export async function schoolAdmin(req: Request, res: Response) {
   const user = account(req, res); if (!user) return null;
   const platformSettings = req.path.toLowerCase().startsWith('/platform/');
   if (platformSettings && !await operator(req, res)) return null;
@@ -129,12 +129,13 @@ router.get('/platform/schools', run(async (req, res) => {
   if (applications.error || schools.error || release.error) throw Object.assign(new Error('School review unavailable.'), {status:503});
   const visibleSchools = (schools.data || []).slice(0, 24);
   const ids = visibleSchools.map(school => school.id);
-  const [settings, memberships] = visibleSchools.length ? await Promise.all([
+  const [settings, memberships,policyDrafts] = visibleSchools.length ? await Promise.all([
     supabasePlatform.from('school_settings').select('school_id,version,privacy_notice,terms_notice,privacy_contact,school_contact,age_policy,publication_policy,retention_days,approved_at').in('school_id', ids),
     supabasePlatform.from('school_memberships').select('school_id').eq('user_id', user.id).eq('role', 'admin').eq('status', 'active').in('school_id', ids),
-  ]) : [{ data: [], error: null }, { data: [], error: null }];
-  if (settings.error || memberships.error) throw Object.assign(new Error('School policy review unavailable.'), {status:503});
-  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', release: release.data, demoSchoolId: DEMO_SCHOOL_ID, applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings: settings.data || [], adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1' });
+    supabasePlatform.from('school_policy_drafts').select('school_id,version,settings').in('school_id',ids),
+  ]) : [{ data: [], error: null }, { data: [], error: null },{data:[],error:null}];
+  if (settings.error || memberships.error || policyDrafts.error) throw Object.assign(new Error('School policy review unavailable.'), {status:503});
+  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', release: release.data, demoSchoolId: DEMO_SCHOOL_ID, applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings:(settings.data || []).map(s=>{const draft=policyDrafts.data?.find(d=>d.school_id===s.school_id);return draft?{...s,...draft.settings,version:draft.version,approved_at:null,live_approved_at:s.approved_at}:s;}), adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1' });
 }));
 router.post('/platform/schools/:id/review', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;
@@ -163,14 +164,15 @@ router.post('/platform/schools/:id/activate', run(async (req, res) => {
   return res.redirect(303, '/platform/schools?saved=1');
 }));
 async function renderSettings(req: Request, res: Response, context: NonNullable<Awaited<ReturnType<typeof schoolAdmin>>>, submitted?: Record<string, string | number>, errorMessage?: string, enrollmentDraft?:{version:number;mode:string;text:string}) {
-  const [{data,error},domains,enrollment]=await Promise.all([supabasePlatform.from('school_settings').select('*').eq('school_id',context.school.id).maybeSingle(),supabasePlatform.from('school_email_domains').select('id,domain,verification_token,verified_at,join_enabled').eq('school_id',context.school.id).order('created_at'),supabasePlatform.rpc('get_school_enrollment',{p_school:context.school.id,p_actor:context.user.id})]);
-  if (error || domains.error || enrollment.error) throw Object.assign(new Error('School settings unavailable.'), {status:503});
+  const [{data,error},domains,enrollment,pendingPolicy]=await Promise.all([supabasePlatform.from('school_settings').select('*').eq('school_id',context.school.id).maybeSingle(),supabasePlatform.from('school_email_domains').select('id,domain,verification_token,verified_at,join_enabled').eq('school_id',context.school.id).order('created_at'),supabasePlatform.rpc('get_school_enrollment',{p_school:context.school.id,p_actor:context.user.id}),supabasePlatform.from('school_policy_drafts').select('version,settings,updated_at').eq('school_id',context.school.id).maybeSingle()]);
+  if (error || domains.error || enrollment.error || pendingPolicy.error) throw Object.assign(new Error('School settings unavailable.'), {status:503});
   // Keep form Origin valid without exposing invitation paths in Referer.
   res.setHeader('Referrer-Policy', 'strict-origin');
-  const displayedSettings = submitted ? { ...(data || {}), ...submitted } : data;
+  const draftPolicy=pendingPolicy.data?{...pendingPolicy.data.settings,version:pendingPolicy.data.version}:null;
+  const displayedSettings = submitted ? { ...(draftPolicy || data || {}), ...submitted } : draftPolicy || data;
   const domainNotice=req.session.schoolDomainNotice || '';delete req.session.schoolDomainNotice;
   const enrollmentNotice=req.session.schoolEnrollmentNotice || '';delete req.session.schoolEnrollmentNotice;
-  return res.status(errorMessage ? 400 : 200).render('school-settings', { title: 'School settings — ' + context.school.name, school: context.school, enrollment:enrollment.data,enrollmentDraft,enrollmentNotice,enrollmentAction:invitationBase(req,context.school)+'/enrollment', domains:domains.data || [],domainAction:invitationBase(req,context.school)+'/domains',domainNotice, savedSettings: data, settings: displayedSettings || { version: 1, publication_policy: 'private', retention_days: 365 }, settingsAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings', invitationAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/invitations' : '/s/' + context.school.slug + '/admin/invitations', saved: !errorMessage && req.query.saved === '1', errorMessage });
+  return res.status(errorMessage ? 400 : 200).render('school-settings', { title: 'School settings — ' + context.school.name, school: context.school, enrollment:enrollment.data,enrollmentDraft,enrollmentNotice,enrollmentAction:invitationBase(req,context.school)+'/enrollment', domains:domains.data || [],domainAction:invitationBase(req,context.school)+'/domains',domainNotice, savedSettings: data, pendingPolicy:pendingPolicy.data, settings: displayedSettings || { version: 1, publication_policy: 'private', retention_days: 365 }, settingsAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings', invitationAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/invitations' : '/s/' + context.school.slug + '/admin/invitations', saved: !errorMessage && req.query.saved === '1', errorMessage });
 }
 router.get(['/s/:schoolSlug/admin/school-settings', '/platform/schools/:id/settings'], run(async (req, res) => {
   const context = await schoolAdmin(req, res); if (!context) return;

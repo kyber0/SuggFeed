@@ -96,7 +96,7 @@
 'action-113': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; goToStep(2); },
 'action-114': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; goToStep(3); },
 'action-115': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; handleIdeaSubmit(actionEvent); },
-'action-116': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; onCategorySelected('Facilities'); },
+'action-116': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; onCategorySelected((element as HTMLInputElement).value); },
 'action-117': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; onCategorySelected('Learning'); },
 'action-118': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; onCategorySelected('Safety'); },
 'action-119': (event, element) => { const actionEvent = event as MouseEvent & KeyboardEvent; onCategorySelected('Student life'); },

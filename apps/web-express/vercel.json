@@ -9,5 +9,11 @@
   },
   "regions": [
     "icn1"
+  ],
+  "crons": [
+    {
+      "path": "/internal/school-customization-cleanup",
+      "schedule": "0 2 * * *"
+    }
   ]
 }

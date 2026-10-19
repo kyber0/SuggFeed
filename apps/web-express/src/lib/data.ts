@@ -1,3 +1,4 @@
+import {schoolCategories,schoolFeature} from './school-customization';
 import { schoolCacheKey } from './school-scope';
 import { supabase, supabaseService } from "./supabase";
 import type { Submission, Comment, Profile } from "../types";
@@ -5,7 +6,7 @@ import type { Submission, Comment, Profile } from "../types";
 export const DEFAULT_CATEGORIES = ["Facilities", "Learning", "Safety", "Student life", "Other"] as const;
 export const PER_PAGE = 15;
 
-export type Category = (typeof DEFAULT_CATEGORIES)[number] | "All";
+export type Category = string;
 export type SortMode = "latest" | "all" | "top" | "popular" | "oldest";
 
 /* ─── Simple in-memory TTL cache with bounded size ────────────────────── */
@@ -91,10 +92,11 @@ export function sanitizeSearch(term: string): string {
 /* ─── Category ID cache ────────────────────────────────────────────────── */
 export function getCategoryIdMap(): Promise<Map<string, string>> {
   return fetchWithCache('categories_ids',async()=>{
-    const { data, error } = await supabase.from('categories').select('id,name').eq('is_active', true);
-    if(error)throw error;
+    const data=schoolCategories(true);
     const map=new Map<string,string>();
     for(const category of data ?? []){
+      map.set(category.id,category.id);
+      map.set(category.slug,category.id);
       map.set(category.name,category.id);
       map.set(category.name.toLowerCase(),category.id);
     }
@@ -138,7 +140,7 @@ export async function loadPublishedSubmissions(opts: {
   const { page = 1, sortBy = "all", category = "All", search = "", followingUserId } = opts;
 
   const normalizedSort: "all" | "top" | "oldest" =
-    sortBy === "top" || sortBy === "popular"
+    (sortBy === "top" || sortBy === "popular") && schoolFeature('voting')
       ? "top"
       : sortBy === "oldest"
       ? "oldest"

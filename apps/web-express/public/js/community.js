@@ -13,7 +13,7 @@
         const input = picker.querySelector('[data-picker-search]'), value = picker.querySelector('[data-picker-value]'), selected = picker.querySelector('[data-picker-selected]'), results = picker.querySelector('[data-picker-results]');
         let controller, timer, generation = 0;
         const status = { pending: 'Needs review', approved: 'Planned', in_progress: 'In progress', resolved: 'Completed', rejected: 'Declined' };
-        const choose = (item) => { value.value = item.id; selected.textContent = `${item.title} · ${item.category || item.categories?.name || 'Other'} · ${status[item.status] || item.status} · ${item.id.slice(0, 8)}`; input.setCustomValidity(''); results.replaceChildren(); };
+        const choose = (item) => { value.value = item.id; selected.textContent = `${item.title} · ${item.category || item.categories?.name || 'Other'} · ${window.sfSchoolCustomization?.labels?.[item.status] || status[item.status] || item.status} · ${item.id.slice(0, 8)}`; input.setCustomValidity(''); results.replaceChildren(); };
         if (value.value)
             void sfSchoolFetch('/api/staff/submissions/' + encodeURIComponent(value.value), { cache: 'no-store' }).then(async (response) => { const data = await response.json(); if (generation !== 0)
                 return; if (!response.ok || !data.item)
@@ -46,7 +46,7 @@
                         const button = document.createElement('button');
                         button.type = 'button';
                         button.className = 'workspace-button';
-                        button.textContent = `${item.title} · ${item.categories?.name || 'Other'} · ${status[item.status]} · ${item.id.slice(0, 8)}`;
+                        button.textContent = `${item.title} · ${item.categories?.name || 'Other'} · ${window.sfSchoolCustomization?.labels?.[item.status] || status[item.status]} · ${item.id.slice(0, 8)}`;
                         button.addEventListener('click', () => choose(item));
                         results.append(button);
                     }

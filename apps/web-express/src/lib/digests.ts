@@ -33,6 +33,8 @@ export async function deliverWeeklyDigests(transport:typeof fetch=fetch) {
   const school=currentSchool();
   if(!school) throw new Error('School context required.');
   if(!digestEnabled()) return {enabled:false,delivered:0,failed:0,skipped:0};
+  const customization=await supabasePlatform.rpc('school_published_configuration',{p_school:school.id});if(customization.error)throw customization.error;if(customization.data.email.digest==='off')return {enabled:false,delivered:0,failed:0,skipped:0};
+  const schoolNote=[school.name,customization.data.email.introduction,customization.data.welcome.help].filter(Boolean).join('\n\n');
   const claimed=await supabaseService.rpc('claim_weekly_digests');
   if(claimed.error) throw claimed.error;
   const result={enabled:true,delivered:0,failed:0,skipped:0};
@@ -67,14 +69,15 @@ export async function deliverWeeklyDigests(transport:typeof fetch=fetch) {
               const membership=await supabasePlatform.from('school_memberships').select('user_id,school:schools!inner(status,settings:school_settings!inner(approved_at))')
                 .eq('school_id',school.id).eq('user_id',job.user_id).eq('status','active').eq('school.status','active').not('school.settings.approved_at','is',null).maybeSingle();
               if(membership.error) throw membership.error;
-              if(!membership.data) {state='cancelled';} else {
+              const allowed=await supabasePlatform.rpc('school_actor_has_role',{p_school:school.id,p_actor:job.user_id,p_roles:['student','admin','moderator']});const currentConfig=await supabasePlatform.rpc('school_published_configuration',{p_school:school.id});if(allowed.error||currentConfig.error)throw new Error('School digest eligibility unavailable.');
+              if(!membership.data||allowed.data!==true||currentConfig.data.email.digest==='off') {state='cancelled';} else {
               const origin=process.env.APP_ORIGIN!,token=unsubscribeToken(job.user_id),schoolPath='/s/'+school.slug;
               const unsubscribe=new URL(schoolPath+'/digest/unsubscribe',origin);unsubscribe.searchParams.set('token',token);
               const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
               state='uncertain';
               try {
                 const response=await transport('https://api.resend.com/emails',{method:'POST',signal:controller.signal,headers:{Authorization:'Bearer '+process.env.RESEND_API_KEY,'Content-Type':'application/json','Idempotency-Key':'weekly-digest-'+school.id+'-'+job.id},
-                  body:JSON.stringify({from:process.env.RESEND_FROM_EMAIL,to:[user.email],subject:'Your weekly SuggFeed school updates',text:digestText(eligible,origin,unsubscribe.href,schoolPath),html:digestHtml(eligible,origin,unsubscribe.href,schoolPath),headers:{'List-Unsubscribe':`<${unsubscribe.href}>`}})});
+                  body:JSON.stringify({from:process.env.RESEND_FROM_EMAIL,to:[user.email],subject:'Your weekly SuggFeed school updates',text:digestText(eligible,origin,unsubscribe.href,schoolPath)+'\n\n'+schoolNote,html:digestHtml(eligible,origin,unsubscribe.href,schoolPath,schoolNote),headers:{'List-Unsubscribe':`<${unsubscribe.href}>`}})});
                 state=response.ok ? 'delivered' : 'failed';
               }finally{clearTimeout(timer);}
               }

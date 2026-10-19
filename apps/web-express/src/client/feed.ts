@@ -285,7 +285,7 @@
             <span class="post-author-name">${sfEscapeHtml(author)}</span>
             ${validDate ? `<span class="post-dot" aria-hidden="true">·</span><time class="post-timestamp" datetime="${created.toISOString()}" title="${sfEscapeHtml(created.toLocaleString('en-PH'))}">${relativeTime}</time>` : ''}
           </div></div>
-          <span class="post-badge-status status-${status}"><span class="badge-dot" aria-hidden="true"></span>${statuses[status]}</span>
+          <span class="post-badge-status status-${status}"><span class="badge-dot" aria-hidden="true"></span>${sfEscapeHtml((window as any).sfSchoolCustomization?.labels?.[status] || statuses[status])}</span>
           <div class="post-menu-wrap">
             <button type="button" class="post-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="More options" title="More options">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>

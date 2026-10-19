@@ -1,4 +1,6 @@
 <% layout('layout') %>
+<% if(it.user?.id && it.submission.user_id===it.user.id) { %><div class="workspace-actions"><a class="workspace-button" href="/submission-details/<%= it.submission.id %>">Your private answers & images</a></div><% } %>
+<% if(['admin','moderator'].includes(it.user?.role)) { %><div class="workspace-actions"><a class="workspace-button" href="/admin/form-responses/<%= it.submission.id %>">Private school answers & images</a></div><% } %>
 
 <%
   const categoryName = it.submission.category ?? (it.submission.categories?.name ?? 'Other');
@@ -13,7 +15,7 @@
 
   const statusConfig = {
     resolved: {
-      label: "Completed",
+      label: it.schoolCustomization?.labels.resolved || "Completed",
       dotColor: "#0d9488",
       badgeBg: "rgba(13, 148, 136, 0.12)",
       badgeText: "#0d9488",
@@ -21,7 +23,7 @@
       bannerDesc: "This suggestion has been addressed and marked as completed by campus administration.",
     },
     in_progress: {
-      label: "In progress",
+      label: it.schoolCustomization?.labels.in_progress || "In progress",
       dotColor: "var(--navy)",
       badgeBg: "rgba(11, 56, 87, 0.1)",
       badgeText: "var(--navy)",
@@ -29,7 +31,7 @@
       bannerDesc: "Campus teams are currently working on planning and implementing this proposal.",
     },
     approved: {
-      label: "Planned",
+      label: it.schoolCustomization?.labels.approved || "Planned",
       dotColor: "#10b981",
       badgeBg: "rgba(16, 185, 129, 0.12)",
       badgeText: "#10b981",
@@ -45,7 +47,8 @@
       bannerDesc: "This proposal has been submitted and is currently being reviewed by campus staff before being published to the community feed.",
     },
   };
-  const currentStatus = statusConfig[it.submission.status] || statusConfig.pending;
+  const selectedStatus=statusConfig[it.submission.status] || statusConfig.pending;
+  const currentStatus={...selectedStatus,bannerDesc:it.schoolCustomization?.stageDescriptions[it.submission.status] || selectedStatus.bannerDesc};
   const isAnon = !it.submission.author?.display_name && !it.submission.author?.full_name;
   const authorName = isAnon ? "Anonymous Student" : (it.submission.author?.display_name || it.submission.author?.full_name);
   const commentsCount = (it.comments || []).length;
@@ -172,7 +175,7 @@
             <% lifecycleOrder.forEach((stepKey, idx) => {
                  const isDone = idx < currentIdx;
                  const isActive = idx === currentIdx;
-                 const stepLabels = { pending: "Submitted", approved: "Planned", in_progress: "In progress", resolved: "Completed" };
+                 const stepLabels = { pending: "Submitted", approved: "Planned", in_progress: "In progress", resolved: "Completed",...(it.schoolCustomization?.labels||{}) };
             %>
               <div class="step<%= isDone ? ' done' : '' %><%= isActive ? ' active' : '' %>">
                 <div class="step-dot">

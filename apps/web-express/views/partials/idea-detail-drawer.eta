@@ -134,15 +134,15 @@
         </div>
         <div class="step" id="drawer-step-approved">
           <div class="step-dot" id="drawer-dot-approved">2</div>
-          <div class="step-label">Approved</div>
+          <div class="step-label"><%= it.schoolCustomization?.labels.approved || 'Planned' %></div>
         </div>
         <div class="step" id="drawer-step-in_progress">
           <div class="step-dot" id="drawer-dot-in_progress">3</div>
-          <div class="step-label">In Progress</div>
+          <div class="step-label"><%= it.schoolCustomization?.labels.in_progress || 'In progress' %></div>
         </div>
         <div class="step" id="drawer-step-resolved">
           <div class="step-dot" id="drawer-dot-resolved">4</div>
-          <div class="step-label">Resolved</div>
+          <div class="step-label"><%= it.schoolCustomization?.labels.resolved || 'Completed' %></div>
         </div>
       </div>
 
@@ -292,4 +292,4 @@
   </div>
 </aside>
 
-<script defer src="/js/idea-detail-drawer.js?v=20261018-full-ux-audit"></script>
+<script defer src="/js/idea-detail-drawer.js?v=20261018-customization"></script>

@@ -14,7 +14,7 @@
     return `status-${s}`;
   }
   function statusLabel(status) {
-    return ({pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'})[status || 'pending'] || 'Needs review';
+    return (it.schoolCustomization?.labels?.[status] || {pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'}[status || 'pending']) || 'Needs review';
   }
 %>
 
@@ -358,4 +358,4 @@
   </div>
 </main>
 
-<script defer src="/js/profile.js?v=20261018-empty-states"></script>
+<script defer src="/js/profile.js?v=20261018-customization"></script>

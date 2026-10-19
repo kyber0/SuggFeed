@@ -100,7 +100,7 @@
         'action-113': (event, element) => { const actionEvent = event; goToStep(2); },
         'action-114': (event, element) => { const actionEvent = event; goToStep(3); },
         'action-115': (event, element) => { const actionEvent = event; handleIdeaSubmit(actionEvent); },
-        'action-116': (event, element) => { const actionEvent = event; onCategorySelected('Facilities'); },
+        'action-116': (event, element) => { const actionEvent = event; onCategorySelected(element.value); },
         'action-117': (event, element) => { const actionEvent = event; onCategorySelected('Learning'); },
         'action-118': (event, element) => { const actionEvent = event; onCategorySelected('Safety'); },
         'action-119': (event, element) => { const actionEvent = event; onCategorySelected('Student life'); },

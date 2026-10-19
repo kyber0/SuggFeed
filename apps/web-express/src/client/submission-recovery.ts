@@ -12,11 +12,11 @@
   const receiptKey='sf:submission-receipt:v1';
   let context:any=null, savedDraft:any=null, currentReceipt:any=null,dirty=false,saving=false,saveAgain=false,savedFingerprint='',busy=false;
   const tell=(text:string)=>status.textContent=text;
-  const payload=()=>({title:title.value.trim(),description:description.value.trim(),category:document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked')?.value || '',isAnonymous:anon.checked});
+  const payload=()=>({title:title.value.trim(),description:description.value.trim(),category:document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked')?.value || '',isAnonymous:anon.checked,...((window as any).sfSchoolForm?.extra()||{})});
   const fingerprint=async(value:unknown)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(value))))).map(x=>x.toString(16).padStart(2,'0')).join('');
   async function request(path:string,body?:unknown){
     const response=await sfSchoolFetch('/api/'+path,{method:body===undefined?'GET':'POST',cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(15000),headers:{Accept:'application/json','Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
-    const data=await response.json();if(!response.ok || !data.success){const error=new Error(data.error || 'The request could not finish. Check its receipt before retrying.');Object.assign(error,{status:response.status});throw error;}return data;
+    const data=await response.json();if(!response.ok || !data.success){const error=new Error(data.error || 'The request could not finish. Check its receipt before retrying.');Object.assign(error,{status:response.status,code:data.code,schema:data.schema});throw error;}return data;
   }
   async function getContext(){context=await request('submission-context');return context;}
   try {
@@ -38,7 +38,7 @@
     keepReceipt(operation,hash);
     return operation;
   }
-  function failed(error:any){
+  function failed(error:any){if(error?.code==='FORM_CHANGED'){clearReceipt();(window as any).sfSchoolForm?.updateSchema(error.schema);}
     if([400,401,403,410].includes(error.status))clearReceipt();
     tell('Needs attention. '+(error.message || 'Check the previous receipt before retrying.'));
   }
@@ -46,10 +46,10 @@
     clearReceipt();dirty=false;savedFingerprint='';remember.checked=false;saveAgain=false;
     while(saving)await new Promise(resolve=>setTimeout(resolve,25));
     try{
-      if(savedDraft && JSON.stringify(savedDraft.payload)===JSON.stringify(operation?.payload || payload()))await storage.remove('draft');
+      if(savedDraft && JSON.stringify((({previousAnswers,...value})=>value)(savedDraft.payload))===JSON.stringify(operation?.payload || payload()))await storage.remove('draft');
       if(operation)await storage.remove(operation.key);
       await renderQueue();tell('Sent. Your idea is recorded. Save its tracking code explicitly if you need anonymous access later.');
-    }catch{tell('Sent, but local cleanup failed. Remove the saved item before sharing this device.');}
+    }catch{tell('Sent, but local cleanup failed. Remove the saved item before sharing this device.');}finally{(window as any).sfSchoolForm?.reset();}
   }
   async function renderQueue(normalize=false){
     const rows=await storage.records(normalize);savedDraft=rows.find(x=>x.kind==='draft');restore.hidden=!savedDraft;discard.hidden=!savedDraft;
@@ -75,7 +75,12 @@
       const operation=await prepare(row.payload,row);await storage.put({...row,state:'Sending'});await renderQueue();
       const data=await request('submit',{...row.payload,requestId:operation.key,actor:operation.actor});
       await finish(data,operation);(window as any).sfShowSubmissionSuccess(data);
-    }catch(e){try{await storage.put({...row,state:'Needs attention'});}catch{}failed(e);}
+    }catch(e){try{await storage.put({...row,state:'Needs attention'});}catch{}if(e.code==='FORM_CHANGED'){
+      if((title.value||description.value)&&JSON.stringify(payload())!==JSON.stringify(row.payload)&&!await window.sfConfirm('The school form changed. Load this queued idea for review and replace the current editable draft? Cancel keeps your current text and leaves this item in the queue.')){failed(e);return;}
+      title.value=row.payload.title;description.value=row.payload.description;anon.checked=row.payload.isAnonymous;
+      (window as any).sfSchoolForm?.restore(row.payload);document.querySelectorAll<HTMLInputElement>('input[name="sip-category"]').forEach(radio=>radio.checked=radio.value===row.payload.category||radio.dataset.categoryName===row.payload.category);
+      remember.checked=true;dirty=true;failed(e);await storage.remove(row.key);await saveDraft();(window as any).sfRestoreSubmissionStep(true);
+    }else failed(e);}
     finally{busy=false;await renderQueue();}
   }
   async function saveDraft(){
@@ -83,13 +88,13 @@
     if(saving){saveAgain=true;return;}saving=true;
     try{
       const value=payload(),now=Date.now();
-      await storage.put({key:'draft',version:1,kind:'draft',createdAt:now,expiresAt:now+storage.lifetime,payload:value});
-      savedFingerprint=JSON.stringify(value);tell('Draft saved on this device for seven days. Attachments are not saved.');
+      await storage.put({key:'draft',version:1,kind:'draft',createdAt:now,expiresAt:now+storage.lifetime,payload:{...value,...((window as any).sfSchoolForm?.draftExtra()||{})}});
+      savedFingerprint=JSON.stringify(value);tell('Draft saved on this device for seven days. Uploaded image references expire after one day; reattach images when needed.');
       await renderQueue();
     }catch(e){savedFingerprint='';tell(e.message);}
     finally{saving=false;if(saveAgain){saveAgain=false;void saveDraft();}}
   }
-  form.addEventListener('input',e=>{if(e.target!==title && e.target!==description && e.target!==anon && !(e.target as HTMLElement).matches('input[name="sip-category"]'))return;dirty=true;void saveDraft();});
+  form.addEventListener('input',e=>{if(e.target!==form && e.target!==title && e.target!==description && e.target!==anon && !(e.target as HTMLElement).matches('input[name="sip-category"],[data-school-question]'))return;dirty=true;void saveDraft();});
   remember.addEventListener('change',async()=>{
     if(remember.checked){
       if(savedDraft && JSON.stringify(savedDraft.payload)!==JSON.stringify(payload()) && !await window.sfConfirm('Replace the saved draft with this draft?')){remember.checked=false;return;}
@@ -103,9 +108,9 @@
   restore.addEventListener('click',async()=>{
     if(!savedDraft)return;if((title.value || description.value) && !await window.sfConfirm('Replace the current text with the saved draft?'))return;
     if(!savedDraft)return;
-    title.value=savedDraft.payload.title;description.value=savedDraft.payload.description;anon.checked=savedDraft.payload.isAnonymous;
-    document.querySelectorAll<HTMLInputElement>('input[name="sip-category"]').forEach(radio=>radio.checked=radio.value===savedDraft.payload.category);
-    onCategorySelected(savedDraft.payload.category);handleTitleInput();handleDescInput();handleAnonToggle();remember.checked=true;dirty=true;savedFingerprint=JSON.stringify(payload());tell('Draft restored. Review it before sending.');(window as any).sfRestoreSubmissionStep(!!savedDraft.payload.category);
+    title.value=savedDraft.payload.title;description.value=savedDraft.payload.description;anon.checked=savedDraft.payload.isAnonymous;if((window as any).sfSchoolCustomization?.features?.anonymous===false)anon.checked=false;(window as any).sfSchoolForm?.restore(savedDraft.payload);
+    document.querySelectorAll<HTMLInputElement>('input[name="sip-category"]').forEach(radio=>radio.checked=radio.value===savedDraft.payload.category||radio.dataset.categoryName===savedDraft.payload.category);
+    onCategorySelected(document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked')?.value || '');handleTitleInput();handleDescInput();handleAnonToggle();remember.checked=true;dirty=true;savedFingerprint=JSON.stringify(payload());tell(savedDraft.payload.schemaVersion===2&&savedDraft.payload.formVersion!==(window as any).sfSchoolCustomization?.formVersion?'Draft restored. The school form changed; review its current questions and reattach expired images.':'Draft restored. Review it before sending.');(window as any).sfRestoreSubmissionStep(!!savedDraft.payload.category);
   });
   discard.addEventListener('click',async()=>{if(!await window.sfConfirm('Discard the saved draft on this device?'))return;try{await storage.remove('draft');savedFingerprint='';remember.checked=false;await renderQueue();tell('Saved draft discarded. Current editable text is unchanged.');}catch(e){tell(e.message);}});
   document.getElementById('sip-queue-btn')?.addEventListener('click',async()=>{
@@ -115,6 +120,7 @@
     if(!remember.checked){tell('Enable saving on this device before queueing. Queue contents can be seen by others using this browser.');remember.focus();return;}
     busy=true;
     try{
+      (window as any).sfSchoolForm?.validate();
       const current=navigator.onLine?await getContext():context;if(!current)throw new Error('Connect once to identify this browser. Your draft can still be saved offline.');
       if(!value.isAnonymous && !current.signedIn)throw new Error('Sign in before queueing a named idea.');
       const hash=await fingerprint(value);

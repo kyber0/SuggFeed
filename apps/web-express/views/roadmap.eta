@@ -1,9 +1,9 @@
 <% layout('layout') %>
 <%
  const stages = [
-  { key: 'approved', label: 'Planned', caption: 'Approved ideas ready for the next step.', empty: 'Newly approved ideas will appear here.' },
-  { key: 'in_progress', label: 'In progress', caption: 'Improvements the school is working on.', empty: 'Ideas will move here when work begins.' },
-  { key: 'resolved', label: 'Completed', caption: 'Community feedback put into action.', empty: 'Completed improvements will appear here.' }
+  { key: 'approved', label: it.schoolCustomization?.labels.approved || 'Planned', caption: it.schoolCustomization?.stageDescriptions.approved || 'Approved ideas ready for the next step.', empty: 'Newly approved ideas will appear here.' },
+  { key: 'in_progress', label: it.schoolCustomization?.labels.in_progress || 'In progress', caption: it.schoolCustomization?.stageDescriptions.in_progress || 'Follow work underway in your school.', empty: 'Ideas will move here when work begins.' },
+  { key: 'resolved', label: it.schoolCustomization?.labels.resolved || 'Completed', caption: it.schoolCustomization?.stageDescriptions.resolved || 'Community feedback put into action.', empty: 'Completed improvements will appear here.' }
  ];
  const filters = it.filters || { search: '', category: 'all', stage: 'all', view: 'board', page: 1 };
  const counts = it.counts || Object.fromEntries(stages.map(s => [s.key, (it.items || []).filter(i => i.status === s.key).length]));
@@ -66,7 +66,7 @@
     <select class="workspace-input" id="roadmap-category" name="category">
      <option value="all">All categories</option>
      <% for (const category of (it.categories || [])) { %>
-      <option value="<%= category %>" <%= filters.category === category ? 'selected' : '' %>><%= category %></option>
+      <option value="<%= it.schoolCustomization?.categories.find(c=>c.name===category)?.id || category %>" <%= filters.category === (it.schoolCustomization?.categories.find(c=>c.name===category)?.id || category) ? 'selected' : '' %>><%= category %></option>
      <% } %>
     </select>
    </label>
@@ -77,7 +77,7 @@
   <div class="roadmap-results">
    <p role="status"><%= (it.items || []).length %> shown · <%= filters.stage === 'all' ? matchingCount : (counts[filters.stage] || 0) %> matching ideas<%= filtered ? ' across all pages' : '' %></p>
    <% if (filtered) { %>
-    <div class="roadmap-active-filters" aria-label="Active filters"><% if(filters.search) { %><span>Search: <%= filters.search %></span><% } %><% if(filters.category!=='all') { %><span>Category: <%= filters.category %></span><% } %><% if(filters.stage!=='all') { %><span>Stage: <%= stages.find(s=>s.key===filters.stage)?.label || filters.stage %></span><% } %></div>
+    <div class="roadmap-active-filters" aria-label="Active filters"><% if(filters.search) { %><span>Search: <%= filters.search %></span><% } %><% if(filters.category!=='all') { %><span>Category: <%= it.schoolCustomization?.categories.find(c=>c.id===filters.category)?.name || filters.category %></span><% } %><% if(filters.stage!=='all') { %><span>Stage: <%= stages.find(s=>s.key===filters.stage)?.label || filters.stage %></span><% } %></div>
     <a class="workspace-text-link" id="roadmap-clear" data-roadmap-state-link href="<%= urlFor({ search: '', category: 'all', stage:filters.view==='done'?'resolved':'all', page: '1' }) %>">Reset filters</a>
    <% } %>
    <% if (filters.stage !== 'all' && filters.view !== 'done') { %>
@@ -105,7 +105,7 @@
          <span class="roadmap-card-vote-icon" aria-hidden="true">↑</span>
          <span class="roadmap-card-vote-count"><%= recent.votes %></span>
         </button>
-        <span class="workspace-status" data-status="resolved">Completed</span>
+        <span class="workspace-status" data-status="resolved"><%= it.schoolCustomization?.labels.resolved || 'Completed' %></span>
        </footer>
       </article>
      <% } %>
@@ -132,8 +132,8 @@
          <% for (const row of workTimeline.rows) { const item = row.item; %>
           <article class="work-timeline-row" data-status="<%= item.is_blocked ? 'blocked' : item.status %>" style="--work-left:<%= row.left %>%;--work-width:<%= row.width %>%">
            <span class="work-timeline-rail" aria-hidden="true"></span>
-           <button type="button" class="work-timeline-card" data-timeline-open="<%= item.id %>" aria-haspopup="dialog" aria-label="Open work record: <%= item.title %>. <%= item.status === 'resolved' ? 'Completed' : item.is_blocked ? 'Paused' : 'In progress' %>. <%= row.dateLabel %>. <%= item.progress_percent === null ? 'Progress not estimated' : item.progress_percent + ' percent complete, school estimate' %>">
-            <span class="work-timeline-card-top"><span class="work-timeline-card-state"><%= item.status === 'resolved' ? 'Completed' : item.is_blocked ? 'Paused' : 'In progress' %></span><span class="work-timeline-card-percent"><%= item.progress_percent === null ? '—' : item.progress_percent + '%' %></span></span>
+           <button type="button" class="work-timeline-card" data-timeline-open="<%= item.id %>" aria-haspopup="dialog" aria-label="Open work record: <%= item.title %>. <%= item.is_blocked ? 'Paused' : (it.schoolCustomization?.labels[item.status] || (item.status === 'resolved' ? 'Completed' : 'In progress')) %>. <%= row.dateLabel %>. <%= item.progress_percent === null ? 'Progress not estimated' : item.progress_percent + ' percent complete, school estimate' %>">
+            <span class="work-timeline-card-top"><span class="work-timeline-card-state"><%= item.is_blocked ? 'Paused' : (it.schoolCustomization?.labels[item.status] || (item.status === 'resolved' ? 'Completed' : 'In progress')) %></span><span class="work-timeline-card-percent"><%= item.progress_percent === null ? '—' : item.progress_percent + '%' %></span></span>
             <strong><%= item.title %></strong>
             <span class="work-timeline-card-dates"><%= row.clipped ? '← ' : '' %><%= row.dateLabel %></span>
            </button>
@@ -261,7 +261,7 @@
             <span class="roadmap-tree-leaf-progress-text"><%= leaf.progress_percent %>%</span>
            </span>
           <% } %>
-          <span class="workspace-status" data-status="<%= leaf.status %>"><%= leaf.status === 'resolved' ? 'Completed' : leaf.status === 'in_progress' ? 'In progress' : 'Planned' %></span>
+          <span class="workspace-status" data-status="<%= leaf.status %>"><%= it.schoolCustomization?.labels[leaf.status] || (leaf.status === 'resolved' ? 'Completed' : leaf.status === 'in_progress' ? 'In progress' : 'Planned') %></span>
           <button type="button" class="roadmap-card-vote-btn roadmap-card-vote-btn--compact" data-vote-id="<%= leaf.id %>" aria-label="Support idea, <%= leaf.votes %> votes" title="Support this idea">
            <span class="roadmap-card-vote-icon" aria-hidden="true">↑</span>
            <span class="roadmap-card-vote-count"><%= leaf.votes %></span>
@@ -300,7 +300,7 @@
        <div class="roadmap-timeline-cards">
         <% for (const item of monthGroup.items) { %>
          <article class="roadmap-timeline-card roadmap-completion-card" data-roadmap-id="<%= item.id %>">
-          <div class="roadmap-completion-tags"><span class="workspace-tag"><%= item.category %></span><span class="workspace-status" data-status="resolved">Completed</span></div>
+          <div class="roadmap-completion-tags"><span class="workspace-tag"><%= item.category %></span><span class="workspace-status" data-status="resolved"><%= it.schoolCustomization?.labels.resolved || 'Completed' %></span></div>
           <h4><button type="button" data-timeline-open="<%= item.id %>" aria-haspopup="dialog" aria-label="Open completion record: <%= item.title %>"><%= item.title %></button></h4>
           <p class="roadmap-completion-outcome"><%= item.outcome || 'Marked completed; an outcome summary has not been posted.' %></p>
           <div class="roadmap-completion-meta"><span><%= completionLabel(item) %></span><span>View record →</span></div>
@@ -403,6 +403,6 @@
  <%~ include('partials/work-record', it) %>
 </main>
 <script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items || []).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/roadmap.js?v=20261016-school-isolation"></script>
+<script defer src="/js/roadmap.js?v=20261018-customization"></script>
 <script defer src="/js/roadmap-timeline.js?v=20261016-school-isolation"></script>
 <script defer src="/js/roadmap-views.js?v=20261016-school-isolation"></script>

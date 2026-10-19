@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Request } from 'express';
+import type { SchoolCustomization } from './school-customization';
 import type { AppUser } from '../types';
 
 export interface SchoolScope {
@@ -8,6 +9,8 @@ export interface SchoolScope {
   name: string;
   actorId: string | null;
   role: 'student' | 'moderator' | 'admin' | null;
+  customization?:SchoolCustomization;
+  customizationVersion?:number;
 }
 const scopes = new AsyncLocalStorage<SchoolScope>();
 export const currentSchool = () => scopes.getStore();
@@ -21,4 +24,4 @@ export function schoolUser(req: Request): AppUser | null {
   const school = currentSchool(), user = req.session.user;
   return user && school?.actorId === user.id && school.role ? { ...user, role: school.role } : null;
 }
-export function schoolCacheKey(key: string): string { return `${requireSchool().id}:${key}`; }
+export function schoolCacheKey(key: string): string { const school=requireSchool();return `${school.id}:${school.customizationVersion?'v'+school.customizationVersion+':':''}${key}`; }

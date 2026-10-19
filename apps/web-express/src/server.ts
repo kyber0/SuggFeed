@@ -23,6 +23,9 @@ import { resolveSchool } from './lib/school-context';
 import { schoolUser } from './lib/school-scope';
 import { schoolHtml } from './lib/school-path';
 import schoolsRouter from './routes/schools';
+import schoolSubmissionsRouter from './routes/school-submissions';
+import schoolBrandingRouter from './routes/school-branding';
+import schoolCustomizationRouter from './routes/school-customization';
 import { sharedWriteBudget, sharedAuthBudget } from './lib/shared-rate-limit';
 import "./types"; // session augmentation
 import { supabase as publicSupabase, supabaseService, supabasePlatform, supabaseUrl, supabaseAnonKey } from "./lib/supabase";
@@ -182,10 +185,10 @@ app.use((req,res,next) => {
 });
 
 /* ── Body parsers ────────────────────────────────────────────────────────── */
+app.use(sameOriginOnly);
 app.use(express.json({ limit: "512kb" }));
 app.use(express.urlencoded({ extended: true, limit: "512kb" }));
 app.use(cookieParser());
-app.use(sameOriginOnly);
 // Assets do not need session DB reads.
 app.use(express.static(publicDir, {
   maxAge: isProd ? "7d" : 0,
@@ -246,6 +249,7 @@ app.use('/auth', sharedAuthBudget, (req,res,next) => req.method === 'POST' ? aut
 app.use(['/schools','/platform','/s/:schoolSlug/admin'],sharedAuthBudget);
 app.use(navigationContext);
 app.use('/account/security', accountSecurityRouter);
+app.use('/', schoolCustomizationRouter);
 app.use('/', schoolsRouter);
 app.use('/', digestRouter); // only global internal cron matches without a school
 app.get('/internal/progress-evidence-cleanup', cleanupHandler);
@@ -264,12 +268,14 @@ app.use(resolveSchool);
 app.use((req,res,next) => {res.locals.currentPath=req.path;res.locals.user=schoolUser(req);next();});
 // Scope and freshly verified membership precede privileged assurance checks.
 app.use(requireStaffAssurance);
+app.use('/branding',schoolBrandingRouter);
 app.use(startFeedAccountState);
 app.use(startPublicNavigation);
 app.get('/api/navigation-cache',generalApiLimiter,warmPublicNavigation);
 app.get('/api/feed-total',generalApiLimiter,publicFeedTotal);
 app.use(sharedWriteBudget);
 app.use('/api/', generalApiLimiter);
+app.use(schoolSubmissionsRouter);
 app.use('/api/submit', writeLimiter);
 app.use('/api/vote', writeLimiter);
 app.use('/api/comments', writeLimiter);

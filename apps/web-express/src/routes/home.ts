@@ -1,5 +1,6 @@
+import {schoolCategories} from '../lib/school-customization';
 import { Router, Request, Response, NextFunction } from "express";
-import { loadPublishedSubmissions, DEFAULT_CATEGORIES } from "../lib/data";
+import { loadPublishedSubmissions } from "../lib/data";
 
 const router = Router();
 
@@ -28,7 +29,7 @@ router.get(
       description: "Share campus feedback, choose whether to attach your account, and check submission progress with a private tracking code.",
       feed,
       totalCount: count,
-      categories: DEFAULT_CATEGORIES,
+      categories: schoolCategories().map(c=>c.name),
     });
   })
 );

@@ -12,7 +12,7 @@
   <div id="work-record-content" hidden>
    <section class="work-record-summary" aria-labelledby="work-record-summary-title">
     <h3 id="work-record-summary-title">Current stage</h3>
-    <ol class="work-record-stages" id="work-record-stages"><li data-work-stage="approved">Planned</li><li data-work-stage="in_progress">In progress</li><li data-work-stage="resolved">Completed</li></ol>
+    <ol class="work-record-stages" id="work-record-stages"><li data-work-stage="approved"><%= it.schoolCustomization?.labels.approved || 'Planned' %></li><li data-work-stage="in_progress"><%= it.schoolCustomization?.labels.in_progress || 'In progress' %></li><li data-work-stage="resolved"><%= it.schoolCustomization?.labels.resolved || 'Completed' %></li></ol>
     <dl class="work-record-dates"><div><dt>Recorded start</dt><dd id="work-record-start"></dd></div><div><dt>Recorded completion</dt><dd id="work-record-end"></dd></div><div><dt>School estimate</dt><dd id="work-record-percent"></dd></div><div><dt>Latest public update</dt><dd id="work-record-updated"></dd></div></dl>
     <p class="workspace-detail-meta">Work dates reflect school records. Estimates may change.</p>
    </section>

@@ -23,4 +23,4 @@
   <symbol id="ws-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
   <symbol id="ws-merge" viewBox="0 0 24 24"><path d="M6 21v-5c0-4 12-4 12-8V3M18 21V3m-4 4 4-4 4 4"/></symbol>
   <symbol id="ws-signout" viewBox="0 0 24 24"><path d="M9 21H4V3h5M10 12h11m-4-4 4 4-4 4"/></symbol>
-</svg>
+<symbol id="ws-book" viewBox="0 0 24 24"><path d="M12 4v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol><symbol id="ws-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h1m6 0h1M8 10h1m6 0h1M8 14h1m6 0h1"/></symbol><symbol id="ws-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></symbol></svg>

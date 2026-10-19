@@ -78,8 +78,8 @@
     <details class="submission-recovery care-card">
       <summary>Draft recovery and queued ideas</summary>
       <p>Your idea text may become public after review. Anonymous mode hides your identity, not the content. Avoid names and personal details.</p>
-      <label><input id="sip-remember-draft" type="checkbox"/> Remember text and category on this device for seven days</label>
-      <p>Anyone using this browser may see saved drafts. Attachments, private replies, and tracking codes are excluded. Queued ideas are sent only when you choose Send now.</p>
+      <label><input id="sip-remember-draft" type="checkbox"/> Remember idea text, school answers and image references on this device for seven days</label>
+      <p>Anyone using this browser may see saved drafts and school answers. Only image references are saved here; unsubmitted images on the service expire after one day. Private replies and tracking codes are excluded. Queued ideas are sent only when you choose Send now.</p>
       <div class="workspace-actions"><button type="button" id="sip-restore-draft" class="workspace-button" hidden>Restore draft</button><button type="button" id="sip-discard-draft" class="workspace-button" hidden>Discard saved draft</button><button type="button" id="sip-check-receipt" class="workspace-button" disabled>Check previous submission</button></div>
       <p id="sip-recovery-status" role="status" aria-live="polite">Draft · device recovery is off.</p>
       <ul id="sip-queue-list" aria-label="Queued ideas"></ul>
@@ -92,97 +92,9 @@
       </div>
 
       <div class="sip-cat-grid" role="radiogroup" aria-label="Feedback category">
-        <!-- Facilities -->
-        <label class="sip-cat-card" id="cat-card-Facilities">
-          <input type="radio" name="sip-category" value="Facilities" class="sip-cat-radio" required data-sf-change="action-116" />
-          <div class="sip-cat-icon-wrap" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-              <path d="M9 22v-4h6v4"/>
-              <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/>
-            </svg>
-          </div>
-          <div class="sip-cat-card-content">
-            <div class="sip-cat-card-header">
-              <span class="sip-cat-card-title">Facilities</span>
-              <span class="sip-cat-check-dot"></span>
-            </div>
-            <div class="sip-cat-card-sub">Buildings, classrooms, restrooms, air conditioning, campus amenities</div>
-          </div>
-        </label>
-
-        <!-- Learning -->
-        <label class="sip-cat-card" id="cat-card-Learning">
-          <input type="radio" name="sip-category" value="Learning" class="sip-cat-radio" data-sf-change="action-117" />
-          <div class="sip-cat-icon-wrap" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-            </svg>
-          </div>
-          <div class="sip-cat-card-content">
-            <div class="sip-cat-card-header">
-              <span class="sip-cat-card-title">Learning</span>
-              <span class="sip-cat-check-dot"></span>
-            </div>
-            <div class="sip-cat-card-sub">Courses, academic resources, study halls, library, curriculum</div>
-          </div>
-        </label>
-
-        <!-- Safety -->
-        <label class="sip-cat-card" id="cat-card-Safety">
-          <input type="radio" name="sip-category" value="Safety" class="sip-cat-radio" data-sf-change="action-118" />
-          <div class="sip-cat-icon-wrap" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <path d="m9 12 2 2 4-4"/>
-            </svg>
-          </div>
-          <div class="sip-cat-card-content">
-            <div class="sip-cat-card-header">
-              <span class="sip-cat-card-title">Safety</span>
-              <span class="sip-cat-check-dot"></span>
-            </div>
-            <div class="sip-cat-card-sub">Campus security, night lighting, health, walkways, emergency readiness</div>
-          </div>
-        </label>
-
-        <!-- Student life -->
-        <label class="sip-cat-card" id="cat-card-Student-life">
-          <input type="radio" name="sip-category" value="Student life" class="sip-cat-radio" data-sf-change="action-119" />
-          <div class="sip-cat-icon-wrap" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div class="sip-cat-card-content">
-            <div class="sip-cat-card-header">
-              <span class="sip-cat-card-title">Student life</span>
-              <span class="sip-cat-check-dot"></span>
-            </div>
-            <div class="sip-cat-card-sub">Clubs, campus events, dining, mental health, community activities</div>
-          </div>
-        </label>
-
-        <!-- Other -->
-        <label class="sip-cat-card" id="cat-card-Other">
-          <input type="radio" name="sip-category" value="Other" class="sip-cat-radio" data-sf-change="action-120" />
-          <div class="sip-cat-icon-wrap" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-            </svg>
-          </div>
-          <div class="sip-cat-card-content">
-            <div class="sip-cat-card-header">
-              <span class="sip-cat-card-title">Other</span>
-              <span class="sip-cat-check-dot"></span>
-            </div>
-            <div class="sip-cat-card-sub">General feedback, campus digital tools, administration, novel proposals</div>
-          </div>
-        </label>
+       <% const schoolCats=it.schoolCategories || (it.categories || ['Facilities','Learning','Safety','Student life','Other']).map(name=>({id:name,name,icon:'message',description:''})); for(const cat of schoolCats) { %>
+        <label class="sip-cat-card" id="cat-card-<%= cat.id %>"><input type="radio" name="sip-category" value="<%= cat.id %>" data-category-name="<%= cat.name %>" class="sip-cat-radio" required data-sf-change="action-116"/><div class="sip-cat-icon-wrap" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#ws-<%= cat.icon || 'message' %>"/></svg></div><div class="sip-cat-card-content"><div class="sip-cat-card-header"><span class="sip-cat-card-title"><%= cat.name %></span><span class="sip-cat-check-dot"></span></div><div class="sip-cat-card-sub"><%= cat.description || 'Share feedback and suggestions about this topic.' %></div></div></label>
+       <% } %>
       </div>
     </div>
 
@@ -260,6 +172,7 @@
           </div>
         </label>
       </div>
+      <%~ include('school-custom-questions',it) %>
     </div>
 
     <!-- Step 3: Review -->
@@ -378,7 +291,7 @@
         </div>
       </div>
 
-      <div class="sip-success-actions">
+      <div class="sip-success-actions"><a class="workspace-button" id="sip-private-details" hidden>View your private answers & images</a>
         <button type="button" class="sip-btn-done" data-sf-click="action-129">
           Done
         </button>
@@ -418,6 +331,6 @@
   </form>
 </aside>
 
-<script defer src="/js/submission-storage.js?v=20261016-school-isolation"></script>
-<script defer src="/js/submission-recovery.js?v=20261018-empty-states"></script>
-<script defer src="/js/submit-panel.js?v=20261018-submit-event"></script>
+<script defer src="/js/submission-storage.js?v=20261018-customization"></script>
+<script defer src="/js/submission-recovery.js?v=20261018-customization"></script>
+<script defer src="/js/submit-panel.js?v=20261018-customization"></script>

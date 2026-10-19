@@ -1,3 +1,4 @@
+import {type SchoolCustomization,schoolStatusLabel} from './school-customization';
 import { DEMO_SCHOOL_ID } from './school-onboarding';
 import type { Request, Response, NextFunction } from 'express';
 import { supabasePlatform } from './supabase';
@@ -11,7 +12,7 @@ export function resolveSchool(req: Request, res: Response, next: NextFunction) {
   const unsubscribe=/^\/digest\/(?:unsubscribe|unsubscribed)$/.test(localPath);
   if (!match) return res.status(404).render('404', { title: 'School not found' });
   void (async () => {
-    const { data: school, error } = await supabasePlatform.from('schools').select('id,slug,name,status').eq('slug', match[1]).maybeSingle();
+    const { data: school, error } = await supabasePlatform.rpc('school_presentation',{p_slug:match[1]});
     if (error) throw Object.assign(new Error('School registry is unavailable.'), {status:503});
     if (!school) return res.status(404).render('404', { title: 'School unavailable' });
     const userId = req.session.user?.id;
@@ -43,9 +44,10 @@ export function resolveSchool(req: Request, res: Response, next: NextFunction) {
     res.redirect = ((first: string | number, second?: string) => typeof first === 'number' ? redirect(first, schoolPath(res.locals.schoolBase, second || '/')) : redirect(schoolPath(res.locals.schoolBase, first))) as typeof res.redirect;
     res.locals.schoolId = school.id;
     res.locals.schoolName = school.name;
+    res.locals.schoolCustomization=school.configuration;res.locals.schoolCustomizationVersion=school.customization_version;res.locals.schoolCategories=(school.configuration?.categories || []).filter((c:any)=>c.active);res.locals.schoolStatusLabel=schoolStatusLabel;
     // All existing route paths stay relative to this verified school mount.
     req.url = req.url.slice(match[0].length) || '/';
     if (req.url.startsWith('?')) req.url = '/' + req.url;
-    return runWithSchool({ id: school.id, slug: school.slug, name: school.name, role, actorId: role ? userId! : null }, next);
+    return runWithSchool({ id: school.id, slug: school.slug, name: school.name, role, actorId: role ? userId! : null, customization:school.configuration as SchoolCustomization,customizationVersion:school.customization_version }, next);
   })().catch(next);
 }

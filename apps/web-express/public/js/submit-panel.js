@@ -24,6 +24,10 @@
                 const choice = localStorage.getItem(sfSchoolKey('sf_anon_default'));
                 const signedIn = !!document.getElementById('sf-auth-config')?.dataset.user;
                 document.getElementById('sip-anon').checked = !signedIn || choice !== 'false';
+                if (window.sfSchoolCustomization?.features?.anonymous === false) {
+                    document.getElementById('sip-anon').checked = false;
+                    document.getElementById('sip-anon').disabled = true;
+                }
             }
             catch { }
         }
@@ -312,10 +316,17 @@
                     sfToast('Description must be at least 20 characters.', 'warning');
                 return;
             }
+            try {
+                window.sfSchoolForm?.validate();
+            }
+            catch (error) {
+                window.sfSubmissionRecovery?.tell(error.message);
+                return;
+            }
             // Populate review step
             const cat = document.querySelector('input[name="sip-category"]:checked').value;
             const isAnon = document.getElementById('sip-anon').checked;
-            document.getElementById('rev-category').textContent = cat;
+            document.getElementById('rev-category').textContent = document.querySelector('input[name="sip-category"]:checked')?.dataset.categoryName || cat;
             document.getElementById('rev-title').textContent = title;
             document.getElementById('rev-desc').textContent = desc;
             document.getElementById('rev-anon-badge').textContent = isAnon ? 'Anonymous Submission' : 'Public Profile';
@@ -397,7 +408,8 @@
         const isAnonymous = document.getElementById('sip-anon').checked;
         try {
             const recovery = window.sfSubmissionRecovery;
-            const value = { title, description, category, isAnonymous };
+            const value = { title, description, category, isAnonymous, ...(window.sfSchoolForm?.extra() || {}) };
+            window.sfSchoolForm?.validate();
             const operation = await recovery.prepare(value);
             const data = await recovery.request('submit', { ...value, requestId: operation.key, actor: operation.actor });
             await recovery.finish(data, operation);
@@ -421,6 +433,11 @@
         }
     }
     function sfShowSubmissionSuccess(data) {
+        const details = document.getElementById('sip-private-details');
+        if (details) {
+            details.hidden = !data.id;
+            details.href = sfSchoolPath('/submission-details/' + encodeURIComponent(data.id || ''));
+        }
         sipTrackingCode = data.tracking_code || "";
         document.getElementById('sip-success-code').textContent = sipTrackingCode;
         // Reset copy button state

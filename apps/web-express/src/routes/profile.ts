@@ -1,3 +1,4 @@
+import {schoolFeature} from '../lib/school-customization';
 import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from "express";
 import { loadUserProfile, loadUserSubmissions } from "../lib/data";
@@ -126,6 +127,7 @@ router.post('/activity',sameOriginOnly,asyncHandler(async(req,res)=>{
  return res.json({success:true,...Object.fromEntries(Object.entries(groups).map(([key,list])=>[key,list.map(id=>byId.get(id)).filter(Boolean)]))});
 }));
 router.post('/shared/:id',sameOriginOnly,asyncHandler(async(req,res)=>{
+ if(!schoolFeature('sharing'))return res.status(403).json({success:false,code:'FEATURE_DISABLED',error:'This school disabled new sharing actions.'});
  const id=req.params.id as string;if(!uuid.test(id))return res.status(400).json({success:false,error:'Invalid idea.'});
  const {data,error}=await supabaseService.from('submissions').select('id').eq('id',id).in('status',['approved','in_progress','resolved']).maybeSingle();
  if(error)throw new Error('Sharing could not be recorded.');if(!data)return res.status(404).json({success:false,error:'Public idea not found.'});

@@ -93,7 +93,7 @@
             heading.className = 'prof-activity-title';
             heading.textContent = row.title;
             const detail = document.createElement('p');
-            detail.textContent = (row.categories?.name || 'Other') + ' · ' + ({ approved: 'Planned', in_progress: 'In progress', resolved: 'Completed' }[row.status] || 'Public idea') + ' · ' + row.vote_count + ' supporters';
+            detail.textContent = (row.categories?.name || 'Other') + ' · ' + (window.sfSchoolCustomization?.labels?.[row.status] || { approved: 'Planned', in_progress: 'In progress', resolved: 'Completed' }[row.status] || 'Public idea') + ' · ' + row.vote_count + ' supporters';
             link.append(heading, detail);
             wrap.append(link);
             if (tab === 'bookmarks') {

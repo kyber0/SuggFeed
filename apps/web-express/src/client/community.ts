@@ -8,7 +8,7 @@
     const input=picker.querySelector<HTMLInputElement>('[data-picker-search]')!, value=picker.querySelector<HTMLInputElement>('[data-picker-value]')!, selected=picker.querySelector<HTMLElement>('[data-picker-selected]')!, results=picker.querySelector<HTMLElement>('[data-picker-results]')!;
     let controller:AbortController | undefined,timer:ReturnType<typeof setTimeout>,generation=0;
     const status:Record<string,string>={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'};
-    const choose=(item:any)=>{value.value=item.id;selected.textContent=`${item.title} · ${item.category || item.categories?.name || 'Other'} · ${status[item.status] || item.status} · ${item.id.slice(0,8)}`;input.setCustomValidity('');results.replaceChildren();};
+    const choose=(item:any)=>{value.value=item.id;selected.textContent=`${item.title} · ${item.category || item.categories?.name || 'Other'} · ${(window as any).sfSchoolCustomization?.labels?.[item.status] || status[item.status] || item.status} · ${item.id.slice(0,8)}`;input.setCustomValidity('');results.replaceChildren();};
     if(value.value)void sfSchoolFetch('/api/staff/submissions/'+encodeURIComponent(value.value),{cache:'no-store'}).then(async response=>{const data=await response.json();if(generation!==0)return;if(!response.ok || !data.item)throw new Error();choose(data.item);}).catch(()=>{if(generation===0){value.value='';selected.textContent='Selected suggestion unavailable. Search again.';}});
     input.addEventListener('input',()=>{
       clearTimeout(timer);controller?.abort();const current=++generation;value.value='';selected.textContent='Choose a result before sending.';results.replaceChildren();input.setCustomValidity('Choose a suggestion from the search results.');
@@ -17,7 +17,7 @@
         controller=new AbortController();selected.textContent='Searching…';
         try{const response=await sfSchoolFetch('/api/staff/submission-search?'+new URLSearchParams({q:input.value.trim(),public:picker.dataset.publicScope || 'false'}),{signal:controller.signal,cache:'no-store'});const data=await response.json();if(current!==generation)return;if(!response.ok)throw new Error();
           selected.textContent=data.items.length?'Choose a suggestion.':'No matching suggestions.';
-          for(const item of data.items){const button=document.createElement('button');button.type='button';button.className='workspace-button';button.textContent=`${item.title} · ${item.categories?.name || 'Other'} · ${status[item.status]} · ${item.id.slice(0,8)}`;button.addEventListener('click',()=>choose(item));results.append(button);}
+          for(const item of data.items){const button=document.createElement('button');button.type='button';button.className='workspace-button';button.textContent=`${item.title} · ${item.categories?.name || 'Other'} · ${(window as any).sfSchoolCustomization?.labels?.[item.status] || status[item.status]} · ${item.id.slice(0,8)}`;button.addEventListener('click',()=>choose(item));results.append(button);}
         }catch(error){if(current===generation && error.name!=='AbortError')selected.textContent='Search failed or session expired. Edit the search to retry.';}
       },250);
     });

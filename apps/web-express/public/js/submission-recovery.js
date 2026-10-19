@@ -14,14 +14,14 @@
     const receiptKey = 'sf:submission-receipt:v1';
     let context = null, savedDraft = null, currentReceipt = null, dirty = false, saving = false, saveAgain = false, savedFingerprint = '', busy = false;
     const tell = (text) => status.textContent = text;
-    const payload = () => ({ title: title.value.trim(), description: description.value.trim(), category: document.querySelector('input[name="sip-category"]:checked')?.value || '', isAnonymous: anon.checked });
+    const payload = () => ({ title: title.value.trim(), description: description.value.trim(), category: document.querySelector('input[name="sip-category"]:checked')?.value || '', isAnonymous: anon.checked, ...(window.sfSchoolForm?.extra() || {}) });
     const fingerprint = async (value) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(value))))).map(x => x.toString(16).padStart(2, '0')).join('');
     async function request(path, body) {
         const response = await sfSchoolFetch('/api/' + path, { method: body === undefined ? 'GET' : 'POST', cache: 'no-store', credentials: 'same-origin', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
         const data = await response.json();
         if (!response.ok || !data.success) {
             const error = new Error(data.error || 'The request could not finish. Check its receipt before retrying.');
-            Object.assign(error, { status: response.status });
+            Object.assign(error, { status: response.status, code: data.code, schema: data.schema });
             throw error;
         }
         return data;
@@ -64,6 +64,10 @@
         return operation;
     }
     function failed(error) {
+        if (error?.code === 'FORM_CHANGED') {
+            clearReceipt();
+            window.sfSchoolForm?.updateSchema(error.schema);
+        }
         if ([400, 401, 403, 410].includes(error.status))
             clearReceipt();
         tell('Needs attention. ' + (error.message || 'Check the previous receipt before retrying.'));
@@ -77,7 +81,7 @@
         while (saving)
             await new Promise(resolve => setTimeout(resolve, 25));
         try {
-            if (savedDraft && JSON.stringify(savedDraft.payload) === JSON.stringify(operation?.payload || payload()))
+            if (savedDraft && JSON.stringify((({ previousAnswers, ...value }) => value)(savedDraft.payload)) === JSON.stringify(operation?.payload || payload()))
                 await storage.remove('draft');
             if (operation)
                 await storage.remove(operation.key);
@@ -86,6 +90,9 @@
         }
         catch {
             tell('Sent, but local cleanup failed. Remove the saved item before sharing this device.');
+        }
+        finally {
+            window.sfSchoolForm?.reset();
         }
     }
     async function renderQueue(normalize = false) {
@@ -152,7 +159,25 @@
                 await storage.put({ ...row, state: 'Needs attention' });
             }
             catch { }
-            failed(e);
+            if (e.code === 'FORM_CHANGED') {
+                if ((title.value || description.value) && JSON.stringify(payload()) !== JSON.stringify(row.payload) && !await window.sfConfirm('The school form changed. Load this queued idea for review and replace the current editable draft? Cancel keeps your current text and leaves this item in the queue.')) {
+                    failed(e);
+                    return;
+                }
+                title.value = row.payload.title;
+                description.value = row.payload.description;
+                anon.checked = row.payload.isAnonymous;
+                window.sfSchoolForm?.restore(row.payload);
+                document.querySelectorAll('input[name="sip-category"]').forEach(radio => radio.checked = radio.value === row.payload.category || radio.dataset.categoryName === row.payload.category);
+                remember.checked = true;
+                dirty = true;
+                failed(e);
+                await storage.remove(row.key);
+                await saveDraft();
+                window.sfRestoreSubmissionStep(true);
+            }
+            else
+                failed(e);
         }
         finally {
             busy = false;
@@ -169,9 +194,9 @@
         saving = true;
         try {
             const value = payload(), now = Date.now();
-            await storage.put({ key: 'draft', version: 1, kind: 'draft', createdAt: now, expiresAt: now + storage.lifetime, payload: value });
+            await storage.put({ key: 'draft', version: 1, kind: 'draft', createdAt: now, expiresAt: now + storage.lifetime, payload: { ...value, ...(window.sfSchoolForm?.draftExtra() || {}) } });
             savedFingerprint = JSON.stringify(value);
-            tell('Draft saved on this device for seven days. Attachments are not saved.');
+            tell('Draft saved on this device for seven days. Uploaded image references expire after one day; reattach images when needed.');
             await renderQueue();
         }
         catch (e) {
@@ -186,7 +211,7 @@
             }
         }
     }
-    form.addEventListener('input', e => { if (e.target !== title && e.target !== description && e.target !== anon && !e.target.matches('input[name="sip-category"]'))
+    form.addEventListener('input', e => { if (e.target !== form && e.target !== title && e.target !== description && e.target !== anon && !e.target.matches('input[name="sip-category"],[data-school-question]'))
         return; dirty = true; void saveDraft(); });
     remember.addEventListener('change', async () => {
         if (remember.checked) {
@@ -223,15 +248,18 @@
         title.value = savedDraft.payload.title;
         description.value = savedDraft.payload.description;
         anon.checked = savedDraft.payload.isAnonymous;
-        document.querySelectorAll('input[name="sip-category"]').forEach(radio => radio.checked = radio.value === savedDraft.payload.category);
-        onCategorySelected(savedDraft.payload.category);
+        if (window.sfSchoolCustomization?.features?.anonymous === false)
+            anon.checked = false;
+        window.sfSchoolForm?.restore(savedDraft.payload);
+        document.querySelectorAll('input[name="sip-category"]').forEach(radio => radio.checked = radio.value === savedDraft.payload.category || radio.dataset.categoryName === savedDraft.payload.category);
+        onCategorySelected(document.querySelector('input[name="sip-category"]:checked')?.value || '');
         handleTitleInput();
         handleDescInput();
         handleAnonToggle();
         remember.checked = true;
         dirty = true;
         savedFingerprint = JSON.stringify(payload());
-        tell('Draft restored. Review it before sending.');
+        tell(savedDraft.payload.schemaVersion === 2 && savedDraft.payload.formVersion !== window.sfSchoolCustomization?.formVersion ? 'Draft restored. The school form changed; review its current questions and reattach expired images.' : 'Draft restored. Review it before sending.');
         window.sfRestoreSubmissionStep(!!savedDraft.payload.category);
     });
     discard.addEventListener('click', async () => { if (!await window.sfConfirm('Discard the saved draft on this device?'))
@@ -260,6 +288,7 @@
         }
         busy = true;
         try {
+            window.sfSchoolForm?.validate();
             const current = navigator.onLine ? await getContext() : context;
             if (!current)
                 throw new Error('Connect once to identify this browser. Your draft can still be saved offline.');

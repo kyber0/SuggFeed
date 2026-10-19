@@ -34,8 +34,8 @@ const feedUrl = (changes = {}) => {
       <div class="left-nav-divider"></div>
       <h2 class="nav-section-header">BROWSE TOPICS</h2>
       <div class="left-topic-list" id="left-topics">
-        <% for (const cat of ['All', ...(it.categories || [])]) { %>
-          <button type="button" class="topic-item-btn<%= category === cat ? ' selected' : '' %>" data-feed-category="<%= cat %>" aria-pressed="<%= category === cat %>" data-sf-click="action-28" data-sf-click-arg-0="<%= cat %>"><span class="topic-dot topic-dot--<%= slug(cat) %>" aria-hidden="true"></span><%= cat === 'All' ? 'All topics' : cat %></button>
+        <% for (const cat of ['All', ...(it.categories || [])]) { const catValue=cat==='All'?'All':it.schoolCategories?.find(c=>c.name===cat)?.id || cat; %>
+          <button type="button" class="topic-item-btn<%= category === catValue ? ' selected' : '' %>" data-feed-category="<%= catValue %>" aria-pressed="<%= category === catValue %>" data-sf-click="action-28" data-sf-click-arg-0="<%= catValue %>"><span class="topic-dot topic-dot--<%= slug(cat) %>" aria-hidden="true"></span><%= cat === 'All' ? 'All topics' : cat %></button>
         <% } %>
       </div>
       <p class="feed-sidebar-note">Small ideas. Shared progress.<br>Your perspective matters here.</p>
@@ -69,14 +69,14 @@ const feedUrl = (changes = {}) => {
         <button type="button" class="btn-refresh-stream" data-sf-click="action-35" aria-label="Refresh ideas" title="Refresh ideas"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#ws-refresh"/></svg></button>
       </div>
       <div class="topic-chips-carousel" id="topic-chips-panel" role="group" aria-label="Filter ideas by topic">
-        <% for (const cat of ['All', ...(it.categories || [])]) { %>
-          <button type="button" class="topic-chip<%= category === cat ? ' active' : '' %>" data-feed-category="<%= cat %>" aria-pressed="<%= category === cat %>" data-sf-click="action-37" data-sf-click-arg-0="<%= cat %>"><span class="chip-dot chip-dot--<%= slug(cat) %>" aria-hidden="true"></span><%= cat === 'All' ? 'All topics' : cat %></button>
+        <% for (const cat of ['All', ...(it.categories || [])]) { const catValue=cat==='All'?'All':it.schoolCategories?.find(c=>c.name===cat)?.id || cat; %>
+          <button type="button" class="topic-chip<%= category === catValue ? ' active' : '' %>" data-feed-category="<%= catValue %>" aria-pressed="<%= category === catValue %>" data-sf-click="action-37" data-sf-click-arg-0="<%= catValue %>"><span class="chip-dot chip-dot--<%= slug(cat) %>" aria-hidden="true"></span><%= cat === 'All' ? 'All topics' : cat %></button>
         <% } %>
       </div>
       <% if (filtered) { %>
         <div class="feed-applied-filters" aria-label="Applied filters">
           <% if (search) { %><a class="feed-filter-chip" href="<%= feedUrl({search: ''}) %>" aria-label="Remove search filter">“<%= search %>” <span aria-hidden="true">×</span></a><% } %>
-          <% if (category !== 'All') { %><a class="feed-filter-chip" href="<%= feedUrl({category: 'All'}) %>" aria-label="Remove topic filter"><%= category %> <span aria-hidden="true">×</span></a><% } %>
+          <% if (category !== 'All') { %><a class="feed-filter-chip" href="<%= feedUrl({category: 'All'}) %>" aria-label="Remove topic filter"><%= it.schoolCustomization?.categories.find(c=>c.id===category)?.name || category %> <span aria-hidden="true">×</span></a><% } %>
           <a href="<%= feedUrl({search: '', category: 'All'}) %>">Clear filters</a>
         </div>
       <% } %>
@@ -133,7 +133,7 @@ const feedUrl = (changes = {}) => {
         <a href="/roadmap">Explore the roadmap <span aria-hidden="true">→</span></a>
       </section>
       <% if (feed.length) { %>
-        <section class="feed-side-panel">
+        <section class="feed-side-panel feed-side-card--supported">
           <h2 class="feed-side-heading">Most supported on this page</h2>
           <div class="top-posts-list">
             <% for (const [index, item] of [...feed].sort((a,b) => (b.vote_count || 0) - (a.vote_count || 0)).slice(0,3).entries()) { %>
@@ -161,6 +161,6 @@ const feedUrl = (changes = {}) => {
 <div id="sf-feed-account-state" hidden data-user="<%= it.accountState.userId %>" data-bookmarks="<%= JSON.stringify(it.accountState.bookmarks) %>" data-searches="<%= JSON.stringify(it.accountState.searches) %>"></div>
 <% } %>
 <div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total ?? '' %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
-<script defer src="/js/feed.js?v=20261016-school-isolation"></script>
+<script defer src="/js/feed.js?v=20261018-customization"></script>
 
-<script defer src="/js/saved-searches.js?v=20261018-empty-states"></script>
+<script defer src="/js/saved-searches.js?v=20261018-customization"></script>

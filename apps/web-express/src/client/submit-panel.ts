@@ -20,7 +20,7 @@ let sipCurrentStep = 1;
     if (panel) panel.removeAttribute('hidden');
     if (form && (!sipOpened || !(document.getElementById('sip-success') as HTMLElement).hidden)) {
       form.reset();
-      try {const choice=localStorage.getItem(sfSchoolKey('sf_anon_default'));const signedIn=!!document.getElementById('sf-auth-config')?.dataset.user;(document.getElementById('sip-anon') as HTMLInputElement).checked=!signedIn || choice!=='false';}catch{}
+      try {const choice=localStorage.getItem(sfSchoolKey('sf_anon_default'));const signedIn=!!document.getElementById('sf-auth-config')?.dataset.user;(document.getElementById('sip-anon') as HTMLInputElement).checked=!signedIn || choice!=='false';if((window as any).sfSchoolCustomization?.features?.anonymous===false){(document.getElementById('sip-anon') as HTMLInputElement).checked=false;(document.getElementById('sip-anon') as HTMLInputElement).disabled=true;}}catch{}
     }
     sipOpened = true;
     window.dispatchEvent(new CustomEvent('sf:submission-open'));
@@ -296,11 +296,12 @@ let sipCurrentStep = 1;
         return;
       }
 
+      try{(window as any).sfSchoolForm?.validate();}catch(error){(window as any).sfSubmissionRecovery?.tell(error.message);return;}
       // Populate review step
       const cat = document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked').value;
       const isAnon = (document.getElementById('sip-anon') as HTMLInputElement).checked;
 
-      (document.getElementById('rev-category') as HTMLElement).textContent = cat;
+      (document.getElementById('rev-category') as HTMLElement).textContent = document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked')?.dataset.categoryName || cat;
       (document.getElementById('rev-title') as HTMLElement).textContent = title;
       (document.getElementById('rev-desc') as HTMLElement).textContent = desc;
       (document.getElementById('rev-anon-badge') as HTMLElement).textContent = isAnon ? 'Anonymous Submission' : 'Public Profile';
@@ -372,7 +373,8 @@ let sipCurrentStep = 1;
 
     try {
       const recovery=(window as any).sfSubmissionRecovery;
-      const value={title,description,category,isAnonymous};
+      const value={title,description,category,isAnonymous,...((window as any).sfSchoolForm?.extra()||{})};
+      (window as any).sfSchoolForm?.validate();
       const operation=await recovery.prepare(value);
       const data=await recovery.request('submit',{...value,requestId:operation.key,actor:operation.actor});
       await recovery.finish(data,operation);
@@ -393,6 +395,7 @@ let sipCurrentStep = 1;
   }
 
   function sfShowSubmissionSuccess(data) {
+      const details=document.getElementById('sip-private-details') as HTMLAnchorElement|null;if(details){details.hidden=!data.id;details.href=sfSchoolPath('/submission-details/'+encodeURIComponent(data.id||''));}
       sipTrackingCode = data.tracking_code || "";
       (document.getElementById('sip-success-code') as HTMLElement).textContent = sipTrackingCode;
 

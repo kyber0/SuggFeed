@@ -3,7 +3,7 @@
   <a class="brand" href="/account/home" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>
   <nav aria-label="Primary navigation">
     <% if (it.platformDashboard) { %>
-      <a href="/platform/schools" class="nav-link-hide-mobile">Platform dashboard</a>
+      <a href="/platform/schools" class="nav-link-hide-mobile">Platform dashboard</a><a href="/platform/customization" class="nav-link-hide-mobile">Customization reviews</a>
     <% } else if (accountArea) { %>
       <% if(it.user) { %><a href="/schools" class="nav-link-hide-mobile">Your schools</a><% } %>
     <% } else if (staffArea) { %>
@@ -11,7 +11,7 @@
     <% } else { %>
       <a href="/" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>" aria-current="<%= it.currentPath === '/' ? 'page' : 'false' %>">Home</a>
       <a href="/feed" class="nav-link-hide-mobile<%= it.currentPath === '/feed' ? ' active' : '' %>" aria-current="<%= it.currentPath === '/feed' ? 'page' : 'false' %>">Ideas</a>
-      <a href="/roadmap" aria-current="<%= it.currentPath === '/roadmap' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/roadmap' ? ' active' : '' %>">Roadmap</a>
+      <% if(it.schoolCustomization?.features.roadmap!==false) { %><a href="/roadmap" aria-current="<%= it.currentPath === '/roadmap' ? 'page' : 'false' %>" class="nav-link-hide-mobile<%= it.currentPath === '/roadmap' ? ' active' : '' %>">Roadmap</a><% } %>
       <% if (isStaff) { %><a href="/admin" class="nav-link-hide-mobile">School administration</a><% } %>
     <% } %>
 

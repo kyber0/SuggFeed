@@ -31,9 +31,10 @@ test('weekly claims are once per account per week and client-private',async()=>{
  }finally{await db.close();}
 });
 test('digest delivery uses verified email, current consent and public filters; network uncertainty never triggers a second send',async()=>{
- const previous={...process.env},from=supabaseService.from,rpc=supabaseService.rpc,identity=supabaseService.auth.admin.getUserById,platformFrom=supabasePlatform.from;
+ const previous={...process.env},from=supabaseService.from,rpc=supabaseService.rpc,identity=supabaseService.auth.admin.getUserById,platformFrom=supabasePlatform.from,platformRpc=supabasePlatform.rpc;
  let optedIn=true,processed=false;const filters:any[]=[],states:string[]=[],calls:any[]=[];
  Object.assign(process.env,{WEEKLY_DIGEST_ENABLED:'true',RESEND_API_KEY:'test-only',RESEND_FROM_EMAIL:'School <updates@example.test>',DIGEST_UNSUBSCRIBE_SECRET:'s'.repeat(40),APP_ORIGIN:'https://www.suggfeed.me',CRON_SECRET:'c'.repeat(40)});
+ supabasePlatform.rpc=(async(name:string)=>({error:null,data:name==='school_actor_has_role'?true:require('../src/lib/school-customization').customizationDefaults()})) as any;
  supabasePlatform.from=(()=>{const q:any={select(){return q;},not(){return q;},eq(){return q;},async maybeSingle(){return {error:null,data:{user_id:USER_ID}};}};return q;}) as any;
  supabaseService.rpc=(async()=>({error:null,data:processed?[]:[{id:'60000000-0000-4000-8000-000000000001',user_id:USER_ID,week_start:'2026-10-05'}]})) as any;
  supabaseService.auth.admin.getUserById=(async()=>({error:null,data:{user:{email:'verified@example.test',email_confirmed_at:'2026-10-01'}}})) as any;
@@ -50,13 +51,14 @@ test('digest delivery uses verified email, current consent and public filters; n
   assert.ok(filters.some(f=>f[0]==='idea_notifications' && f[1]==='eq' && f[2]==='update.visibility' && f[3]==='public'));
   await deliverWeeklyDigests(async()=>{throw new Error('Must not send twice');});assert.equal(calls.length,1);
   processed=false;optedIn=false;const cancelled=await deliverWeeklyDigests(async()=>{throw new Error('Must not send when consent is withdrawn');});assert.equal(cancelled.skipped,1);assert.equal(states.at(-1),'cancelled');
- }finally{supabasePlatform.from=platformFrom;supabaseService.from=from;supabaseService.rpc=rpc;supabaseService.auth.admin.getUserById=identity;for(const key of Object.keys(process.env)) if(!(key in previous)) delete process.env[key];Object.assign(process.env,previous);}
+ }finally{supabasePlatform.rpc=platformRpc;supabasePlatform.from=platformFrom;supabaseService.from=from;supabaseService.rpc=rpc;supabaseService.auth.admin.getUserById=identity;for(const key of Object.keys(process.env)) if(!(key in previous)) delete process.env[key];Object.assign(process.env,previous);}
 });
 
 test('digest delivery rechecks pause and chosen kinds immediately before sending',async()=>{
- const previous={...process.env},from=supabaseService.from,rpc=supabaseService.rpc,identity=supabaseService.auth.admin.getUserById,platformFrom=supabasePlatform.from;
+ const previous={...process.env},from=supabaseService.from,rpc=supabaseService.rpc,identity=supabaseService.auth.admin.getUserById,platformFrom=supabasePlatform.from,platformRpc=supabasePlatform.rpc;
  Object.assign(process.env,{WEEKLY_DIGEST_ENABLED:'true',RESEND_API_KEY:'test-only',RESEND_FROM_EMAIL:'updates@example.test',DIGEST_UNSUBSCRIBE_SECRET:'s'.repeat(40),APP_ORIGIN:'https://www.suggfeed.me',CRON_SECRET:'c'.repeat(40)});
  let reads=0,paused=false,member=true,state='',text='',calls=0;
+ supabasePlatform.rpc=(async(name:string)=>({error:null,data:name==='school_actor_has_role'?true:require('../src/lib/school-customization').customizationDefaults()})) as any;
  supabasePlatform.from=(()=>{const q:any={select(){return q;},not(){return q;},eq(){return q;},async maybeSingle(){return {error:null,data:member?{user_id:USER_ID}:null};}};return q;}) as any;
  supabaseService.rpc=(async()=>({error:null,data:[{id:crypto.randomUUID(),user_id:USER_ID,week_start:'2026-10-05'}]})) as any;
  supabaseService.auth.admin.getUserById=(async()=>({error:null,data:{user:{email:'verified@example.test',email_confirmed_at:'2026-10-01'}}})) as any;
@@ -70,7 +72,7 @@ test('digest delivery rechecks pause and chosen kinds immediately before sending
    assert.equal((await deliverWeeklyDigests(transport)).delivered,1);assert.equal(calls,1);assert.match(text,/Completed only/);assert.doesNotMatch(text,/Unselected update/);
    reads=0;paused=true;assert.equal((await deliverWeeklyDigests(transport)).skipped,1);assert.equal(state,'cancelled');assert.equal(calls,1,'Pause enabled during preparation prevents delivery');
    reads=0;paused=false;member=false;assert.equal((await deliverWeeklyDigests(transport)).skipped,1);assert.equal(state,'cancelled');assert.equal(calls,1,'Revoked school membership prevents delivery despite verified global email');
- }finally{supabasePlatform.from=platformFrom;supabaseService.from=from;supabaseService.rpc=rpc;supabaseService.auth.admin.getUserById=identity;for(const key of Object.keys(process.env))if(!(key in previous))delete process.env[key];Object.assign(process.env,previous);}
+ }finally{supabasePlatform.rpc=platformRpc;supabasePlatform.from=platformFrom;supabaseService.from=from;supabaseService.rpc=rpc;supabaseService.auth.admin.getUserById=identity;for(const key of Object.keys(process.env))if(!(key in previous))delete process.env[key];Object.assign(process.env,previous);}
 });
 
 nodeTest('unsubscribe capabilities require the issuing school and reject legacy account-only signatures',()=>{
@@ -86,10 +88,11 @@ nodeTest('unsubscribe capabilities require the issuing school and reject legacy 
 });
 
 test('a job completion outage is counted and does not prevent completing the next job',async()=>{
- const originalRpc=supabaseService.rpc,originalFrom=supabaseService.from,previous={...process.env};let finishes=0;
+ const originalRpc=supabaseService.rpc,originalFrom=supabaseService.from,platformRpc=supabasePlatform.rpc,previous={...process.env};let finishes=0;
+ supabasePlatform.rpc=(async()=>({error:null,data:require('../src/lib/school-customization').customizationDefaults()})) as any;
  Object.assign(process.env,{WEEKLY_DIGEST_ENABLED:'true',RESEND_API_KEY:'test-only',RESEND_FROM_EMAIL:'updates@example.test',DIGEST_UNSUBSCRIBE_SECRET:'s'.repeat(40),APP_ORIGIN:'https://example.test',CRON_SECRET:'s'.repeat(40)});
  supabaseService.rpc=(async()=>({error:null,data:[{id:'first',user_id:USER_ID},{id:'second',user_id:OTHER_USER_ID}]})) as any;
  supabaseService.from=((table:string)=>{const q:any={select(){return q;},not(){return q;},eq(){return q;},async maybeSingle(){return {error:null,data:{weekly_digest:false}};},update(){finishes++;if(finishes===1)throw new Error('Completion connection lost');return q;},then(resolve:any){resolve({error:null});}};return q;}) as any;
  try{assert.deepEqual(await deliverWeeklyDigests(async()=>{throw new Error('No consent');}),{enabled:true,delivered:0,failed:1,skipped:1});assert.equal(finishes,2);}
- finally{supabaseService.rpc=originalRpc;supabaseService.from=originalFrom;for(const key of Object.keys(process.env))if(!(key in previous))delete process.env[key];Object.assign(process.env,previous);}
+ finally{supabasePlatform.rpc=platformRpc;supabaseService.rpc=originalRpc;supabaseService.from=originalFrom;for(const key of Object.keys(process.env))if(!(key in previous))delete process.env[key];Object.assign(process.env,previous);}
 });

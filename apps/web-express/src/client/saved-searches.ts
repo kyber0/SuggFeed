@@ -12,8 +12,8 @@
   interface Search {id:string;name:string;filters:Record<string,string>;}
   let items:Search[]=[],busy=false,loaded=false,editing:string|null=null;
   const clean=(value:any):Record<string,string>=>({
-    sort:['all','latest','popular','top','oldest'].includes(value?.sort)?value.sort:'all',
-    category:['All','Facilities','Learning','Safety','Student life','Other'].includes(value?.category)?value.category:'All',
+    sort:(window as any).sfSchoolCustomization?.features?.voting===false&&['popular','top'].includes(value?.sort)?'all':['all','latest','popular','top','oldest'].includes(value?.sort)?value.sort:'all',
+    category:typeof value?.category==='string'&&value.category.length<=80?((window as any).sfSchoolCustomization?.categories?.find((c:any)=>[c.id,c.name,c.slug].includes(value.category))?.id||value.category):'All',
     search:typeof value?.search==='string'?value.search.trim().slice(0,120):'',
     scope:account && value?.scope==='following'?'following':'all',
   });
@@ -36,7 +36,7 @@
   }
   function chips(filters:Record<string,string>){
     const wrapper=document.createElement('div');wrapper.className='saved-search-chips';
-    const values=[filters.category==='All'?'All topics':filters.category,sortLabel(filters.sort)];
+    const values=[filters.category==='All'?'All topics':((window as any).sfSchoolCustomization?.categories?.find((c:any)=>c.id===filters.category)?.name || filters.category),sortLabel(filters.sort)];
     if(filters.scope==='following')values.push('Following');
     if(filters.search)values.push('“'+filters.search+'”');
     for(const value of values){const chip=document.createElement('span');chip.className='saved-search-chip';chip.textContent=value;wrapper.append(chip);}

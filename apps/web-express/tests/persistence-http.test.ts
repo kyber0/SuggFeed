@@ -21,13 +21,13 @@ test('real HTTP submit replays a lost response, recovers code, and rejects accou
   }) as any;
   supabaseService.rpc=(async(name:string,args:any)=>{
     try {
-      const query=name==='create_submission_once'
-        ?await db.query<any>('SELECT create_submission_once($1,$2::uuid,$3,$4,$5,$6::uuid,$7::uuid,$8) AS result',[args.p_owner_hash,args.p_request_id,args.p_payload_hash,args.p_title,args.p_description,args.p_category_id,args.p_user_id,args.p_tracking_hash])
+      const query=name==='create_customized_submission'
+        ?await db.query<any>('SELECT create_submission_once($1,$2::uuid,$3,$4,$5,$6::uuid,$7::uuid,$8) AS result',[args.p_owner_hash,args.p_request_id,args.p_payload_hash,args.p_title,args.p_description,args.p_category_id,args.p_anonymous?null:user,args.p_tracking_hash])
         :await db.query<any>('SELECT read_submission_receipt($1,$2::uuid) AS result',[args.p_owner_hash,args.p_request_id]);
       return {data:query.rows[0].result,error:null};
     }catch(e:any){return {data:null,error:{code:e.code,message:e.message}};}
   }) as any;
-  const app=express();app.use(express.json(),cookieParser(),sameOriginOnly);app.use((req,_res,next)=>{req.session={user:user?{id:user,role:'student'}:null} as any;runWithSchool({...SCHOOL,actorId:user,role:user?'student':null},next);});app.use('/api',api);
+  const app=express();app.use(express.json(),cookieParser(),sameOriginOnly);app.use((req,_res,next)=>{req.session={user:user?{id:user,role:'student'}:null} as any;runWithSchool({...SCHOOL,actorId:user,role:user?'student':null,customization:require('../src/lib/school-customization').customizationDefaults([{id:CATEGORY_ID,name:'Facilities',slug:'facilities',description:'',icon:'building',active:true}])},next);});app.use('/api',api);
   const server=await serve(app);
   try {
     const contextResponse=await fetch(server.origin+'/api/submission-context'),context=await contextResponse.json() as any;

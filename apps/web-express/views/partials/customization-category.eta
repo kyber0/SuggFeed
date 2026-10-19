@@ -1,0 +1,9 @@
+<article class="custom-repeat-row" data-category>
+ <div class="custom-row-toolbar"><strong>Category</strong><button type="button" class="workspace-button" data-move="up" aria-label="Move category up">↑</button><button type="button" class="workspace-button" data-move="down" aria-label="Move category down">↓</button></div>
+ <input type="hidden" data-field="id" value="<%= it.item.id %>" />
+ <label>Name<input class="workspace-input" data-field="name" value="<%= it.item.name %>" maxlength="40" required /></label>
+ <label>Stable address<input class="workspace-input" data-field="slug" value="<%= it.item.slug %>" maxlength="63" pattern="[a-z0-9]+(-[a-z0-9]+)*" required /></label>
+ <label>Description<textarea class="workspace-input" data-field="description" rows="2" maxlength="200"><%= it.item.description %></textarea></label>
+ <label>Icon<select class="workspace-input" data-field="icon"><% for(const icon of it.icons) { %><option value="<%= icon %>" <%= icon===it.item.icon?'selected':'' %>><%= icon %></option><% } %></select></label>
+ <label class="custom-check"><input type="checkbox" data-field="active" <%= it.item.active?'checked':'' %> /><span>Available for new ideas</span></label><p class="staff-footnote">Uncheck to archive. Existing ideas keep their category.</p>
+</article>

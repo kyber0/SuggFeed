@@ -3,11 +3,12 @@
     const items = JSON.parse(document.getElementById('sf-roadmap-data').textContent || '[]');
     const board = document.getElementById('campus-roadmap-board');
     const dialog = document.getElementById('roadmap-dialog');
-    const labels = { approved: 'Planned', in_progress: 'In progress', resolved: 'Completed' };
+    const labels = { approved: 'Planned', in_progress: 'In progress', resolved: 'Completed', ...(window.sfSchoolCustomization?.labels || {}) };
     const hints = {
         approved: 'The school has approved this idea. A delivery date has not been announced.',
         in_progress: 'Work on this idea is underway. Follow the discussion for updates from your school.',
-        resolved: 'The school has marked this idea as completed.'
+        resolved: 'The school has marked this idea as completed.',
+        ...(window.sfSchoolCustomization?.stageDescriptions || {})
     };
     let returnFocus = null;
     let syncingHistory = false;

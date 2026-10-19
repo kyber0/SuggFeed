@@ -1,3 +1,4 @@
+import {schoolFeature} from '../lib/school-customization';
 import { Router } from 'express';
 import { listPublicProgress } from '../lib/progress';
 import {
@@ -10,6 +11,7 @@ import {
 } from '../lib/roadmap';
 
 const router = Router();
+router.use((req,res,next)=>schoolFeature('roadmap')?next():req.path==='/'?res.render('school-message',{title:'Roadmap is disabled',message:'This school has disabled the student roadmap. You can still browse community ideas.',nextHref:'/feed',nextLabel:'Browse ideas'}):res.status(403).json({success:false,code:'FEATURE_DISABLED',error:'This school disabled the student roadmap.'}));
 router.get('/idea/:id', async (req, res, next) => {
   try {
     const id = req.params.id;

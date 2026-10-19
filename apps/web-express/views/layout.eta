@@ -26,7 +26,8 @@
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
   <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261018-account-ui" />
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261018-enrollment" /><% } %>
-  <script defer src="/js/events.js?v=20261016-school-isolation"></script>
+  <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261018-customization"/><% } %>
+  <script defer src="/js/events.js?v=20261018-customization"></script>
 
   <script src="/js/preferences.js?v=20261016-school-isolation"></script>
   <!-- Theme init (before render to prevent flash) -->
@@ -35,7 +36,8 @@
   <!-- Supabase (client-side auth) -->
   <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>
 </head>
-<body>
+<body class="<%= it.schoolCustomization ? 'school-palette-'+it.schoolCustomization.palette : '' %> <%= it.schoolCustomization ? Object.entries(it.schoolCustomization.features).filter(([key,value])=>!value).map(([key])=>'school-'+key+'-off').join(' ') : '' %>">
+<% if(it.schoolCustomization) { %><script type="application/json" id="school-presentation-data"><%~ JSON.stringify(it.schoolCustomization).replace(/</g,'\\u003c') %></script><script defer src="/js/school-ui.js?v=20261018-customization"></script><script defer src="/js/school-submission.js?v=20261018-customization"></script><% } %>
 <a class="system-skip-link" href="#page-content">Skip to page content</a>
 <%~ include('partials/workspace-icons', it) %>
 <div id="sf-auth-config" hidden data-url="<%= it.supabaseUrl || '' %>" data-key="<%= it.supabaseAnonKey || '' %>" data-user="<%= it.user?.id || '' %>"></div>
@@ -48,7 +50,7 @@
 <% if (it.schoolBase && !it.accountArea) { %>
 <nav class="workspace-actions care-card" aria-label="Current school">
   <% if (it.demoWorkspace) { %><span><strong>Fictional demo</strong> · Use invented content only. Sample contact emails are not monitored.</span><% } %>
-  <strong><%= it.schoolName || 'Your school' %></strong>
+  <span class="school-context-identity"><% if(it.schoolCustomization?.logo) { %><img class="school-context-logo" src="<%= it.schoolBase %>/branding/<%= it.schoolCustomization.logo %>" alt="" width="32" height="32"/><% } %><strong><%= it.schoolCustomization?.displayName || it.schoolName || 'Your school' %></strong></span>
   <a class="workspace-button" href="/schools">Switch school</a>
   <% if (it.user?.role === 'admin') { %><a class="workspace-button" href="<%= it.schoolBase %>/admin/school-settings">School settings</a><% } %>
 </nav>
@@ -74,7 +76,7 @@
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>
 <% if (!it.accountArea && !it.platformDashboard) { %>
 <script defer src="/js/engagement.js?v=20261016-school-isolation"></script>
-<script defer src="/js/community.js?v=20261018-empty-states"></script>
+<script defer src="/js/community.js?v=20261018-customization"></script>
 
 <script defer src="/js/public-history.js?v=20261018-empty-states"></script>
 

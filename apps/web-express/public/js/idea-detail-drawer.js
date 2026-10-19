@@ -136,7 +136,8 @@
     function sfPopulateDrawerUI(idea, comments) {
         const catName = idea.category || (idea.categories && idea.categories.name) || 'Other';
         const catTheme = SF_CATEGORY_THEMES[catName] || SF_CATEGORY_THEMES.Other;
-        const stConfig = SF_STATUS_CONFIG[idea.status] || SF_STATUS_CONFIG.pending;
+        const baseStatus = SF_STATUS_CONFIG[idea.status] || SF_STATUS_CONFIG.pending;
+        const stConfig = { ...baseStatus, bannerDesc: window.sfSchoolCustomization?.stageDescriptions?.[idea.status] || baseStatus.bannerDesc, label: window.sfSchoolCustomization?.labels?.[idea.status] || baseStatus.label };
         // Badges
         const catBadge = document.getElementById('drawer-cat-badge');
         catBadge.style.background = catTheme.bg;

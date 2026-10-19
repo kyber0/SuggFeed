@@ -55,7 +55,7 @@ test('rendered school paths scope business links without rewriting assets, text 
 
 test('school middleware ignores legacy roles, fails closed for private/unreviewed schools and preserves unsubscribe',async()=>{
  const originalFrom=supabasePlatform.from,originalRpc=supabasePlatform.rpc;
- supabasePlatform.rpc=(async()=>({data:true,error:null})) as any;
+ supabasePlatform.rpc=(async(name:string)=>({data:name==='school_presentation'?{id:A.id,slug:A.slug,name:A.name,status,configuration:require('../src/lib/school-customization').customizationDefaults(),customization_version:0}:true,error:outage?{message:'private provider failure'}:null})) as any;
  let approved=true,publication='private',memberRole:string|null='student',status='active',outage=false;
  supabasePlatform.from=((table:string)=>{
   const data=table==='schools'?{id:A.id,slug:A.slug,name:A.name,status}:table==='school_memberships'?(memberRole?{role:memberRole}:null):{approved_at:approved?'2026-10-16':null,publication_policy:publication};

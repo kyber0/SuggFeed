@@ -1,7 +1,8 @@
-import { schoolUser } from '../lib/school-scope';
+import {schoolFeature,schoolCategories,schoolCategory} from '../lib/school-customization';
+import { schoolUser,currentSchool } from '../lib/school-scope';
 import crypto from "crypto";
 import { Router, Request, Response, NextFunction } from "express";
-import { supabase, supabaseService } from "../lib/supabase";
+import { supabase, supabaseService,supabasePlatform } from "../lib/supabase";
 import engagementRouter from './engagement';
 import savedSearchesRouter from './saved-searches';
 import publicHistoryRouter from './public-history';
@@ -19,6 +20,7 @@ import {
 import { feedFilters } from '../lib/feed-filters';
 import { submissionContext, submissionHash, receiptTrackingCode } from '../lib/submission-context';
 const router = Router();
+router.use((req,res,next)=>{const feature=req.method==='POST'&&req.path.startsWith('/vote/')?'voting':req.method==='POST'&&/^\/comments\/[^/]+$/.test(req.path)?'comments':null;if(feature&&!schoolFeature(feature))return res.status(403).json({success:false,code:'FEATURE_DISABLED',error:'Your school disabled new '+feature+'.'});next();});
 router.use(engagementRouter);
 router.use(publicHistoryRouter);
 router.use('/saved-searches',savedSearchesRouter);
@@ -37,8 +39,6 @@ function sha256(input: string): string {
   return crypto.createHash("sha256").update(input).digest("hex");
 }
 
-const VALID_CATEGORIES = ["Facilities", "Learning", "Safety", "Student life", "Other"] as const;
-type Category = (typeof VALID_CATEGORIES)[number];
 
 /* ── Vote on a submission ─────────────────────────────────────────────────── */
 router.post(
@@ -133,9 +133,7 @@ router.post(
     if (description.trim().length > 2000) {
       return res.status(400).json({ success: false, error: "Description must be 2000 characters or fewer." });
     }
-    if (typeof category !== "string" || !(VALID_CATEGORIES as readonly string[]).includes(category)) {
-      return res.status(400).json({ success: false, error: `Category must be one of: ${VALID_CATEGORIES.join(", ")}.` });
-    }
+    if(typeof category!=='string'||category.length>80)return res.status(400).json({success:false,error:'Choose a current school category.'});
     const anonymous = isAnonymous === true || isAnonymous === "true";
     const user = schoolUser(req);
     if (!anonymous && !user?.id) {
@@ -147,26 +145,21 @@ router.post(
     if(typeof req.body.requestId!=='string' || !ENGAGEMENT_UUID.test(req.body.requestId))return res.status(400).json({success:false,error:'A submission receipt is required. Reload before submitting.'});
     const requestId=req.body.requestId.toLowerCase();
 
-    // Resolve category name → UUID
-    const { data: catRow, error: categoryError } = await supabaseService
-      .from("categories")
-      .select("id")
-      .eq("name", (category as Category).trim())
-      .eq("is_active", true)
-      .maybeSingle();
-
-    if(categoryError)throw categoryError;
-    if (!catRow) {
-      return res.status(400).json({ success: false, error: "That category is no longer available." });
-    }
-
+    const customized=req.body.schemaVersion===2;
     const trackingCode=anonymous?receiptTrackingCode(context.device,context.actor,requestId):null;
-    const payloadHash=submissionHash(JSON.stringify({title:title.trim(),description:description.trim(),category,isAnonymous:anonymous}));
-    const {data,error}=await supabaseService.rpc('create_submission_once',{
+    const canonical=customized?{title:title.trim(),description:description.trim(),category,isAnonymous:anonymous,schemaVersion:2,formVersion:req.body.formVersion||null,answers:req.body.answers||{},fileIds:req.body.fileIds||[]}:{title:title.trim(),description:description.trim(),category,isAnonymous:anonymous};
+    const payloadHash=submissionHash(JSON.stringify(canonical));
+    const cat=schoolCategory(category);
+    if(req.body.formVersion!==undefined&&req.body.formVersion!==null&&(typeof req.body.formVersion!=='string'||!ENGAGEMENT_UUID.test(req.body.formVersion)))return res.status(400).json({success:false,error:'Reload the current school form.'});
+    const {data,error}=await supabaseService.rpc('create_customized_submission',{
       p_owner_hash:context.actor,p_request_id:requestId,p_payload_hash:payloadHash,
-      p_title:title.trim(),p_description:description.trim(),p_category_id:catRow.id,
-      p_user_id:anonymous?null:user!.id,p_tracking_hash:trackingCode?sha256(trackingCode):null,
+      p_title:title.trim(),p_description:description.trim(),p_category_id:cat?.id || null,
+      p_anonymous:anonymous,p_tracking_hash:trackingCode?sha256(trackingCode):null,
+      p_form_version:customized?req.body.formVersion||null:null,p_answers:customized?req.body.answers||{}:{},p_files:customized?req.body.fileIds||[]:[],
     });
+    if(error?.code==='P0202'||error?.code==='22023'&&!cat?.active){const fresh=await supabasePlatform.rpc('school_published_configuration',{p_school:currentSchool()!.id});if(fresh.error)throw fresh.error;return res.status(409).json({success:false,code:'FORM_CHANGED',error:'The school changed this form. Your text is preserved; review the current questions before submitting.',schema:{form:fresh.data.form,formVersion:fresh.data.formVersion,features:fresh.data.features,categories:fresh.data.categories}});}
+    if(error?.code==='P0201')return res.status(403).json({success:false,code:'FEATURE_DISABLED',error:'Your school disabled this type of submission. Sign in to submit with your account.'});
+    if(error?.code==='22023'||error?.code==='42501')return res.status(400).json({success:false,error:'Check the current school questions, category and required images. Images must belong to this account and browser and must not have expired.'});
     if(error?.code==='23505')return res.status(409).json({success:false,error:'This receipt belongs to different content. Check the previous submission before starting another.'});
     if(error?.code==='P0004')return res.status(410).json({success:false,error:'This receipt expired or its submission was removed.'});
     if(error)throw error;
@@ -367,7 +360,7 @@ router.get(
       .order("name");
     if (error) {
       // Fallback — don't leak error details
-      return res.json({ success: true, categories: [...VALID_CATEGORIES] });
+      return res.json({ success: true, categories: schoolCategories().map(c=>c.name) });
     }
     res.json({ success: true, categories: (data ?? []).map((c: any) => c.name) });
   })
