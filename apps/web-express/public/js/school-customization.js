@@ -266,7 +266,7 @@
             view = ['board', 'tree', 'timeline', 'done'].includes(payload.view) ? payload.view : 'board';
             navigate();
         }
-        if (data.type === 'shortcut') {
+        if (data.type === 'shortcut' && allowed) {
             if (payload.command === 'save')
                 void save();
             else if (payload.command === 'undo') {
@@ -357,7 +357,7 @@
     document.addEventListener('keydown', event => { const typing = event.target.matches('input,textarea,select,[contenteditable=true]'); if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
         event.preventDefault();
         void save();
-    } if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !typing) {
+    } if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !typing && allowed) {
         event.preventDefault();
         event.shiftKey ? model.redo() : model.undo();
         inspector.render();
