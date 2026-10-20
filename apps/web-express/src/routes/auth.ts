@@ -15,6 +15,8 @@ router.get(["/callback", "/callback/client", "/recovery"], (req, res) => {
   res.render("auth-callback", { title: "Signing in… — SuggFeed", returnTo });
 });
 
+router.get("/confirm", (_req,res) => { res.setHeader("Referrer-Policy","no-referrer");res.render("auth-confirm",{title:"Confirm your email — SuggFeed"}); });
+
 router.get("/session", (req, res) => {
   res.json({ success: true, user: req.session.user ?? null });
 });

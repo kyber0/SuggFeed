@@ -330,3 +330,23 @@
 .staff-flow-card { cursor:pointer; }
 .staff-flow-card:has([data-review]:focus-visible) { outline:2px solid var(--navy); outline-offset:2px; }
 html:has(.staff-review-dialog[open]) { overflow:hidden; }
+/* Compact review queue: the native title button is the whole row's hit target. */
+.admin-school-tools {display:flex;align-items:center;gap:12px 24px;flex-wrap:wrap;padding:0 0 18px;margin-bottom:18px;border-bottom:1px solid var(--line);}
+.admin-school-tools a {display:inline-flex;align-items:center;gap:7px;min-height:36px;font-size:12px;font-weight:600;color:var(--text-link);text-decoration:none;}
+.staff-table-labels,.staff-row {grid-template-columns:minmax(260px,2.4fr) minmax(110px,.9fr) minmax(120px,1fr) 85px 100px;}
+.staff-row {position:relative;padding-block:12px;gap:12px;cursor:pointer;}
+.staff-row h3 {font-size:14px;margin:4px 0;}
+.staff-row-content > p {-webkit-line-clamp:1;line-clamp:1;font-size:12px;line-height:1.5;}
+.staff-row-content > small {margin-top:5px;font-size:11px;}
+.staff-title-button::after {content:"";position:absolute;inset:0;z-index:1;border-radius:6px;}
+.staff-row:focus-within {outline:2px solid var(--focus-ring,var(--navy));outline-offset:-2px;}
+.staff-row .staff-title-button:focus-visible {outline:none;}
+.staff-flow-card,.staff-flow-board.is-dragging .staff-flow-card {cursor:move;}
+.staff-main:has(.staff-rows) {padding-top:24px;}
+.staff-row-title {display:flex;align-items:center;gap:8px;min-width:0;}
+.staff-row-title > .workspace-tag {flex:none;font-size:10px;}
+.staff-row-title h3 {min-width:0;flex:1;}
+.staff-row-title .staff-title-button {display:block;width:100%;}
+.staff-row-title-text {display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.staff-row-content > p {margin:3px 0;}
+.staff-row-content > small {margin-top:3px;}

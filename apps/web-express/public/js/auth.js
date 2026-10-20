@@ -8,7 +8,7 @@
         auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true, autoRefreshToken: true }
     });
     window._sb = sb;
-    var callbackPage = (window.location.pathname.startsWith('/auth/callback') || window.location.pathname === '/auth/recovery');
+    var callbackPage = (window.location.pathname.startsWith('/auth/callback') || window.location.pathname === '/auth/recovery' || window.location.pathname === '/auth/confirm');
     var params = new URLSearchParams(window.location.search);
     var hash = new URLSearchParams(window.location.hash.slice(1));
     var returning = params.has('code') || params.has('error') || hash.has('access_token') || hash.has('error');

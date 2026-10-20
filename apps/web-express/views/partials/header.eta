@@ -1,6 +1,7 @@
 <% const accountArea = it.accountArea || it.platformDashboard || it.currentPath === '/schools' || /^\/account(?:\/|$)/.test(it.currentPath || '') || /\/admin\/school-settings$/.test(it.currentPath || ''); const staffArea = !accountArea && /^\/admin(?:\/|$)/.test(it.currentPath || ''); const isStaff = ['admin','moderator','staff'].includes(it.user?.role); const menuIcon=name=>'<svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-'+name+'"></use></svg>'; %>
 <header class="site-header">
   <a class="brand" href="/account/home" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>
+  <% if(it.schoolBase && !it.platformDashboard) { %><span class="header-school-identity school-context-identity"><strong><%= it.schoolCustomization?.displayName || it.schoolName || 'Your school' %></strong><% if(it.demoWorkspace) { %><small title="Fictional demo · use invented content only. Sample contacts are not monitored.">Demo</small><% } %></span><% } %>
   <nav aria-label="Primary navigation">
     <% if (it.platformDashboard) { %>
       <a href="/platform/schools" class="nav-link-hide-mobile">Platform dashboard</a><a href="/platform/customization" class="nav-link-hide-mobile">Customization reviews</a>

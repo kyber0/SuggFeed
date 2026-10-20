@@ -233,10 +233,14 @@
         const data = event.data;
         if (event.origin !== origin || event.source !== parent || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || typeof data.type !== 'string')
             return;
-        if (!['initialize', 'patch', 'select', 'set-mode', 'replace-fragment'].includes(data.type) || JSON.stringify(data).length > 600000)
+        if (!['initialize', 'patch', 'select', 'set-mode', 'replace-fragment', 'set-theme'].includes(data.type) || JSON.stringify(data).length > 600000)
             return;
         incoming = data.sequence;
         const payload = data.payload || {};
+        if (data.type === 'set-theme' && ['light', 'dark'].includes(payload.theme)) {
+            document.documentElement.dataset.theme = payload.theme;
+            schedule();
+        }
         if (data.type === 'initialize' || data.type === 'patch')
             patch(payload.configuration);
         if (data.type === 'select' && typeof payload.componentId === 'string' && payload.componentId.length < 120) {

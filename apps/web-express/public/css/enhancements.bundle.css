@@ -3193,6 +3193,12 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
  body.sf-feed-workspace:has(.community-page-wrapper) .community-feed-main { padding-inline:3px 12px; }
  body.sf-feed-workspace:has(.community-page-wrapper) :is(.community-feed-main,.community-left-nav,.community-right-panel):focus-visible { outline:2px solid var(--focus-ring,var(--navy)); outline-offset:2px; }
 }
+.header-school-identity {display:flex;align-items:center;gap:8px;min-width:0;max-width:240px;margin-right:auto;padding-left:16px;border-left:1px solid var(--line);font-size:12px;}
+.header-school-identity strong {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-school-identity small {flex:none;padding:3px 5px;border-radius:4px;background:var(--bg-2);color:var(--muted);font-size:10px;}
+@media(max-width:900px) {.header-school-identity {display:none;}}
+.work-timeline-scroll.is-panning {cursor:move;}
+.staff-flow-card,.staff-flow-board.is-dragging .staff-flow-card {cursor:move;}
 
 /* A modest mobile text reduction. Keep form controls at 16px to avoid focus zoom. */
 @media (max-width:768px) {

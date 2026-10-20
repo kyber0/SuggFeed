@@ -1,0 +1,12 @@
+<% layout('layout') %>
+<main class="sf-main account-flow" aria-labelledby="email-confirm-title">
+ <section class="account-flow-card">
+  <header class="account-flow-header"><img src="/branding/sf-monogram.png" width="56" height="56" alt="SuggFeed"/><p class="account-flow-eyebrow">Your SuggFeed account</p><h1 id="email-confirm-title">Confirm your email</h1><p id="email-confirm-message" role="status" aria-live="polite">Continue to verify the account that received this email. Your browser’s Google account does not determine which SuggFeed account is confirmed.</p></header>
+  <% if(it.user?.email) { %><p class="account-field-hint">This browser is signed in as <strong><%= it.user.email %></strong>. Confirming will switch this browser to the account from the email link.</p><% } %>
+  <button type="button" class="am-btn-primary" id="email-confirm-button">Confirm email and continue</button>
+  <details class="account-field-hint"><summary>Need a fresh confirmation email?</summary><form id="email-confirm-resend-form" class="am-form"><label class="am-label" for="email-confirm-address">Sign-up email address</label><input class="am-input" id="email-confirm-address" type="email" autocomplete="email" required maxlength="254"/><button type="submit" class="am-btn-ghost" id="email-confirm-resend">Request confirmation email</button><p id="email-confirm-resend-message" role="status" aria-live="polite"></p></form></details>
+  <p id="email-confirm-error" role="alert" class="auth-reset-feedback"></p>
+  <a class="am-btn-ghost" id="email-confirm-return" href="/schools">Return to sign in</a>
+ </section>
+</main>
+<script defer src="/js/auth-confirm.js?v=20261021-confirm-email"></script>

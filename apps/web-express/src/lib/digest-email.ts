@@ -31,7 +31,7 @@ export function digestHtml(entries: DigestEmailEntry[], origin: string, unsubscr
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">${entries.length} public ${entries.length === 1 ? 'update' : 'updates'} from the school ideas you follow. See what moved forward this week.</div>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="email-shell" style="padding:36px 12px;background:#f0f4f8;"><tr><td align="center">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="email-card" style="max-width:580px;border:1px solid #d9e2ec;border-radius:16px;background:#fff;overflow:hidden;">
-<tr><td style="padding:26px 28px;background:#0b3857;color:#fff;border-bottom:4px solid #f59e0b;">
+<tr><img src="${httpsLink(new URL('/branding/sf-monogram.png',origin).href)}" alt="SuggFeed" width="48" height="48" style="display:block;border:0;margin-bottom:14px"><td style="padding:26px 28px;background:#0b3857;color:#fff;border-bottom:4px solid #f59e0b;">
 <p style="margin:0;font-size:24px;font-weight:800;color:#fff;">SuggFeed<span style="color:#fbbf24;">.</span></p><p style="margin:6px 0 0;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#d0eaf7;">Your voice. Our school.</p></td></tr>
 <tr><td class="email-content" style="padding:32px 28px;">
 <p style="margin:0 0 10px;color:#2563eb;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">The weekly roundup</p>

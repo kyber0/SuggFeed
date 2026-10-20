@@ -406,7 +406,7 @@
             }
         }
         if (e.key === 'j' || e.key === 'k') {
-            const buttons = Array.from(document.querySelectorAll('.staff-review-button'));
+            const buttons = Array.from(document.querySelectorAll('.staff-row .staff-title-button'));
             const current = buttons.indexOf(document.activeElement);
             const next = e.key === 'j' ? current + 1 : current - 1;
             if (buttons.length) {

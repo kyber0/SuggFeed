@@ -24,8 +24,8 @@
   <!-- Styles -->
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261018-action-audit" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
-  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261021-design" />
+  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261021-compact-review" /><% } %>
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261021-admin-shell" />
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261020-review-layout" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261020-studio-colors"/><% } %>
   <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
@@ -50,15 +50,7 @@
 <script defer src="/js/empty-state.js?v=20261018-empty-states"></script>
 <script defer src="/js/activity.js?v=20261016-school-isolation"></script>
 <%~ include('partials/header', it) %>
-<% if (it.schoolBase && !it.accountArea) { %>
-<nav class="workspace-actions school-context-bar" aria-label="Current school">
-  <div class="school-context-info">
-    <span class="school-context-identity"><% if(it.schoolCustomization?.logo) { %><img class="school-context-logo" src="<%= it.schoolBase %>/branding/<%= it.schoolCustomization.logo %>" alt="" width="28" height="28"/><% } %><strong><%= it.schoolCustomization?.displayName || it.schoolName || 'Your school' %></strong></span>
-    <% if (it.demoWorkspace) { %><details class="school-context-demo"><summary>Fictional demo</summary><p>Use invented content only. Sample contact emails are not monitored.</p></details><% } %>
-  </div>
-  <div class="school-context-actions"><a class="workspace-button" href="/schools">Switch school</a><% if (it.user?.role === 'admin') { %><a class="workspace-button" href="<%= it.schoolBase %>/admin/school-settings">School settings</a><% } %></div>
-</nav>
-<% } %>
+
 
 <p id="connection-status" class="connection-status" role="status" aria-live="polite" hidden></p>
 <script defer src="/js/system-ux.js?v=20261018-full-ux-audit"></script>
@@ -74,7 +66,7 @@
 <% } %>
 
 <!-- Client-side auth state sync -->
-<script defer src="/js/auth.js?v=20261017-system-navigation"></script>
+<script defer src="/js/auth.js?v=20261021-confirm-email"></script>
 
 <!-- Theme toggle logic -->
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>

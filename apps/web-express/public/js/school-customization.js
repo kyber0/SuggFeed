@@ -274,6 +274,7 @@
             loading.hidden = true;
             send('initialize', { configuration: model.getState().configuration });
             send('set-mode', { mode });
+            send('set-theme', { theme: theme.value });
             if (model.getState().selection)
                 send('select', { componentId: model.getState().selection.componentId });
             if (payload.revision === model.getState().serverRevision && !model.getState().dirty)
@@ -306,8 +307,9 @@
         }
     });
     document.getElementById('studio-refresh').addEventListener('click', () => navigate(false));
-    for (const control of [page, scenario, theme])
+    for (const control of [page, scenario])
         control.addEventListener('change', () => { view = ''; navigate(); });
+    theme.addEventListener('change', () => send('set-theme', { theme: theme.value }));
     for (const control of [width, zoom])
         control.addEventListener('change', layout);
     new ResizeObserver(layout).observe(canvas);
