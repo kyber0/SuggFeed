@@ -1,0 +1,17 @@
+/* The original file input remains the keyboard- and screen-reader-accessible control. */
+.sf-upload { position:relative; display:grid; grid-template-columns:36px minmax(0,1fr); align-items:center; gap:12px; width:100%; min-width:0; box-sizing:border-box; padding:18px 16px; margin-top:8px; border:1px dashed var(--line-2,var(--line)); border-radius:12px; background:var(--bg-2,var(--bg)); color:var(--ink); text-align:left; cursor:pointer; isolation:isolate; }
+.sf-upload > input[type="file"] { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; min-height:0!important; max-width:none!important; padding:0!important; margin:0!important; border:0!important; opacity:0!important; cursor:inherit; z-index:1; }
+.sf-upload-icon { width:30px; height:30px; color:var(--navy); justify-self:center; transition:transform 200ms ease; pointer-events:none; }
+.sf-upload-content { display:grid; gap:4px; min-width:0; pointer-events:none; }
+.sf-upload-lead { display:block; font-size:13px; font-weight:650; line-height:1.5; overflow-wrap:anywhere; color:var(--ink); }
+.sf-upload-hint,.sf-upload-status { display:block; font-size:11px; line-height:1.5; font-weight:400; color:var(--muted); overflow-wrap:anywhere; }
+.sf-upload-status:empty { display:none; }
+.sf-upload:focus-within { outline:3px solid var(--focus-ring,var(--navy)); outline-offset:3px; }
+.sf-upload:is(:hover,.sf-upload--over):not(.sf-upload--disabled) { border-color:var(--navy); background:var(--sky,var(--bg)); }
+.sf-upload--over { border-style:solid; }
+.sf-upload[data-error="true"] { border-color:var(--error); }
+.sf-upload[data-error="true"] .sf-upload-status { color:var(--error); }
+.sf-upload--disabled { opacity:.65; cursor:not-allowed; }
+@media(prefers-reduced-motion:no-preference) { .sf-upload--over .sf-upload-icon { transform:translateY(-2px); } }
+@media(max-width:600px) { .sf-upload { gap:10px; padding:16px 12px; } }
+input[type="file"]:not([data-sf-upload-ready])::file-selector-button { padding:10px 14px; margin-right:10px; border:1px solid var(--line); border-radius:8px; color:var(--ink); background:var(--bg); font:inherit; cursor:pointer; }

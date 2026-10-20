@@ -50,8 +50,8 @@ async function resourcesReleased(page) {
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow');
    await page.evaluate(()=>{const first=sfMotion;first.mount(document);first.mount(document);window.__motionSame=first===sfMotion;});
    assert(await page.evaluate(()=>__motionSame),'root identity');
-   await page.mouse.move(250,350); await page.mouse.wheel(0,400); await wait(page);
-   assert(await page.evaluate(()=>scrollY>0),'wheel scrolling');
+   await page.mouse.move(700,350); await page.mouse.wheel(0,400); await wait(page);
+   assert(await page.evaluate(()=>innerWidth>=900?document.querySelector('.community-feed-main').scrollTop>0:scrollY>0),'wheel scrolling');
    if(stage>=2) {
     assert(await page.locator('.post-card').first().evaluate(el=>el.hasAttribute('data-sf-motion-item')),'shared reveal ownership');
     await page.evaluate(()=>{const card=document.createElement('article');card.id='motion-added';card.dataset.sfReveal='slide-up';card.textContent='Fictional appended content';document.getElementById('page-content').append(card);sfMotion.refresh(card);});
@@ -101,8 +101,8 @@ async function resourcesReleased(page) {
   await resourcesReleased(page);assert.equal(await page.locator('[data-sf-marquee-clone]').count(),0);assert.equal(await page.locator('#marquee-original').count(),1);
   // Simulate BFCache lifecycle without discarding the document.
   await page.evaluate(()=>{sfMotion.mount(document);dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});await resourcesReleased(page);
-  await page.goto(base+'/feed');await page.evaluate(()=>scrollTo(0,700));await wait(page);const position=await page.evaluate(()=>scrollY);
-  await page.locator('.site-header a[href="/roadmap"]').evaluate(link=>link.click());await page.waitForURL('**/roadmap');await wait(page);if(await page.evaluate(()=>typeof ViewTransition!=='undefined'))assert(await page.evaluate(()=>__sfTransitionSnapshotReady&&__sfPageTransitionRan),'native transition must capture named page before deferred initialization');await page.goBack();await wait(page);await page.waitForFunction(expected=>Math.abs(scrollY-expected)<3,position,{timeout:5000}).catch(async error=>{throw new Error(`History restoration expected ${position}: ${JSON.stringify(await page.evaluate(()=>({y:scrollY,height:document.documentElement.scrollHeight,restoration:history.scrollRestoration,lenis:document.documentElement.className})))}`,{cause:error});});const restored=await page.evaluate(()=>scrollY);assert(Math.abs(restored-position)<3,`history position restoration: ${position} -> ${restored}`);
+  await page.goto(base+'/feed');await page.evaluate(()=>{if(innerWidth>=900)document.querySelector('.community-feed-main').scrollTop=700;else scrollTo(0,700);});await wait(page);const position=await page.evaluate(()=>innerWidth>=900?document.querySelector('.community-feed-main').scrollTop:scrollY);
+  await page.locator('.site-header a[href="/roadmap"]').evaluate(link=>link.click());await page.waitForURL('**/roadmap');await wait(page);if(await page.evaluate(()=>typeof ViewTransition!=='undefined'))assert(await page.evaluate(()=>__sfTransitionSnapshotReady&&__sfPageTransitionRan),'native transition must capture named page before deferred initialization');await page.goBack();await wait(page);await page.waitForFunction(expected=>Math.abs((innerWidth>=900?document.querySelector('.community-feed-main').scrollTop:scrollY)-expected)<3,position,{timeout:5000}).catch(async error=>{throw new Error(`History restoration expected ${position}: ${JSON.stringify(await page.evaluate(()=>({y:scrollY,height:document.documentElement.scrollHeight,restoration:history.scrollRestoration,lenis:document.documentElement.className})))}`,{cause:error});});const restored=await page.evaluate(()=>innerWidth>=900?document.querySelector('.community-feed-main').scrollTop:scrollY);assert(Math.abs(restored-position)<3,`history position restoration: ${position} -> ${restored}`);
   for(const route of ['/profile','/roadmap?view=timeline','/admin/board','/preview/invitations','/account/security','/schools','/preview/platform','/privacy','/404']){await page.goto(base+route);await wait(page);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),route+' overflow');}
   // Private preview executes only the isolated frame controller and motion bundle.
   await page.goto(base+'/__motion/preview');assert.equal(await page.locator('[data-sf-word],[data-sf-cursor]').count(),0);
@@ -119,8 +119,8 @@ async function resourcesReleased(page) {
    await fallback.goto(base+'/');await wait(fallback);assert.equal(await fallback.locator('[data-sf-cursor],[data-sf-magnetic-inner]').count(),0);assert(!await fallback.locator('html').evaluate(el=>el.classList.contains('lenis')));await fallback.close();
   }
   const keyboard=await browser.newPage({viewport:{width:1440,height:900}});await keyboard.goto(base+'/feed');await keyboard.waitForFunction(()=>document.documentElement.classList.contains('lenis'));
-  await keyboard.mouse.move(700,400);await keyboard.mouse.wheel(0,300);await keyboard.waitForTimeout(60);await keyboard.keyboard.press('PageDown');await wait(keyboard);
-  assert(await keyboard.evaluate(()=>scrollY>600),'keyboard scroll must not be pulled back by active wheel inertia');await keyboard.close();
+  await keyboard.locator('.community-feed-main').focus();await keyboard.mouse.move(700,400);await keyboard.mouse.wheel(0,300);await keyboard.waitForTimeout(60);await keyboard.keyboard.press('PageDown');await wait(keyboard);
+  assert(await keyboard.evaluate(()=>innerWidth>=900?document.querySelector('.community-feed-main').scrollTop>600:scrollY>600),'keyboard scroll must not be pulled back by active wheel inertia');await keyboard.close();
   const delayed=await browser.newPage();let releaseVendor;const vendorGate=new Promise(resolve=>releaseVendor=resolve);
   await delayed.route('**/js/vendor/lenis.js*',async route=>{await vendorGate;await route.continue();});
   await delayed.goto(base+'/',{waitUntil:'domcontentloaded'});await delayed.keyboard.press('Control+f');releaseVendor();await delayed.waitForFunction(()=>Boolean(window.Lenis));await wait(delayed);

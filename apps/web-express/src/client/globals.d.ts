@@ -2,6 +2,7 @@ interface AppConfirmationOptions { title?: string; confirmLabel?: string; danger
 type AuthSession = import("@supabase/supabase-js").Session;
 interface AuthSyncResult { success: boolean; user: { id: string }; }
 interface Window {
+  sfFileUpload?: {refresh(root?:ParentNode):void;destroy():void};
   sfSchoolPath: typeof sfSchoolPath;
   sfClearSchoolState: typeof sfClearSchoolState;
   sfRecordShare: (id: string) => Promise<void>;

@@ -19,7 +19,7 @@ const feedUrl = (changes = {}) => {
 };
 %>
 <div class="community-page-wrapper">
-  <aside class="community-left-nav" aria-label="Community navigation">
+  <aside data-sf-native-scroll tabindex="0" class="community-left-nav" aria-label="Community navigation">
     <div class="left-nav-inner">
       <div class="nav-brand-title"><span>YOUR CAMPUS, TOGETHER</span></div>
       <nav class="left-nav-menu" aria-label="Explore">
@@ -42,7 +42,7 @@ const feedUrl = (changes = {}) => {
     </div>
   </aside>
 
-  <main class="community-feed-main" aria-labelledby="feed-heading">
+  <main data-sf-native-scroll tabindex="0" class="community-feed-main" aria-labelledby="feed-heading">
     <header class="community-feed-header">
       <div class="feed-title-bar">
         <div class="feed-heading-group">
@@ -125,7 +125,7 @@ const feedUrl = (changes = {}) => {
     </div>
   </main>
 
-  <aside class="community-right-panel" aria-label="Community resources">
+  <aside data-sf-native-scroll tabindex="0" class="community-right-panel" aria-label="Community resources">
     <div class="trending-sidebar-content">
       <section class="feed-side-panel feed-roadmap-promo">
         <h2 class="feed-side-heading"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#ws-board"/></svg>From ideas to action</h2>
@@ -161,6 +161,6 @@ const feedUrl = (changes = {}) => {
 <div id="sf-feed-account-state" hidden data-user="<%= it.accountState.userId %>" data-bookmarks="<%= JSON.stringify(it.accountState.bookmarks) %>" data-searches="<%= JSON.stringify(it.accountState.searches) %>"></div>
 <% } %>
 <div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total ?? '' %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
-<script defer src="/js/feed.js?v=20261018-customization"></script>
+<script defer src="/js/feed.js?v=20261021-pane-scroll"></script>
 
 <script defer src="/js/saved-searches.js?v=20261018-customization"></script>

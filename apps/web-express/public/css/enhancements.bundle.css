@@ -3183,6 +3183,17 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
  .school-context-demo[open] { flex-basis:100%; }
 }
 
+/* Desktop feed panes scroll separately; mobile keeps one native document scroller. */
+@media(min-width:900px) {
+ body.sf-feed-workspace:has(.community-page-wrapper) { height:100dvh; overflow:hidden; display:flex; flex-direction:column; }
+ body.sf-feed-workspace:has(.community-page-wrapper) > :is(.site-header,.school-context-bar,.connection-status) { flex-shrink:0; }
+ body.sf-feed-workspace:has(.community-page-wrapper) > #page-content { flex:1; min-height:0; display:flex; }
+ body.sf-feed-workspace:has(.community-page-wrapper) .community-page-wrapper { flex:1; width:100%; height:100%; min-height:0; max-height:100%; box-sizing:border-box; grid-template-rows:minmax(0,1fr); align-items:stretch; overflow:hidden; padding-block:20px 16px; }
+ body.sf-feed-workspace:has(.community-page-wrapper) :is(.community-feed-main,.community-left-nav,.community-right-panel) { position:static; top:auto; height:100%; max-height:none; min-height:0; overflow-y:auto; overscroll-behavior-y:contain; scrollbar-gutter:stable; scroll-padding-block:12px; padding-bottom:16px; }
+ body.sf-feed-workspace:has(.community-page-wrapper) .community-feed-main { padding-inline:3px 12px; }
+ body.sf-feed-workspace:has(.community-page-wrapper) :is(.community-feed-main,.community-left-nav,.community-right-panel):focus-visible { outline:2px solid var(--focus-ring,var(--navy)); outline-offset:2px; }
+}
+
 /* A modest mobile text reduction. Keep form controls at 16px to avoid focus zoom. */
 @media (max-width:768px) {
  body { font-size:14px; }
@@ -3408,3 +3419,21 @@ html[data-studio-mode="edit"] :is(.post-card,.sf-idea-card,.roadmap-idea,.prof-a
 /* Magnetism and press feedback share the visual layer; the hit target never moves. */
 [data-sf-magnetic] {transform:none!important;}
 @media(prefers-reduced-motion:no-preference) {[data-sf-magnetic]:active>[data-sf-magnetic-inner] {transform:scale(.98)!important;}}
+
+/* The original file input remains the keyboard- and screen-reader-accessible control. */
+.sf-upload { position:relative; display:grid; grid-template-columns:36px minmax(0,1fr); align-items:center; gap:12px; width:100%; min-width:0; box-sizing:border-box; padding:18px 16px; margin-top:8px; border:1px dashed var(--line-2,var(--line)); border-radius:12px; background:var(--bg-2,var(--bg)); color:var(--ink); text-align:left; cursor:pointer; isolation:isolate; }
+.sf-upload > input[type="file"] { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; min-height:0!important; max-width:none!important; padding:0!important; margin:0!important; border:0!important; opacity:0!important; cursor:inherit; z-index:1; }
+.sf-upload-icon { width:30px; height:30px; color:var(--navy); justify-self:center; transition:transform 200ms ease; pointer-events:none; }
+.sf-upload-content { display:grid; gap:4px; min-width:0; pointer-events:none; }
+.sf-upload-lead { display:block; font-size:13px; font-weight:650; line-height:1.5; overflow-wrap:anywhere; color:var(--ink); }
+.sf-upload-hint,.sf-upload-status { display:block; font-size:11px; line-height:1.5; font-weight:400; color:var(--muted); overflow-wrap:anywhere; }
+.sf-upload-status:empty { display:none; }
+.sf-upload:focus-within { outline:3px solid var(--focus-ring,var(--navy)); outline-offset:3px; }
+.sf-upload:is(:hover,.sf-upload--over):not(.sf-upload--disabled) { border-color:var(--navy); background:var(--sky,var(--bg)); }
+.sf-upload--over { border-style:solid; }
+.sf-upload[data-error="true"] { border-color:var(--error); }
+.sf-upload[data-error="true"] .sf-upload-status { color:var(--error); }
+.sf-upload--disabled { opacity:.65; cursor:not-allowed; }
+@media(prefers-reduced-motion:no-preference) { .sf-upload--over .sf-upload-icon { transform:translateY(-2px); } }
+@media(max-width:600px) { .sf-upload { gap:10px; padding:16px 12px; } }
+input[type="file"]:not([data-sf-upload-ready])::file-selector-button { padding:10px 14px; margin-right:10px; border:1px solid var(--line); border-radius:8px; color:var(--ink); background:var(--bg); font:inherit; cursor:pointer; }

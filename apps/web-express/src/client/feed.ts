@@ -2,6 +2,30 @@
 (function () {
   const config = document.getElementById('sf-feed-config');
   if (!config) return;
+  const panes = ['.community-feed-main', '.community-left-nav', '.community-right-panel'];
+  // Document scroll restoration does not reliably restore independently scrolling panes.
+  function rememberPanes() {
+    if (window.innerWidth < 900) return;
+    try {
+      history.replaceState({ ...history.state, sfFeedScroll: panes.map(selector => document.querySelector(selector)?.scrollTop || 0) }, '');
+    } catch { /* Navigation still works when history state is unavailable. */ }
+  }
+  let scrollSave: ReturnType<typeof setTimeout> | undefined;
+  panes.forEach(selector => document.querySelector(selector)?.addEventListener('scroll', () => {
+    clearTimeout(scrollSave);
+    scrollSave = setTimeout(rememberPanes, 150);
+  }, { passive: true }));
+  window.addEventListener('pagehide', () => { clearTimeout(scrollSave); rememberPanes(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) rememberPanes(); });
+  window.addEventListener('pageshow', () => {
+    if (window.innerWidth < 900 || (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined)?.type !== 'back_forward') return;
+    const positions: unknown = history.state?.sfFeedScroll;
+    if (!Array.isArray(positions)) return;
+    panes.forEach((selector, index) => {
+      const pane = document.querySelector(selector);
+      if (pane && typeof positions[index] === 'number' && Number.isFinite(positions[index])) pane.scrollTop = Math.max(0, positions[index]);
+    });
+  });
   const following = new URLSearchParams(window.location.search).get('scope') === 'following';
   let _currentSort = config.dataset.sort || 'all';
   let _currentCat = config.dataset.category || 'All';

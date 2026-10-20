@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261018-action-audit" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261020-workspace-shell" />
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261021-upload" />
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261020-review-layout" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261020-studio-colors"/><% } %>
   <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
@@ -39,7 +39,7 @@
   <!-- Supabase (client-side auth) -->
   <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>
 </head>
-<body<% if(it.schoolCustomization) { %> data-school-colors style="<%= it.schoolColorStyle || '' %>"<% } %> class="<%= it.schoolCustomization ? 'school-palette-'+it.schoolCustomization.palette : '' %> <%= it.schoolCustomization ? Object.entries(it.schoolCustomization.features).filter(([key,value])=>!value).map(([key])=>'school-'+key+'-off').join(' ') : '' %>">
+<body<% if(it.schoolCustomization) { %> data-school-colors style="<%= it.schoolColorStyle || '' %>"<% } %> class="<%= /^\/feed\/?$/.test(it.currentPath || '') ? 'sf-feed-workspace ' : '' %><%= it.schoolCustomization ? 'school-palette-'+it.schoolCustomization.palette : '' %> <%= it.schoolCustomization ? Object.entries(it.schoolCustomization.features).filter(([key,value])=>!value).map(([key])=>'school-'+key+'-off').join(' ') : '' %>">
 <% if(it.schoolCustomization) { %><script type="application/json" id="school-presentation-data"><%~ JSON.stringify(it.schoolCustomization).replace(/</g,'\\u003c') %></script><script defer src="/js/school-ui.js?v=20261020-studio-colors"></script><script defer src="/js/school-submission.js?v=20261018-customization"></script><% } %>
 <a class="system-skip-link" href="#page-content">Skip to page content</a>
 <%~ include('partials/workspace-icons', it) %>
@@ -86,6 +86,7 @@
 
 
 <% } %>
+<script defer src="/js/file-upload.js?v=20261021-upload"></script>
 <script defer src="/js/responsive.js?v=20261016-school-isolation"></script>
 <script defer src="/js/animations.js?v=20261020-motion"></script>
 </body>
