@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261018-action-audit" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261021-upload" />
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261021-detail-workspace" />
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261020-review-layout" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261020-studio-colors"/><% } %>
   <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
