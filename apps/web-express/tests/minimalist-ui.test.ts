@@ -45,3 +45,16 @@ test('idea and post cards have no spinning conic borders, spotlights, or colored
     /\.post-card:hover\s*\{[^}]*border-color:\s*#b8cbdc/,
   );
 });
+
+test('buttons and submit elements use flat solid backgrounds without gradients', () => {
+  const submitCss = fs.readFileSync(
+    path.join(__dirname, '../public/css/modules/submit.css'),
+    'utf8',
+  );
+  const compCss = fs.readFileSync(
+    path.join(__dirname, '../public/css/modules/components.css'),
+    'utf8',
+  );
+  assert.doesNotMatch(submitCss, /linear-gradient/);
+  assert.doesNotMatch(compCss, /\.btn-primary[^{]*\{[^}]*linear-gradient/);
+});

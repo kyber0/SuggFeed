@@ -456,7 +456,7 @@
 }
 .roadmap-card-progress-bar {
   height:100%;
-  background:linear-gradient(90deg, var(--navy), #2563eb);
+  background:var(--navy);
   border-radius:3px;
   transition:width .4s ease-out;
 }
@@ -480,7 +480,7 @@
 .roadmap-tree-leaf-progress-bar {
   display:inline-block;
   height:4px;
-  background:linear-gradient(90deg, var(--navy), #2563eb);
+  background:var(--navy);
   border-radius:2px;
   min-width:20px;
   max-width:40px;
@@ -537,7 +537,7 @@
   padding:18px 20px;
   border:1px solid rgba(16,185,129,.25);
   border-radius:12px;
-  background:linear-gradient(180deg, rgba(228,247,238,.4) 0%, var(--surface) 100%);
+  background:var(--surface);
   box-shadow:var(--shadow-sm);
 }
 .roadmap-recent-strip-heading {
@@ -681,7 +681,7 @@
 }
 .roadmap-detail-bar-fill {
   height:100%;
-  background:linear-gradient(90deg, var(--navy), #2563eb);
+  background:var(--navy);
   border-radius:4px;
   transition:width .5s ease-out;
 }
@@ -795,7 +795,7 @@ html:has(#roadmap-dialog[open]) { overflow:hidden; }
 [data-theme="dark"] .roadmap-timeline-completed-date { color:#34d399; }
 [data-theme="dark"] .roadmap-timeline-side-label--school { color:#93c5fd; }
 [data-theme="dark"] .roadmap-recent-strip {
-  background:linear-gradient(180deg, rgba(16,185,129,.1) 0%, var(--surface) 100%);
+  background:var(--surface);
   border-color:rgba(16,185,129,.3);
 }
 [data-theme="dark"] .roadmap-recent-strip-pill {
