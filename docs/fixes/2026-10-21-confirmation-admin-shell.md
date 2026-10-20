@@ -19,3 +19,9 @@ Replaced workspace grab-hand cursors with native move/selection cursors. Theme c
 Full Express type checking and production build passed. Local Chromium inspected confirmation with a different fictional signed-in account: the token fragment was removed and explicit confirmation remained required. The logo loaded in rendered email HTML. Admin rows measured 94px in the fixture, had no duplicate Review button/banner, and clicking row space opened the existing review dialog. Confirmation fit 375px without horizontal overflow. Screenshots inspected.
 
 No automated test suite was added or run. No real confirmation/reset/invitation/digest email was sent during this work. Real mailbox delivery and cross-browser confirmation still need user verification. Supabase template activation status is recorded below after deployment.
+
+## Rollout status
+
+Application changes pushed as `fbfe2c5`. The public logo asset returns HTTP 200. Six deployment checks plus a final cache-bypassed check still returned HTTP 404 for `/auth/confirm`; new Supabase templates were therefore **not activated**, preventing newly sent links from targeting an unavailable page. The application must deploy successfully before patching `mailer_templates_confirmation_content` and `mailer_templates_recovery_content` with the exported templates in `src/lib/auth-email-template.ts`. Keep `mailer_autoconfirm` false. Existing SMTP credentials and sender require no change for this rollout.
+
+Additional local inspection confirmed dark/light switching retained the same iframe URL and updated the theme immediately, and the staff work card's computed cursor was `move`.
