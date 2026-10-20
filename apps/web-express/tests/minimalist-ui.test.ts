@@ -58,3 +58,16 @@ test('buttons and submit elements use flat solid backgrounds without gradients',
   assert.doesNotMatch(submitCss, /linear-gradient/);
   assert.doesNotMatch(compCss, /\.btn-primary[^{]*\{[^}]*linear-gradient/);
 });
+
+test('compiled bundles contain no conic gradients or shiny card sweeps', () => {
+  const base = fs.readFileSync(
+    path.join(__dirname, '../public/css/base.bundle.css'),
+    'utf8',
+  );
+  const enhancements = fs.readFileSync(
+    path.join(__dirname, '../public/css/enhancements.bundle.css'),
+    'utf8',
+  );
+  assert.doesNotMatch(enhancements, /conic-gradient/);
+  assert.doesNotMatch(enhancements, /sfCardShineSweep/);
+});

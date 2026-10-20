@@ -13,25 +13,18 @@
 .sf-hero {
   position: relative;
   padding: 60px 24px 34px;
-  background: radial-gradient(850px circle at var(--hero-mouse-x, 50%) var(--hero-mouse-y, 25%), rgba(11, 56, 87, 0.09) 0%, transparent 70%);
+  background: var(--bg);
   text-align: center;
   overflow: hidden;
-  transition: background 0.12s ease-out;
 }
 
 [data-theme="dark"] .sf-hero {
-  background: radial-gradient(850px circle at var(--hero-mouse-x, 50%) var(--hero-mouse-y, 25%), rgba(37, 99, 235, 0.16) 0%, transparent 70%);
+  background: var(--bg);
 }
 
-/* Ambient Floating Orbs */
+/* Ambient Floating Orbs - hidden for minimalist design */
 .sf-hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(70px);
-  z-index: 0;
-  opacity: 0.75;
-  will-change: transform;
+  display: none;
 }
 
 .sf-hero-orb-1 {
@@ -197,15 +190,11 @@
 }
 
 .sf-hero-title-accent {
-  background: linear-gradient(135deg, var(--navy, #0b3857) 0%, #2563eb 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--navy);
 }
 
 [data-theme="dark"] .sf-hero-title-accent {
-  background: linear-gradient(135deg, #60a5fa 0%, #93c5fd 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--navy);
 }
 
 .sf-hero-subtitle {
@@ -528,7 +517,7 @@
   padding: 9px 18px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, var(--navy, #0b3857) 0%, #175482 100%);
+  background: var(--navy);
   color: #ffffff;
   font: inherit;
   font-size: 13.5px;
@@ -731,7 +720,7 @@
   padding: 0 20px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, var(--navy, #0b3857) 0%, #175482 100%);
+  background: var(--navy);
   color: #ffffff;
   font: inherit;
   font-size: 14px;
@@ -931,7 +920,7 @@
   padding: 0 18px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, var(--navy, #0b3857) 0%, #175482 100%);
+  background: var(--navy);
   color: #ffffff;
   font: inherit;
   font-size: 13.5px;
@@ -1233,170 +1222,40 @@
   }
 }
 
-/* ── Card wrapper for 3-D tilt perspective ── */
+/* ── Card wrapper ── */
 .sf-card-tilt-wrap {
-  perspective: 900px;
-  transform-style: preserve-3d;
+  position: relative;
 }
 
 .sf-idea-card {
   position: relative;
   background: var(--surface-card, #ffffff);
-  border: 1.5px solid var(--line, #e2e8f0);
-  border-radius: 18px;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 12px;
   padding: 22px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  /* border handled via box-shadow border trick so we can animate independently */
-  transition:
-    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 250ms ease,
-    background 250ms ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transform-style: preserve-3d;
-  will-change: transform;
 }
 
-/* ── Layer 1 — Mouse-follow radial spotlight ── */
-.sf-idea-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 18px;
-  background: radial-gradient(
-    380px circle at var(--card-mouse-x, -300px) var(--card-mouse-y, -300px),
-    rgba(37, 99, 235, 0.10),
-    transparent 72%
-  );
-  opacity: 0;
-  transition: opacity 250ms ease;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* ── Layer 2 — Gloss / shine sweep on hover ── */
-.sf-idea-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 18px;
-  background: linear-gradient(
-    115deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.22) 50%,
-    transparent 70%
-  );
-  opacity: 0;
-  transform: translateX(-100%);
-  transition: opacity 180ms ease;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.sf-idea-card:hover::before {
-  opacity: 1;
-}
-
-.sf-idea-card:hover::after {
-  opacity: 1;
-  animation: sfCardShineSweep 700ms cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-
-@keyframes sfCardShineSweep {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(200%); }
-}
-
-/* ── Shimmer border ring (pseudo on tilt wrapper) ── */
-.sf-card-tilt-wrap::before {
-  content: '';
-  position: absolute;
-  inset: -1.5px;
-  border-radius: 19.5px;
-  background: conic-gradient(
-    from var(--card-border-angle, 0deg),
-    transparent 60%,
-    rgba(37, 99, 235, 0.85) 72%,
-    rgba(96, 165, 250, 0.9) 78%,
-    transparent 90%
-  );
-  opacity: 0;
-  transition: opacity 280ms ease;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.sf-card-tilt-wrap:hover::before {
-  opacity: 1;
-  animation: sfBorderSpin 2.8s linear infinite;
-}
-
-@keyframes sfBorderSpin {
-  to { --card-border-angle: 360deg; }
-}
-
-@property --card-border-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
-[data-theme="dark"] .sf-idea-card::before {
-  background: radial-gradient(
-    380px circle at var(--card-mouse-x, -300px) var(--card-mouse-y, -300px),
-    rgba(96, 165, 250, 0.15),
-    transparent 72%
-  );
-}
-
-[data-theme="dark"] .sf-idea-card::after {
-  background: linear-gradient(
-    115deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.08) 50%,
-    transparent 70%
-  );
-}
-
-[data-theme="dark"] .sf-card-tilt-wrap::before {
-  background: conic-gradient(
-    from var(--card-border-angle, 0deg),
-    transparent 55%,
-    rgba(59, 130, 246, 0.9)  70%,
-    rgba(147, 197, 253, 0.9) 78%,
-    transparent 90%
-  );
+.sf-idea-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-2);
+  box-shadow: var(--shadow-md);
 }
 
 [data-theme="dark"] .sf-idea-card {
   background: var(--surface-card, #131d27);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.sf-idea-card:hover {
-  transform:
-    translateY(-6px)
-    rotateX(var(--card-rotate-x, 0deg))
-    rotateY(var(--card-rotate-y, 0deg))
-    scale(1.012);
-  border-color: #2563eb;
-  box-shadow:
-    0 20px 50px rgba(11, 56, 87, 0.14),
-    0 8px 18px rgba(37, 99, 235, 0.08),
-    0 0 0 1px rgba(37, 99, 235, 0.25),
-    0 0 60px rgba(37, 99, 235, 0.06);
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm);
 }
 
 [data-theme="dark"] .sf-idea-card:hover {
-  border-color: #3b82f6;
-  box-shadow:
-    0 24px 56px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(59, 130, 246, 0.35),
-    0 0 80px rgba(59, 130, 246, 0.10);
+  border-color: var(--line-2);
+  box-shadow: var(--shadow-md);
 }
 
 /* Card Entrance animation on filter */
@@ -2136,12 +1995,12 @@
 /* ── Accessible home layout with ambient interaction ── */
 .sf-hero {
   padding: clamp(48px, 7vw, 88px) 24px 40px;
-  background: radial-gradient(850px circle at var(--hero-mouse-x, 50%) var(--hero-mouse-y, 25%), rgba(11, 56, 87, 0.07), transparent 70%), var(--bg-2);
+  background: var(--bg);
   text-align: left;
   transition: none;
 }
 
-.sf-hero-orb { opacity: .35; animation-duration: 30s; }
+.sf-hero-orb { display: none; }
 
 .sf-hero-container {
   position: relative;
