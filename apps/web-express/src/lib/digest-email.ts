@@ -1,3 +1,4 @@
+import {schoolColors} from './school-colors';
 /** Branded companion to the plain-text digest. Inputs are public notification fields. */
 export interface DigestEmailEntry { title: string; kind: string; office_label: string; }
 function escapeHtml(value: string): string {
@@ -8,7 +9,8 @@ function httpsLink(value: string): string {
   if (url.protocol !== 'https:') throw new Error('Email links require HTTPS.');
   return escapeHtml(url.href);
 }
-export function digestHtml(entries: DigestEmailEntry[], origin: string, unsubscribe: string, schoolPath = '',schoolNote=''): string {
+export function digestHtml(entries: DigestEmailEntry[], origin: string, unsubscribe: string, schoolPath = '',schoolNote='',accent?:string): string {
+  const brand=accent?schoolColors.tokens(accent):null;
   const updatesUrl = httpsLink(new URL(schoolPath + '/notifications', origin).href);
   const preferencesUrl = httpsLink(new URL(schoolPath + '/notifications#notification-preferences', origin).href);
   const unsubscribeUrl = httpsLink(unsubscribe);
@@ -36,7 +38,7 @@ export function digestHtml(entries: DigestEmailEntry[], origin: string, unsubscr
 <h1 class="email-heading" style="margin:0 0 12px;font-size:29px;line-height:1.2;letter-spacing:-.02em;color:#102a43;">Small ideas.<br>Real progress.</h1>
 <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#627d98;">Here ${entries.length === 1 ? 'is the latest public update' : 'are the latest public updates'} on the school ideas you follow.</p>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="email-updates" style="background:#f8fafc;border:1px solid #d9e2ec;border-radius:10px;">${noteHtml?'<tr><td style="padding:20px">'+noteHtml+'</td></tr>':''}${cards}</table>
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:24px;"><tr><td style="border-radius:8px;background:#0b3857;"><a class="email-button" href="${updatesUrl}" style="display:inline-block;padding:14px 24px;background:#0b3857;border-radius:8px;color:#fff;text-decoration:none;font-size:14px;font-weight:700;">See your updates &rarr;</a></td></tr></table>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:24px;"><tr><td style="border-radius:8px;background:${brand?.accent||'#0b3857'};"><a class="email-button" href="${updatesUrl}" style="display:inline-block;padding:14px 24px;background:${brand?.accent||'#0b3857'};border-radius:8px;color:${brand?.onAccent||'#fff'};text-decoration:none;font-size:14px;font-weight:700;">See your updates &rarr;</a></td></tr></table>
 <p style="margin:16px 0 0;font-size:12px;line-height:1.6;color:#627d98;">Only public updates are included. Private clarifications and tracking codes stay out of email.</p>
 </td></tr>
 <tr><td class="email-footer" style="padding:22px 28px;background:#f8fafc;border-top:1px solid #d9e2ec;">

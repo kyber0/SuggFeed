@@ -4,17 +4,31 @@
     const clean = (value) => { const result = copy(value); delete result.formVersion; return result; };
     const node = (id, label, group, pages = []) => ({ id, label, group, pages });
     function registry(configuration, page) {
-        const nodes = [node('school.identity', 'School identity', 'appearance'), node('home.hero', 'Welcome & cover', 'hero', ['home']), node('home.links', 'Official links & help', 'links', ['home']), node('community.categories', 'Feedback categories', 'categories', ['home', 'feed', 'roadmap', 'submit']), node('submission.instructions', 'Submission form', 'form', ['submit']), node('community.features', 'Community features', 'features'), node('progress.labels', 'Progress labels', 'progress', ['roadmap', 'idea']), node('school.email', 'School email content', 'email'), node('locked.brand', 'SuggFeed & navigation', 'locked')];
-        if (['home', 'feed', 'roadmap', 'submit'].includes(page))
+        const nodes = [node('school.theme', 'Colors & theme', 'workspace'), node('school.identity', 'School identity', 'workspace'), node('community.features', 'Participation settings', 'workspace'), node('school.email', 'Email content', 'workspace'), node('locked.brand', 'SuggFeed & shared navigation', 'workspace')];
+        const definition = SfSchoolDesign.pages[page];
+        if (definition) {
+            nodes.push(node('page.' + page, definition.label + ' layout', 'page', [page]));
+            for (const [id, section] of Object.entries(definition.sections))
+                nodes.push(node('section.' + page + '.' + id, section.label, 'section', [page]));
+        }
+        if (page === 'home')
+            nodes.push(node('home.hero', 'Welcome content', 'content', ['home']), node('home.links', 'Official links & help', 'content', ['home']));
+        if (['home', 'feed', 'roadmap', 'submit'].includes(page)) {
+            nodes.push(node('community.categories', 'Feedback categories', 'content', [page]));
             for (const c of configuration.categories)
-                nodes.push(node('category:' + c.id, c.name || 'New category', 'category'));
-        if (page === 'submit')
+                nodes.push(node('category:' + c.id, c.name || 'New category', 'category', [page]));
+        }
+        if (page === 'submit') {
+            nodes.push(node('submission.instructions', 'Questions & instructions', 'content', ['submit']));
             for (const q of configuration.form.questions)
-                nodes.push(node('question:' + q.id, q.label || 'New question', 'question'));
-        return nodes.filter(n => !n.pages.length || n.pages.includes(page));
+                nodes.push(node('question:' + q.id, q.label || 'New question', 'question', ['submit']));
+        }
+        if (['roadmap', 'idea'].includes(page))
+            nodes.push(node('progress.labels', 'Progress wording', 'content', [page]));
+        return nodes;
     }
     function create(initial) {
-        let configuration = clean(initial.configuration), saved = copy(configuration), selection = { componentId: 'school.identity' }, page = 'home';
+        let configuration = clean(initial.configuration), saved = copy(configuration), selection = { componentId: 'school.theme' }, page = 'home';
         let revision = initial.serverRevision || 0;
         const past = [], future = [], listeners = new Set();
         let lastKey = '', lastAt = 0, bytes = 0;
@@ -22,9 +36,23 @@
         const emit = () => { for (const listener of listeners)
             listener(getState()); };
         function applyChange(componentId, property, value) {
+            var _a;
             const next = copy(configuration);
             let target, allowed = [];
-            if (componentId.startsWith('category:')) {
+            if (componentId === 'school.theme') {
+                target = next;
+                allowed = ['design'];
+            }
+            else if (componentId.startsWith('page.') || componentId.startsWith('section.')) {
+                const pageId = componentId.split('.')[1];
+                if (!SfSchoolDesign.pages[pageId])
+                    throw new Error('Unsupported page.');
+                next.design || (next.design = SfSchoolDesign.defaults(next.palette));
+                (_a = next.design.pages)[pageId] || (_a[pageId] = SfSchoolDesign.pageDefaults());
+                target = next.design.pages[pageId];
+                allowed = ['layout', 'spacing', 'cards', 'hidden', 'order', 'sections', ...(pageId === 'roadmap' ? ['view'] : [])];
+            }
+            else if (componentId.startsWith('category:')) {
                 target = next.categories.find((c) => c.id === componentId.slice(9));
                 allowed = ['name', 'slug', 'description', 'icon', 'active'];
             }

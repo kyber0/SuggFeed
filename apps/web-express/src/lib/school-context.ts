@@ -1,3 +1,4 @@
+import {schoolDesign} from './school-design';
 import {schoolColors} from './school-colors';
 import {type SchoolCustomization,schoolStatusLabel} from './school-customization';
 import { DEMO_SCHOOL_ID } from './school-onboarding';
@@ -46,7 +47,7 @@ export function resolveSchool(req: Request, res: Response, next: NextFunction) {
     res.redirect = ((first: string | number, second?: string) => typeof first === 'number' ? redirect(first, schoolPath(res.locals.schoolBase, second || '/')) : redirect(schoolPath(res.locals.schoolBase, first))) as typeof res.redirect;
     res.locals.schoolId = school.id;
     res.locals.schoolName = school.name;
-    res.locals.schoolColorStyle=schoolColors.style(school.configuration?.palette||'navy');res.locals.schoolCustomization=school.configuration;res.locals.schoolCustomizationVersion=school.customization_version;res.locals.schoolCategories=(school.configuration?.categories || []).filter((c:any)=>c.active);res.locals.schoolStatusLabel=schoolStatusLabel;
+    res.locals.schoolColorStyle=schoolColors.style(school.configuration?.palette||'navy')+(school.configuration?.design?schoolDesign.style(school.configuration.design):'');res.locals.schoolDesignPage=schoolDesign.page(localPath);res.locals.schoolCustomization=school.configuration;res.locals.schoolCustomizationVersion=school.customization_version;res.locals.schoolCategories=(school.configuration?.categories || []).filter((c:any)=>c.active);res.locals.schoolStatusLabel=schoolStatusLabel;
     // All existing route paths stay relative to this verified school mount.
     req.url = req.url.slice(match[0].length) || '/';
     if (req.url.startsWith('?')) req.url = '/' + req.url;

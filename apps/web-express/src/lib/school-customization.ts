@@ -1,3 +1,4 @@
+import {schoolDesign,type SchoolDesign} from './school-design';
 import { currentSchool } from './school-scope';
 
 export const SCHOOL_PALETTES=['navy','forest','purple','burgundy','teal','indigo'] as const;
@@ -5,6 +6,7 @@ export const SCHOOL_ICONS=['board','message','care','users','shield','list','cal
 export interface SchoolCategory {id:string;name:string;slug:string;description:string;icon:string;active:boolean;}
 export interface SchoolQuestion {id:string;label:string;help:string;type:'short'|'long'|'choice';required:boolean;options:string[];}
 export interface SchoolCustomization {
+ design?:SchoolDesign;
  schemaVersion:1; displayName:string;palette:string;logo:string|null;cover:string|null;
  welcome:{headline:string;intro:string;message:string;help:string;links:{label:string;url:string}[]};
  categories:SchoolCategory[];
@@ -22,7 +24,7 @@ const text=(value:unknown,max:number,label:string,min=0):string=>{if(typeof valu
 const id=(value:unknown,label:string)=>{if(typeof value!=='string'||!UUID.test(value))throw new Error('Invalid '+label+'.');return value.toLowerCase();};
 const flag=(value:unknown)=>{if(typeof value!=='boolean')throw new Error('Choose a valid feature setting.');return value;};
 export function normalizeCustomization(value:unknown):SchoolCustomization {
- const p=object(value,['schemaVersion','displayName','palette','logo','cover','welcome','categories','features','form','labels','stageDescriptions','email','formVersion'],'school customization');
+ const p=object(value,['schemaVersion','displayName','palette','logo','cover','welcome','categories','features','form','labels','stageDescriptions','email','formVersion','design'],'school customization');
  if(p.schemaVersion!==1||(!SCHOOL_PALETTES.includes(p.palette)&&!(typeof p.palette==='string'&&/^#[0-9a-f]{6}$/i.test(p.palette))))throw new Error('Choose a supported appearance.');
  const w=object(p.welcome,['headline','intro','message','help','links'],'welcome content');
  if(!Array.isArray(w.links)||w.links.length>5)throw new Error('Use up to five official links.');
@@ -38,13 +40,14 @@ export function normalizeCustomization(value:unknown):SchoolCustomization {
  const descriptions=object(p.stageDescriptions,['approved','in_progress','resolved'],'stage explanations');
  const labels=object(p.labels,['approved','in_progress','resolved'],'progress labels'),email=object(p.email,['invitation','introduction','digest'],'email content');
  if(!['weekly','off'].includes(email.digest))throw new Error('Choose weekly digest or off.');
- return {schemaVersion:1,displayName:text(p.displayName,60,'School display name'),palette:p.palette,logo:p.logo===null?null:id(p.logo,'logo'),cover:p.cover===null?null:id(p.cover,'cover'),welcome:{headline:text(w.headline,100,'Welcome headline'),intro:text(w.intro,500,'Introduction'),message:text(w.message,1500,'Welcome message'),help:text(w.help,500,'Help information'),links},categories,features:{comments:flag(f.comments),voting:flag(f.voting),roadmap:flag(f.roadmap),sharing:flag(f.sharing),anonymous:flag(f.anonymous)},form:{instructions:text(form.instructions,1000,'Submission instructions'),example:text(form.example,1000,'Submission example'),questions,attachments:form.attachments},labels:{approved:text(labels.approved,40,'Planned label',1),in_progress:text(labels.in_progress,40,'In-progress label',1),resolved:text(labels.resolved,40,'Completed label',1)},stageDescriptions:{approved:text(descriptions.approved,240,'Planned-stage explanation'),in_progress:text(descriptions.in_progress,240,'In-progress explanation'),resolved:text(descriptions.resolved,240,'Completed-stage explanation')},email:{invitation:text(email.invitation,1000,'Invitation welcome'),introduction:text(email.introduction,1000,'Email introduction'),digest:email.digest}};
+ return {...(p.design===undefined?{}:{design:schoolDesign.normalize(p.design,p.palette)}),schemaVersion:1,displayName:text(p.displayName,60,'School display name'),palette:p.palette,logo:p.logo===null?null:id(p.logo,'logo'),cover:p.cover===null?null:id(p.cover,'cover'),welcome:{headline:text(w.headline,100,'Welcome headline'),intro:text(w.intro,500,'Introduction'),message:text(w.message,1500,'Welcome message'),help:text(w.help,500,'Help information'),links},categories,features:{comments:flag(f.comments),voting:flag(f.voting),roadmap:flag(f.roadmap),sharing:flag(f.sharing),anonymous:flag(f.anonymous)},form:{instructions:text(form.instructions,1000,'Submission instructions'),example:text(form.example,1000,'Submission example'),questions,attachments:form.attachments},labels:{approved:text(labels.approved,40,'Planned label',1),in_progress:text(labels.in_progress,40,'In-progress label',1),resolved:text(labels.resolved,40,'Completed label',1)},stageDescriptions:{approved:text(descriptions.approved,240,'Planned-stage explanation'),in_progress:text(descriptions.in_progress,240,'In-progress explanation'),resolved:text(descriptions.resolved,240,'Completed-stage explanation')},email:{invitation:text(email.invitation,1000,'Invitation welcome'),introduction:text(email.introduction,1000,'Email introduction'),digest:email.digest}};
 }
 export function schoolPresentation(){return currentSchool()?.customization || customizationDefaults();}
 export function schoolFeature(feature:keyof SchoolCustomization['features']){return schoolPresentation().features[feature];}
 export function schoolStatusLabel(status:string){const labels=schoolPresentation().labels;return status in labels?labels[status as keyof typeof labels]:status.replace(/_/g,' ');}
 export function customizationChanges(previous:SchoolCustomization,next:SchoolCustomization){
  const changes:string[]=[];
+ if(JSON.stringify(previous.design)!==JSON.stringify(next.design))changes.push('School-wide theme and page layouts');
  for(const key of ['displayName','palette','logo','cover','welcome','categories','form','labels','stageDescriptions','email'] as const)if(JSON.stringify(previous[key])!==JSON.stringify(next[key]))changes.push(({displayName:'School display name',palette:'Accent palette',logo:'School logo',cover:'Cover image',welcome:'Welcome content and official links',categories:'Categories and their availability',form:'Submission questions and attachment rules',labels:'Public progress labels',stageDescriptions:'Public stage explanations',email:'Email and digest settings'})[key]);
  for(const [key,value] of Object.entries(next.features))if(previous.features[key as keyof typeof previous.features]!==value)changes.push(`${value?'Enable':'Disable'} ${key==='comments'?'new comments':key}`);
  const archived=previous.categories.filter(old=>old.active&&!next.categories.some(item=>item.id===old.id&&item.active)).length;

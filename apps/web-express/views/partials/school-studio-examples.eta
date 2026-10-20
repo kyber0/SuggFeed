@@ -1,0 +1,9 @@
+<% if(it.kind==='notifications') { %>
+ <% if(it.previewScenario==='empty') { %><li class="notification-item"><strong>No updates to preview</strong><p>School progress updates appear here as ideas move forward.</p></li><% } else { %>
+ <% for(const item of it.feed || []) { %><li class="notification-item"><span class="notification-new">Fictional update</span><a href="/roadmap?item=<%= item.id %>"><%= item.title %></a><p>Progress update · School team · Example content</p><button class="workspace-button" type="button" disabled>Preview only</button></li><% } %>
+ <% } %>
+<% } else { %>
+ <% if(it.previewScenario==='empty') { %><%~ include('./empty-state',{compact:true,icon:'message',heading:'No school conversations yet',description:'Private clarification requests from school staff will appear here.'}) %><% } else { %>
+ <article class="care-card"><h2>More shaded seating near the library</h2><p>Which campus area would benefit most? This fictional request shows how private school conversations are presented.</p><p>Your school needs a little more detail</p><form class="care-form"><label>Your private reply<textarea class="workspace-input" rows="3" placeholder="Write a helpful reply…"></textarea></label><button type="button" class="workspace-button" disabled>Preview only · no message sent</button></form></article>
+ <% } %>
+<% } %>

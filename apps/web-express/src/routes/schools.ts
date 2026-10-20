@@ -1,3 +1,5 @@
+import {schoolColors} from '../lib/school-colors';
+import {schoolDesign} from '../lib/school-design';
 import {schoolRosterEmails} from '../lib/school-enrollment';
 import {schoolEmailDomain,schoolDomainProofPresent} from '../lib/school-domains';
 import { platformAuthority, schoolLanding, safeAccountReturn } from '../lib/navigation-context';
@@ -48,6 +50,7 @@ export async function schoolAdmin(req: Request, res: Response) {
   requireStrongAuth(req, res, () => { assured = true; });
   if (!assured) return null;
   Object.assign(res.locals, { accountArea: true, schoolBase: platformSettings ? '' : '/s/' + school.slug, schoolId: school.id, schoolName: school.name, user: { ...user, role: 'admin' } });
+  if(!platformSettings && req.method==='GET' && !req.path.includes('/customization')){const presentation=await supabasePlatform.rpc('school_published_configuration',{p_school:school.id});if(presentation.data&&!presentation.error){const configuration=presentation.data;Object.assign(res.locals,{schoolCustomization:configuration,schoolDesignPage:'staff',schoolColorStyle:schoolColors.style(configuration.palette)+(configuration.design?schoolDesign.style(configuration.design):'')});}}
   return { user, school };
 }
 function failed(res: Response, title: string, message: string, status = 400) { return res.status(status).render('school-message', { title, message }); }

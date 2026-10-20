@@ -6,8 +6,11 @@
     const p = JSON.parse(node.textContent || '{}');
     Object.assign(window, { sfSchoolCustomization: p, sfSchoolStatusLabel: (status) => p.labels?.[status] || status.replace(/_/g, ' ') });
     SfSchoolColors.apply(document.body, p.palette);
+    const applyDesign = () => { SfSchoolDesign.apply(document.body, p.design, document.body.dataset.schoolPage || SfSchoolDesign.page(location.pathname), p.palette); const form = document.getElementById('submit-panel'); if (form)
+        SfSchoolDesign.apply(form, p.design, 'submit', p.palette); };
     const prefix = document.querySelector('meta[name="school-base"]')?.content || '';
     function apply() {
+        applyDesign();
         if (!p.features.roadmap)
             for (const link of document.querySelectorAll('a[href]')) {
                 try {

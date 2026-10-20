@@ -14,17 +14,23 @@
     function mark(selector, id) { for (const element of document.querySelectorAll(selector))
         element.dataset.studioComponent = id; }
     function annotate() {
+        for (const el of document.querySelectorAll('[data-studio-component]'))
+            delete el.dataset.studioComponent;
+        const definition = SfSchoolDesign.pages[initial.page];
+        if (definition)
+            mark(definition.root, 'page.' + initial.page);
         mark('.site-header .brand', 'locked.brand');
         mark('.site-header nav,.mobile-bottom-nav,.mobile-nav', 'locked.brand');
         mark('.school-context-identity', 'school.identity');
         mark('.school-welcome-identity', 'school.identity');
-        mark('.sf-hero,.school-welcome', 'home.hero');
-        mark('.sf-hero-actions', 'school.identity');
+        mark('.sf-hero-container,.school-welcome', 'home.hero');
         mark('.school-welcome-links,.school-welcome-help', 'home.links');
         mark('.sip-cat-grid,.topic-chips-carousel,.left-topic-list', 'community.categories');
         mark('.school-custom-questions', 'submission.instructions');
-        mark('.detail-support-card,.post-actions,.comment-input-card', 'community.features');
-        mark('.roadmap-summary-pills,.roadmap-board,.roadmap-column', 'progress.labels');
+        mark('.roadmap-pill-label', 'progress.labels');
+        if (definition)
+            for (const [id, section] of Object.entries(definition.sections))
+                mark(section.selector, 'section.' + initial.page + '.' + id);
         for (const input of document.querySelectorAll('[data-school-question]')) {
             const label = input.closest('label');
             if (label)
@@ -35,6 +41,7 @@
             if (configuration.categories.some((c) => c.id === id))
                 (button.closest('.sip-cat-card') || button).dataset.studioComponent = 'category:' + id;
         }
+        send('components', { ids: Array.from(new Set(Array.from(document.querySelectorAll('[data-studio-component]')).filter(visible).map(el => el.dataset.studioComponent))) });
     }
     function makeOverlay() {
         resize?.disconnect();
@@ -168,6 +175,7 @@
         for (const [key, value] of Object.entries(next.features))
             document.body.classList.toggle('school-' + key + '-off', !value || initial.scenario === 'disabled');
         SfSchoolColors.apply(document.body, next.palette);
+        SfSchoolDesign.apply(document.body, next.design, initial.page, next.palette);
         for (const p of ['navy', 'forest', 'purple', 'burgundy', 'teal', 'indigo']) {
             document.body.classList.toggle('school-palette-' + p, p === next.palette);
             for (const welcome of document.querySelectorAll('.school-welcome'))
@@ -198,7 +206,8 @@
         annotate();
         schedule();
     }
-    function openForm() { document.getElementById('submit-panel-overlay')?.removeAttribute('hidden'); document.getElementById('submit-panel')?.removeAttribute('hidden'); document.body.style.overflow = 'hidden'; showStep(step); }
+    function openForm() { const form = document.getElementById('submit-panel'); if (form)
+        SfSchoolDesign.apply(form, configuration.design, 'submit', configuration.palette); document.getElementById('submit-panel-overlay')?.removeAttribute('hidden'); document.getElementById('submit-panel')?.removeAttribute('hidden'); document.body.style.overflow = 'hidden'; showStep(step); }
     function showStep(value) { step = Math.max(1, Math.min(3, value)); for (let i = 1; i <= 3; i++) {
         const panel = document.getElementById('sip-step-' + i) || document.getElementById('sip-step-' + i + '-content');
         if (panel)
@@ -215,7 +224,7 @@
         next.textContent = step === 3 ? 'Preview only · no submission' : 'Continue'; const prev = document.getElementById('sip-prev-btn'); prev?.classList.toggle('sip-btn-back--hidden', step === 1); }
     function syncMotion() { document.documentElement.dataset.studioMode = mode; window.sfMotion?.destroy(); if (mode === 'preview')
         window.sfMotion?.mount(document); }
-    function initialize() { syncMotion(); document.body.classList.toggle('studio-frame-edit', mode === 'edit'); annotate(); makeOverlay(); const queue = document.getElementById('sip-queue-btn'); if (queue) {
+    function initialize() { SfSchoolDesign.apply(document.body, configuration.design, initial.page, configuration.palette); syncMotion(); document.body.classList.toggle('studio-frame-edit', mode === 'edit'); annotate(); makeOverlay(); const queue = document.getElementById('sip-queue-btn'); if (queue) {
         queue.disabled = true;
         queue.title = 'Preview only: ideas are not stored on this device.';
     } if (initial.page === 'submit')
@@ -279,10 +288,16 @@
             const local = route.replace(/^\/s\/[^/]+/, '');
             if (local.startsWith('/roadmap')) {
                 const url = new URL(local, origin);
-                send('navigate', { page: 'roadmap', view: url.searchParams.get('view') || 'board' });
+                send('navigate', { page: 'roadmap', view: url.searchParams.get('view') || '' });
             }
             else if (local.startsWith('/idea'))
                 send('navigate', { page: 'idea' });
+            else if (local.startsWith('/admin'))
+                send('navigate', { page: 'staff' });
+            else if (local.startsWith('/notifications'))
+                send('navigate', { page: 'notifications' });
+            else if (local.startsWith('/inbox'))
+                send('navigate', { page: 'inbox' });
             else if (local.startsWith('/profile'))
                 send('navigate', { page: 'profile' });
             else if (local.startsWith('/feed'))

@@ -1,4 +1,4 @@
-import {schoolFeature} from '../lib/school-customization';
+import {schoolFeature,schoolPresentation} from '../lib/school-customization';
 import { Router } from 'express';
 import { listPublicProgress } from '../lib/progress';
 import {
@@ -24,7 +24,7 @@ router.get('/idea/:id', async (req, res, next) => {
 router.get('/', async (req, res, next) => {
   try {
     const dataStarted=performance.now();
-    const filters = roadmapFilters(req.query);
+    const filters = roadmapFilters({...req.query,view:req.query.view??schoolPresentation().design?.pages.roadmap?.view});
     const [result, categories, recentlyCompleted] = await Promise.all([
       loadRoadmapPage(filters),
       loadRoadmapCategories(),

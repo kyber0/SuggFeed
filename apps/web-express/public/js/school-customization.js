@@ -15,8 +15,9 @@
     if (['light', 'dark'].includes(preferences.get('theme') || ''))
         theme.value = preferences.get('theme');
     const search = document.getElementById('studio-search'), tree = document.getElementById('studio-tree'), status = document.getElementById('studio-status');
+    let presentComponents = null;
     let uploading = false;
-    let instance = '', sequence = 0, incoming = 0, ready = false, busy = false, allowed = true, mode = new URLSearchParams(location.search).get('mode') === 'preview' ? 'preview' : 'edit', view = 'board', renderTimer, renderController = null, renderVersion = 0, renderedKey = '', lastConfiguration = JSON.stringify(model.getState().configuration), lastSelection = '', changes = initial.changes || [], latest = null, returnFocus = null;
+    let instance = '', sequence = 0, incoming = 0, ready = false, busy = false, allowed = true, mode = new URLSearchParams(location.search).get('mode') === 'preview' ? 'preview' : 'edit', view = '', renderTimer, renderController = null, renderVersion = 0, renderedKey = '', lastConfiguration = JSON.stringify(model.getState().configuration), lastSelection = '', changes = initial.changes || [], latest = null, returnFocus = null;
     const say = (text, error = false) => { status.textContent = text; status.parentElement.dataset.error = String(error); };
     function revoked(message) { allowed = false; renderController?.abort(); clearTimeout(renderTimer); for (const control of host.querySelectorAll('input,select,textarea,button'))
         control.disabled = true; document.getElementById('studio-copy')?.removeAttribute('disabled'); say(message + ' Your unsaved changes remain in memory. Copy them before leaving.', true); const dialog = document.getElementById('studio-conflict-dialog'); document.getElementById('studio-conflict-sections').textContent = 'Workspace access changed. Further saves and previews are blocked.'; const load = document.getElementById('studio-load-latest'); load.disabled = true; if (!dialog.open)
@@ -38,7 +39,7 @@
     } return result; }
     const inspector = window.sfSchoolStudioInspector.mount(document.getElementById('studio-inspector'), model, { ...initial, base, select: (id) => select(id), say, request, uploading: (value) => { uploading = value; } });
     const registry = () => api.registry(model.getState().configuration, page.value);
-    function find(id) { return registry().find((n) => n.id === id) || ['home', 'feed', 'roadmap', 'idea', 'profile', 'submit'].flatMap(p => api.registry(model.getState().configuration, p)).find((n) => n.id === id); }
+    function find(id) { return registry().find((n) => n.id === id) || Object.keys(SfSchoolDesign.pages).flatMap(p => api.registry(model.getState().configuration, p)).find((n) => n.id === id); }
     function send(type, payload = {}) { if (ready && frame.contentWindow)
         frame.contentWindow.postMessage({ protocol: 1, instanceId: instance, sequence: ++sequence, type, payload }, location.origin); }
     function layout() { const viewport = Number(width.value), available = Math.max(230, canvas.clientWidth - 56); const scale = zoom.value === 'fit' ? Math.min(1, available / viewport) : Number(zoom.value); const height = Math.max(740, (canvas.clientHeight - 40) / scale); frame.style.width = viewport + 'px'; frame.style.height = height + 'px'; board.style.width = viewport + 'px'; board.style.height = height + 'px'; board.style.transform = 'scale(' + scale + ')'; space.style.width = viewport * scale + 'px'; space.style.height = height * scale + 'px'; document.getElementById('studio-canvas-title').textContent = page.selectedOptions[0].text + ' · ' + viewport + ' px'; }
@@ -74,13 +75,26 @@
         host.dataset[panel + 'Collapsed'] = 'true';
         layout();
     } }
-    function drawTree() { const query = search.value.toLowerCase(); tree.replaceChildren(); for (const n of registry().filter((n) => n.label.toLowerCase().includes(query))) {
+    function drawTree() { const query = search.value.toLowerCase(); tree.replaceChildren(); let group = ''; for (const n of registry().filter((n) => n.label.toLowerCase().includes(query))) {
+        const scope = n.group === 'workspace' ? 'Workspace · all screens' : 'This screen';
+        if (scope !== group) {
+            const heading = document.createElement('h3');
+            heading.textContent = scope;
+            heading.className = 'studio-tree-group';
+            tree.append(heading);
+            group = scope;
+        }
         const button = document.createElement('button');
         button.type = 'button';
         button.textContent = n.label;
         button.dataset.component = n.id;
         button.setAttribute('aria-pressed', String(model.getState().selection?.componentId === n.id));
-        button.disabled = !allowed;
+        const absent = (n.id.startsWith('section.') || n.id.startsWith('page.')) && presentComponents && !presentComponents.has(n.id);
+        button.disabled = !allowed || !!absent;
+        if (absent) {
+            button.title = 'Not present in this screen, viewport or example.';
+            button.textContent += ' · unavailable';
+        }
         button.addEventListener('click', () => { select(n.id); if (innerWidth < 1024)
             closePanel(); });
         tree.append(button);
@@ -91,7 +105,7 @@
     } }
     function select(id, fromFrame = false) {
         if (!id)
-            id = 'school.identity';
+            id = 'school.theme';
         const component = find(id);
         if (!component)
             return;
@@ -108,7 +122,7 @@
             openPanel('properties');
         send('select', { componentId: id, scroll: !fromFrame });
     }
-    const structure = (p) => JSON.stringify({ categories: p.categories.map((c) => [c.id, c.active, c.icon, c.description]), questions: p.form.questions.map((q) => [q.id, q.type, q.required, q.options, !!q.help]), attachments: p.form.attachments, links: p.welcome.links.length, identity: !!(p.displayName || p.logo), message: !!p.welcome.message, help: !!p.welcome.help, instructions: !!p.form.instructions, example: !!p.form.example, logo: p.logo, cover: p.cover, roadmap: p.features.roadmap, labels: p.labels, stageDescriptions: p.stageDescriptions });
+    const structure = (p) => JSON.stringify({ categories: p.categories.map((c) => [c.id, c.active, c.icon, c.description]), questions: p.form.questions.map((q) => [q.id, q.type, q.required, q.options, !!q.help]), attachments: p.form.attachments, links: p.welcome.links.length, identity: !!(p.displayName || p.logo), message: !!p.welcome.message, help: !!p.welcome.help, instructions: !!p.form.instructions, example: !!p.form.example, logo: p.logo, cover: p.cover, roadmap: p.features.roadmap, roadmapView: p.design?.pages.roadmap?.view, labels: p.labels, stageDescriptions: p.stageDescriptions });
     async function render() {
         if (!ready || !allowed)
             return;
@@ -117,7 +131,7 @@
         renderController = new AbortController();
         const configuration = structuredClone(model.getState().configuration), key = structure(configuration), requestPage = page.value, requestInstance = instance;
         try {
-            const response = await fetch(base + '/preview/render', { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, signal: renderController.signal, body: JSON.stringify({ configuration, page: requestPage, scenario: scenario.value, theme: theme.value, view }) });
+            const response = await fetch(base + '/preview/render', { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, signal: renderController.signal, body: JSON.stringify({ configuration, page: requestPage, scenario: scenario.value, theme: theme.value, view: page.value === 'roadmap' ? (view || configuration.design?.pages.roadmap?.view || 'board') : 'board' }) });
             if ([401, 403].includes(response.status) || response.redirected) {
                 revoked('Your editor access changed.');
                 return;
@@ -140,8 +154,12 @@
         }
     }
     function navigate(resetSelection = true) { if (!allowed)
-        return; ready = false; incoming = 0; sequence = 0; instance = crypto.randomUUID(); renderVersion++; renderController?.abort(); clearTimeout(renderTimer); loading.hidden = false; frame.src = base + '/preview/content?' + new URLSearchParams({ page: page.value, scenario: scenario.value, theme: theme.value, view, instance }); if (resetSelection)
-        model.setPage(page.value); drawTree(); layout(); }
+        return; presentComponents = null; ready = false; incoming = 0; sequence = 0; instance = crypto.randomUUID(); renderVersion++; renderController?.abort(); clearTimeout(renderTimer); loading.hidden = false; frame.src = base + '/preview/content?' + new URLSearchParams({ page: page.value, scenario: scenario.value, theme: theme.value, view: view || model.getState().configuration.design?.pages.roadmap?.view || 'board', instance }); if (resetSelection) {
+        model.setPage(page.value);
+        document.getElementById('studio-selection-title').textContent = 'Select a component';
+        document.getElementById('studio-breadcrumb').textContent = page.selectedOptions[0].text;
+        inspector.render();
+    } drawTree(); layout(); }
     let pendingPatch = false;
     model.subscribe((state) => {
         document.getElementById('studio-undo').toggleAttribute('disabled', !state.canUndo || !allowed);
@@ -169,7 +187,7 @@
         latest = await request('state');
         const list = document.getElementById('studio-conflict-sections');
         list.replaceChildren();
-        for (const key of ['displayName', 'palette', 'logo', 'cover', 'welcome', 'categories', 'features', 'form', 'labels', 'stageDescriptions', 'email'])
+        for (const key of ['displayName', 'palette', 'logo', 'cover', 'welcome', 'categories', 'features', 'form', 'labels', 'stageDescriptions', 'email', 'design'])
             if (JSON.stringify(model.getState().configuration[key]) !== JSON.stringify(latest.draft[key])) {
                 const item = document.createElement('li');
                 item.textContent = { displayName: 'School name', stageDescriptions: 'Progress explanations' }[key] || key;
@@ -243,10 +261,14 @@
         const data = event.data;
         if (event.origin !== location.origin || event.source !== frame.contentWindow || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || JSON.stringify(data).length > 2000)
             return;
-        if (!['ready', 'select', 'navigate', 'render-complete', 'render-error', 'shortcut'].includes(data.type))
+        if (!['ready', 'select', 'navigate', 'render-complete', 'render-error', 'shortcut', 'components'].includes(data.type))
             return;
         incoming = data.sequence;
         const payload = data.payload || {};
+        if (data.type === 'components' && Array.isArray(payload.ids)) {
+            presentComponents = new Set(payload.ids.filter((id) => typeof id === 'string'));
+            drawTree();
+        }
         if (data.type === 'ready') {
             ready = true;
             loading.hidden = true;
@@ -265,9 +287,9 @@
         }
         if (data.type === 'select' && typeof payload.componentId === 'string')
             select(payload.componentId, true);
-        if (data.type === 'navigate' && ['home', 'feed', 'roadmap', 'idea', 'profile', 'submit'].includes(payload.page)) {
+        if (data.type === 'navigate' && Object.keys(SfSchoolDesign.pages).includes(payload.page)) {
             page.value = payload.page;
-            view = ['board', 'tree', 'timeline', 'done'].includes(payload.view) ? payload.view : 'board';
+            view = ['board', 'tree', 'timeline', 'done'].includes(payload.view) ? payload.view : '';
             navigate();
         }
         if (data.type === 'shortcut' && allowed) {
@@ -285,7 +307,7 @@
     });
     document.getElementById('studio-refresh').addEventListener('click', () => navigate(false));
     for (const control of [page, scenario, theme])
-        control.addEventListener('change', () => { view = 'board'; navigate(); });
+        control.addEventListener('change', () => { view = ''; navigate(); });
     for (const control of [width, zoom])
         control.addEventListener('change', layout);
     new ResizeObserver(layout).observe(canvas);

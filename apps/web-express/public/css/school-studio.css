@@ -20,3 +20,26 @@
 .studio-color-inputs input[type="color"] { padding:3px; width:100%; height:42px; cursor:pointer; }
 .studio-color-inputs input[type="text"] { font-variant-numeric:tabular-nums; }
 .studio-colors p { margin:0; color:var(--muted); font-size:11px; line-height:1.6; }
+
+/* Clear global/page hierarchy and compact theme controls. */
+.studio-tree-group {font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:22px 8px 8px;}
+.studio-tree-group:first-child {margin-top:8px;}
+.studio-tree button[data-component^="section."] {padding-left:24px;font-size:12px;}
+.studio-tree button[data-component^="page."] {font-weight:700;}
+.studio-scope-badge {display:inline-flex;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg-2);font-size:10px!important;font-weight:700;letter-spacing:.02em;}
+.studio-theme-mode {border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0;}
+.studio-theme-mode summary {font-size:12px;font-weight:700;cursor:pointer;min-height:28px;}
+.studio-theme-row {display:grid;grid-template-columns:minmax(64px,1fr) 32px 82px 28px;gap:6px;align-items:center;margin:10px 0;}
+.studio-theme-row label {font-size:11px;overflow-wrap:anywhere;}
+.studio-theme-row input[type="color"] {width:32px;height:32px;padding:2px;border-radius:7px;cursor:pointer;}
+.studio-theme-row input[type="text"] {width:100%;min-width:0;font-size:11px;padding:6px;font-family:monospace;}
+.studio-theme-row button {padding:4px;min-height:32px;}
+.studio-theme-sample {display:grid;gap:10px;padding:16px;border:1px solid;border-radius:12px;margin:14px 0;}
+.studio-theme-sample p {margin:0;}.studio-theme-sample span {padding:9px 12px;border-radius:7px;font-size:12px;text-align:center;font-weight:600;}
+.studio-theme-sample a {font-size:12px;text-decoration:underline;pointer-events:none;}
+.studio-section-move {display:flex;gap:8px;}.studio-section-move button {flex:1;}
+#studio-theme-issues {font-size:11px;line-height:1.6;}
+.studio-selection-empty {padding:12px 2px;}.studio-selection-empty h3 {font-size:16px;line-height:1.4;}
+.studio-theme-row input[type="color"]::-webkit-color-swatch-wrapper {padding:0;}
+.studio-theme-row input[type="color"]::-webkit-color-swatch {border:0;border-radius:4px;}
+.studio-theme-row input[type="color"]::-moz-color-swatch {border:0;border-radius:4px;}

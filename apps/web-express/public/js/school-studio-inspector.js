@@ -2,20 +2,65 @@
 (() => {
     const escape = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const input = (field, label, value, max = 200, kind = 'text') => '<label>' + escape(label) + (kind === 'textarea' ? '<textarea rows="3" maxlength="' + max + '" data-property="' + field + '">' + escape(value) + '</textarea>' : '<input type="' + kind + '" maxlength="' + max + '" data-property="' + field + '" value="' + escape(value) + '">') + '</label>';
-    function colors(value) { const p = SfSchoolColors.tokens(value); return '<fieldset class="studio-colors"><legend>Accent color</legend><div class="studio-color-presets">' + Object.entries(SfSchoolColors.presets).map(([name, color]) => '<button type="button" data-palette="' + name + '" aria-pressed="' + (value === name) + '" title="' + name + '" aria-label="Use ' + name + ' accent"><span style="background:' + color + '"></span></button>').join('') + '</div><div class="studio-color-inputs"><label>Choose color<input type="color" data-property="palette" value="' + p.accent + '"></label><label>Hex color<input type="text" data-property="palette" value="' + p.accent + '" pattern="#[0-9a-fA-F]{6}" maxlength="7" spellcheck="false" aria-describedby="studio-color-help"></label></div><p id="studio-color-help">Button text adjusts for contrast. Status and security colors stay consistent.</p><button type="button" data-palette="navy">Reset accent</button></fieldset>'; }
+    function colors(value) { return '<fieldset class="studio-colors"><legend>Brand color presets</legend><div class="studio-color-presets">' + Object.entries(SfSchoolColors.presets).map(([name, color]) => '<button type="button" data-palette="' + name + '" aria-pressed="' + (value === name || value === color) + '" title="' + name + '" aria-label="Use ' + name + ' primary"><span style="background:' + color + '"></span></button>').join('') + '</div><p>Start with a primary color, then customize each appearance below.</p></fieldset>'; }
     const select = (field, label, value, options, disabled = false) => '<label>' + escape(label) + '<select data-property="' + field + '" ' + (disabled ? 'disabled' : '') + '>' + options.map(option => { const [key, text] = Array.isArray(option) ? option : [option, option]; return '<option value="' + escape(key) + '" ' + (key === value ? 'selected' : '') + '>' + escape(text) + '</option>'; }).join('') + '</select></label>';
     const check = (field, label, value, hint = '') => '<label class="studio-check"><input type="checkbox" data-property="' + field + '" ' + (value ? 'checked' : '') + '><span>' + escape(label) + (hint ? '<small style="display:block;font-weight:400">' + escape(hint) + '</small>' : '') + '</span></label>';
+    function themeEditor(p) { const d = p.design || SfSchoolDesign.defaults(p.palette); let html = '<p class="studio-scope-badge">Workspace · all student and staff screens</p><p>Build a complete school theme. Colors are checked for readable text in both modes before saving.</p>' + colors(d.light.primary) + '<div class="studio-theme-modes">'; for (const mode of ['light', 'dark']) {
+        html += '<details class="studio-theme-mode" ' + (mode === 'light' ? 'open' : '') + '><summary>' + mode[0].toUpperCase() + mode.slice(1) + ' appearance</summary>';
+        for (const role of SfSchoolDesign.roles)
+            html += '<div class="studio-theme-row"><label for="sd-' + mode + '-' + role + '">' + role[0].toUpperCase() + role.slice(1) + '</label><input class="workspace-input" id="sd-' + mode + '-' + role + '" aria-label="' + mode + ' ' + role + ' color" type="color" data-theme-mode="' + mode + '" data-theme-role="' + role + '" value="' + d[mode][role] + '"><input aria-label="' + mode + ' ' + role + ' hex" class="workspace-input" type="text" data-theme-mode="' + mode + '" data-theme-role="' + role + '" value="' + d[mode][role] + '" maxlength="7" pattern="#[0-9a-fA-F]{6}" spellcheck="false"><button type="button" data-reset-color="' + mode + ':' + role + '" aria-label="Reset ' + mode + ' ' + role + '">↺</button></div>';
+        html += '</details>';
+    } html += '</div><p id="studio-theme-issues" role="status">' + escape(SfSchoolDesign.issues(d).join(' ') || 'Text contrast meets 4.5:1 in both appearances.') + '</p><div class="studio-theme-sample" style="background:' + d.light.surface + ';color:' + d.light.text + ';border-color:' + d.light.border + '"><strong>Theme sample</strong><p style="color:' + d.light.muted + '">A readable school workspace.</p><span style="background:' + d.light.primary + ';color:' + (SfSchoolDesign.contrast(d.light.primary, '#000000') >= 4.5 ? '#000000' : '#ffffff') + '">Primary action</span><a href="#" tabindex="-1" style="color:' + d.light.link + '">School link</a></div>'; html += select('design-corners', 'Card corners', d.corners, [['square', 'Subtle · 4 px'], ['rounded', 'Rounded · 12 px'], ['soft', 'Soft · 20 px']]) + select('design-font', 'Workspace typeface', d.font, [['brand', 'SuggFeed brand'], ['inter', 'Inter'], ['system', 'System font']]) + '<button type="button" data-reset-design>Reset theme & page layouts</button><p>State colors, permission rules and SuggFeed branding keep their meaning.</p>'; return html; }
+    function pageEditor(p, selected) {
+        const [, pageId, sectionId] = selected.split('.'), definition = SfSchoolDesign.pages[pageId], settings = p.design?.pages[pageId] || SfSchoolDesign.pageDefaults();
+        let html = '<p class="studio-scope-badge">This screen · ' + escape(definition.label) + '</p>';
+        if (sectionId) {
+            const section = definition.sections[sectionId];
+            html += '<p>' + escape(section.label) + ' uses the workspace theme. Its real content remains owned by its author.</p>';
+            const styling = settings.sections?.[sectionId] || { spacing: 'inherit', surface: 'inherit', alignment: 'inherit' };
+            html += select('section-spacing', 'Component spacing', styling.spacing, [['inherit', 'Use page spacing'], ['compact', 'Compact'], ['comfortable', 'Comfortable'], ['airy', 'Airy']]) + select('section-surface', 'Component surface', styling.surface, [['inherit', 'Use existing surface'], ['card', 'Card surface'], ['raised', 'Raised surface'], ['transparent', 'Transparent']]) + select('section-alignment', 'Text alignment', styling.alignment, [['inherit', 'Use existing alignment'], ['start', 'Start'], ['center', 'Center']]) + '<button type="button" data-reset-section="' + sectionId + '">Reset this component style</button>';
+            if (section.optional)
+                html += '<label class="studio-check"><input type="checkbox" data-section-visible="' + sectionId + '" ' + (!settings.hidden.includes(sectionId) ? 'checked' : '') + '><span>Show this section</span></label>';
+            if (section.reorder)
+                html += '<div class="studio-section-move"><button type="button" data-move-section="' + sectionId + '" data-direction="-1">Move earlier</button><button type="button" data-move-section="' + sectionId + '" data-direction="1">Move later</button></div><p>Order changes apply to eligible sections in the same group.</p>';
+            const target = pageId === 'home' ? (sectionId === 'hero' ? 'home.hero' : null) : pageId === 'submit' ? (sectionId === 'categories' ? 'community.categories' : 'submission.instructions') : sectionId === 'progress' ? 'progress.labels' : null;
+            if (target)
+                html += '<button type="button" data-select="' + target + '">Edit section content</button>';
+            html += '<button type="button" data-select="page.' + pageId + '">Edit ' + escape(definition.label) + ' layout</button>';
+            return html;
+        }
+        html += select('layout', 'Content layout', settings.layout, [['default', 'Balanced'], ['wide', 'Expanded'], ['focused', 'Focused']]) + select('spacing', 'Content spacing', settings.spacing, [['compact', 'Compact'], ['comfortable', 'Comfortable'], ['airy', 'Airy']]) + select('cards', 'Card treatment', settings.cards, [['outlined', 'Outlined'], ['soft', 'Soft surface'], ['flat', 'Flat']]);
+        if (pageId === 'roadmap')
+            html += select('view', 'Default roadmap view', settings.view || 'board', [['board', 'Board'], ['tree', 'Category tree'], ['timeline', 'Timeline'], ['done', 'Completed']]);
+        html += '<h3>Optional sections</h3>';
+        let optional = 0;
+        for (const [id, section] of Object.entries(definition.sections))
+            if (section.optional) {
+                optional++;
+                html += '<label class="studio-check"><input type="checkbox" data-section-visible="' + id + '" ' + (!settings.hidden.includes(id) ? 'checked' : '') + '><span>' + escape(section.label) + '</span></label>';
+            }
+        if (!optional)
+            html += '<p>This screen keeps its essential actions visible.</p>';
+        html += '<button type="button" data-reset-page="' + pageId + '">Reset this screen</button>';
+        return html;
+    }
     function mount(host, model, settings) {
         let selected = 'school.identity';
         const state = () => model.getState(), apply = (property, value) => model.applyChange(selected, property, value);
         const toolbar = (label, kind, id, index) => '<div class="studio-repeat-toolbar" draggable="true" data-drag-kind="' + kind + '" data-drag-id="' + id + '"><strong>' + escape(label) + '</strong><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="-1" aria-label="Move ' + escape(label) + ' up">↑</button><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="1" aria-label="Move ' + escape(label) + ' down">↓</button></div>';
         function render() {
             const p = state().configuration;
-            selected = state().selection?.componentId || 'school.identity';
+            selected = state().selection?.componentId || '';
             let html = '';
             const row = selected.startsWith('category:') ? p.categories.find((c) => c.id === selected.slice(9)) : selected.startsWith('question:') ? p.form.questions.find((q) => q.id === selected.slice(9)) : null;
-            if (selected === 'school.identity') {
-                html = input('displayName', 'Short school name', p.displayName || settings.schoolName, 60) + colors(p.palette);
+            if (!selected)
+                html = '<div class="studio-selection-empty"><h3>Select something to customize</h3><p>Click an outlined component in the preview, or choose from this screen’s component list. Workspace theme controls apply to every school screen.</p><button type="button" data-select="school.theme">Open workspace theme</button></div>';
+            else if (selected === 'school.theme')
+                html = themeEditor(p);
+            else if (selected.startsWith('page.') || selected.startsWith('section.'))
+                html = pageEditor(p, selected);
+            else if (selected === 'school.identity') {
+                html = input('displayName', 'Short school name', p.displayName || settings.schoolName, 60);
                 for (const kind of ['logo', 'cover'])
                     html += '<div class="studio-asset"><h3>' + escape(kind === 'logo' ? 'School logo' : 'Landing-page cover') + '</h3>' + (p[kind] ? '<img src="' + escape(settings.base + '/assets/' + p[kind]) + '" alt="Current ' + kind + '"><button type="button" data-clear-asset="' + kind + '">Remove ' + kind + '</button>' : '<p>No ' + kind + ' selected.</p>') + '<label>Choose image<input type="file" data-upload="' + kind + '" accept="image/png,image/jpeg,image/webp" ' + (!settings.uploadsReady ? 'disabled' : '') + '></label><p>PNG, JPEG or WebP · ' + (kind === 'logo' ? '2' : '5') + ' MB maximum.</p></div>';
                 if (!settings.uploadsReady)
@@ -60,15 +105,49 @@
             else if (selected === 'school.email')
                 html = input('invitation', 'Invitation welcome', p.email.invitation, 1000, 'textarea') + input('introduction', 'School email introduction', p.email.introduction, 1000, 'textarea') + select('digest', 'Digest availability', p.email.digest, [['weekly', 'Weekly, for opted-in users'], ['off', 'Off']]) + '<p>SuggFeed identification, verified sender, security instructions and unsubscribe choices are retained.</p>';
             else
-                html = '<p>SuggFeed branding, shared navigation, security colors, typography and account permissions are managed by the platform. Select a school component to edit its supported properties.</p>';
+                html = '<p>SuggFeed branding, shared navigation, security state colors and account permissions are managed by the platform. Select a school component to edit its supported properties.</p>';
             host.innerHTML = '<section class="studio-inspector-section">' + html + '</section>';
         }
         host.addEventListener('focusout', () => model.endGroup());
         host.addEventListener('input', event => {
             const element = event.target;
             const property = element.dataset.property;
+            const config = state().configuration;
+            if (element.dataset.themeMode && element.dataset.themeRole) {
+                if (!/^#[0-9a-f]{6}$/i.test(element.value))
+                    return;
+                const design = structuredClone(config.design || SfSchoolDesign.defaults(config.palette));
+                const mode = element.dataset.themeMode, role = element.dataset.themeRole;
+                design[mode][role] = element.value.toLowerCase();
+                model.applyChange('school.theme', 'design', design);
+                for (const other of host.querySelectorAll('[data-theme-mode="' + mode + '"][data-theme-role="' + role + '"]'))
+                    if (other !== element)
+                        other.value = element.value;
+                document.getElementById('studio-theme-issues').textContent = SfSchoolDesign.issues(design).join(' ') || 'Text contrast meets 4.5:1 in both appearances.';
+                return;
+            }
+            if (element.dataset.sectionVisible) {
+                const page = selected.split('.')[1], pd = config.design?.pages[page] || SfSchoolDesign.pageDefaults();
+                const hidden = pd.hidden.filter((id) => id !== element.dataset.sectionVisible);
+                if (!element.checked)
+                    hidden.push(element.dataset.sectionVisible);
+                model.applyChange('page.' + page, 'hidden', hidden);
+                return;
+            }
             if (!property)
                 return;
+            if (property.startsWith('section-')) {
+                const [, pageId, sectionId] = selected.split('.'), pd = config.design?.pages[pageId] || SfSchoolDesign.pageDefaults(), sections = structuredClone(pd.sections || {});
+                sections[sectionId] = { spacing: 'inherit', surface: 'inherit', alignment: 'inherit', ...sections[sectionId], [property.slice(8)]: element.value };
+                model.applyChange('page.' + pageId, 'sections', sections);
+                return;
+            }
+            if (property.startsWith('design-')) {
+                const design = structuredClone(config.design || SfSchoolDesign.defaults(config.palette));
+                design[property.slice(7)] = element.value;
+                model.applyChange('school.theme', 'design', design);
+                return;
+            }
             let value = element instanceof HTMLInputElement && element.type === 'checkbox' ? element.checked : element.value;
             const p = state().configuration;
             if (property === 'palette') {
@@ -79,6 +158,11 @@
                         other.value = value;
                 for (const preset of host.querySelectorAll('[data-palette]'))
                     preset.setAttribute('aria-pressed', 'false');
+                model.applyChange('school.identity', 'palette', value);
+                const design = structuredClone(p.design || SfSchoolDesign.defaults(value));
+                design.light.primary = design.dark.primary = value;
+                model.applyChange('school.theme', 'design', design);
+                return;
             }
             const index = element.closest('[data-link-index]')?.dataset.linkIndex;
             if (index !== undefined) {
@@ -112,11 +196,49 @@
             const p = state().configuration;
             if (button.dataset.palette) {
                 model.applyChange('school.identity', 'palette', button.dataset.palette);
+                const design = structuredClone(p.design || SfSchoolDesign.defaults(button.dataset.palette));
+                design.light.primary = design.dark.primary = SfSchoolColors.resolve(button.dataset.palette);
+                model.applyChange('school.theme', 'design', design);
                 render();
                 return;
             }
             if (button.dataset.select) {
                 settings.select(button.dataset.select);
+                return;
+            }
+            if (button.hasAttribute('data-reset-design')) {
+                model.applyChange('school.theme', 'design', SfSchoolDesign.defaults(p.palette));
+                render();
+                return;
+            }
+            if (button.dataset.resetColor) {
+                const [mode, role] = button.dataset.resetColor.split(':');
+                const design = structuredClone(p.design || SfSchoolDesign.defaults(p.palette));
+                design[mode][role] = SfSchoolDesign.defaults(p.palette)[mode][role];
+                model.applyChange('school.theme', 'design', design);
+                render();
+                return;
+            }
+            if (button.dataset.resetSection) {
+                const pageId = selected.split('.')[1], sections = structuredClone(p.design?.pages[pageId]?.sections || {});
+                delete sections[button.dataset.resetSection];
+                model.applyChange('page.' + pageId, 'sections', sections);
+                render();
+                return;
+            }
+            if (button.dataset.resetPage) {
+                const design = structuredClone(p.design || SfSchoolDesign.defaults(p.palette));
+                delete design.pages[button.dataset.resetPage];
+                model.applyChange('school.theme', 'design', design);
+                render();
+                return;
+            }
+            if (button.dataset.moveSection) {
+                const pageId = selected.split('.')[1], pd = p.design?.pages[pageId] || SfSchoolDesign.pageDefaults(), ids = Object.keys(SfSchoolDesign.pages[pageId].sections).filter(id => SfSchoolDesign.pages[pageId].sections[id].reorder), order = [...pd.order, ...ids.filter(id => !pd.order.includes(id))], from = order.indexOf(button.dataset.moveSection), to = from + Number(button.dataset.direction);
+                if (from >= 0 && to >= 0 && to < order.length) {
+                    [order[from], order[to]] = [order[to], order[from]];
+                    model.applyChange('page.' + pageId, 'order', order);
+                }
                 return;
             }
             if (button.dataset.add) {

@@ -145,7 +145,7 @@ const feedUrl = (changes = {}) => {
           </div>
         </section>
       <% } %>
-      <section class="feed-side-panel">
+      <section class="feed-side-panel feed-guidance-panel">
         <h2 class="feed-side-heading">Make your voice count</h2>
         <ol class="feed-how-list">
           <li><strong>Start with an idea</strong>Describe the issue and a change that would help.</li>

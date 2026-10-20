@@ -10,9 +10,9 @@
   <div class="notification-layout">
   <section class="notification-stream" aria-labelledby="notification-stream-title">
    <h2 id="notification-stream-title">Latest updates</h2>
-   <p id="notification-summary" role="status">Loading your updates…</p>
+   <p id="notification-summary" role="status"><%= it.renderMode==='studio'?'Fictional school updates for this preview.':'Loading your updates…' %></p>
    <p id="notification-error" class="workspace-message" role="alert" hidden></p>
-   <ol class="notification-list" id="notification-list"></ol>
+   <ol class="notification-list" id="notification-list"><% if(it.renderMode==='studio') { %><%~ include('partials/school-studio-examples',{...it,kind:'notifications'}) %><% } %></ol>
    <div class="notification-actions"><button type="button" class="workspace-button" id="notification-retry" hidden>Try again</button><button type="button" class="workspace-button" id="notification-more" hidden>Load older updates</button></div>
   </section>
   <details class="care-card notification-settings">
