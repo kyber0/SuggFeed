@@ -22,6 +22,6 @@ No automated test suite was added or run. No real confirmation/reset/invitation/
 
 ## Rollout status
 
-Application changes pushed as `fbfe2c5`. The public logo asset returns HTTP 200. Six deployment checks plus a final cache-bypassed check still returned HTTP 404 for `/auth/confirm`; new Supabase templates were therefore **not activated**, preventing newly sent links from targeting an unavailable page. The application must deploy successfully before patching `mailer_templates_confirmation_content` and `mailer_templates_recovery_content` with the exported templates in `src/lib/auth-email-template.ts`. Keep `mailer_autoconfirm` false. Existing SMTP credentials and sender require no change for this rollout.
+Application changes pushed as `fbfe2c5`. After the deployment became available, `/auth/confirm` returned HTTP 200 with the confirmation control, and its page referenced the configured Supabase project. The public logo asset is available. Activated the exported confirmation and recovery templates through the Supabase management API (HTTP 200), then read back both exact template contents successfully. Email confirmation remains required (`mailer_autoconfirm` false). Existing SMTP credentials and sender were unchanged. Previously issued emails retain their old links; request a fresh email to use the new flow. Real mailbox delivery and end-to-end confirmation remain unverified.
 
 Additional local inspection confirmed dark/light switching retained the same iframe URL and updated the theme immediately, and the staff work card's computed cursor was `move`.
