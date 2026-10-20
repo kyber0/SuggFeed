@@ -8,6 +8,9 @@ test('signed-in session outage renders a safe 503 page before normal template lo
  const secret='isolated-test-session-secret-with-over-32-characters';
  Object.assign(process.env,{VERCEL:'1',NODE_ENV:'production',SESSION_SECRET:secret,SUPABASE_URL:'https://fixture.supabase.co',SUPABASE_ANON_KEY:'fixture-anon',SUPABASE_SERVICE_ROLE_KEY:'fixture-service'});
  const {SupabaseSessionStore}=require('../src/lib/session-store');
+ const {supabasePlatform}=require('../src/lib/supabase');
+ const originalRpc=supabasePlatform.rpc;
+ supabasePlatform.rpc=async()=>({data:[{allowed:true,retry_after:60}],error:null});
  const original=SupabaseSessionStore.prototype.get;
  let reads=0;
  SupabaseSessionStore.prototype.get=(_sid:string,callback:Function)=>{reads++;callback(Object.assign(new Error('Session storage unavailable.'),{status:503}));};
@@ -24,5 +27,5 @@ test('signed-in session outage renders a safe 503 page before normal template lo
   const html=await page.text();assert.match(html,/temporarily unavailable/);assert.doesNotMatch(html,/Internal Server Error|Session storage unavailable|outage-session/);
   const api=await fetch(base+'/auth/session',{headers:{Cookie:cookie,Accept:'application/json'}});assert.equal(api.status,503);assert.equal((await api.json() as {success:boolean}).success,false);
   assert.equal(reads,2);
- } finally {SupabaseSessionStore.prototype.get=original;server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
+ } finally {supabasePlatform.rpc=originalRpc;SupabaseSessionStore.prototype.get=original;server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
 });

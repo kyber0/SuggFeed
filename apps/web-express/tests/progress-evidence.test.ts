@@ -19,7 +19,7 @@ const input = { requestId, uploadId: fileId, name: 'bench.png', mime: 'image/png
 test('evidence validates fixed types, 10MB size, image descriptions and display-only filenames', () => {
   assert.equal(validateEvidence(input).uploadId, fileId);
   assert.equal(validateEvidence({ ...input, name: '../bench.png' }).name, '.._bench.png');
-  assert.equal(validateEvidence({ ...input, mime: 'application/pdf', alt: undefined }).alt, null);
+  assert.throws(() => validateEvidence({ ...input, mime: 'application/pdf', alt: undefined }), /PDF uploads are paused/);
   for (const change of [{ requestId: 'bad' }, { uploadId: 'bad' }, { name: '' }, { name: 'x'.repeat(121) },
     { mime: 'image/svg+xml' }, { size: 0 }, { size: 10485761 }, { size: '100' }, { alt: '' }, { alt: 'x'.repeat(201) }]) {
     assert.throws(() => validateEvidence({ ...input, ...change }), ProgressError);
@@ -39,7 +39,7 @@ test('trusted image finalization strips metadata, bounds dimensions, and rejects
   await assert.rejects(() => validateEvidenceBytes(source, 'image/png', source.length - 1), ProgressError);
   await assert.rejects(() => validateEvidenceBytes(Buffer.from('<svg>bad</svg>'), 'image/png', 14), ProgressError);
   const pdf = Buffer.from('%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF');
-  assert.equal((await validateEvidenceBytes(pdf, 'application/pdf', pdf.length)).mime, 'application/pdf');
+  await assert.rejects(() => validateEvidenceBytes(pdf, 'application/pdf', pdf.length), /PDF evidence is paused/);
   await assert.rejects(() => validateEvidenceBytes(pdf.subarray(0, 12), 'application/pdf', 12), ProgressError);
 });
 
@@ -77,7 +77,7 @@ test('reservation only signs an opaque source path; finalize validates before re
   } finally { supabaseService.rpc = originalRpc; supabaseService.storage.from = originalStorage; }
 });
 
-test('public evidence whitelists metadata and download authorization uses a short-lived download-only PDF link', async () => {
+test('public evidence whitelists metadata, quarantines PDFs, and signs authorized images briefly', async () => {
   const originalAnonRpc = supabase.rpc; const originalRpc = supabaseService.rpc; const originalStorage = supabaseService.storage.from;
   let allowed = true;
   const row = { id: fileId, update_id: requestId, display_name: 'School report.pdf', mime_type: 'application/pdf', size_bytes: 40,
@@ -85,12 +85,14 @@ test('public evidence whitelists metadata and download authorization uses a shor
   supabase.rpc = (async (name) => { assert.equal(name, 'read_public_idea_update_files'); return { data: [row], error: null }; }) as any;
   supabaseService.rpc = (async (name, args) => { assert.equal(name, 'read_authorized_progress_file'); assert.equal(args.p_actor_id, null); return { data: allowed ? [row] : [], error: null }; }) as any;
   supabaseService.storage.from = (() => ({ async createSignedUrl(path, seconds, options) {
-    assert.equal(path, row.final_path); assert.equal(seconds, 60); assert.deepEqual(options, { download: row.display_name });
+    assert.equal(path, row.final_path); assert.equal(seconds, 60); assert.deepEqual(options, {});
     return { data: { signedUrl: 'https://storage.test/download' }, error: null };
   } })) as any;
   try {
     const files = await listPublicEvidence(actorId);
     assert.equal(JSON.stringify(files).includes('actor_id'), false); assert.equal(JSON.stringify(files).includes('final_path'), false);
+    await assert.rejects(() => evidenceDownload(fileId, null), /quarantined/);
+    row.mime_type='image/webp';row.final_path=`${SCHOOL.id}/${fileId}/final.webp`;
     assert.equal(await evidenceDownload(fileId, null), 'https://storage.test/download');
     allowed = false; await assert.rejects(() => evidenceDownload(fileId, null), error => error instanceof ProgressError && error.status === 404);
   } finally { supabase.rpc = originalAnonRpc; supabaseService.rpc = originalRpc; supabaseService.storage.from = originalStorage; }
@@ -167,8 +169,8 @@ test('cleanup refuses another school path and continues after a thrown storage f
  finally{supabaseService.rpc=rpc;supabaseService.storage.from=storage;}
 });
 test('evidence signing rejects another school and only the demo school can use preserved legacy paths',async()=>{
- const rpc=supabaseService.rpc,storage=supabaseService.storage.from;let path=`${fileId}/final.pdf`,signed=0;
- supabaseService.rpc=(async()=>({error:null,data:[{id:fileId,final_path:path,state:'published',mime_type:'application/pdf',display_name:'Evidence.pdf'}]})) as any;
+ const rpc=supabaseService.rpc,storage=supabaseService.storage.from;let path=`${fileId}/final.webp`,signed=0;
+ supabaseService.rpc=(async()=>({error:null,data:[{id:fileId,final_path:path,state:'published',mime_type:'image/webp',display_name:'Evidence.webp'}]})) as any;
  supabaseService.storage.from=(()=>({async createSignedUrl(){signed++;return {error:null,data:{signedUrl:'https://storage.test/file'}};}})) as any;
  try {
   assert.equal(await evidenceDownload(fileId,null),'https://storage.test/file');

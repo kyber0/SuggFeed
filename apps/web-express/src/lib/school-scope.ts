@@ -11,6 +11,7 @@ export interface SchoolScope {
   role: 'student' | 'moderator' | 'admin' | null;
   customization?:SchoolCustomization;
   customizationVersion?:number;
+  contentRevision?:string;
 }
 const scopes = new AsyncLocalStorage<SchoolScope>();
 export const currentSchool = () => scopes.getStore();
@@ -24,4 +25,4 @@ export function schoolUser(req: Request): AppUser | null {
   const school = currentSchool(), user = req.session.user;
   return user && school?.actorId === user.id && school.role ? { ...user, role: school.role } : null;
 }
-export function schoolCacheKey(key: string): string { const school=requireSchool();return `${school.id}:${school.customizationVersion?'v'+school.customizationVersion+':':''}${key}`; }
+export function schoolCacheKey(key: string): string { const school=requireSchool();return `${school.id}:${school.customizationVersion?'v'+school.customizationVersion+':':''}${school.contentRevision!==undefined?'c'+school.contentRevision+':':''}${key}`; }

@@ -15,6 +15,7 @@ export function resolveSchool(req: Request, res: Response, next: NextFunction) {
     const { data: school, error } = await supabasePlatform.rpc('school_presentation',{p_slug:match[1]});
     if (error) throw Object.assign(new Error('School registry is unavailable.'), {status:503});
     if (!school) return res.status(404).render('404', { title: 'School unavailable' });
+    if(typeof school.content_revision!=='string'||!/^\d{1,20}$/.test(school.content_revision))throw Object.assign(new Error('School content revision unavailable.'),{status:503});
     const userId = req.session.user?.id;
     let role: 'student' | 'moderator' | 'admin' | null = null;
     if (userId) {
@@ -48,6 +49,6 @@ export function resolveSchool(req: Request, res: Response, next: NextFunction) {
     // All existing route paths stay relative to this verified school mount.
     req.url = req.url.slice(match[0].length) || '/';
     if (req.url.startsWith('?')) req.url = '/' + req.url;
-    return runWithSchool({ id: school.id, slug: school.slug, name: school.name, role, actorId: role ? userId! : null, customization:school.configuration as SchoolCustomization,customizationVersion:school.customization_version }, next);
+    return runWithSchool({ id: school.id, slug: school.slug, name: school.name, role, actorId: role ? userId! : null, customization:school.configuration as SchoolCustomization,customizationVersion:school.customization_version,contentRevision:school.content_revision }, next);
   })().catch(next);
 }

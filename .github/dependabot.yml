@@ -1,5 +1,10 @@
 version: 2
 updates:
+  - package-ecosystem: "npm"
+    directory: "/apps/web-express"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
   # Monorepo dependencies & tooling (pnpm workspace root manages all packages and pnpm-lock.yaml)
   - package-ecosystem: "npm"
     directory: "/"

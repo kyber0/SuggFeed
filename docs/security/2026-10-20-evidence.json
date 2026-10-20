@@ -1,0 +1,1675 @@
+{
+  "reviewed_commit": "7e062db54c0b1d03370b0dd6a6883cdf650362c9",
+  "date": "2026-10-20",
+  "hosted_operations": "read-only advisors and security metadata; no user records queried",
+  "secret_scan": {
+    "reachable_blobs_scanned": 2496,
+    "locations": [
+      {
+        "blob": "e9062aa35505",
+        "path": ".env.example",
+        "line": 25,
+        "kind": "Sentry token"
+      }
+    ]
+  },
+  "npm_production_audit": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 101,
+      "dev": 34,
+      "optional": 27,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 161
+    }
+  },
+  "security_advisor": {
+    "total": 30,
+    "by_rule": {
+      "rls_enabled_no_policy": 22,
+      "extension_in_public": 1,
+      "anon_security_definer_function_executable": 2,
+      "authenticated_security_definer_function_executable": 4,
+      "auth_leaked_password_protection": 1
+    }
+  },
+  "performance_advisor": {
+    "total": 166,
+    "by_rule": {
+      "unindexed_foreign_keys": 88,
+      "auth_rls_initplan": 3,
+      "no_primary_key": 1,
+      "unused_index": 73,
+      "duplicate_index": 1
+    }
+  },
+  "catalog": {
+    "tables": [
+      {
+        "rls": true,
+        "name": "school_email_domains",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "migrations",
+        "schema": "storage",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_enrollment_rules",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_enrollment_roster",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "s3_multipart_uploads_parts",
+        "schema": "storage",
+        "force_rls": false,
+        "anon_select": true,
+        "authenticated_select": true
+      },
+      {
+        "rls": true,
+        "name": "s3_multipart_uploads",
+        "schema": "storage",
+        "force_rls": false,
+        "anon_select": true,
+        "authenticated_select": true
+      },
+      {
+        "rls": true,
+        "name": "buckets_vectors",
+        "schema": "storage",
+        "force_rls": false,
+        "anon_select": true,
+        "authenticated_select": true
+      },
+      {
+        "rls": true,
+        "name": "vector_indexes",
+        "schema": "storage",
+        "force_rls": false,
+        "anon_select": true,
+        "authenticated_select": true
+      },
+      {
+        "rls": true,
+        "name": "objects",
+        "schema": "storage",
+        "force_rls": false,
+        "anon_select": true,
+        "authenticated_select": true
+      },
+      {
+        "rls": true,
+        "name": "buckets",
+        "schema": "storage",
+        "force_rls": false,
+        "anon_select": true,
+        "authenticated_select": true
+      },
+      {
+        "rls": true,
+        "name": "buckets_analytics",
+        "schema": "storage",
+        "force_rls": false,
+        "anon_select": true,
+        "authenticated_select": true
+      },
+      {
+        "rls": true,
+        "name": "web_sessions",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_customization_state",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_customization_versions",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_form_versions",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_brand_assets",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_upload_intents",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "submission_uploads",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "submission_answers",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_policy_drafts",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_policy_publications",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_asset_deletions",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "categories",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "platform_operators",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_registry_events",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "submissions",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_release_gate",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "status_history",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "attachments",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "votes",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "comments",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "bookmarks",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "shared_posts",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "reports",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "audit_log",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "retention_settings",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "submission_workflow",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "staff_internal_notes",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "staff_workflow_history",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "staff_saved_views",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "idea_updates",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "idea_update_drafts",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "idea_update_uploads",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "idea_follows",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "idea_notifications",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "idea_notification_outbox",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "idea_clarifications",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "idea_merges",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "notification_preferences",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "weekly_digest_jobs",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "workflow_rollout",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "workflow_requests",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "work_date_repairs",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "student_saved_searches",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "submission_receipts",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "profiles",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": true
+      },
+      {
+        "rls": true,
+        "name": "school_memberships",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": true
+      },
+      {
+        "rls": true,
+        "name": "schools",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": true
+      },
+      {
+        "rls": false,
+        "name": "tenant_rpc_catalog",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_invitations",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_applications",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_settings",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "school_settings_versions",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      },
+      {
+        "rls": true,
+        "name": "request_budgets",
+        "schema": "public",
+        "force_rls": false,
+        "anon_select": false,
+        "authenticated_select": false
+      }
+    ],
+    "buckets": [
+      {
+        "id": "submission-attachments",
+        "types": [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "application/pdf"
+        ],
+        "public": false,
+        "size_limit": 5242880
+      },
+      {
+        "id": "idea-update-evidence",
+        "types": [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "application/pdf"
+        ],
+        "public": false,
+        "size_limit": 10485760
+      },
+      {
+        "id": "school-branding",
+        "types": [
+          "image/webp"
+        ],
+        "public": false,
+        "size_limit": 5242880
+      },
+      {
+        "id": "school-upload-sources",
+        "types": [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ],
+        "public": false,
+        "size_limit": 5242880
+      }
+    ],
+    "definers": [
+      {
+        "owner": "tenant_executor",
+        "returns": "trigger",
+        "signature": "touch_updated_at()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "record",
+        "signature": "admin_search_students(text,integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "trigger",
+        "signature": "attach_progress_evidence()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "void",
+        "signature": "finish_progress_upload_cleanup(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "void",
+        "signature": "bind_progress_draft(uuid,uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "idea_update_uploads",
+        "signature": "cancel_progress_upload(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "cast_idea_vote(uuid,uuid,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "idea_update_uploads",
+        "signature": "claim_progress_upload_cleanup(integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "trigger",
+        "signature": "guard_guided_insert()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "weekly_digest_jobs",
+        "signature": "claim_weekly_digests()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "community_action(uuid,text,jsonb)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "create_submission_once(text,uuid,text,text,text,uuid,uuid,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "idea_update_uploads",
+        "signature": "finalize_progress_upload(uuid,uuid,text,text,integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "void",
+        "signature": "finish_progress_source_cleanup(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "trigger",
+        "signature": "guard_guided_projection()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "record",
+        "signature": "list_progress_sources_to_clean(integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "trigger",
+        "signature": "maintain_progress_projection()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "trigger",
+        "signature": "maintain_submission_resolution()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "trigger",
+        "signature": "maintain_submission_vote_delta()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "boolean",
+        "signature": "mark_idea_notification_read(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "perform_workflow_action(uuid,uuid,uuid,timestamp with time zone,text,text,date,smallint,text,text,text,boolean)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "void",
+        "signature": "moderate_submission(uuid,uuid,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "trigger",
+        "signature": "notify_idea_followers()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "post_idea_update(uuid,uuid,uuid,timestamp with time zone,text,text,text,smallint,text,text,date,text,boolean)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "record",
+        "signature": "read_public_idea_update_files(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "idea_update_uploads",
+        "signature": "read_authorized_progress_file(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "record",
+        "signature": "read_public_idea_updates(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "read_public_submission_history(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "record",
+        "signature": "read_roadmap_activity(uuid[])",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "record",
+        "signature": "read_staff_idea_update_files(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "read_submission_receipt(text,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "repair_work_dates(uuid,uuid,uuid,timestamp with time zone,date,date,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "idea_update_uploads",
+        "signature": "reserve_progress_upload(uuid,uuid,text,text,integer,text,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "void",
+        "signature": "review_submission_transition(uuid,uuid,text,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "record",
+        "signature": "roadmap_category_counts(text,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "void",
+        "signature": "save_staff_review(uuid,uuid,timestamp with time zone,text,text,uuid,text,date)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "uuid",
+        "signature": "save_staff_view(uuid,text,jsonb)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "save_student_search(uuid,text,jsonb)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "void",
+        "signature": "set_idea_follow(uuid,uuid,boolean)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "set_idea_vote(uuid,uuid,text,text,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "staff_workflow_context(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "jsonb",
+        "signature": "staff_workflow_snapshot(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "tenant_executor",
+        "returns": "trigger",
+        "signature": "update_submission_comment_count()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "trigger",
+        "signature": "handle_new_user()",
+        "search_path": [
+          "search_path=public"
+        ],
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "owner": "postgres",
+        "returns": "trigger",
+        "signature": "handle_user_email_updated()",
+        "search_path": [
+          "search_path=public"
+        ],
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "platform_operator_active(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "school_publication_allowed(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "uuid",
+        "signature": "create_pending_school(uuid,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "change_school_status(uuid,uuid,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "school_has_role(uuid,text[])",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "school_is_member(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "change_school_membership(uuid,uuid,uuid,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "school_actor_has_role(uuid,uuid,text[])",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "tenant_rpc(uuid,uuid,text,jsonb)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "check_user_status(text)",
+        "search_path": [
+          "search_path=public, auth"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "is_admin()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "is_staff()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "trigger",
+        "signature": "initialize_school_defaults()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "json",
+        "signature": "report_comment(uuid,text)",
+        "search_path": [
+          "search_path=public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "json",
+        "signature": "report_submission(uuid,text)",
+        "search_path": [
+          "search_path=public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "school_email_join_options(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "join_school_by_email_domain(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "uuid",
+        "signature": "apply_to_school(uuid,text,text,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "uuid",
+        "signature": "review_school_application(uuid,uuid,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "trigger",
+        "signature": "school_feature_write_guard()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "school_presentation(text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "school_published_configuration(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "approve_school_settings(uuid,uuid,integer,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "issue_school_invitation(uuid,uuid,text,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "trigger",
+        "signature": "guard_school_activation()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "record",
+        "signature": "consume_request_budget(text,integer,integer)",
+        "search_path": [
+          "search_path=public, pg_temp"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "school_release_status(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "set_school_customization_rollout(uuid,uuid,boolean)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "uuid",
+        "signature": "accept_school_invitation_v1(uuid,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "uuid",
+        "signature": "accept_school_invitation(uuid,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "create_school_member_invitation(uuid,uuid,text,text,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "list_school_member_invitations(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "record_school_invitation_delivery(uuid,uuid,uuid,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "revoke_school_member_invitation(uuid,uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "school_invitation_preview(text,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "school_customization_admin(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "school_customization_defaults(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "school_feature_enabled(uuid,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "request_school_email_domain(uuid,uuid,text,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "configure_school_email_domain(uuid,uuid,uuid,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "get_school_enrollment(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "save_school_enrollment(uuid,uuid,integer,text,text[])",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "school_student_eligible(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "school_account_memberships(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "get_school_customization(uuid,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "integer",
+        "signature": "publish_school_customization(uuid,uuid,integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "register_school_brand_asset(uuid,uuid,uuid,text,integer,integer,integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "request_school_form_review(uuid,uuid,integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "integer",
+        "signature": "restore_school_customization(uuid,uuid,integer,integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "review_school_customization_form(uuid,uuid,integer,text)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "integer",
+        "signature": "save_school_customization(uuid,uuid,integer,jsonb)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "trigger",
+        "signature": "guard_required_school_form()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "register_processed_school_upload(uuid,uuid,text,uuid,integer,integer,integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "reserve_school_upload(uuid,uuid,text,text,integer)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "create_customized_submission(text,uuid,text,text,text,uuid,boolean,text,uuid,jsonb,uuid[])",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "integer",
+        "signature": "update_school_settings(uuid,uuid,integer,jsonb)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "jsonb",
+        "signature": "cleanup_school_customization_uploads()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "trigger",
+        "signature": "queue_school_asset_deletion()",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "void",
+        "signature": "acknowledge_school_asset_deletion(text,text[])",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "text",
+        "signature": "discard_submission_upload(uuid,text,uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "returns": "boolean",
+        "signature": "school_digest_available(uuid)",
+        "search_path": [
+          "search_path=pg_catalog, public"
+        ],
+        "anon_execute": false,
+        "authenticated_execute": false
+      }
+    ],
+    "migration_count": 54
+  }
+}

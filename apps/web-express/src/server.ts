@@ -10,6 +10,8 @@ import { Eta } from "eta";
 import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
+import {readBurstLimit,sharedReadBudget} from './lib/read-budget';
+import securityMaintenanceRouter from './routes/security-maintenance';
 import rateLimit from "express-rate-limit";
 import { randomBytes } from "crypto";
 import { SupabaseSessionStore } from "./lib/session-store";
@@ -195,6 +197,9 @@ app.use(express.static(publicDir, {
   setHeaders(res,filePath){if(path.basename(filePath)==='sw.js')res.setHeader('Cache-Control','no-cache');},
 }));
 /* ── Session ─────────────────────────────────────────────────────────────── */
+app.use(readBurstLimit);
+app.use(sharedReadBudget);
+app.use(securityMaintenanceRouter);
 app.use((_req,res,next)=>{res.locals.sessionStarted=performance.now();next();});
 app.use(
   session({

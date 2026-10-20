@@ -24,7 +24,7 @@ test('roadmap paginates each public stage independently and counts matches acros
   assert.ok(result.items.every(i=>i.response==='Public response' && !('internal_note' in i) && !('assignee_id' in i)));
   for(const query of queries.slice(0,3)){
    assert.match(query.select[0][0],/categories!inner/);
-   assert.ok(query.eq.some(e=>(e[0]==='categories.name'||e[0]==='category_id') && e[1]==='Facilities'));
+   assert.ok(query.eq.some(e=>e[0]==='category_id' && e[1]==='Facilities'));
    assert.deepEqual(query.range[0],[8,15]);
   }
   queries.length=0;

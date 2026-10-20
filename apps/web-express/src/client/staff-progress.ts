@@ -89,7 +89,7 @@ interface Window {
   let draftFiles:DraftFile[]=[];
   let evidenceBusy=0;
   let announcedBusy=false;
-  const acceptedTypes=new Set(['image/jpeg','image/png','image/webp','application/pdf']);
+  const acceptedTypes=new Set(['image/jpeg','image/png','image/webp']);
   const isBusy=()=>posting || evidenceBusy>0;
   const evidenceReady=()=>draftFiles.every(file=>file.state==='ready');
   const evidenceUrl=(value:unknown)=>typeof value==='string' && /^\/api\/progress-evidence\/[0-9a-f-]{36}$/i.test(sfSchoolRoute(value))?sfSchoolPath(value):null;
@@ -306,7 +306,7 @@ interface Window {
     const errors:string[]=[];
     for(const file of Array.from(filePicker.files || [])){
       if(draftFiles.length>=5){errors.push('You can attach up to 5 files per update.');break;}
-      if(!acceptedTypes.has(file.type)){errors.push(file.name+': choose a JPEG, PNG, WebP photo or PDF.');continue;}
+      if(!acceptedTypes.has(file.type)){errors.push(file.name+': choose a JPEG, PNG or WebP photo. PDF uploads are temporarily paused.');continue;}
       if(!file.size || file.size>10485760){errors.push(file.name+': choose a file between 1 byte and 10 MB.');continue;}
       draftFiles.push({localId:crypto.randomUUID(),file,alt:'',state:'selected',step:'reserve',previewUrl:localPreview(file)});
     }

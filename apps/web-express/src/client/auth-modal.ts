@@ -237,8 +237,8 @@
         sfToast('Please provide an email and password.', 'error', generation);
         return;
       }
-      if (password.length < 8) {
-        sfToast('Password must be at least 8 characters.', 'error', generation);
+      if (password.length < 12) {
+        sfToast('Password must be at least 12 characters.', 'error', generation);
         return;
       }
 

@@ -1,0 +1,5 @@
+# Exact historical findings only; no path-wide or rule-wide exclusions.
+# Sentry token: user confirmed revocation on 2026-10-20 (Asia/Manila).
+14539b40a555834386177f8a23d7d864180b3c9d:.env.example:sentry-org-token:25
+# Public Supabase client key: locally decoded role=anon, never replayed.
+14539b40a555834386177f8a23d7d864180b3c9d:.env.example:jwt:31

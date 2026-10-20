@@ -68,7 +68,7 @@
     let draftFiles = [];
     let evidenceBusy = 0;
     let announcedBusy = false;
-    const acceptedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
+    const acceptedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
     const isBusy = () => posting || evidenceBusy > 0;
     const evidenceReady = () => draftFiles.every(file => file.state === 'ready');
     const evidenceUrl = (value) => typeof value === 'string' && /^\/api\/progress-evidence\/[0-9a-f-]{36}$/i.test(sfSchoolRoute(value)) ? sfSchoolPath(value) : null;
@@ -536,7 +536,7 @@
                 break;
             }
             if (!acceptedTypes.has(file.type)) {
-                errors.push(file.name + ': choose a JPEG, PNG, WebP photo or PDF.');
+                errors.push(file.name + ': choose a JPEG, PNG or WebP photo. PDF uploads are temporarily paused.');
                 continue;
             }
             if (!file.size || file.size > 10485760) {

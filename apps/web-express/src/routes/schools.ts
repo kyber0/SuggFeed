@@ -109,6 +109,11 @@ router.post('/schools/apply', run(async (req, res) => {
   return res.redirect(303, '/schools?saved=1');
 }));
 router.get('/platform', (_req, res) => res.redirect(303, '/platform/schools'));
+router.get('/platform/security/retention',run(async(req,res)=>{
+ const user=await operator(req,res);if(!user)return;
+ const result=await supabasePlatform.rpc('school_retention_inventory');if(result.error)throw Object.assign(new Error('Retention inventory unavailable.'),{status:503});
+ res.setHeader('Cache-Control','private, no-store');res.json({success:true,mode:'dry-run',schools:result.data});
+}));
 router.get('/platform/schools/:id/activate', (_req, res) => res.redirect(303, '/platform/schools#schools'));
 router.get('/platform/schools', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;

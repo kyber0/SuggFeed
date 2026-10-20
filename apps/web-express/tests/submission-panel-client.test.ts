@@ -17,7 +17,7 @@ function runtime(fail=false) {
  const node=(id:string)=>{if(!nodes.has(id))nodes.set(id,new Element(id));return nodes.get(id);};
  node('sip-title').value='Improve library seating';node('sip-description').value='Add comfortable seats in the school reading area.';
  const category=node('category');category.value='Facilities';
- const context:any={Event,Element,document:{getElementById:node,querySelector:(selector:string)=>selector.includes('sip-category')?category:node(selector),querySelectorAll:()=>[],addEventListener:(type:string,fn:Function)=>listeners.set(type,[...(listeners.get(type)||[]),fn])},sfToast:(...args:any[])=>calls.push(['toast',...args])};
+ const context:any={Event,Element,sfSchoolPath:(value:string)=>value,document:{getElementById:node,querySelector:(selector:string)=>selector.includes('sip-category')?category:node(selector),querySelectorAll:()=>[],addEventListener:(type:string,fn:Function)=>listeners.set(type,[...(listeners.get(type)||[]),fn])},sfToast:(...args:any[])=>calls.push(['toast',...args])};
  context.window=context;
  context.sfSubmissionRecovery={prepare:async()=>({key:'receipt',actor:'actor'}),request:async(...args:any[])=>{calls.push(['request',...args]);if(fail)throw Error('Backend unavailable');return {id:'idea',tracking_code:'CV-'+'A'.repeat(32)};},finish:async()=>calls.push(['finish']),failed:(error:Error)=>{node('sip-recovery-status').textContent=error.message;}};
  vm.createContext(context);

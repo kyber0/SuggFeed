@@ -112,8 +112,8 @@
             if (saving || !recoverySession)
                 return;
             feedback.textContent = '';
-            if (password.value.length < 8) {
-                feedback.textContent = 'Choose a password with at least 8 characters.';
+            if (password.value.length < 12) {
+                feedback.textContent = 'Choose a password with at least 12 characters.';
                 password.focus();
                 return;
             }

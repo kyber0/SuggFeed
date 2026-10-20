@@ -119,14 +119,14 @@ test('image evidence requires a description and shares the final post idempotenc
 
 test('selected evidence blocks publication and rejects unsupported, oversized and excess files',async()=>{
   const h=harness();await h.open();h.node('staff-progress-body').value='Evidence is being checked.';
-  await h.chooseFiles([{name:'unsafe.svg',type:'image/svg+xml',size:100},{name:'huge.pdf',type:'application/pdf',size:10485761},...Array.from({length:6},(_,index)=>({name:'document-'+index+'.pdf',type:'application/pdf',size:200}))]);
+  await h.chooseFiles([{name:'unsafe.svg',type:'image/svg+xml',size:100},{name:'unsafe.pdf',type:'application/pdf',size:100},{name:'huge.png',type:'image/png',size:10485761},...Array.from({length:6},(_,index)=>({name:'document-'+index+'.png',type:'image/png',size:200}))]);
   assert.equal(h.node('staff-progress-evidence-list').children.length,5);assert.match(h.node('staff-progress-evidence-message').textContent,/JPEG/);assert.match(h.node('staff-progress-evidence-message').textContent,/10 MB/);assert.match(h.node('staff-progress-evidence-message').textContent,/5 files/);
   await h.node('staff-progress-form').emit('submit');assert.equal(h.posts.length,0);assert.match(h.node('staff-progress-evidence-message').textContent,/Upload or remove/);
   await h.remove(0);assert.equal(h.node('staff-progress-evidence-list').children.length,4);
 });
 
 test('lost reservation and finalize replies safely retry the same file rather than reserving a duplicate',async()=>{
-  const h=harness();await h.open();await h.chooseFiles([{name:'installation.pdf',type:'application/pdf',size:2048}]);
+  const h=harness();await h.open();await h.chooseFiles([{name:'installation.png',type:'image/png',size:2048}]);await h.describe(0,'Installed school equipment.');
   h.setEvidenceFailure('reserve-lost');await h.upload(0);assert.equal(h.reservations.size,1);assert.equal(h.node('staff-progress-post').disabled,true);
   h.setUploadReply(409);h.setEvidenceFailure('finalize-lost');await h.upload(0);
   assert.equal(h.node('staff-progress-post').disabled,true);assert.equal(h.reservations.size,1);
@@ -138,7 +138,7 @@ test('lost reservation and finalize replies safely retry the same file rather th
 });
 
 test('clearing an unpublished evidence draft cancels reservations and never persists student content locally',async()=>{
-  const h=harness();await h.open();await h.chooseFiles([{name:'school-note.pdf',type:'application/pdf',size:100}]);await h.upload(0);
+  const h=harness();await h.open();await h.chooseFiles([{name:'school-note.png',type:'image/png',size:100}]);await h.describe(0,'School work evidence.');await h.upload(0);
   await h.node('staff-progress-clear').emit('click');await h.flush();
   assert.equal(h.evidenceRequests.filter(request=>request.method==='DELETE').length,1);assert.equal(h.reservations.size,0);assert.equal(h.controller.hasDraft(),false);
   const source=fs.readFileSync(path.join(__dirname,'../src/client/staff-progress.ts'),'utf8');assert.doesNotMatch(source,/localStorage|sessionStorage/);

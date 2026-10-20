@@ -8,7 +8,7 @@ import { forEachActiveSchool } from './school-jobs';
 
 export const EVIDENCE_BUCKET = 'idea-update-evidence';
 export const MAX_EVIDENCE_BYTES = 10 * 1024 * 1024;
-const MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 // Evidence is raster-only. Also forbid libvips' SVG loader, even if type sniffing is bypassed.
 sharp.block({ operation: ['VipsForeignLoadSvg'] });
 export interface EvidenceFile {
@@ -34,7 +34,7 @@ export function validateEvidence(input: unknown) {
   if (typeof b.name !== 'string' || !safeName(b.name) || b.name.length > 120 ||
       typeof b.mime !== 'string' || !MIME_TYPES.includes(b.mime) ||
       typeof b.size !== 'number' || !Number.isInteger(b.size) || b.size < 1 || b.size > MAX_EVIDENCE_BYTES) {
-    throw new ProgressError(400, 'Use a JPEG, PNG, WebP or PDF up to 10 MB, with a filename of 1–120 characters.');
+    throw new ProgressError(400, 'Use a JPEG, PNG or WebP image up to 10 MB. New PDF uploads are paused until malware scanning is available.');
   }
   if (b.alt !== undefined && b.alt !== null && typeof b.alt !== 'string') throw new ProgressError(400, 'Describe the image in text.');
   const alt = typeof b.alt === 'string' ? b.alt.trim() || null : null;
@@ -126,11 +126,7 @@ export async function validateEvidenceBytes(bytes: Buffer, declaredMime: string,
     throw new ProgressError(400, 'The uploaded file does not match its declared type or size. Remove it and choose the original file again.');
   }
   if (declaredMime === 'application/pdf') {
-    if (!bytes.subarray(Math.max(0, bytes.length - 1024)).toString('latin1').includes('%%EOF')) {
-      throw new ProgressError(400, 'This PDF appears incomplete. Upload a complete PDF document.');
-    }
-    // Framing is not a malware scan. PDFs are served as downloads, never an inline app preview.
-    return { bytes, mime: 'application/pdf', extension: 'pdf' };
+    throw new ProgressError(400, 'New PDF evidence is paused until malware scanning is available.');
   }
   try {
     const image = sharp(bytes, { limitInputPixels: 24_000_000, failOn: 'error', animated: false }).timeout({ seconds: 8 });
@@ -146,6 +142,7 @@ export async function validateEvidenceBytes(bytes: Buffer, declaredMime: string,
 }
 export async function finalizeEvidence(actorId: string, fileId: string) {
   const row = await authorizedFile(fileId, actorId);
+  if(row.declared_mime==='application/pdf')throw new ProgressError(400,'PDF evidence is quarantined. Remove it and choose an image.');
   if (row.actor_id !== actorId || !['pending', 'ready'].includes(row.state) || Date.parse(row.expires_at) <= Date.now()) {
     throw new ProgressError(400, 'This evidence draft expired or has already been published.');
   }
@@ -187,6 +184,7 @@ export async function cancelEvidence(actorId: string, fileId: string) {
 export async function evidenceDownload(fileId: string, actorId: string | null) {
   const row = await authorizedFile(fileId, actorId);
   if (!['ready', 'published'].includes(row.state) || !row.final_path || !row.mime_type) throw new ProgressError(404, 'Evidence not found.');
+  if(row.mime_type==='application/pdf')throw new ProgressError(403,'PDF evidence is quarantined until malware scanning is available. Ask school staff for an image alternative.');
   const { data, error } = await supabaseService.storage.from(EVIDENCE_BUCKET).createSignedUrl(row.final_path, 60,
     row.mime_type === 'application/pdf' ? { download: safeName(row.display_name) } : {});
   if (error || !data) throw new ProgressError(503, 'Evidence downloads are temporarily unavailable.');

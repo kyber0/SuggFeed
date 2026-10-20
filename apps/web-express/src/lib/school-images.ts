@@ -18,7 +18,7 @@ export async function finishSchoolImage(input:{school:string;actor:string|null;o
  const bytes=Buffer.from(await source.data.arrayBuffer());let output:Buffer,info:Metadata;
  try{
   if(bytes.length!==intent.data.declared_size||bytes.length>(input.purpose==='logo'?2:5)*1024*1024)throw new Error('Image size changed');
-  const image=sharp(bytes,{limitInputPixels:40000000,animated:false,failOn:'error'});const metadata=await image.metadata();if(!['png','jpeg','webp'].includes(metadata.format||'')||(metadata.pages||1)>1)throw new Error('Unsupported image');
+  const image=sharp(bytes,{limitInputPixels:40000000,animated:false,failOn:'error'}).timeout({seconds:8});const metadata=await image.metadata();if(!['png','jpeg','webp'].includes(metadata.format||'')||(metadata.pages||1)>1)throw new Error('Unsupported image');
   output=await image.rotate().resize(input.purpose==='logo'?512:input.purpose==='cover'?2400:1800,input.purpose==='logo'?512:input.purpose==='cover'?1200:1800,{fit:'inside',withoutEnlargement:true}).webp({quality:85}).toBuffer();if(output.length>5242880)throw new Error('Processed image is too large');info=await sharp(output).metadata();
  }catch{await supabasePlatform.storage.from('school-upload-sources').remove([sourcePath]);throw Object.assign(new Error('Use a static PNG, JPEG or WebP image within the size limit. This file could not be processed.'),{status:400});}
  const bucket=input.purpose==='submission'?'submission-attachments':'school-branding';

@@ -68,7 +68,7 @@
     form.addEventListener('submit', async event => {
       event.preventDefault(); if (saving || !recoverySession) return;
       feedback.textContent = '';
-      if (password.value.length < 8) {feedback.textContent = 'Choose a password with at least 8 characters.'; password.focus(); return;}
+      if (password.value.length < 12) {feedback.textContent = 'Choose a password with at least 12 characters.'; password.focus(); return;}
       if (password.value !== confirmation.value) {feedback.textContent = 'The passwords do not match.'; confirmation.focus(); return;}
       saving = true; submit.disabled = true; cancel.disabled = true; password.disabled = true; confirmation.disabled = true;
       submit.textContent = 'Updating password…';

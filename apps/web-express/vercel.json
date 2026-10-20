@@ -12,6 +12,10 @@
   ],
   "crons": [
     {
+      "path": "/internal/security-maintenance",
+      "schedule": "0 1 * * *"
+    },
+    {
       "path": "/internal/school-customization-cleanup",
       "schedule": "0 2 * * *"
     }
