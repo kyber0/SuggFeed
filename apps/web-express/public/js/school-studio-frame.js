@@ -5,6 +5,8 @@
         return;
     const instance = initial.instanceId, origin = location.origin;
     let outgoing = 0, incoming = 0, mode = 'edit', configuration = initial.configuration, selected = '', hovered = '', step = 1;
+    let fragmentSequence = 0;
+    const stylesheetLoads = new Map();
     let outline, label, hover, banner;
     let resize;
     const send = (type, payload = {}) => parent.postMessage({ protocol: 1, instanceId: instance, sequence: ++outgoing, type, payload }, origin);
@@ -17,6 +19,7 @@
         mark('.school-context-identity', 'school.identity');
         mark('.school-welcome-identity', 'school.identity');
         mark('.sf-hero,.school-welcome', 'home.hero');
+        mark('.sf-hero-actions', 'school.identity');
         mark('.school-welcome-links,.school-welcome-help', 'home.links');
         mark('.sip-cat-grid,.topic-chips-carousel,.left-topic-list', 'community.categories');
         mark('.school-custom-questions', 'submission.instructions');
@@ -71,6 +74,61 @@
     } }); }
     function text(selector, value) { for (const el of document.querySelectorAll(selector))
         el.textContent = value; }
+    function headline(value) { for (const el of document.querySelectorAll('.sf-hero-title')) {
+        const accent = document.createElement('span');
+        accent.className = 'sf-hero-title-accent';
+        accent.textContent = value || 'one idea at a time.';
+        el.replaceChildren(...(value ? [] : [document.createTextNode('Make campus better, ')]), accent);
+    } }
+    async function replaceFragment(payload, sequence) {
+        fragmentSequence = sequence;
+        const parsed = new DOMParser().parseFromString(payload.html, 'text/html');
+        parsed.querySelectorAll('script').forEach(el => el.remove());
+        const desired = Array.from(parsed.querySelectorAll('link[rel="stylesheet"]')).map(link => new URL(link.getAttribute('href') || '', location.origin)).filter(url => url.origin === origin && url.pathname.startsWith('/css/')).map(url => url.href);
+        try {
+            await Promise.all(desired.map(href => {
+                const pending = stylesheetLoads.get(href);
+                if (pending)
+                    return pending;
+                if (Array.from(document.querySelectorAll('head link[rel="stylesheet"]')).some(link => link.href === href && link.sheet))
+                    return Promise.resolve();
+                const loading = new Promise((resolve, reject) => { const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = href; const finish = (ok) => { clearTimeout(timeout); link.onload = link.onerror = null; if (ok)
+                    resolve();
+                else {
+                    link.remove();
+                    stylesheetLoads.delete(href);
+                    reject(new Error('Preview styles unavailable.'));
+                } }; const timeout = setTimeout(() => finish(false), 8000); link.onload = () => finish(true); link.onerror = () => finish(false); document.head.append(link); });
+                stylesheetLoads.set(href, loading);
+                return loading;
+            }));
+        }
+        catch {
+            if (sequence === fragmentSequence)
+                send('render-error');
+            return;
+        }
+        if (sequence !== fragmentSequence)
+            return;
+        window.sfMotion?.destroy();
+        const y = scrollY, wasOpen = document.getElementById('submit-panel')?.hasAttribute('hidden') === false;
+        for (const link of document.querySelectorAll('head link[rel="stylesheet"]'))
+            if (!desired.includes(link.href)) {
+                stylesheetLoads.delete(link.href);
+                link.remove();
+            }
+        const latestConfiguration = configuration;
+        configuration = payload.renderedConfiguration || configuration;
+        document.body.className = parsed.body.className;
+        document.body.style.cssText = parsed.body.style.cssText;
+        document.body.replaceChildren(...Array.from(parsed.body.childNodes));
+        initialize();
+        if (wasOpen)
+            openForm();
+        patch(latestConfiguration);
+        window.scrollTo(0, y);
+        send('render-complete');
+    }
     function patch(next) {
         if (!next?.welcome || !next?.features || !Array.isArray(next.categories))
             return;
@@ -92,9 +150,9 @@
         if (next.displayName !== old.displayName)
             text('.school-context-identity strong,.school-welcome-identity strong', next.displayName || initial.schoolName || 'Your school');
         if (next.welcome.headline !== old.welcome.headline)
-            text('.school-welcome h1,.sf-hero-title', next.welcome.headline || 'Make campus better, one idea at a time.');
+            headline(next.welcome.headline);
         if (next.welcome.intro !== old.welcome.intro)
-            text('.school-welcome-intro,.sf-hero-subtitle', next.welcome.intro || 'Share a suggestion, choose whether to attach your account, and use a private tracking code to check its status.');
+            text('.school-welcome-intro,.sf-hero-subtitle', next.welcome.intro || 'Share a suggestion, choose whether to attach your account, and use a private tracking code to check for updates.');
         if (next.welcome.message !== old.welcome.message)
             text('.school-welcome-message', next.welcome.message);
         if (next.welcome.help !== old.welcome.help)
@@ -109,6 +167,7 @@
                 links[index].textContent = link.label;
         for (const [key, value] of Object.entries(next.features))
             document.body.classList.toggle('school-' + key + '-off', !value || initial.scenario === 'disabled');
+        SfSchoolColors.apply(document.body, next.palette);
         for (const p of ['navy', 'forest', 'purple', 'burgundy', 'teal', 'indigo']) {
             document.body.classList.toggle('school-palette-' + p, p === next.palette);
             for (const welcome of document.querySelectorAll('.school-welcome'))
@@ -194,21 +253,8 @@
             syncMotion();
             schedule();
         }
-        if (data.type === 'replace-fragment' && typeof payload.html === 'string' && payload.html.length < 550000) {
-            window.sfMotion?.destroy();
-            const y = scrollY, wasOpen = document.getElementById('submit-panel')?.hasAttribute('hidden') === false;
-            const parsed = new DOMParser().parseFromString(payload.html, 'text/html');
-            parsed.querySelectorAll('script').forEach(el => el.remove());
-            configuration = payload.renderedConfiguration || configuration;
-            document.body.className = parsed.body.className;
-            document.body.replaceChildren(...Array.from(parsed.body.childNodes));
-            initialize();
-            if (wasOpen)
-                openForm();
-            patch(payload.configuration);
-            window.scrollTo(0, y);
-            send('render-complete');
-        }
+        if (data.type === 'replace-fragment' && typeof payload.html === 'string' && payload.html.length < 550000)
+            void replaceFragment(payload, data.sequence);
     });
     document.addEventListener('pointerover', event => { const el = event.target.closest('[data-studio-component]'); hovered = el?.dataset.studioComponent || ''; schedule(); });
     document.addEventListener('pointerleave', () => { hovered = ''; schedule(); });

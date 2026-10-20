@@ -14,3 +14,14 @@ body[class*=school-palette-]{--school-accent:#0b3857;--school-soft:#e8f4fb}body.
 .custom-related{display:flex;gap:10px 18px;flex-wrap:wrap;margin:20px 0 28px}.custom-related a{min-height:36px;display:inline-flex;align-items:center;font-size:13px;text-underline-offset:4px}.custom-mobile-section{background:var(--bg);padding:8px 0}
 
 .school-roadmap-off .feed-roadmap-promo{display:none!important}
+
+/* Validated tokens are shared with the native picker; status colors and SuggFeed stay fixed. */
+body[data-school-colors] { --school-soft:var(--school-soft-light); --school-text-accent:var(--school-text-light); }
+[data-theme="dark"] body[data-school-colors] { --school-soft:var(--school-soft-dark); --school-text-accent:var(--school-text-dark); }
+body[data-school-colors] .school-welcome { --school-accent:inherit; --school-soft:inherit; }
+body[data-school-colors] :is(.sf-hero-action-primary,.sf-prompt-btn,.sf-btn-share-alt,.sf-btn-empty-action,.sip-btn-action,.topic-chip.active,.topic-item-btn.selected,.school-welcome-actions .workspace-button:first-child) { background:var(--school-accent); border-color:var(--school-accent); color:var(--school-on-accent); }
+body[data-school-colors] :is(.sf-hero-title-accent,.sf-hero-badge,.school-welcome-links a) { color:var(--school-text-accent); }
+body[data-school-colors] :is(.sf-hero-action-secondary,.sf-segmented-tab--active) { color:var(--school-text-accent); border-color:var(--school-accent); }
+.sf-hero .school-welcome-identity { margin-bottom:20px; }
+.sf-hero .school-welcome-cover { border-radius:12px; margin:0 auto 24px; max-width:920px; }
+.sf-hero :is(.school-welcome-message,.school-welcome-help) { margin:16px 0; }

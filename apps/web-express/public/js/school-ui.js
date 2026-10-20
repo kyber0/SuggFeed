@@ -5,6 +5,7 @@
         return;
     const p = JSON.parse(node.textContent || '{}');
     Object.assign(window, { sfSchoolCustomization: p, sfSchoolStatusLabel: (status) => p.labels?.[status] || status.replace(/_/g, ' ') });
+    SfSchoolColors.apply(document.body, p.palette);
     const prefix = document.querySelector('meta[name="school-base"]')?.content || '';
     function apply() {
         if (!p.features.roadmap)

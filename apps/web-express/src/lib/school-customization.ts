@@ -23,7 +23,7 @@ const id=(value:unknown,label:string)=>{if(typeof value!=='string'||!UUID.test(v
 const flag=(value:unknown)=>{if(typeof value!=='boolean')throw new Error('Choose a valid feature setting.');return value;};
 export function normalizeCustomization(value:unknown):SchoolCustomization {
  const p=object(value,['schemaVersion','displayName','palette','logo','cover','welcome','categories','features','form','labels','stageDescriptions','email','formVersion'],'school customization');
- if(p.schemaVersion!==1||!SCHOOL_PALETTES.includes(p.palette))throw new Error('Choose a supported appearance.');
+ if(p.schemaVersion!==1||(!SCHOOL_PALETTES.includes(p.palette)&&!(typeof p.palette==='string'&&/^#[0-9a-f]{6}$/i.test(p.palette))))throw new Error('Choose a supported appearance.');
  const w=object(p.welcome,['headline','intro','message','help','links'],'welcome content');
  if(!Array.isArray(w.links)||w.links.length>5)throw new Error('Use up to five official links.');
  const links=w.links.map((value:unknown)=>{const link=object(value,['label','url'],'official link');const url=new URL(text(link.url,500,'Link address',1));if(url.protocol!=='https:'||url.username||url.password)throw new Error('Official links must use HTTPS without credentials.');return {label:text(link.label,60,'Link label',1),url:url.href};});

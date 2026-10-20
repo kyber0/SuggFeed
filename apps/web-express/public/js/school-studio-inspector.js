@@ -2,6 +2,7 @@
 (() => {
     const escape = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const input = (field, label, value, max = 200, kind = 'text') => '<label>' + escape(label) + (kind === 'textarea' ? '<textarea rows="3" maxlength="' + max + '" data-property="' + field + '">' + escape(value) + '</textarea>' : '<input type="' + kind + '" maxlength="' + max + '" data-property="' + field + '" value="' + escape(value) + '">') + '</label>';
+    function colors(value) { const p = SfSchoolColors.tokens(value); return '<fieldset class="studio-colors"><legend>Accent color</legend><div class="studio-color-presets">' + Object.entries(SfSchoolColors.presets).map(([name, color]) => '<button type="button" data-palette="' + name + '" aria-pressed="' + (value === name) + '" title="' + name + '" aria-label="Use ' + name + ' accent"><span style="background:' + color + '"></span></button>').join('') + '</div><div class="studio-color-inputs"><label>Choose color<input type="color" data-property="palette" value="' + p.accent + '"></label><label>Hex color<input type="text" data-property="palette" value="' + p.accent + '" pattern="#[0-9a-fA-F]{6}" maxlength="7" spellcheck="false" aria-describedby="studio-color-help"></label></div><p id="studio-color-help">Button text adjusts for contrast. Status and security colors stay consistent.</p><button type="button" data-palette="navy">Reset accent</button></fieldset>'; }
     const select = (field, label, value, options, disabled = false) => '<label>' + escape(label) + '<select data-property="' + field + '" ' + (disabled ? 'disabled' : '') + '>' + options.map(option => { const [key, text] = Array.isArray(option) ? option : [option, option]; return '<option value="' + escape(key) + '" ' + (key === value ? 'selected' : '') + '>' + escape(text) + '</option>'; }).join('') + '</select></label>';
     const check = (field, label, value, hint = '') => '<label class="studio-check"><input type="checkbox" data-property="' + field + '" ' + (value ? 'checked' : '') + '><span>' + escape(label) + (hint ? '<small style="display:block;font-weight:400">' + escape(hint) + '</small>' : '') + '</span></label>';
     function mount(host, model, settings) {
@@ -14,14 +15,14 @@
             let html = '';
             const row = selected.startsWith('category:') ? p.categories.find((c) => c.id === selected.slice(9)) : selected.startsWith('question:') ? p.form.questions.find((q) => q.id === selected.slice(9)) : null;
             if (selected === 'school.identity') {
-                html = input('displayName', 'Short school name', p.displayName, 60) + select('palette', 'Accent palette', p.palette, settings.palettes);
+                html = input('displayName', 'Short school name', p.displayName || settings.schoolName, 60) + colors(p.palette);
                 for (const kind of ['logo', 'cover'])
                     html += '<div class="studio-asset"><h3>' + escape(kind === 'logo' ? 'School logo' : 'Landing-page cover') + '</h3>' + (p[kind] ? '<img src="' + escape(settings.base + '/assets/' + p[kind]) + '" alt="Current ' + kind + '"><button type="button" data-clear-asset="' + kind + '">Remove ' + kind + '</button>' : '<p>No ' + kind + ' selected.</p>') + '<label>Choose image<input type="file" data-upload="' + kind + '" accept="image/png,image/jpeg,image/webp" ' + (!settings.uploadsReady ? 'disabled' : '') + '></label><p>PNG, JPEG or WebP · ' + (kind === 'logo' ? '2' : '5') + ' MB maximum.</p></div>';
                 if (!settings.uploadsReady)
                     html += '<p>Image uploads need service setup. Ask the platform operator to enable file cleanup.</p>';
             }
             else if (selected === 'home.hero')
-                html = input('headline', 'Welcome headline', p.welcome.headline, 100) + input('intro', 'Introduction', p.welcome.intro, 500, 'textarea') + input('message', 'Welcome message', p.welcome.message, 1500, 'textarea') + '<button type="button" data-select="school.identity">Edit logo & cover</button>';
+                html = input('headline', 'Welcome headline', p.welcome.headline || 'Make campus better, one idea at a time.', 100) + input('intro', 'Introduction', p.welcome.intro || 'Share a suggestion, choose whether to attach your account, and use a private tracking code to check for updates.', 500, 'textarea') + input('message', 'Welcome message', p.welcome.message, 1500, 'textarea') + '<button type="button" data-select="school.identity">Edit logo & cover</button>';
             else if (selected === 'home.links') {
                 html = input('help', 'Help & contact information', p.welcome.help, 500, 'textarea');
                 for (const [i, link] of p.welcome.links.entries())
@@ -70,6 +71,15 @@
                 return;
             let value = element instanceof HTMLInputElement && element.type === 'checkbox' ? element.checked : element.value;
             const p = state().configuration;
+            if (property === 'palette') {
+                if (!/^#[0-9a-f]{6}$/i.test(value))
+                    return;
+                for (const other of host.querySelectorAll('[data-property="palette"]'))
+                    if (other !== element)
+                        other.value = value;
+                for (const preset of host.querySelectorAll('[data-palette]'))
+                    preset.setAttribute('aria-pressed', 'false');
+            }
             const index = element.closest('[data-link-index]')?.dataset.linkIndex;
             if (index !== undefined) {
                 const links = structuredClone(p.welcome.links);
@@ -100,6 +110,11 @@
             if (!button)
                 return;
             const p = state().configuration;
+            if (button.dataset.palette) {
+                model.applyChange('school.identity', 'palette', button.dataset.palette);
+                render();
+                return;
+            }
             if (button.dataset.select) {
                 settings.select(button.dataset.select);
                 return;

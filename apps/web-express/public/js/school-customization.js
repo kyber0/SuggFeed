@@ -108,7 +108,7 @@
             openPanel('properties');
         send('select', { componentId: id, scroll: !fromFrame });
     }
-    const structure = (p) => JSON.stringify({ categories: p.categories.map((c) => [c.id, c.active, c.icon, c.description]), questions: p.form.questions.map((q) => [q.id, q.type, q.required, q.options, !!q.help]), attachments: p.form.attachments, links: p.welcome.links.length, hero: !!(p.displayName || p.logo || p.cover || p.welcome.headline || p.welcome.intro || p.welcome.message || p.welcome.help || p.welcome.links.length), message: !!p.welcome.message, help: !!p.welcome.help, instructions: !!p.form.instructions, example: !!p.form.example, logo: p.logo, cover: p.cover, roadmap: p.features.roadmap, labels: p.labels, stageDescriptions: p.stageDescriptions });
+    const structure = (p) => JSON.stringify({ categories: p.categories.map((c) => [c.id, c.active, c.icon, c.description]), questions: p.form.questions.map((q) => [q.id, q.type, q.required, q.options, !!q.help]), attachments: p.form.attachments, links: p.welcome.links.length, identity: !!(p.displayName || p.logo), message: !!p.welcome.message, help: !!p.welcome.help, instructions: !!p.form.instructions, example: !!p.form.example, logo: p.logo, cover: p.cover, roadmap: p.features.roadmap, labels: p.labels, stageDescriptions: p.stageDescriptions });
     async function render() {
         if (!ready || !allowed)
             return;
@@ -243,7 +243,7 @@
         const data = event.data;
         if (event.origin !== location.origin || event.source !== frame.contentWindow || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || JSON.stringify(data).length > 2000)
             return;
-        if (!['ready', 'select', 'navigate', 'render-complete', 'shortcut'].includes(data.type))
+        if (!['ready', 'select', 'navigate', 'render-complete', 'render-error', 'shortcut'].includes(data.type))
             return;
         incoming = data.sequence;
         const payload = data.payload || {};
@@ -258,6 +258,10 @@
                 renderedKey = structure(model.getState().configuration);
             else
                 void render();
+        }
+        if (data.type === 'render-error') {
+            renderedKey = '';
+            say('Preview styles could not load. Your edits are safe; use Reload preview to retry.', true);
         }
         if (data.type === 'select' && typeof payload.componentId === 'string')
             select(payload.componentId, true);
@@ -279,6 +283,7 @@
             }
         }
     });
+    document.getElementById('studio-refresh').addEventListener('click', () => navigate(false));
     for (const control of [page, scenario, theme])
         control.addEventListener('change', () => { view = 'board'; navigate(); });
     for (const control of [width, zoom])

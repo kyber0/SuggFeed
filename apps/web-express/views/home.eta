@@ -1,30 +1,34 @@
-<% layout('layout') %>
+<% layout('layout'); const welcome=it.schoolCustomization?.welcome; const identity=it.schoolCustomization; %>
 
 <main class="sf-main">
   <!-- Hero Section -->
-  <% if(it.schoolCustomization && (it.schoolCustomization.displayName || it.schoolCustomization.logo || it.schoolCustomization.cover || Object.entries(it.schoolCustomization.welcome).some(([key,value])=>key==='links'?value.length:!!value))) { %><%~ include('partials/school-welcome',it) %><% } else { %>
   <section class="sf-hero" id="top">
     <div class="sf-hero-orb sf-hero-orb-1" aria-hidden="true"></div>
     <div class="sf-hero-orb sf-hero-orb-2" aria-hidden="true"></div>
     <div class="sf-hero-orb sf-hero-orb-3" aria-hidden="true"></div>
+    <% if(identity?.cover) { %><img class="school-welcome-cover" src="<%= it.schoolBase %>/branding/<%= identity.cover %>" alt="" width="1600" height="600"/><% } %>
     <div class="sf-hero-container">
+      <% if(identity?.displayName || identity?.logo) { %><div class="school-welcome-identity"><% if(identity.logo) { %><img src="<%= it.schoolBase %>/branding/<%= identity.logo %>" alt="" width="48" height="48"/><% } %><strong><%= identity.displayName || it.schoolName %></strong></div><% } %>
       <div class="sf-hero-badge">
         <span class="sf-hero-badge-text">A clearer way to improve campus life</span>
       </div>
 
       <h1 class="sf-hero-title" data-sf-split-text="words">
-        Make campus better, <span class="sf-hero-title-accent">one idea at a time.</span>
+        <% if(welcome?.headline) { %><span class="sf-hero-title-accent"><%= welcome.headline %></span><% } else { %>Make campus better, <span class="sf-hero-title-accent">one idea at a time.</span><% } %>
       </h1>
       
       <p class="sf-hero-subtitle">
-        Share a suggestion, choose whether to attach your account, and use a private tracking code to check for updates.
+        <%= welcome?.intro || 'Share a suggestion, choose whether to attach your account, and use a private tracking code to check for updates.' %>
       </p>
 
+      <% if(welcome?.message) { %><p class="school-welcome-message"><%= welcome.message %></p><% } %>
       <div class="sf-hero-actions">
         <a data-sf-magnetic class="sf-hero-action-primary" href="#action-hub">Share feedback</a>
         <a class="sf-hero-action-secondary" href="#feed">Browse community ideas</a>
       </div>
 
+      <% if(welcome?.help) { %><p class="school-welcome-help"><%= welcome.help %></p><% } %>
+      <% if(welcome?.links.length) { %><nav class="school-welcome-links" aria-label="Official school links"><% for(const link of welcome.links) { %><a href="<%= link.url %>" target="_blank" rel="noopener noreferrer"><%= link.label %> ↗</a><% } %></nav><% } %>
       <div class="sf-hero-points" aria-label="How SuggFeed works">
         <span>Choose a topic</span>
         <span>Submit anonymously or with your account</span>
@@ -33,7 +37,6 @@
     </div>
   </section>
 
-  <% } %>
   <!-- Interactive Action Hub / Workspace -->
   <section class="sf-workspace-section" id="action-hub" aria-label="Share feedback or track a submission">
     <div class="sf-workspace-wrapper">
