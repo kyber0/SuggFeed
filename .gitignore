@@ -9,6 +9,8 @@ coverage/
 # Sentry Config File
 .env.sentry-build-plugin
 .env
+*.env
+__pycache__/
 
 .turbo/
 *.tsbuildinfo

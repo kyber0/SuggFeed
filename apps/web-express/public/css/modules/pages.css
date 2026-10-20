@@ -12,13 +12,13 @@
 .sf-hero {
   position: relative;
   padding: 60px 24px 34px;
-  background: var(--bg);
+  background: var(--grad-hero);
   text-align: center;
   overflow: hidden;
 }
 
 [data-theme="dark"] .sf-hero {
-  background: var(--bg);
+  background: var(--grad-hero);
 }
 
 /* Ambient Floating Orbs - hidden for minimalist design */
@@ -189,11 +189,17 @@
 }
 
 .sf-hero-title-accent {
-  color: var(--navy);
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 [data-theme="dark"] .sf-hero-title-accent {
-  color: var(--navy);
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .sf-hero-subtitle {

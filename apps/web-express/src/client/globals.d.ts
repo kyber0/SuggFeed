@@ -25,6 +25,10 @@ interface Window {
   sfToast?: (message: string, type?: string, title?: string) => void;
 }
 declare function sfToast(message: string, type?: string, title?: string): void;
+declare function sfSchoolPath(input: string): string;
+declare function sfSchoolKey(key: string): string;
+declare function sfClearSchoolState(): void;
+declare function sfConfirm(message: string, options?: AppConfirmationOptions): Promise<boolean>;
 declare function sfEscapeAttribute(value: string): string;
 declare function openAuthModal(tab?: string): void;
 declare function closeAuthModal(): void;

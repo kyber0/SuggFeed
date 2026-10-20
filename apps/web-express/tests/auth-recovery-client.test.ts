@@ -6,7 +6,7 @@ import vm from 'node:vm';
 function harness(search='?code=fixture',hash='',redirectType:string|null='recovery') {
  let ready:()=>Promise<void>;
  const nodes=new Map<string,any>();
- const node=(id:string):any=>{if(!nodes.has(id)){const events=new Map<string,Function>();nodes.set(id,{hidden:true,disabled:false,value:'',textContent:'',href:'',focus(){},checkValidity(){return true;},addEventListener:(key:string,fn:Function)=>events.set(key,fn),emit:async(key:string)=>events.get(key)?.({preventDefault(){}})});}return nodes.get(id);};
+ const node=(id:string):any=>{if(!nodes.has(id)){const events=new Map<string,Function>();nodes.set(id,{dataset:{},hidden:true,disabled:false,value:'',textContent:'',href:'',focus(){},checkValidity(){return true;},addEventListener:(key:string,fn:Function)=>events.set(key,fn),emit:async(key:string)=>events.get(key)?.({preventDefault(){}})});}return nodes.get(id);};
  const session={access_token:'fixture-access',refresh_token:'fixture-refresh',user:{id:'fixture-user'}};
  const stored=new Map<string,string>(),navigation:string[]=[],synced:any[]=[],updates:any[]=[],exchanges:any[]=[],history:string[]=[];
  let exchangeError=false,updateError=false,syncError=false,otpError=false,userId=session.user.id;

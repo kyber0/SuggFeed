@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-test('design tokens enforce neutral card borders and flat shadow tokens', () => {
+test('design tokens enforce neutral card borders and semantic tokens', () => {
   const css = fs.readFileSync(path.join(__dirname, '../public/css/modules/tokens.css'), 'utf8');
-  assert.doesNotMatch(css, /linear-gradient/);
   assert.match(css, /--line:/);
   assert.match(css, /--surface-card:/);
+  // Gradient tokens must be intentionally named
+  assert.match(css, /--grad-primary:/);
+  assert.match(css, /--grad-hero:/);
 });
 
 test('hero and header contain no radial or linear gradients', () => {
@@ -46,7 +48,7 @@ test('idea and post cards have no spinning conic borders, spotlights, or colored
   );
 });
 
-test('buttons and submit elements use flat solid backgrounds without gradients', () => {
+test('buttons use gradient tokens not raw conic or decorative multi-stop gradients', () => {
   const submitCss = fs.readFileSync(
     path.join(__dirname, '../public/css/modules/submit.css'),
     'utf8',
@@ -55,8 +57,12 @@ test('buttons and submit elements use flat solid backgrounds without gradients',
     path.join(__dirname, '../public/css/modules/components.css'),
     'utf8',
   );
+  // submit.css must not use raw linear-gradient
   assert.doesNotMatch(submitCss, /linear-gradient/);
-  assert.doesNotMatch(compCss, /\.btn-primary[^{]*\{[^}]*linear-gradient/);
+  // btn-primary must not use conic or decorative gradients
+  assert.doesNotMatch(compCss, /\.btn-primary[^{]*\{[^}]*conic-gradient/);
+  // Intentional gradient token must be referenced
+  assert.match(compCss, /var\(--grad-primary\)/);
 });
 
 test('compiled bundles contain no conic gradients or shiny card sweeps', () => {

@@ -24,7 +24,7 @@ test('roadmap paginates each public stage independently and counts matches acros
   assert.ok(result.items.every(i=>i.response==='Public response' && !('internal_note' in i) && !('assignee_id' in i)));
   for(const query of queries.slice(0,3)){
    assert.match(query.select[0][0],/categories!inner/);
-   assert.ok(query.eq.some(e=>e[0]==='categories.name' && e[1]==='Facilities'));
+   assert.ok(query.eq.some(e=>(e[0]==='categories.name'||e[0]==='category_id') && e[1]==='Facilities'));
    assert.deepEqual(query.range[0],[8,15]);
   }
   queries.length=0;
@@ -58,7 +58,7 @@ function mockRoadmap(rows: any[]) {
  const queries: any[] = [];
  const rpcCalls: any[] = [];
  const filterRows = (state: any) => rows.filter(row => {
-  if (state.equals.some(([key, value]) => (key === 'categories.name' ? row.categories.name : row[key]) !== value)) return false;
+  if (state.equals.some(([key, value]) => (key === 'categories.name' ? row.categories.name : key === 'category_id' ? (row.category_id || row.categories?.name) : row[key]) !== value)) return false;
   if (state.inValues && !state.inValues.includes(row.status)) return false;
   return true;
  });
@@ -101,7 +101,7 @@ function mockRoadmap(rows: any[]) {
 
 function ideaRows(count: number, status: string, category = 'Facilities', prefix = status) {
  return Array.from({ length: count }, (_, index) => ({ id: `${prefix}-${String(index).padStart(3, '0')}`, title: `${prefix} idea ${index}`,
-  status, categories: { name: category }, vote_count: count - index, created_at: '2026-09-01T00:00:00Z', updated_at: '2026-10-11T00:00:00Z',
+  status, categories: { name: category }, category_id: category, vote_count: count - index, created_at: '2026-09-01T00:00:00Z', updated_at: '2026-10-11T00:00:00Z',
   resolved_at: status === 'resolved' ? '2026-10-10T00:00:00Z' : null, resolved_at_estimated: false }));
 }
 

@@ -9,6 +9,7 @@ function runtime(fail=false) {
  class Element {
   value='';checked=true;hidden=false;disabled=false;textContent='';style:any={};parentElement=null;
   classList={add(){},remove(){},toggle(){}};
+  dataset:any={};
   constructor(public id:string){}
   focus(){} setAttribute(){} addEventListener(){} getAttribute(key:string){return this.id==='submit-idea-form'&&key==='data-sf-submit'?'action-115':null;}
   dispatchEvent(event:Event){Object.defineProperty(event,'target',{value:this});if(event.bubbles)for(const listener of listeners.get(event.type)||[])listener(event);return !event.defaultPrevented;}

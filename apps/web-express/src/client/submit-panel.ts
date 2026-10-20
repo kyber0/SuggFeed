@@ -1,13 +1,14 @@
+/// <reference path="./globals.d.ts" />
 // Browser source extracted from views/partials/submit-panel.eta.
 (function () {
-let sipCurrentStep = 1;
+  let sipCurrentStep = 1;
   let sipMaxVisitedStep = 1;
   let sipTrackingCode = '';
-  let sipReturnFocusTo = null;
+  let sipReturnFocusTo: HTMLElement | null = null;
   let sipOpened = false;
   let sipSending = false;
 
-  function openSubmitPanel(defaultCat) {
+  function openSubmitPanel(defaultCat?: string) {
     sipReturnFocusTo = (document.activeElement as HTMLElement);
     sipCurrentStep = 1;
     sipMaxVisitedStep = 1;
@@ -95,7 +96,7 @@ let sipCurrentStep = 1;
     }
   });
 
-  function onCategorySelected(cat) {
+  function onCategorySelected(cat: string) {
     document.querySelectorAll<HTMLElement>('.sip-cat-card').forEach(card => card.classList.remove('sip-cat-card--selected'));
     const activeCard = (document.getElementById(`cat-card-${cat.replace(/\s+/g, '-')}`) as HTMLElement);
     if (activeCard) activeCard.classList.add('sip-cat-card--selected');
@@ -169,7 +170,7 @@ let sipCurrentStep = 1;
     }
   }
 
-  function goToStep(step) {
+  function goToStep(step: number) {
     if (step < 1 || step > 3) return;
     // Allow jumping backwards or to step if already visited
     if (step <= sipMaxVisitedStep) {
@@ -266,7 +267,7 @@ let sipCurrentStep = 1;
     if (sipCurrentStep === 1) {
       const checked = document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked');
       if (!checked) {
-        if (window.sfToast) sfToast('Please select a category to continue.', 'warning');
+        if (window.sfToast) window.sfToast('Please select a category to continue.', 'warning');
         return;
       }
       sipCurrentStep = 2;
@@ -284,7 +285,7 @@ let sipCurrentStep = 1;
         titleInput.classList.add('sip-input-error');
         titleInput.focus();
         setTimeout(() => titleInput.classList.remove('sip-input-error'), 1200);
-        if (window.sfToast) sfToast('Title must be at least 10 characters.', 'warning');
+        if (window.sfToast) window.sfToast('Title must be at least 10 characters.', 'warning');
         return;
       }
       if (desc.length < 20) {
@@ -292,16 +293,17 @@ let sipCurrentStep = 1;
         descInput.classList.add('sip-input-error');
         descInput.focus();
         setTimeout(() => descInput.classList.remove('sip-input-error'), 1200);
-        if (window.sfToast) sfToast('Description must be at least 20 characters.', 'warning');
+        if (window.sfToast) window.sfToast('Description must be at least 20 characters.', 'warning');
         return;
       }
 
-      try{(window as any).sfSchoolForm?.validate();}catch(error){(window as any).sfSubmissionRecovery?.tell(error.message);return;}
+      try{(window as any).sfSchoolForm?.validate();}catch(error: any){(window as any).sfSubmissionRecovery?.tell(error?.message || String(error));return;}
       // Populate review step
-      const cat = document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked').value;
+      const checkedCat = document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked');
+      const cat = checkedCat?.value || '';
       const isAnon = (document.getElementById('sip-anon') as HTMLInputElement).checked;
 
-      (document.getElementById('rev-category') as HTMLElement).textContent = document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked')?.dataset.categoryName || cat;
+      (document.getElementById('rev-category') as HTMLElement).textContent = checkedCat?.dataset?.categoryName || cat;
       (document.getElementById('rev-title') as HTMLElement).textContent = title;
       (document.getElementById('rev-desc') as HTMLElement).textContent = desc;
       (document.getElementById('rev-anon-badge') as HTMLElement).textContent = isAnon ? 'Anonymous Submission' : 'Public Profile';
@@ -319,7 +321,7 @@ let sipCurrentStep = 1;
           consentWrapper.classList.add('sip-consent-card--error');
           setTimeout(() => consentWrapper.classList.remove('sip-consent-card--error'), 1200);
         }
-        if (window.sfToast) sfToast('Please accept the community guidelines notice.', 'warning');
+        if (window.sfToast) window.sfToast('Please accept the community guidelines notice.', 'warning');
         return;
       }
       (document.getElementById('submit-idea-form') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
@@ -350,7 +352,7 @@ let sipCurrentStep = 1;
     if(next>=0){e.preventDefault();goToStep(Number(steps[next].id.replace('step-btn-','')));steps[next].focus();}
   });
 
-  async function handleIdeaSubmit(e) {
+  async function handleIdeaSubmit(e: Event) {
     e.preventDefault();
     if (sipSending) return;
     if(!document.querySelector('input[name="sip-category"]:checked') || !(document.getElementById('sip-consent') as HTMLInputElement).checked){(window as any).sfSubmissionRecovery.tell('Complete the idea and accept the community notice before submitting.');return;}
@@ -366,7 +368,7 @@ let sipCurrentStep = 1;
     if (iconSubmit) iconSubmit.style.display = 'none';
     if (iconSpinner) iconSpinner.style.display = 'inline-block';
 
-    const category = document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked').value;
+    const category = document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked')?.value || '';
     const title = (document.getElementById('sip-title') as HTMLInputElement).value.trim();
     const description = (document.getElementById('sip-description') as HTMLTextAreaElement).value.trim();
     const isAnonymous = (document.getElementById('sip-anon') as HTMLInputElement).checked;
@@ -381,9 +383,9 @@ let sipCurrentStep = 1;
       sfShowSubmissionSuccess(data);
 
 
-    } catch (err) {
+    } catch (err: any) {
       (window as any).sfSubmissionRecovery.failed(err);
-      if (window.sfToast) sfToast(err.message || 'Submission failed', 'error');
+      if (window.sfToast) window.sfToast(err?.message || 'Submission failed', 'error');
     } finally {
       sipSending = false;
       nextBtn.disabled = false;
@@ -394,8 +396,8 @@ let sipCurrentStep = 1;
     }
   }
 
-  function sfShowSubmissionSuccess(data) {
-      const details=document.getElementById('sip-private-details') as HTMLAnchorElement|null;if(details){details.hidden=!data.id;details.href=sfSchoolPath('/submission-details/'+encodeURIComponent(data.id||''));}
+  function sfShowSubmissionSuccess(data: any) {
+      const details=document.getElementById('sip-private-details') as HTMLAnchorElement|null;if(details){details.hidden=!data.id;details.href=typeof sfSchoolPath === 'function' ? sfSchoolPath('/submission-details/'+encodeURIComponent(data.id||'')) : '/submission-details/'+encodeURIComponent(data.id||'');}
       sipTrackingCode = data.tracking_code || "";
       (document.getElementById('sip-success-code') as HTMLElement).textContent = sipTrackingCode;
 
@@ -454,19 +456,22 @@ let sipCurrentStep = 1;
     if (!el) return;
     const range = document.createRange();
     range.selectNode(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
+    const sel = window.getSelection();
+    if (sel) {
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
     try {
       document.execCommand('copy');
     } catch (e) {}
-    window.getSelection().removeAllRanges();
+    if (sel) sel.removeAllRanges();
   }
   document.getElementById('sip-save-code')?.addEventListener('click',()=>{
     if(!sipTrackingCode)return;
     try{const data=JSON.parse(localStorage.getItem(sfSchoolKey('sf_my_tracking_codes')) || '[]');const codes=Array.isArray(data)?data.filter(x=>typeof x==='string' && /^CV-[A-F0-9]{32}$/.test(x)):[];localStorage.setItem(sfSchoolKey('sf_my_tracking_codes'),JSON.stringify([...new Set([...codes,sipTrackingCode])].slice(-20)));(document.getElementById('sip-code-status') as HTMLElement).textContent='Code saved on this device. Others using this browser can access it.';}catch{(document.getElementById('sip-code-status') as HTMLElement).textContent='Code could not be saved. Copy it to a safe place instead.';}
   });
   document.getElementById('sip-clear-codes')?.addEventListener('click',async()=>{
-    if(!await window.sfConfirm('Remove all tracking codes saved on this device? Copy any you still need first.', {title:'Clear saved tracking codes?', confirmLabel:'Clear codes', danger:true}))return;
+    if(!window.sfConfirm || !await window.sfConfirm('Remove all tracking codes saved on this device? Copy any you still need first.', {title:'Clear saved tracking codes?', confirmLabel:'Clear codes', danger:true}))return;
     try{localStorage.removeItem(sfSchoolKey('sf_my_tracking_codes'));(document.getElementById('sip-code-status') as HTMLElement).textContent='Saved codes cleared.';}catch{(document.getElementById('sip-code-status') as HTMLElement).textContent='Saved codes could not be cleared.';}
   });
 Object.assign(window, { sfRestoreSubmissionStep, sfShowSubmissionSuccess, openSubmitPanel, closeSubmitPanel, onCategorySelected, handleTitleInput, handleDescInput, handleAnonToggle, handleConsentChange, goToStep, updateSipUI, sipNextStep, sipPrevStep, handleIdeaSubmit, copyTrackingCode, fallbackCopy });
