@@ -9,3 +9,20 @@ test('design tokens enforce neutral card borders and flat shadow tokens', () => 
   assert.match(css, /--line:/);
   assert.match(css, /--surface-card:/);
 });
+
+test('hero and header contain no radial or linear gradients', () => {
+  const pagesCss = fs.readFileSync(
+    path.join(__dirname, '../public/css/modules/pages.css'),
+    'utf8',
+  );
+  const compCss = fs.readFileSync(
+    path.join(__dirname, '../public/css/modules/components.css'),
+    'utf8',
+  );
+  assert.doesNotMatch(pagesCss, /\.sf-hero\s*\{[^}]*radial-gradient/);
+  assert.doesNotMatch(compCss, /\.avatar-circle\s*\{[^}]*linear-gradient/);
+  assert.doesNotMatch(
+    compCss,
+    /\.dropdown-user-header\s*\{[^}]*linear-gradient/,
+  );
+});
