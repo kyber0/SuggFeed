@@ -26,3 +26,22 @@ test('hero and header contain no radial or linear gradients', () => {
     /\.dropdown-user-header\s*\{[^}]*linear-gradient/,
   );
 });
+
+test('idea and post cards have no spinning conic borders, spotlights, or colored outlines', () => {
+  const pagesCss = fs.readFileSync(
+    path.join(__dirname, '../public/css/modules/pages.css'),
+    'utf8',
+  );
+  const feedCss = fs.readFileSync(
+    path.join(__dirname, '../public/css/modules/feed.css'),
+    'utf8',
+  );
+  assert.doesNotMatch(pagesCss, /conic-gradient/);
+  assert.doesNotMatch(pagesCss, /sfBorderSpin/);
+  assert.doesNotMatch(pagesCss, /sfCardShineSweep/);
+  assert.doesNotMatch(pagesCss, /\.sf-card-tilt-wrap\s*\{[^}]*perspective/);
+  assert.doesNotMatch(
+    feedCss,
+    /\.post-card:hover\s*\{[^}]*border-color:\s*#b8cbdc/,
+  );
+});

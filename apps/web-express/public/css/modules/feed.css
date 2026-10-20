@@ -324,8 +324,8 @@ input.feed-search {
   animation: feed-card-enter 240ms ease both;
 }
 .post-card:hover {
-  border-color: #b8cbdc; transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(16,42,67,.07), 0 2px 5px rgba(16,42,67,.03);
+  border-color: var(--line-2); transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 .post-card:focus-within { border-color: var(--feed-focus); }
 .post-header { display: flex; align-items: center; gap: 11px; }
