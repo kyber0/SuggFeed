@@ -57,6 +57,8 @@
   --bg-canvas: #f8fafc;
   --surface-card: #ffffff;
   --surface-hover: #f1f5f9;
+  --card-border: var(--line);
+  --card-border-hover: var(--line-2);
   --text-primary: #0f172a;
   --text-secondary: #64748b;
   --text-link: var(--navy);
