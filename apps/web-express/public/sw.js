@@ -7,7 +7,7 @@
 //   - Navigation (HTML): Network-first, fallback to offline shell
 (() => {
     const worker = self;
-    const CACHE_VERSION = "cv-v14-product-ux-assets";
+    const CACHE_VERSION = "cv-v15-shared-motion";
     const STATIC_CACHE = `${CACHE_VERSION}-static`;
     const MAX_STATIC_ENTRIES = 200;
     const STATIC_ASSETS = [

@@ -1,5 +1,6 @@
+<% const motionTransitionPage = !/^\/(auth|digest|account\/security|staff-login)(\/|$)/.test(it.currentPath || '') && !/customization/.test(it.currentPath || ''); %>
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="light"<% if(motionTransitionPage) { %> data-sf-transitions<% } %>>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -24,9 +25,10 @@
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261018-action-audit" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261014-open-workspace" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261018-account-ui" />
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261020-motion" />
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261018-enrollment" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261018-customization"/><% } %>
+  <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
   <script defer src="/js/events.js?v=20261018-customization"></script>
 
   <script src="/js/preferences.js?v=20261016-school-isolation"></script>
@@ -80,8 +82,9 @@
 
 <script defer src="/js/public-history.js?v=20261018-empty-states"></script>
 
-<script defer src="/js/scroll-reveal.js?v=20261016-school-isolation"></script>
+
 <% } %>
 <script defer src="/js/responsive.js?v=20261016-school-isolation"></script>
+<script defer src="/js/animations.js?v=20261020-motion"></script>
 </body>
 </html>

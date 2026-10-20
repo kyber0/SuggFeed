@@ -1,0 +1,11 @@
+/* Both documents opt in; no routing interception or artificial navigation delay. */
+@view-transition {navigation:auto;}
+html[data-sf-transitions] #page-content {view-transition-name:sf-page;}
+html[data-sf-transitions] .site-header {view-transition-name:sf-header;}
+html[data-sf-transitions] .site-header:not(.header-hide):not(.header-reveal) {animation:none;}
+::view-transition-group(*) {animation:none;}
+::view-transition-old(root),::view-transition-new(root),::view-transition-new(sf-header) {animation:none;mix-blend-mode:normal;}
+::view-transition-old(sf-header),::view-transition-old(sf-page) {display:none;}
+::view-transition-new(sf-page) {animation:sf-page-in var(--sf-motion-page,240ms) var(--sf-motion-ease,cubic-bezier(.22,1,.36,1));}
+@keyframes sf-page-in {from {opacity:.85;transform:translateY(6px);}to {opacity:1;transform:translateY(0);}}
+@media(prefers-reduced-motion:reduce) {@view-transition {navigation:none;}::view-transition-group(*) {animation:none;}}

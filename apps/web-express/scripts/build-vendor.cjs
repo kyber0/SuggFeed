@@ -9,3 +9,8 @@ fs.writeFileSync(path.join(target,'supabase.js'),sdk);
 fs.copyFileSync(path.join(packageRoot,'LICENSE'),path.join(target,'supabase.LICENSE'));
 const metadata={version:JSON.parse(fs.readFileSync(path.join(packageRoot,'package.json'),'utf8')).version,sha256:crypto.createHash('sha256').update(sdk).digest('hex')};
 fs.writeFileSync(path.join(target,'supabase-version.json'),JSON.stringify(metadata,null,2)+'\n');
+const lenisRoot=path.dirname(require.resolve('lenis'));
+const lenis=Buffer.from(fs.readFileSync(path.join(lenisRoot,'lenis.min.js'),'utf8').replace(/\/\/# sourceMappingURL=.*$/m,''));
+fs.writeFileSync(path.join(target,'lenis.js'),lenis);
+fs.copyFileSync(path.join(lenisRoot,'../LICENSE'),path.join(target,'lenis.LICENSE'));
+fs.writeFileSync(path.join(target,'lenis-version.json'),JSON.stringify({version:JSON.parse(fs.readFileSync(path.join(lenisRoot,'../package.json'),'utf8')).version,sha256:crypto.createHash('sha256').update(lenis).digest('hex')},null,2)+'\n');

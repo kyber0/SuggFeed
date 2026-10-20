@@ -52,8 +52,6 @@ declare function sfCreatePostCardHtml(...args: any[]): any;
 declare function sfLoadMoreFeed(...args: any[]): any;
 declare function syncPromptMotion(...args: any[]): any;
 declare function typePrompt(...args: any[]): any;
-declare function sfHandleCardMove(...args: any[]): any;
-declare function sfHandleCardLeave(...args: any[]): any;
 declare function spawnVoteParticles(...args: any[]): any;
 declare function updateGlider(...args: any[]): any;
 declare function loadRecentTrackingCodes(...args: any[]): any;

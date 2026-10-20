@@ -154,7 +154,9 @@
         text('#rev-category', configuration.categories.find((c) => c.id === category?.value)?.name || configuration.categories.find((c) => c.active)?.name || 'Campus');
     } const next = document.getElementById('sip-next-text'); if (next)
         next.textContent = step === 3 ? 'Preview only · no submission' : 'Continue'; const prev = document.getElementById('sip-prev-btn'); prev?.classList.toggle('sip-btn-back--hidden', step === 1); }
-    function initialize() { document.documentElement.dataset.studioMode = mode; document.body.classList.toggle('studio-frame-edit', mode === 'edit'); annotate(); makeOverlay(); const queue = document.getElementById('sip-queue-btn'); if (queue) {
+    function syncMotion() { document.documentElement.dataset.studioMode = mode; window.sfMotion?.destroy(); if (mode === 'preview')
+        window.sfMotion?.mount(document); }
+    function initialize() { syncMotion(); document.body.classList.toggle('studio-frame-edit', mode === 'edit'); annotate(); makeOverlay(); const queue = document.getElementById('sip-queue-btn'); if (queue) {
         queue.disabled = true;
         queue.title = 'Preview only: ideas are not stored on this device.';
     } if (initial.page === 'submit')
@@ -189,9 +191,11 @@
         if (data.type === 'set-mode' && ['edit', 'preview'].includes(payload.mode)) {
             mode = payload.mode;
             document.body.classList.toggle('studio-frame-edit', mode === 'edit');
+            syncMotion();
             schedule();
         }
         if (data.type === 'replace-fragment' && typeof payload.html === 'string' && payload.html.length < 550000) {
+            window.sfMotion?.destroy();
             const y = scrollY, wasOpen = document.getElementById('submit-panel')?.hasAttribute('hidden') === false;
             const parsed = new DOMParser().parseFromString(payload.html, 'text/html');
             parsed.querySelectorAll('script').forEach(el => el.remove());

@@ -46,21 +46,6 @@ let activeCategory = 'All';
     promptTimer = setTimeout(typePrompt, delay);
   }
 
-  function sfHandleCardMove(event, card) {
-    if (reducedMotion.matches || !finePointer.matches) return;
-    const rect = card.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    card.style.setProperty('--card-mouse-x', `${x}px`);
-    card.style.setProperty('--card-mouse-y', `${y}px`);
-    card.style.setProperty('--card-rotate-x', `${(0.5 - y / rect.height) * 3}deg`);
-    card.style.setProperty('--card-rotate-y', `${(x / rect.width - 0.5) * 3}deg`);
-  }
-
-  function sfHandleCardLeave(card) {
-    ['--card-mouse-x', '--card-mouse-y', '--card-rotate-x', '--card-rotate-y'].forEach(name => card.style.removeProperty(name));
-  }
-
   function spawnVoteParticles(button) {
     if (reducedMotion.matches) return;
     const pop = document.createElement('span');
@@ -102,7 +87,6 @@ let activeCategory = 'All';
     syncPromptMotion();
     reducedMotion.addEventListener('change', () => {
       syncPromptMotion();
-      document.querySelectorAll<HTMLElement>('.sf-idea-card').forEach(sfHandleCardLeave);
     });
     document.addEventListener('visibilitychange', syncPromptMotion);
     const prompt = document.querySelector<HTMLElement>('.sf-prompt-trigger');
@@ -114,10 +98,6 @@ let activeCategory = 'All';
       const rect = hero.getBoundingClientRect();
       hero.style.setProperty('--hero-mouse-x', `${event.clientX - rect.left}px`);
       hero.style.setProperty('--hero-mouse-y', `${event.clientY - rect.top}px`);
-    });
-    document.querySelectorAll<HTMLElement>('.sf-idea-card').forEach(card => {
-      card.addEventListener('pointermove', event => sfHandleCardMove(event, card));
-      card.addEventListener('pointerleave', () => sfHandleCardLeave(card));
     });
 
     window.addEventListener('resize', () => {
@@ -436,5 +416,5 @@ let activeCategory = 'All';
       if (window.sfToast) sfToast('Could not record vote.', 'error');
     }
   }
-Object.assign(window, { syncPromptMotion, typePrompt, sfHandleCardMove, sfHandleCardLeave, spawnVoteParticles, updateGlider, loadRecentTrackingCodes, sfToggleSortMenu, sfSetSortOption, sfSortGrid, sfSwitchTab, sfTrackInputChanged, sfClearTrack, sfTrackSubmission, sfSetCategory, sfClearSearch, sfFilterFeed, sfResetFilters, sfVote });
+Object.assign(window, { syncPromptMotion, typePrompt, spawnVoteParticles, updateGlider, loadRecentTrackingCodes, sfToggleSortMenu, sfSetSortOption, sfSortGrid, sfSwitchTab, sfTrackInputChanged, sfClearTrack, sfTrackSubmission, sfSetCategory, sfClearSearch, sfFilterFeed, sfResetFilters, sfVote });
 })();

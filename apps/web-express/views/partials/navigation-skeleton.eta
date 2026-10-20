@@ -36,7 +36,7 @@
   login: '<div class="nsk-login">'+panel(bar('nsk-hero-title')+lines()+bar('nsk-outcome'))+form()+'</div>',
  };
 %>
-<section id="navigation-skeleton" class="navigation-skeleton" hidden aria-labelledby="navigation-title" aria-busy="true">
+<section id="navigation-skeleton" class="navigation-skeleton" data-sf-native-scroll hidden aria-labelledby="navigation-title" aria-busy="true">
  <div class="navigation-skeleton-inner">
   <div class="navigation-skeleton-heading"><div><p class="workspace-kicker">SUGGFEED</p><h1 id="navigation-title">Loading page</h1><p id="navigation-status" role="status" aria-live="polite">Loading…</p></div><button class="workspace-button" type="button" id="navigation-cancel">Cancel loading</button></div>
   <div id="navigation-skeleton-body" aria-hidden="true"></div>
@@ -45,6 +45,6 @@
 <% for (const [key, markup] of Object.entries(layouts)) { %>
 <template id="navigation-template-<%= key %>"><%~ markup %></template>
 <% } %>
-<script defer src="/js/navigation.js?v=20261017-system-navigation"></script>
+<script defer src="/js/navigation.js?v=20261020-motion"></script>
 
 <script defer src="/js/navigation-cache.js?v=20261016-school-isolation"></script>

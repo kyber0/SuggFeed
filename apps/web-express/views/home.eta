@@ -12,7 +12,7 @@
         <span class="sf-hero-badge-text">A clearer way to improve campus life</span>
       </div>
 
-      <h1 class="sf-hero-title">
+      <h1 class="sf-hero-title" data-sf-split-text="words">
         Make campus better, <span class="sf-hero-title-accent">one idea at a time.</span>
       </h1>
       
@@ -21,7 +21,7 @@
       </p>
 
       <div class="sf-hero-actions">
-        <a class="sf-hero-action-primary" href="#action-hub">Share feedback</a>
+        <a data-sf-magnetic class="sf-hero-action-primary" href="#action-hub">Share feedback</a>
         <a class="sf-hero-action-secondary" href="#feed">Browse community ideas</a>
       </div>
 
@@ -403,4 +403,4 @@
   </footer>
 </main>
 
-<script defer src="/js/home.js?v=20261016-school-isolation"></script>
+<script defer src="/js/home.js?v=20261020-motion"></script>

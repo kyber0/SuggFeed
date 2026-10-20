@@ -1,0 +1,27 @@
+/* Enhancements never hide uninitialized content. Values come from the controller. */
+html.lenis,html.lenis body {height:auto;}
+html.lenis.lenis-smooth {scroll-behavior:auto!important;}
+.lenis-smooth [data-lenis-prevent] {overscroll-behavior:contain;}
+[data-sf-motion-item] {animation:none!important;}
+/* Inline word spans retain native CJK, hyphen and long-word wrapping. */
+[data-sf-word] {display:inline;}
+[data-sf-split-text] {animation:none!important;}
+[data-sf-cursor] {position:fixed;z-index:10000;left:0;top:0;width:12px;height:12px;pointer-events:none!important;opacity:0;color:var(--brand,#12324a);}
+[data-sf-cursor]::before {content:"";display:block;width:100%;height:100%;border:1px solid currentColor;border-radius:50%;opacity:.45;transform:translate(-50%,-50%);transition:transform var(--sf-motion-interaction,200ms) var(--sf-motion-ease,ease),opacity var(--sf-motion-interaction,200ms) ease;}
+[data-sf-cursor][data-state="action"]::before {transform:translate(-50%,-50%) scale(2);opacity:.65;}
+[data-sf-cursor][data-state="drag"]::before {transform:translate(-50%,-50%) scale(2.5);}
+@media (prefers-reduced-motion:reduce),(pointer:coarse),(hover:none) {[data-sf-cursor] {display:none;}}
+[data-sf-magnetic-inner] {display:inline-flex;align-items:inherit;justify-content:inherit;gap:inherit;min-width:0;transition:transform var(--sf-motion-interaction,200ms) var(--sf-motion-ease,ease);}
+[data-sf-marquee-ready] {min-width:0;}
+[data-sf-marquee-viewport] {overflow:hidden;}
+[data-sf-marquee-track] {display:flex;width:max-content;}
+[data-sf-marquee-original],[data-sf-marquee-clone] {display:flex;flex:none;align-items:center;gap:var(--sf-marquee-gap,24px);padding-inline-end:var(--sf-marquee-gap,24px);}
+[data-sf-marquee-clone] {pointer-events:none;}
+/* Keep the outgoing document's height/position while destination skeletons appear. */
+.navigation-skeleton {position:fixed;inset-inline:0;bottom:0;z-index:90;overflow:auto;min-height:0;}
+html.is-navigating #page-content {visibility:hidden;pointer-events:none;}
+html[data-sf-motion-ready] :is(.platform-button,.school-settings-primary,.school-settings-secondary,.invites-submit,.sip-btn-action,.sip-btn-back,.sip-btn-done,.sf-empty-action) {transition:transform var(--sf-motion-interaction,200ms) var(--sf-motion-ease,ease),opacity var(--sf-motion-interaction,200ms) var(--sf-motion-ease,ease);}
+html[data-studio-mode="edit"] :is(.post-card,.sf-idea-card,.roadmap-idea,.prof-activity-card,.workspace-button,.sf-hero-action-primary,.sf-hero-action-secondary,.sip-btn-action,.sip-btn-back,.sip-btn-done):is(:hover,:active,:focus-within) {transform:none!important;}
+/* Magnetism and press feedback share the visual layer; the hit target never moves. */
+[data-sf-magnetic] {transform:none!important;}
+@media(prefers-reduced-motion:no-preference) {[data-sf-magnetic]:active>[data-sf-magnetic-inner] {transform:scale(.98)!important;}}

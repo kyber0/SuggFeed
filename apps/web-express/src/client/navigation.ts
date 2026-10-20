@@ -27,7 +27,8 @@
  const body=document.getElementById('navigation-skeleton-body');
  if(!shell || !content || !title || !status || !body)return;
  let timer:number;
- function reset(){clearTimeout(timer);shell.hidden=true;content.hidden=false;content.removeAttribute('aria-busy');document.documentElement.classList.remove('is-navigating');}
+ let wasInert=content.inert;
+ function reset(){clearTimeout(timer);shell.hidden=true;content.inert=wasInert;content.removeAttribute('aria-busy');document.documentElement.classList.remove('is-navigating');}
  function destinationScreen(destination:URL):[string,string] {
   const path=sfSchoolRoute(destination.pathname).replace(/\/+$/, '') || '/';
   if(path==='/')return ['home','SuggFeed'];
@@ -69,13 +70,15 @@
    && !/^\/(api|auth|staff\/workspace)(\/|$)/.test(sfSchoolRoute(destination.pathname));
  }
  function show(destination:URL){
+  const top=Math.max(0,document.querySelector('.site-header')?.getBoundingClientRect().bottom||0);
   const [layout,section]=destinationScreen(destination);
   const template=document.getElementById('navigation-template-'+layout);
   if(!(template instanceof HTMLTemplateElement))return;
   body.replaceChildren(template.content.cloneNode(true));
   const menu=document.getElementById('header-dropdown');if(menu)menu.hidden=true;document.getElementById('header-avatar-btn')?.setAttribute('aria-expanded','false');
   shell.dataset.section=section;shell.dataset.layout=layout;title.textContent=section;status.textContent='Loading '+section.toLowerCase()+'…';
-  shell.hidden=false;content.hidden=true;content.setAttribute('aria-busy','true');document.documentElement.classList.add('is-navigating');
+  if(shell.hidden)wasInert=content.inert;
+  shell.style.top=top+'px';shell.scrollTop=0;shell.hidden=false;content.inert=true;content.setAttribute('aria-busy','true');document.documentElement.classList.add('is-navigating');
   clearTimeout(timer);timer=window.setTimeout(()=>status.textContent='Still loading. You can cancel to stay on this page.',8000);
  }
  document.addEventListener('click',event=>{

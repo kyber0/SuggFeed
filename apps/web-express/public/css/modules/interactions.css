@@ -1,74 +1,41 @@
-/* Interaction feedback only: content stays visible and navigation never waits for motion. */
+/* Shared feedback; static hover colors, shadows and visible focus remain unchanged. */
 :root {
-  --motion-press:100ms;
-  --motion-feedback:160ms;
-  --motion-panel:180ms;
-  --motion-ease:cubic-bezier(.2,.7,.2,1);
+ --motion-press:var(--sf-motion-interaction,200ms);
+ --motion-feedback:var(--sf-motion-interaction,200ms);
+ --motion-panel:var(--sf-motion-page,240ms);
+ --motion-ease:var(--sf-motion-ease,cubic-bezier(.22,1,.36,1));
 }
-
-@media (prefers-reduced-motion:no-preference) {
-  :is(.workspace-button,.btn-primary,.btn-primary-sm,.btn-ghost,.primary,.am-btn-primary,.am-btn-ghost,.am-btn-google,.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-primary,.saved-search-action,.staff-sidebar-toggle) {
-    transition:scale var(--motion-press) var(--motion-ease),background-color var(--motion-feedback) ease,border-color var(--motion-feedback) ease,box-shadow var(--motion-feedback) ease,color var(--motion-feedback) ease,transform var(--motion-feedback) var(--motion-ease);
-  }
-  :is(.workspace-button,.btn-primary,.btn-primary-sm,.btn-ghost,.primary,.am-btn-primary,.am-btn-ghost,.am-btn-google,.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-primary,.saved-search-action,.staff-sidebar-toggle):active:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) {
-    scale:.98;
-  }
-  :is(.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-action) > svg {
-    transition:scale var(--motion-press) var(--motion-ease);
-  }
-  :is(.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-action):active:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) > svg { scale:.9; }
-
-  :is(.prof-shortcuts a,.prof-activity-card,.work-timeline-card,.roadmap-completion-card,.saved-search-item,.post-card,.roadmap-idea) {
-    transition:translate var(--motion-feedback) var(--motion-ease),border-color var(--motion-feedback) ease,box-shadow var(--motion-feedback) ease,background-color var(--motion-feedback) ease,transform var(--motion-feedback) var(--motion-ease);
-  }
-  .saved-search-link > svg { transition:translate var(--motion-feedback) var(--motion-ease); }
-  .mobile-tab > svg { transition:translate var(--motion-feedback) var(--motion-ease),scale var(--motion-press) var(--motion-ease); }
-  .mobile-tab:active { transform:none; }
-  .mobile-tab:active > svg { scale:.9; }
-
-  :is(.workspace-input,.prof-input,.am-input,.saved-search-input,.workspace-search):not([aria-invalid="true"]) {
-    transition:border-color var(--motion-feedback) ease,box-shadow var(--motion-feedback) ease,background-color var(--motion-feedback) ease;
-  }
-
-  :is(.prof-activity-pane,.staff-review-panel):not([hidden]) { animation:sf-content-enter var(--motion-feedback) var(--motion-ease); }
-  .workspace-dialog[open],.work-record-dialog[open] { animation:sf-drawer-enter var(--motion-panel) var(--motion-ease); }
-  .am-card[open],.app-confirm-dialog[open],.staff-save-view-dialog[open] { animation:sf-dialog-enter var(--motion-panel) var(--motion-ease); }
-
-  @media (hover:hover) and (pointer:fine) {
-    :is(.prof-shortcuts a,.prof-activity-card):hover { translate:0 -2px; border-color:var(--line-2); box-shadow:var(--shadow-md); }
-    :is(.work-timeline-card,.roadmap-completion-card,.saved-search-item,.post-card,.roadmap-idea):hover { border-color:var(--line-2); box-shadow:var(--shadow-sm); }
-    .saved-search-link:hover > svg { translate:2px 0; }
-    .mobile-tab:hover > svg { translate:0 -2px; }
-    .site-header nav > a:not(.btn-primary-sm) {
-      text-decoration:underline;
-      text-decoration-color:transparent;
-      text-decoration-thickness:2px;
-      text-underline-offset:6px;
-      transition:color var(--motion-feedback) ease,text-decoration-color var(--motion-feedback) ease;
-    }
-    .site-header nav > a:not(.btn-primary-sm):is(:hover,:focus-visible,.active) { text-decoration-color:currentColor; }
-  }
+:is(.workspace-button,.btn-primary,.btn-primary-sm,.btn-ghost,.primary,.am-btn-primary,.am-btn-ghost,.am-btn-google,.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-primary,.saved-search-action,.staff-sidebar-toggle,.sf-hero-action-primary,.sf-hero-action-secondary,.platform-button,.school-settings-primary,.school-settings-secondary,.invites-submit,.sip-btn-action,.sip-btn-back,.sip-btn-done,.sf-empty-action,[role="switch"]) {
+ transition:transform var(--motion-press) var(--motion-ease),opacity var(--motion-feedback) var(--motion-ease);
 }
-
-@keyframes sf-content-enter { from { opacity:.75; translate:0 3px; } to { opacity:1; translate:0 0; } }
-@keyframes sf-drawer-enter { from { opacity:.8; translate:12px 0; } to { opacity:1; translate:0 0; } }
-@keyframes sf-dialog-enter { from { opacity:.8; scale:.985; } to { opacity:1; scale:1; } }
-
-/* Animate the first visible group without hiding content or moving fixed/sticky shells. */
-@media (prefers-reduced-motion:no-preference) {
-  :is(.workspace-heading,.feed-heading-group,.roadmap-heading,.prof-hero-info,.sf-hero-title,.sf-hero-subtitle,.sf-hero-actions) {
-    animation:sf-render-in 240ms var(--motion-ease) backwards;
-  }
-  .sf-hero-subtitle { animation-delay:25ms; }
-  .sf-hero-actions { animation-delay:50ms; }
-
-  /* Replace older zero-opacity entrances; long lists do not all animate at once. */
-  .post-card,.roadmap-idea,.sf-idea-card.sf-card-enter { animation:none; }
-  :is(.feed-posts-list > .post-card,.sf-ideas-grid > .sf-idea-card,.prof-activity-grid > .prof-activity-card-wrap,.staff-lane-cards > .staff-flow-card,.roadmap-lane-cards > .roadmap-idea,.staff-rows > .staff-row,.analytics-grid > .analytics-card):nth-child(-n+4) {
-    animation:sf-render-in 240ms var(--motion-ease) var(--render-delay,0ms) backwards;
-  }
-  :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(2) { --render-delay:25ms; }
-  :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(3) { --render-delay:50ms; }
-  :is(.feed-posts-list,.sf-ideas-grid,.prof-activity-grid,.staff-lane-cards,.roadmap-lane-cards,.staff-rows,.analytics-grid) > :nth-child(4) { --render-delay:75ms; }
+:is(.workspace-button,.btn-primary,.btn-primary-sm,.btn-ghost,.primary,.am-btn-primary,.am-btn-ghost,.am-btn-google,.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-primary,.saved-search-action,.staff-sidebar-toggle,.sf-hero-action-primary,.sf-hero-action-secondary,.platform-button,.school-settings-primary,.school-settings-secondary,.invites-submit,.sip-btn-action,.sip-btn-back,.sip-btn-done,.sf-empty-action,[role="switch"]):active:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) {transform:scale(.98);}
+:is(.prof-shortcuts a,.prof-activity-card,.work-timeline-card,.roadmap-completion-card,.saved-search-item,.post-card,.roadmap-idea,.sf-idea-card) {
+ transition:transform var(--motion-feedback) var(--motion-ease),opacity var(--motion-feedback) var(--motion-ease);
 }
-@keyframes sf-render-in { from { opacity:.9; translate:0 6px; } to { opacity:1; translate:0 0; } }
+:is(.saved-search-link,.mobile-tab)>svg {transition:transform var(--motion-feedback) var(--motion-ease);}
+.mobile-tab:active {transform:none;}
+.mobile-tab:active>svg {transform:scale(.9);}
+:is(.workspace-input,.prof-input,.am-input,.saved-search-input,.workspace-search):not([aria-invalid="true"]) {transition:none;}
+:is(.prof-activity-pane,.staff-review-panel):not([hidden]) {animation:sf-content-enter var(--motion-feedback) var(--motion-ease);}
+.workspace-dialog[open],.work-record-dialog[open] {animation:sf-drawer-enter var(--motion-panel) var(--motion-ease);}
+.am-card[open],.app-confirm-dialog[open],.staff-save-view-dialog[open] {animation:sf-dialog-enter var(--motion-panel) var(--motion-ease);}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+ :is(.prof-shortcuts a,.prof-activity-card):hover {transform:translateY(-2px);border-color:var(--line-2);box-shadow:var(--shadow-md);}
+ :is(.work-timeline-card,.roadmap-completion-card,.saved-search-item,.post-card,.roadmap-idea):hover {border-color:var(--line-2);box-shadow:var(--shadow-sm);}
+ .sf-idea-card:hover {transform:translateY(-2px);}
+ .saved-search-link:hover>svg {transform:translateX(2px);}
+ .mobile-tab:hover>svg {transform:translateY(-2px);}
+ .site-header nav>a:not(.btn-primary-sm) {text-decoration:underline;text-decoration-color:transparent;text-decoration-thickness:2px;text-underline-offset:6px;transition:opacity var(--motion-feedback) var(--motion-ease);}
+ .site-header nav>a:not(.btn-primary-sm):is(:hover,:focus-visible,.active) {text-decoration-color:currentColor;}
+}
+@keyframes sf-content-enter {from {opacity:.85;transform:translateY(3px);}to {opacity:1;transform:translateY(0);}}
+@keyframes sf-drawer-enter {from {opacity:.85;transform:translateX(12px);}to {opacity:1;transform:translateX(0);}}
+@keyframes sf-dialog-enter {from {opacity:.85;transform:scale(.985);}to {opacity:1;transform:scale(1);}}
+@keyframes sf-opacity-enter {from {opacity:.9;}to {opacity:1;}}
+.post-card,.roadmap-idea,.sf-idea-card.sf-card-enter {animation:none;}
+@media(prefers-reduced-motion:reduce) {
+ :is(.post-card,.roadmap-idea,.sf-idea-card,.prof-activity-card,.prof-shortcuts a):is(:hover,:focus-within),.post-card:hover .post-avatar,.mobile-tab:is(:hover,:active)>svg {transform:none!important;}
+ :is(.prof-activity-pane,.staff-review-panel):not([hidden]),.workspace-dialog[open],.work-record-dialog[open],.am-card[open],.app-confirm-dialog[open],.staff-save-view-dialog[open] {animation:sf-opacity-enter var(--motion-feedback) ease!important;}
+ :is(.workspace-button,.btn-primary,.btn-primary-sm,.btn-ghost,.primary,.am-btn-primary,.am-btn-ghost,.am-btn-google,.action-btn,.roadmap-card-vote-btn,.detail-support-btn,.saved-search-primary,.saved-search-action,.staff-sidebar-toggle,.sf-hero-action-primary,.sf-hero-action-secondary,.platform-button,.school-settings-primary,.school-settings-secondary,.invites-submit,.sip-btn-action,.sip-btn-back,.sip-btn-done,.sf-empty-action,[role="switch"]):active {transform:none!important;}
+}
+html[data-studio-mode="edit"] *,html[data-studio-mode="edit"] *::before,html[data-studio-mode="edit"] *::after {animation:none!important;transition:none!important;}

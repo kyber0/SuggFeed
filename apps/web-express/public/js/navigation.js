@@ -34,7 +34,8 @@
     if (!shell || !content || !title || !status || !body)
         return;
     let timer;
-    function reset() { clearTimeout(timer); shell.hidden = true; content.hidden = false; content.removeAttribute('aria-busy'); document.documentElement.classList.remove('is-navigating'); }
+    let wasInert = content.inert;
+    function reset() { clearTimeout(timer); shell.hidden = true; content.inert = wasInert; content.removeAttribute('aria-busy'); document.documentElement.classList.remove('is-navigating'); }
     function destinationScreen(destination) {
         const path = sfSchoolRoute(destination.pathname).replace(/\/+$/, '') || '/';
         if (path === '/')
@@ -94,6 +95,7 @@
             && !/^\/(api|auth|staff\/workspace)(\/|$)/.test(sfSchoolRoute(destination.pathname));
     }
     function show(destination) {
+        const top = Math.max(0, document.querySelector('.site-header')?.getBoundingClientRect().bottom || 0);
         const [layout, section] = destinationScreen(destination);
         const template = document.getElementById('navigation-template-' + layout);
         if (!(template instanceof HTMLTemplateElement))
@@ -107,8 +109,12 @@
         shell.dataset.layout = layout;
         title.textContent = section;
         status.textContent = 'Loading ' + section.toLowerCase() + '…';
+        if (shell.hidden)
+            wasInert = content.inert;
+        shell.style.top = top + 'px';
+        shell.scrollTop = 0;
         shell.hidden = false;
-        content.hidden = true;
+        content.inert = true;
         content.setAttribute('aria-busy', 'true');
         document.documentElement.classList.add('is-navigating');
         clearTimeout(timer);

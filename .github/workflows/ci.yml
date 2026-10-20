@@ -25,6 +25,7 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web-express/package-lock.json
       - run: npm ci --workspaces=false --include=dev
+      - run: npm run lint:animations
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
