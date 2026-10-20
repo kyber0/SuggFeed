@@ -255,7 +255,8 @@
       });
 
       if (error) {
-        sfToast(error.message, 'error', generation);
+        var deliveryFailure = /sending confirmation email/i.test(error.message || '');
+        sfToast(deliveryFailure ? 'We could not send your confirmation email. Please try again later, or continue with Google.' : error.message, 'error', generation);
         return;
       }
 

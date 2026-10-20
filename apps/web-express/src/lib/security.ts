@@ -2,6 +2,8 @@ import type { Request, Response, NextFunction } from "express";
 
 /** These capabilities are not used by the web application. */
 export function browserSecurityHeaders(_req: Request, res: Response, next: NextFunction) {
+  // Native same-origin forms need an Origin/Referer; cross-site referrers stay suppressed.
+  res.setHeader('Referrer-Policy', 'same-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
   next();
 }

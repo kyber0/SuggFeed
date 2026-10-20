@@ -358,3 +358,31 @@
 @media(max-width:600px){.school-join-card .school-directory-notice {flex-basis:100%;}}
 
 .enrollment-form>p {margin:0;}
+
+/* Platform customization shares the dashboard hierarchy without a second sidebar. */
+.platform-customization-reviews { grid-template-columns:minmax(0,1fr); max-width:1120px; }
+.platform-customization-reviews .platform-page-header { align-items:flex-start; }
+.customization-review-body { display:grid; gap:24px; padding:24px; }
+.customization-review-body p { font-size:13px; line-height:1.7; margin:6px 0 0; }
+.customization-access-row { display:flex; align-items:center; justify-content:space-between; gap:24px; }
+.customization-access-row>div { max-width:68ch; min-width:0; }
+.customization-access-row>.platform-button { flex-shrink:0; min-height:44px; }
+.customization-access-status { display:inline-flex; align-items:center; min-height:30px; padding:5px 10px; border-radius:6px; background:var(--bg-2); font-size:11px; font-weight:650; white-space:nowrap; }
+.customization-review-body .customization-review-meta { margin-top:10px; font-size:11px; }
+.customization-form-review { border-top:1px solid var(--line); padding-top:24px; min-width:0; }
+.customization-form-review dl { display:grid; gap:12px; margin:20px 0; font-size:13px; }
+.customization-form-review dt { font-weight:650; margin-bottom:4px; }
+.customization-form-review dd { margin:0; color:var(--muted); white-space:pre-wrap; overflow-wrap:anywhere; }
+.customization-review-questions { display:grid; gap:14px; padding-left:20px; font-size:13px; }
+.customization-review-questions li>span { display:block; margin-top:4px; font-size:12px; color:var(--muted); }
+.customization-approval-form { display:grid; gap:10px; margin-top:24px; }
+.customization-approval-form label { font-size:13px; font-weight:650; }
+.customization-approval-form .workspace-input { width:100%; min-width:0; }
+.customization-approval-form .platform-button { justify-self:start; min-height:44px; }
+@media(max-width:600px) {
+ .customization-review-body { gap:20px; padding:18px 16px; }
+ .customization-access-row { flex-direction:column; align-items:stretch; gap:14px; }
+ .platform-customization-reviews .platform-panel-heading { flex-wrap:wrap; }
+ .customization-approval-form .platform-button { width:100%; }
+ .customization-form-review { padding-top:20px; }
+}

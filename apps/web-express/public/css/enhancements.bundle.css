@@ -3162,6 +3162,27 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
  html[data-staff-sidebar="collapsed"] .staff-sidebar-toggle svg { transform:rotate(180deg); }
 }
 
+/* School context is navigation, not a full-size content card. */
+.school-context-bar { width:calc(100% - 48px); max-width:1480px; margin:12px auto 16px; padding:10px 16px; border:1px solid var(--line); border-radius:12px; background:var(--surface); align-items:center; justify-content:space-between; gap:12px 24px; font-size:13px; line-height:1.5; }
+.school-context-info { display:flex; align-items:center; flex-wrap:wrap; gap:8px 16px; min-width:0; flex:1; }
+.school-context-bar .school-context-identity { min-width:0; gap:8px; overflow-wrap:anywhere; }
+.school-context-bar .school-context-identity strong { font-size:13px; font-weight:650; }
+.school-context-bar .school-context-logo { width:28px; height:28px; }
+.school-context-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.school-context-actions .workspace-button { min-height:40px; padding:8px 12px; font-size:12px; white-space:nowrap; }
+.school-context-demo { position:relative; font-size:11px; color:var(--muted); }
+.school-context-demo summary { cursor:pointer; padding:6px 8px; border-radius:6px; background:var(--bg-2); }
+.school-context-demo summary:focus-visible { outline:2px solid var(--navy); outline-offset:3px; }
+.school-context-demo p { position:absolute; z-index:101; top:100%; left:0; width:260px; max-width:calc(100vw - 64px); margin:6px 0 0; padding:12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink-2); font-size:12px; line-height:1.6; box-shadow:var(--shadow-sm); }
+@media(max-width:600px) {
+ .school-context-bar { width:calc(100% - 32px); padding:10px 12px; gap:8px; }
+ .school-context-info { flex-basis:100%; gap:6px 12px; }
+ .school-context-actions { width:100%; }
+ .school-context-actions .workspace-button { min-height:44px; }
+ .school-context-demo p { position:static; width:auto; max-width:none; box-shadow:none; }
+ .school-context-demo[open] { flex-basis:100%; }
+}
+
 /* A modest mobile text reduction. Keep form controls at 16px to avoid focus zoom. */
 @media (max-width:768px) {
  body { font-size:14px; }
