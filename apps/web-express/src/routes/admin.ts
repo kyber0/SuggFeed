@@ -40,10 +40,12 @@ router.get(
     const search = typeof req.query["search"] === "string" ? req.query["search"].trim().slice(0, 120) : "";
 
     const filters = queueFilters(req.query);
-    const [counts, { data: allSubmissions, count }, staffMembers, savedViews] = await Promise.all([
+    const overviewRange = ['7d','30d','90d'].includes(String(req.query.overviewRange)) ? String(req.query.overviewRange) : '30d';
+    const [counts, { data: allSubmissions, count }, staffMembers, savedViews, overviewAnalytics] = await Promise.all([
       loadModerationCounts(),
       loadStaffQueue(filters, schoolUser(req)!.id, page),
       loadStaffMembers(), loadSavedViews(schoolUser(req)!.id),
+      schoolUser(req)!.role === 'admin' ? loadAnalyticsData({range:overviewRange}).catch(() => { console.warn('School overview analytics unavailable'); return null; }) : Promise.resolve(null),
     ]);
 
     const pageCount = Math.max(1, Math.ceil(count / PER_PAGE));
@@ -61,7 +63,8 @@ router.get(
       perPage: PER_PAGE,
       status,
       search,
-      filters, staffMembers, savedViews,
+      filters, staffMembers, savedViews, overviewAnalytics, overviewRange,
+      overviewDefault: schoolUser(req)!.role === 'admin' && !['status','search','assignment','priority','overdue','page','idea'].some(key => req.query[key] !== undefined),
       activeSection: "queue",
     });
   })

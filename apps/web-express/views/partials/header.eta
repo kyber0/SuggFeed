@@ -4,7 +4,7 @@
   <% if(it.schoolBase && !it.platformDashboard) { %><span class="header-school-identity school-context-identity"><strong><%= it.schoolCustomization?.displayName || it.schoolName || 'Your school' %></strong><% if(it.demoWorkspace) { %><small title="Fictional demo · use invented content only. Sample contacts are not monitored.">Demo</small><% } %></span><% } %>
   <nav aria-label="Primary navigation">
     <% if (it.platformDashboard) { %>
-      <a href="/platform/schools" class="nav-link-hide-mobile">Platform dashboard</a><a href="/platform/customization" class="nav-link-hide-mobile">Customization reviews</a>
+      <a href="/platform/schools" class="nav-link-hide-mobile">Platform dashboard</a>
     <% } else if (accountArea) { %>
       <% if(it.user) { %><a href="/schools" class="nav-link-hide-mobile">Your schools</a><% } %>
     <% } else if (staffArea) { %>

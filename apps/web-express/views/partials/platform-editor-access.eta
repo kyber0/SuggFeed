@@ -1,0 +1,33 @@
+<section id="editor-access" data-workspace-panel class="platform-editor-section" aria-labelledby="editor-access-title">
+<header class="platform-page-header"><div><p class="platform-eyebrow">Workspace customization</p><h2 id="editor-access-title">Editor access & form reviews</h2><p>Grant visual editor access to each school and review changes to the information it collects.</p></div></header>
+    <% if(!it.rows.length) { %>
+      <section class="platform-panel"><div class="customization-review-body"><h2>No customization drafts yet</h2><p>Enable a school’s editor from the platform directory. Submitted form changes will appear here for review.</p><a class="platform-text-link" href="/platform/schools#schools">Manage schools →</a></div></section>
+    <% } %>
+    <% for(const row of it.rows) { %>
+      <details class="platform-panel platform-editor-school" name="editor-school" aria-labelledby="customization-school-<%= row.school_id %>">
+        <summary class="platform-panel-heading"><div><p class="platform-eyebrow">School workspace</p><h2 id="customization-school-<%= row.school_id %>"><%= row.schools?.name || row.school_id %></h2></div><span class="customization-access-status"><%= row.editing_enabled?'Editing enabled':'Editing paused' %></span></summary>
+        <div class="customization-review-body">
+          <form method="post" action="/platform/schools/<%= row.school_id %>/customization-rollout" class="customization-access-row">
+            <input type="hidden" name="editorPage" value="<%= it.page %>"/><input type="hidden" name="enabled" value="<%= row.editing_enabled?'false':'true' %>"/>
+            <div><h3>Visual editor access</h3><p><%= row.editing_enabled?'School administrators can customize their workspace.':'School administrators cannot edit customization drafts.' %> Published appearance stays available when editing is paused.</p><% if(row.grantEvent) { %><p class="customization-review-meta">Last changed by <%= row.grantEvent.profiles?.display_name || 'a platform administrator' %> · <%= new Date(row.grantEvent.created_at).toLocaleString('en-PH',{timeZone:'Asia/Manila'}) %></p><% } %></div>
+            <button class="platform-button" type="submit"><%= row.editing_enabled?'Pause editing':'Enable editing' %></button>
+          </form>
+          <section class="customization-form-review" aria-labelledby="customization-form-<%= row.school_id %>">
+            <h3 id="customization-form-<%= row.school_id %>">Submission form review</h3>
+            <% if(row.review_requested_at && row.draft) { %>
+              <p>Revision <%= row.revision %> · Confirm the school’s approved privacy notice covers these questions and image collection. This review does not certify legal compliance.</p>
+              <dl><div><dt>Image attachments</dt><dd><%= {off:'Disabled',optional:'Optional',required:'Required'}[row.draft.form.attachments] %></dd></div><% if(row.draft.form.instructions) { %><div><dt>Instructions</dt><dd><%= row.draft.form.instructions %></dd></div><% } %></dl>
+              <ol class="customization-review-questions"><% for(const q of row.draft.form.questions) { %><li><strong><%= q.label %></strong><span><%= {short:'Short text',long:'Long text',choice:'Single choice'}[q.type] || 'Question' %> · <%= q.required?'Required':'Optional' %></span><% if(q.help) { %><p><%= q.help %></p><% } %><% if(q.options.length) { %><p>Choices: <%= q.options.join(', ') %></p><% } %></li><% } %></ol>
+              <form method="post" action="/platform/schools/<%= row.school_id %>/customization-review" class="care-form customization-approval-form">
+                <input type="hidden" name="editorPage" value="<%= it.page %>"/><input type="hidden" name="revision" value="<%= row.revision %>"/>
+                <label for="review-reference-<%= row.school_id %>">Policy and form review reference</label><textarea class="workspace-input" id="review-reference-<%= row.school_id %>" name="reference" minlength="10" maxlength="2000" rows="3" required></textarea>
+                <button class="platform-button platform-button--primary" type="submit">Approve against current policy</button>
+              </form>
+            <% } else { %><p class="customization-review-empty">No form changes awaiting review. Requests from this school will appear here.</p><% } %>
+          </section>
+        </div>
+      </details>
+    <% } %>
+    <% if(it.page>0 || it.nextPage) { %><nav class="platform-pagination" aria-label="Customization pages"><% if(it.page>0) { %><a href="/platform/schools?editorPage=<%= it.page-1 %>#editor-access">Previous</a><% } %><% if(it.nextPage) { %><a href="/platform/schools?editorPage=<%= it.page+1 %>#editor-access">Next</a><% } %></nav><% } %>
+
+</section>

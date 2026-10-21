@@ -12,14 +12,14 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
       <a href="#schools"><%~ icon('users') %><span class="platform-nav-label">Schools</span><span class="platform-nav-count"><%= it.schools.length %></span></a>
       <a href="#applications"><%~ icon('inbox') %><span class="platform-nav-label">Applications</span><span class="platform-nav-count"><%= it.applications.length %></span></a>
       <a href="#policies"><%~ icon('list') %><span class="platform-nav-label">Policy reviews</span></a>
-      <a href="/platform/customization" aria-label="Editor access and form reviews"><%~ icon('board') %><span class="platform-nav-label">Editor access</span></a>
+      <a href="#editor-access" aria-label="Editor access and form reviews"><%~ icon('board') %><span class="platform-nav-label">Editor access</span></a>
       <a href="#setup"><%~ icon('shield') %><span class="platform-nav-label">Service setup</span></a>
     </nav>
     <div class="platform-sidebar-footer"><span class="platform-role"><%~ icon('shield') %> Super admin</span><p>Platform permissions are separate from school memberships.</p><a href="/platform/schools">Platform overview <%~ icon('arrow') %></a></div>
   </aside>
   <div class="platform-content">
     <% if (it.statusSaved) { %><div class="platform-feedback" role="status">School status updated successfully.</div><% } %>
-    <% if (it.saved) { %><div class="platform-feedback" role="status"><%~ icon('shield') %> Your review was saved successfully.</div><% } %>
+    <% if (it.saved) { %><div class="platform-feedback" role="status"><%~ icon('shield') %> Your changes were saved successfully.</div><% } %>
     <section id="overview" data-workspace-panel><header class="platform-page-header">
       <div><p class="platform-eyebrow">Platform administration</p><h1>Platform overview</h1><p>Your schools, reviews, and next steps in one place.</p></div>
       <a class="platform-button platform-button--primary" href="<%= !it.businessReady ? '#setup' : it.applications.length ? '#applications' : '#schools' %>"><%~ icon('inbox') %> <%= !it.businessReady ? 'Complete service setup' : it.applications.length ? 'Review applications' : 'Manage schools' %></a>
@@ -132,6 +132,7 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
       <% if (!it.settings.length) { %><%~ include('partials/empty-state',{icon:'list',heading:'No saved school policies yet',description:'A school administrator needs to save its notices, contacts, and age policy before you can record a review.',actions:[{href:'#schools',label:'Go to school directory',secondary:true}]}) %><% } %>
       <% for (const settings of it.settings) { const school=it.schools.find(s=>s.id===settings.school_id); %><details class="platform-policy" id="policy-<%= settings.school_id %>"><summary><span><strong><%= school?.name || 'School policy' %></strong><span>Version <%= settings.version %> · <%= settings.publication_policy==='public' ? 'Public workspace' : 'Private workspace' %></span></span><span class="platform-badge <%= settings.approved_at ? 'platform-badge--active' : 'platform-badge--pending' %>"><%= settings.approved_at ? 'Reviewed' : 'Review needed' %></span></summary><div class="platform-policy-body"><dl class="platform-facts"><div><dt>Institutional contact</dt><dd><%= settings.school_contact || 'Not provided' %></dd></div><div><dt>Privacy contact</dt><dd><%= settings.privacy_contact || 'Not provided' %></dd></div><div><dt>Retention</dt><dd><%= settings.retention_days %> days</dd></div></dl><h3>Privacy notice</h3><p class="platform-preserve-text"><%= settings.privacy_notice %></p><h3>Terms</h3><p class="platform-preserve-text"><%= settings.terms_notice %></p><h3>Age policy</h3><p class="platform-preserve-text"><%= settings.age_policy %></p><form method="post" action="/platform/schools/<%= settings.school_id %>/policies"><input type="hidden" name="version" value="<%= settings.version %>" /><label for="policy-reference-<%= settings.school_id %>">Policy and agreement review reference</label><textarea id="policy-reference-<%= settings.school_id %>" name="reference" rows="3" required minlength="10" maxlength="2000" placeholder="Record the completed review and agreement reference."></textarea><button class="platform-button platform-button--primary" type="submit">Record completed review</button></form></div></details><% } %>
     </section>
+    <%~ include('partials/platform-editor-access',{rows:it.editorRows||[],page:it.editorPage||0,nextPage:it.nextEditorPage||false}) %>
     <footer class="platform-footer"><p>Super admin permissions manage the platform. Each school's access rules still apply.</p><a href="/platform/schools">Platform overview</a></footer>
   </div>
 </main>

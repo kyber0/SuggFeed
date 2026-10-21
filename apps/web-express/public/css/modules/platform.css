@@ -593,3 +593,14 @@
 .member-directory .school-settings-header > div { flex:1 1 320px;min-width:0; }
 .member-directory .school-settings-header > a { flex:0 0 auto;min-height:44px; }
 @media(max-width:600px) { .member-directory .school-settings-header > a { width:100%; } }
+
+.platform-editor-section { display:grid;gap:24px;min-width:0; }
+.platform-editor-school { min-width:0; }
+.platform-editor-school > summary { cursor:pointer;margin:0;list-style:none; }
+.platform-editor-school > summary::-webkit-details-marker { display:none; }
+.platform-editor-school > summary::after { content:'⌄';font-size:18px;margin-left:12px; }
+.platform-editor-school[open] > summary::after { content:'⌃'; }
+.platform-editor-school > summary > div { flex:1;min-width:0; }
+.platform-editor-school > summary h2 { overflow-wrap:anywhere; }
+.platform-editor-school > summary:focus-visible { outline:3px solid var(--navy);outline-offset:3px; }
+@media(max-width:600px) { .platform-editor-school > summary { flex-wrap:wrap;gap:12px; } .platform-editor-school > summary > div { flex-basis:100%; } }

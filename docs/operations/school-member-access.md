@@ -20,9 +20,9 @@ Migration: `202610210005_school_member_restrictions.sql`. Its two RPCs are execu
 
 ## Focused sections
 
-- School dashboard: **Review queue** and **School administration**.
+- School dashboard: **Overview**, **Review queue** and **School administration**.
 - School settings: **Overview**, **Policies & eligibility**, **School contacts**, **Visibility & retention**, **Email domains**, **Student enrollment**, plus dedicated links for joining, members, invitations and appearance.
-- Platform dashboard: **Overview**, **Schools**, **Applications**, **Policy reviews**, **Service setup**, plus the existing editor-access screen.
+- Platform dashboard: **Overview**, **Schools**, **Applications**, **Policy reviews**, **Service setup**, and **Editor access**.
 
 Section links use URL fragments, supporting direct links, refresh and browser back/forward. Mobile settings/platform navigation uses a labeled section selector. With JavaScript unavailable, all sections remain readable as a document.
 

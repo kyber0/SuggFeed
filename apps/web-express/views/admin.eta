@@ -16,13 +16,14 @@
 <a class="workspace-skip" href="#staff-queue-title">Skip to review queue</a>
 <main class="staff-workspace">
   <%~ include('partials/staff-sidebar', it) %>
-  <div class="staff-main" data-workspace-sections data-default-section="review-workspace">
+  <div class="staff-main" data-workspace-sections data-default-section="<%= it.overviewDefault?'overview-workspace':'review-workspace' %>">
     <header class="workspace-heading">
       <div><p class="workspace-kicker">WORKSPACE / <%= it.user?.role==='admin'?'ADMINISTRATION':'REVIEW' %></p><h1><%= it.user?.role==='admin'?'School dashboard':'Review submissions' %><span class="workspace-title-dot" aria-hidden="true">.</span></h1><p><%= it.user?.role==='admin'?'Review feedback and manage your school from dedicated sections.':'Review new suggestions and track approved work.' %> Open <a href="/admin/board">Manage work</a> to follow delivery.</p></div>
       <div class="workspace-actions" data-workspace-panel-footer="review-workspace"><button class="workspace-button" id="staff-refresh" type="button"><%~ icon('refresh') %> Refresh</button><button class="workspace-button" id="staff-export" type="button" <%= it.submissions.length ? '' : 'disabled' %>><%~ icon('export') %> Export page</button></div>
     </header>
     <% if(it.user?.role==='admin') { %>
-    <nav class="admin-dashboard-sections" data-section-navigation aria-label="School dashboard sections"><a href="#review-workspace">Review queue</a><a href="#administration-workspace">School administration</a></nav>
+    <nav class="admin-dashboard-sections" data-section-navigation aria-label="School dashboard sections"><a href="#overview-workspace">Overview</a><a href="#review-workspace">Review queue</a><a href="#administration-workspace">School administration</a></nav>
+    <%~ include('partials/admin-overview',it) %>
     <section id="administration-workspace" data-workspace-panel class="admin-administration" aria-labelledby="administration-title"><header><p class="workspace-kicker">SCHOOL ADMINISTRATION</p><h2 id="administration-title">Manage your school</h2><p>Choose a task. Changes to people, policies and appearance have their own dedicated screens.</p></header><div class="admin-administration-grid">
     <% for(const [href,name,description,graphic] of [['/admin/members','Members & access','Find students and moderators. Suspend, ban, remove or restore school access.','users'],['/admin/student-access','Student joining','Review access requests and control joining from your approved email list.','user-plus'],['/admin/staff','Staff roles','Manage your administrator and moderator team.','shield'],['/admin/invitations','Member invitations','Send invitations and track acceptance.','mail'],['/admin/school-settings','School settings','Policies, contacts, email domains and enrollment settings.','list'],['/admin/customization','Workspace appearance','Open the visual editor when enabled for your school.','board']]) { %><a class="admin-task-card" href="<%= href %>"><%~ icon(graphic) %><span><strong><%= name %></strong><small><%= description %></small></span><%~ icon('arrow') %></a><% } %>
     </div></section>
@@ -93,3 +94,5 @@
 <script defer src="/js/staff-progress.js?v=20261020-security"></script>
 <script defer src="/js/staff-review.js?v=20261021-compact-review"></script>
 <script defer src="/js/staff-tools.js?v=20261021-admin-sections"></script>
+
+<% if(it.user?.role==='admin') { %><script defer src="/js/admin-overview.js?v=20261021-overview"></script><% } %>
