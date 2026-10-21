@@ -383,38 +383,47 @@ let activeCategory = 'All';
   }
 
   async function sfVote(id: string, btn: HTMLButtonElement) {
-    if (btn.classList.contains('sf-vote-btn--voted')) return;
+    if (btn.disabled || btn.classList.contains('sf-vote-btn--voted')) return;
     
     // Optimistic UI update
     btn.classList.add('sf-vote-btn--voted');
+    btn.setAttribute('aria-pressed','true');btn.disabled=true;btn.setAttribute('aria-busy','true');
     const numSpan = btn.querySelector<HTMLElement>('.sf-vote-num');
     const prevCount = Number(numSpan?.textContent || 0);
     if (numSpan) numSpan.textContent = String(prevCount + 1);
 
+    const controller=new AbortController(),timeout=window.setTimeout(()=>controller.abort(),15000);
     try {
-      const res = await sfSchoolFetch(`/api/vote/${id}`, {
+      const res = await sfSchoolFetch(`/api/vote/${encodeURIComponent(id)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'up' })
+        body: JSON.stringify({ action: 'up' }),
+        signal:controller.signal
       });
       const data = await res.json();
-      if (data.success) {
-        spawnVoteParticles(btn);
+      if (res.ok && data.success && Number.isFinite(Number(data.vote_count))) {
+        try {
+          const raw:unknown=JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas'))||'[]');
+          const ids=new Set(Array.isArray(raw)?raw.filter(value=>typeof value==='string'):[]);ids.add(id);
+          localStorage.setItem(sfSchoolKey('sf_voted_ideas'),JSON.stringify([...ids]));
+        } catch {}
+        const card=btn.closest<HTMLElement>('[data-votes]');if(card)card.dataset.votes=String(data.vote_count);
+        if(!data.already_voted)spawnVoteParticles(btn);
         if (numSpan && data.vote_count !== undefined) {
           numSpan.textContent = data.vote_count;
         }
-        if (window.sfToast) sfToast('Vote recorded! Thank you for supporting this idea.', 'success');
+        if (window.sfToast) sfToast(data.already_voted?'You already supported this idea.':'Vote recorded! Thank you for supporting this idea.',data.already_voted?'info':'success');
       } else {
         // Revert
-        btn.classList.remove('sf-vote-btn--voted');
+        btn.classList.remove('sf-vote-btn--voted');btn.setAttribute('aria-pressed','false');
         if (numSpan) numSpan.textContent = String(prevCount);
         if (window.sfToast) sfToast(data.error || 'Could not record vote.', 'error');
       }
     } catch (err) {
-      btn.classList.remove('sf-vote-btn--voted');
+      btn.classList.remove('sf-vote-btn--voted');btn.setAttribute('aria-pressed','false');
       if (numSpan) numSpan.textContent = String(prevCount);
-      if (window.sfToast) sfToast('Could not record vote.', 'error');
-    }
+      if (window.sfToast) sfToast(controller.signal.aborted?'Request timed out. Try again to confirm your vote.':'Could not record vote.', 'error');
+    } finally {clearTimeout(timeout);btn.disabled=false;btn.removeAttribute('aria-busy');}
   }
 Object.assign(window, { syncPromptMotion, typePrompt, spawnVoteParticles, updateGlider, loadRecentTrackingCodes, sfToggleSortMenu, sfSetSortOption, sfSortGrid, sfSwitchTab, sfTrackInputChanged, sfClearTrack, sfTrackSubmission, sfSetCategory, sfClearSearch, sfFilterFeed, sfResetFilters, sfVote });
 })();

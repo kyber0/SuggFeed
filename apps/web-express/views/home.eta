@@ -338,7 +338,9 @@
             <div class="sf-card-footer">
               <button
                 type="button"
-                class="sf-vote-btn"
+                class="sf-vote-btn<%= (it.votedIds || []).includes(item.id) ? ' sf-vote-btn--voted' : '' %>"
+                aria-pressed="<%= (it.votedIds || []).includes(item.id) %>"
+                data-id="<%= item.id %>"
                 data-sf-click="action-80" data-sf-click-arg-0="<%= item.id %>"
                 aria-label="Upvote: <%= item.title %>"
               >
@@ -406,4 +408,4 @@
   </footer>
 </main>
 
-<script defer src="/js/home.js?v=20261020-motion"></script>
+<script defer src="/js/home.js?v=20261021-persistent-votes"></script>

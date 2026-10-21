@@ -74,3 +74,14 @@ section dragging; Manage Work mouse dragging uses the themed closed hand.
 Migration `202610210007_school_cursor_colors.sql` allows the optional `cursor`
 color in each appearance; it preserves all other database validation and does
 not publish drafts or change permissions.
+
+### Home idea vote state
+
+The home route reads saved votes only for the currently displayed ideas, scoped
+by school and the verified account or existing anonymous voter cookie. It renders
+`aria-pressed` and the selected button class directly and uses a private,
+non-stored response so one visitor's selection cannot enter a shared page cache.
+Home votes also update the existing school-scoped device hint after the API
+confirms success. Browser storage failures cannot undo a recorded vote. Pending
+requests prevent repeated clicks; failed requests restore the previous count and
+selection. The server remains authoritative on refresh.
