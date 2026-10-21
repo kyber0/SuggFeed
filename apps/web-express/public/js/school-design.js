@@ -74,21 +74,23 @@ var SfSchoolDesign;
         return result;
     }
     SfSchoolDesign.normalize = normalize;
-    // Two contrasting outlines keep the colored hand legible on mixed backgrounds.
+    // A solid black outline remains identical in all hand states.
     function handCursor(color, shape) {
         const fill = /^#[0-9a-f]{6}$/i.test(color) ? color : '#123e5c';
         const paths = { pointer: 'M9 21 5 14Q4 11 7 12L10 15V4Q10 1 13 2Q14 2 14 4V10Q17 8 18 11Q21 9 22 13Q25 12 25 16V20Q25 26 20 27H14Q12 27 9 21Z', grab: 'M7 17 4 13Q2 10 5 9Q6 9 8 12L10 14V5Q10 2 13 3V12H14V3Q14 0 17 2V12H18V5Q18 2 21 4V13H22V9Q22 6 25 8V20Q25 28 18 28H15Q12 28 10 24Z', grabbing: 'M7 18V12Q7 9 10 10V8Q10 5 14 7Q17 4 19 8Q23 6 24 10L25 18Q25 26 19 27H14Q9 27 7 18Z' };
-        const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="' + paths[shape] + '" fill="' + fill + '" stroke="white" stroke-width="4" stroke-linejoin="round"/><path d="' + paths[shape] + '" fill="' + fill + '" stroke="black" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="' + paths[shape] + '" fill="' + fill + '" stroke="black" stroke-width="2.5" stroke-linejoin="round"/></svg>';
         return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '") ' + (shape === 'pointer' ? '12 3' : '16 16') + ',' + shape;
     }
+    function cursorStyle(value = defaults()) { let result = ''; for (const mode of ['light', 'dark'])
+        for (const shape of ['pointer', 'grab', 'grabbing'])
+            result += `--sd-${mode}-cursor-${shape}:${handCursor(value[mode].cursor || defaults()[mode].cursor, shape)};`; return result; }
+    SfSchoolDesign.cursorStyle = cursorStyle;
     function style(value) {
-        let style = '';
+        let style = cursorStyle(value);
         for (const mode of ['light', 'dark']) {
             const c = value[mode];
             for (const role of SfSchoolDesign.roles)
                 style += `--sd-${mode}-${role}:${(c[role] || defaults()[mode][role])};`;
-            for (const shape of ['pointer', 'grab', 'grabbing'])
-                style += `--sd-${mode}-cursor-${shape}:${handCursor(c.cursor || defaults()[mode].cursor, shape)};`;
             style += `--sd-${mode}-on-primary:${contrast(c.primary, '#000000') >= 4.5 ? '#000000' : '#ffffff'};`;
             style += `--sd-${mode}-primary-text:${contrast(c.primary, c.surface) >= 4.5 ? c.primary : c.link};`;
         }
@@ -109,6 +111,10 @@ var SfSchoolDesign;
                     el.removeAttribute('data-school-section-hidden');
                 SfSchoolColors.apply(root, palette);
             }
+            const cursors = document.createElement('span');
+            cursors.style.cssText = cursorStyle();
+            for (const name of Array.from(cursors.style))
+                root.style.setProperty(name, cursors.style.getPropertyValue(name));
             return;
         }
         root.dataset.schoolDesign = '';

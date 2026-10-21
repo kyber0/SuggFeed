@@ -43,7 +43,9 @@ Typechecking, the production build, local responsive views at 320/375/768/1440 p
 
 ### Manage Work drag cursors
 
-Mouse dragging uses pointer capture after a 6px movement threshold. The source card
+Mouse dragging uses pointer capture after a 6px movement threshold.
+The resolved closed-hand asset is held on the document for the whole drag, so
+entering another lane or its controls cannot change its fill or outline. The source card
 shows an open hand at rest; the document keeps the native closed hand during a drag,
 including over lane controls. Forbidden transitions show an unavailable destination
 border and message without invoking the browser's blocked drag cursor. Valid drops
@@ -63,9 +65,9 @@ and reset. Save the draft, inspect the preview, then publish to apply it to the
 school's student and staff screens. Other schools and the platform dashboard
 retain their own appearance.
 
-The theme supplies compact inline SVG pointing/open/closed hands with white and
-black outlines and native cursor fallbacks. Old themes use navy/light-blue hand
-colors when they have a design configuration. Touch and forced-colors modes keep
+The theme supplies compact inline SVG pointing/open/closed hands with solid black
+outlines and native cursor fallbacks. Schools without a published design also use navy/light-blue hand
+colors. Touch and forced-colors modes keep
 native cursors. Operating systems may use their own cursor during native file or
 section dragging; Manage Work mouse dragging uses the themed closed hand.
 

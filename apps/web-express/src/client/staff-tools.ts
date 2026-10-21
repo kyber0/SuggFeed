@@ -119,7 +119,7 @@
   function clearDrag(){
    const pointer=pointerDrag;pointerDrag=null;
    cancelAnimationFrame(dragFrame);dragFrame=0;lastPointerLane=null;
-   document.documentElement.removeAttribute('data-sf-board-dragging');
+   document.documentElement.removeAttribute('data-sf-board-dragging');document.documentElement.style.removeProperty('--sf-board-cursor');
    if(pointer?.started){suppressedCard=pointer.card;suppressUntil=performance.now()+250;}
    if(pointer){pointer.card.removeAttribute('data-sf-held');if(pointer.capture.hasPointerCapture(pointer.pointerId))pointer.capture.releasePointerCapture(pointer.pointerId);}
 
@@ -174,7 +174,7 @@
    if(!pointer.started){
     if(Math.hypot(pointer.x-pointer.startX,pointer.y-pointer.startY)<6)return;
     if(busy||loading){clearDrag();return;}
-    pointer.started=true;beginDrag(pointer.item,pointer.card);document.documentElement.setAttribute('data-sf-board-dragging','');
+    pointer.started=true;beginDrag(pointer.item,pointer.card);document.documentElement.style.setProperty('--sf-board-cursor',getComputedStyle(pointer.card).getPropertyValue('--sf-school-grabbing').trim()||'grabbing');document.documentElement.setAttribute('data-sf-board-dragging','');
     dragPreview!.setAttribute('data-pointer-drag','');const size=dragPreview!.getBoundingClientRect();ghostWidth=size.width;ghostHeight=size.height;window.getSelection()?.removeAllRanges();
    }
    event.preventDefault();if(!dragFrame)dragFrame=requestAnimationFrame(paintPointer);

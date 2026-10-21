@@ -93,6 +93,6 @@
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
 <script defer src="/js/staff-progress.js?v=20261020-security"></script>
 <script defer src="/js/staff-review.js?v=20261021-compact-review"></script>
-<script defer src="/js/staff-tools.js?v=20261021-pointer-drag"></script>
+<script defer src="/js/staff-tools.js?v=20261021-cursor-outline"></script>
 
 <% if(it.user?.role==='admin') { %><script defer src="/js/admin-overview.js?v=20261021-platform-insights"></script><% } %>

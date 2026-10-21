@@ -211,6 +211,7 @@
             dragFrame = 0;
             lastPointerLane = null;
             document.documentElement.removeAttribute('data-sf-board-dragging');
+            document.documentElement.style.removeProperty('--sf-board-cursor');
             if (pointer?.started) {
                 suppressedCard = pointer.card;
                 suppressUntil = performance.now() + 250;
@@ -319,6 +320,7 @@
                 }
                 pointer.started = true;
                 beginDrag(pointer.item, pointer.card);
+                document.documentElement.style.setProperty('--sf-board-cursor', getComputedStyle(pointer.card).getPropertyValue('--sf-school-grabbing').trim() || 'grabbing');
                 document.documentElement.setAttribute('data-sf-board-dragging', '');
                 dragPreview.setAttribute('data-pointer-drag', '');
                 const size = dragPreview.getBoundingClientRect();
