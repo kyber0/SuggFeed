@@ -137,11 +137,14 @@ router.get('/platform/schools', run(async (req, res) => {
   let schoolQuery = supabasePlatform.from('schools').select('id,slug,name,status');
   if (search) schoolQuery = schoolQuery.ilike('name', '%' + search.replace(/[\\%_]/g, character => '\\' + character) + '%');
   if (status) schoolQuery = schoolQuery.eq('status', status);
-  const [applications, schools, release, editor] = await Promise.all([
+  const overviewDays=[7,30,90].includes(Number(req.query.overviewDays))?Number(req.query.overviewDays):30;
+  const [applications, schools, release, editor, overview] = await Promise.all([
     supabasePlatform.from('school_applications').select('id,name,slug,contact_name,contact_email,authority_statement,created_at').eq('status', 'pending').order('created_at').order('id').range(applicationPage * 12, applicationPage * 12 + 12),
     schoolQuery.order('created_at', { ascending: false }).order('id').range(page * 24, page * 24 + 24),
     supabasePlatform.rpc('school_release_status', { p_actor: user.id }),
     supabasePlatform.from('school_customization_state').select('school_id,revision,draft,review_requested_at,editing_enabled,schools(name,slug)').order('school_id').range(editorPage*20,editorPage*20+20),
+    // Insights failures leave school management available.
+    supabasePlatform.rpc('platform_overview_analytics',{p_actor:user.id,p_days:overviewDays}),
   ]);
   if (applications.error || schools.error || release.error || editor.error) throw Object.assign(new Error('School review unavailable.'), {status:503});
   const editorRows=(editor.data||[]).slice(0,20);
@@ -156,7 +159,7 @@ router.get('/platform/schools', run(async (req, res) => {
     supabasePlatform.from('school_customization_state').select('school_id,editing_enabled').in('school_id',ids),
   ]) : [{ data: [], error: null }, { data: [], error: null },{data:[],error:null},{data:[],error:null}];
   if (settings.error || memberships.error || policyDrafts.error || customizationStates.error) throw Object.assign(new Error('School policy review unavailable.'), {status:503});
-  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', editorRows:editorRows.map(row=>({...row,grantEvent:editorEvents.data?.find(event=>event.school_id===row.school_id)})),editorPage,nextEditorPage:(editor.data?.length||0)>20, customizationStates: customizationStates.data || [], release: release.data, demoSchoolId: DEMO_SCHOOL_ID, applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings:(settings.data || []).map(s=>{const draft=policyDrafts.data?.find(d=>d.school_id===s.school_id);return draft?{...s,...draft.settings,version:draft.version,approved_at:null,live_approved_at:s.approved_at}:s;}), adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1', statusSaved:req.query.statusSaved==='1' });
+  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', overview:overview.error?null:overview.data,overviewDays, editorRows:editorRows.map(row=>({...row,grantEvent:editorEvents.data?.find(event=>event.school_id===row.school_id)})),editorPage,nextEditorPage:(editor.data?.length||0)>20, customizationStates: customizationStates.data || [], release: release.data, demoSchoolId: DEMO_SCHOOL_ID, applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings:(settings.data || []).map(s=>{const draft=policyDrafts.data?.find(d=>d.school_id===s.school_id);return draft?{...s,...draft.settings,version:draft.version,approved_at:null,live_approved_at:s.approved_at}:s;}), adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1', statusSaved:req.query.statusSaved==='1' });
 }));
 router.post('/platform/schools/:id/review', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;

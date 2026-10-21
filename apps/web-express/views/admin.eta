@@ -95,4 +95,4 @@
 <script defer src="/js/staff-review.js?v=20261021-compact-review"></script>
 <script defer src="/js/staff-tools.js?v=20261021-admin-sections"></script>
 
-<% if(it.user?.role==='admin') { %><script defer src="/js/admin-overview.js?v=20261021-overview"></script><% } %>
+<% if(it.user?.role==='admin') { %><script defer src="/js/admin-overview.js?v=20261021-platform-insights"></script><% } %>

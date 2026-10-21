@@ -20,16 +20,11 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
   <div class="platform-content">
     <% if (it.statusSaved) { %><div class="platform-feedback" role="status">School status updated successfully.</div><% } %>
     <% if (it.saved) { %><div class="platform-feedback" role="status"><%~ icon('shield') %> Your changes were saved successfully.</div><% } %>
-    <section id="overview" data-workspace-panel><header class="platform-page-header">
+    <section id="overview" data-workspace-panel data-overview-root><header class="platform-page-header">
       <div><p class="platform-eyebrow">Platform administration</p><h1>Platform overview</h1><p>Your schools, reviews, and next steps in one place.</p></div>
       <a class="platform-button platform-button--primary" href="<%= !it.businessReady ? '#setup' : it.applications.length ? '#applications' : '#schools' %>"><%~ icon('inbox') %> <%= !it.businessReady ? 'Complete service setup' : it.applications.length ? 'Review applications' : 'Manage schools' %></a>
     </header>
-    <section class="platform-stats" aria-label="Current page summary">
-      <article class="platform-stat"><span class="platform-stat-icon"><%~ icon('users') %></span><p>Schools listed</p><strong><%= it.schools.length %></strong><small>On this page</small></article>
-      <article class="platform-stat"><span class="platform-stat-icon platform-stat-icon--success"><%~ icon('board') %></span><p>Active workspaces</p><strong><%= it.schools.filter(school=>school.status==='active').length %></strong><small>Among listed schools</small></article>
-      <article class="platform-stat"><span class="platform-stat-icon platform-stat-icon--accent"><%~ icon('inbox') %></span><p>Applications to review</p><strong><%= it.applications.length %></strong><small>On this page</small></article>
-      <article class="platform-stat"><span class="platform-stat-icon"><%~ icon('list') %></span><p>Policies to review</p><strong><%= it.settings.filter(policy=>!policy.approved_at).length %></strong><small>Saved drafts for listed schools</small></article>
-    </section>
+    <%~ include('partials/platform-overview',it) %>
     <% if (!it.businessReady || !it.release?.isolation_verified) { %>
     <section class="platform-setup-banner" aria-labelledby="setup-banner-title">
       <span class="platform-icon"><%~ icon('shield') %></span><div><h2 id="setup-banner-title"><%= it.businessReady ? 'Complete school isolation verification' : 'Complete service setup before onboarding schools' %></h2><p><%= it.businessReady ? 'Record technical verification before activating new workspaces. Existing access rules remain in effect.' : 'Your service operator name and privacy contact are needed before applications and approvals can open.' %></p></div><a class="platform-text-link" href="#setup">View checklist <%~ icon('arrow') %></a>
@@ -136,3 +131,5 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
     <footer class="platform-footer"><p>Super admin permissions manage the platform. Each school's access rules still apply.</p><a href="/platform/schools">Platform overview</a></footer>
   </div>
 </main>
+
+<script defer src="/js/admin-overview.js?v=20261021-platform-insights"></script>

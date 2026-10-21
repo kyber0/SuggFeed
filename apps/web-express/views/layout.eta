@@ -24,11 +24,13 @@
   <!-- Styles -->
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261021-mobile-audit" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
-  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261021-analytics-overview" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261021-mobile-audit" />
-  <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261021-editor-tab" /><% } %>
+  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261021-platform-insights" /><% } %>
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261021-feedback" />
+  <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261021-platform-insights" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261021-mobile-audit"/><% } %>
   <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
+  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261021-feedback"/>
+  <script defer src="/js/interaction-feedback.js?v=20261021-feedback"></script>
   <script defer src="/js/events.js?v=20261018-customization"></script>
 
   <script src="/js/preferences.js?v=20261016-school-isolation"></script>
@@ -80,7 +82,7 @@
 <% } %>
 <script defer src="/js/file-upload.js?v=20261021-upload"></script>
 <script defer src="/js/responsive.js?v=20261021-mobile-audit"></script>
-<script defer src="/js/animations.js?v=20261020-motion"></script>
+<script defer src="/js/animations.js?v=20261021-feedback"></script>
 
 
 <% if (/(?:school-settings|settings|student-access)$/.test(it.currentPath || '')) { %><script defer src="/js/student-access.js?v=20261021-student-joining"></script><% } %>

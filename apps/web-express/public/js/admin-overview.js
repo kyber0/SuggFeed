@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-    const panel = document.getElementById('overview-workspace');
+    const panel = document.querySelector('[data-overview-root]');
     if (!panel)
         return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -43,11 +43,11 @@
         if (!point)
             return;
         slider.value = String(index);
-        const description = point.fullDate + ' · ' + point.submissions + ' ideas · ' + point.votes + ' current support votes';
+        const description = point.fullDate + ' · ' + point.submissions + ' ideas' + (data.includeSupport === false ? '' : ' · ' + (point.votes || 0) + ' current support votes');
         readout.textContent = description;
         slider.setAttribute('aria-valuetext', description);
-        const ceiling = Math.max(1, ...data.timeline.map(day => day[metric]));
-        const x = 32 + (data.timeline.length > 1 ? index / (data.timeline.length - 1) : 0) * 736, y = 196 - point[metric] / ceiling * 160;
+        const ceiling = Math.max(1, ...data.timeline.map(day => Number(day[metric]) || 0));
+        const x = 32 + (data.timeline.length > 1 ? index / (data.timeline.length - 1) : 0) * 736, y = 196 - (Number(point[metric]) || 0) / ceiling * 160;
         guide?.removeAttribute('hidden');
         guide?.setAttribute('x1', String(x));
         guide?.setAttribute('x2', String(x));

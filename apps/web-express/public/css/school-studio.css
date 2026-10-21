@@ -43,7 +43,8 @@
 .studio-theme-row input[type="color"]::-webkit-color-swatch-wrapper {padding:0;}
 .studio-theme-row input[type="color"]::-webkit-color-swatch {border:0;border-radius:4px;}
 .studio-theme-row input[type="color"]::-moz-color-swatch {border:0;border-radius:4px;}
-.studio-repeat-toolbar[draggable="true"] {cursor:move;}
+.studio-repeat-toolbar[draggable="true"] {cursor:grab;}
+.studio-repeat-toolbar[draggable="true"]:active {cursor:grabbing;}
 html[data-studio-mode="edit"] [draggable="true"] {cursor:default!important;}
 .studio-frame-edit .mobile-drag-handle {cursor:default;}
 

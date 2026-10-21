@@ -1,0 +1,17 @@
+/* Native hand cursors need no downloaded cursor image. */
+:where(button,a[href],summary,[role="button"],input[type="submit"],input[type="button"],input[type="reset"],input[type="checkbox"],input[type="radio"],select):where(:not(:disabled)):where(:not([aria-disabled="true"])) {cursor:pointer!important;}
+:is(button,input,select):disabled,[aria-disabled="true"] {cursor:not-allowed!important;}
+[draggable="true"] {cursor:grab;}
+:is(.staff-flow-card,.studio-repeat-toolbar)[draggable="true"] {cursor:grab!important;}
+:is(.staff-flow-card,.studio-repeat-toolbar)[draggable="true"]:active,[draggable="true"][data-sf-held],.staff-flow-board.is-dragging .staff-flow-card {cursor:grabbing!important;}
+[draggable="true"][data-sf-held]:not([data-dragging="true"]) {opacity:.88;transition:opacity 200ms ease;}
+.sf-action-progress {position:fixed;z-index:2147483646;inset:0 0 auto;height:3px;pointer-events:none;background:var(--line,#d6dde7);overflow:hidden;}
+.sf-action-progress[hidden] {display:none;}
+.sf-action-progress::after {content:"";display:block;width:45%;height:100%;background:var(--navy,#123e5c);transform-origin:left;animation:sf-action-progress 800ms ease-in-out infinite;}
+[data-sf-pending] {color:transparent!important;cursor:progress!important;}
+[data-sf-pending] > * {opacity:0!important;}
+[data-sf-pending]::after {content:""!important;position:absolute!important;inset:50% auto auto 50%!important;width:16px!important;height:16px!important;box-sizing:border-box!important;border:2px solid var(--sf-feedback-ink,#123e5c)!important;border-right-color:transparent!important;border-radius:50%!important;margin:-8px 0 0 -8px!important;opacity:1!important;animation:sf-action-spin 650ms linear infinite!important;pointer-events:none!important;}
+@keyframes sf-action-spin {to {transform:rotate(360deg);}}
+@keyframes sf-action-progress {from {transform:translateX(-105%);}to {transform:translateX(330%);}}
+@media(prefers-reduced-motion:reduce) {.sf-action-progress::after {animation:none;transform:none;width:100%;opacity:.65;}[data-sf-pending]::after {animation:none!important;}[draggable="true"][data-sf-held] {transition:none;}}
+label:has(input:is([type="checkbox"],[type="radio"],[type="file"]):not(:disabled)),input[type="file"]::file-selector-button {cursor:pointer!important;}

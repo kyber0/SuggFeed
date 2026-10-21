@@ -250,6 +250,10 @@ var SfMotion;
                 hide();
                 return;
             }
+            if (el.closest('[draggable="true"]')) {
+                hide();
+                return;
+            }
             targetX = pointer.clientX;
             targetY = pointer.clientY;
             if (!initialized) {

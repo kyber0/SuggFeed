@@ -11,6 +11,7 @@
     "src/client/file-upload.ts",
     "src/client/student-access.ts",
     "src/client/admin-overview.ts",
+    "src/client/interaction-feedback.ts",
     "src/client/auth-confirm.ts",
     "src/client/school-colors.ts",
     "src/client/school-design.ts",

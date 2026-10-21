@@ -604,3 +604,7 @@
 .platform-editor-school > summary h2 { overflow-wrap:anywhere; }
 .platform-editor-school > summary:focus-visible { outline:3px solid var(--navy);outline-offset:3px; }
 @media(max-width:600px) { .platform-editor-school > summary { flex-wrap:wrap;gap:12px; } .platform-editor-school > summary > div { flex-basis:100%; } }
+.platform-insight-totals {display:grid;gap:16px;margin-top:24px;padding-top:20px;border-top:1px solid var(--line);}
+.platform-insight-totals > div {display:flex;gap:16px;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-secondary);}
+.platform-insight-totals strong {color:var(--ink);font-variant-numeric:tabular-nums;}
+.platform-dashboard .overview-panel-heading h2 {font-size:16px;margin:0 0 6px;}

@@ -7,6 +7,7 @@ namespace SfMotion {
   const tick=()=>{frame=0;if(!visible||paused)return;x+=(targetX-x)*.3;y+=(targetY-y)*.3;cursor.style.transform=`translate3d(${x}px,${y}px,0)`;if(Math.abs(targetX-x)+Math.abs(targetY-y)>.2)frame=requestAnimationFrame(tick);};
   context.on(document,'pointermove',event=>{const pointer=event as PointerEvent,el=event.target instanceof Element?event.target:null;
    if(paused||dragging||document.activeElement?.matches('input,textarea,select,[contenteditable="true"]')||pointer.pointerType!=='mouse'||!el||performance.now()-lastScroll<config.interaction||blocked(el)||el.closest('input,textarea,select,[contenteditable],dialog[open],[aria-modal="true"]')||document.querySelector('dialog[open],[aria-modal="true"]:not(dialog):not([hidden])')||!window.getSelection()?.isCollapsed){hide();return;}
+   if(el.closest('[draggable="true"]')){hide();return;}
    targetX=pointer.clientX;targetY=pointer.clientY;if(!initialized){x=targetX;y=targetY;initialized=true;}
    cursor.dataset.state=el.closest('[draggable="true"]')?'drag':el.closest('button,[role="button"],a[href]')?'action':'default';visible=true;cursor.style.opacity='1';if(!frame)frame=requestAnimationFrame(tick);
   },{passive:true});

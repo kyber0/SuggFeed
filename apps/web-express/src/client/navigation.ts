@@ -72,7 +72,7 @@
  if(!shell || !content || !title || !status || !body)return;
  let timer:number;
  let wasInert=content.inert;
- function reset(){clearTimeout(timer);shell.hidden=true;content.inert=wasInert;content.removeAttribute('aria-busy');document.documentElement.classList.remove('is-navigating');}
+ function reset(){window.sfFeedback?.reset();clearTimeout(timer);shell.hidden=true;content.inert=wasInert;content.removeAttribute('aria-busy');document.documentElement.classList.remove('is-navigating');}
  function destinationScreen(destination:URL):[string,string] {
   const path=sfSchoolRoute(destination.pathname).replace(/\/+$/, '') || '/';
   if(path==='/')return ['home','SuggFeed'];

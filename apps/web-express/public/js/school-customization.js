@@ -199,7 +199,17 @@
     catch (error) {
         say(error.message, true);
     } }
-    function busyState(value) { busy = value; for (const id of ['studio-save', 'studio-publish', 'studio-request-review', 'studio-review']) {
+    let finishBusy;
+    function busyState(value) { if (value && !busy) {
+        const current = document.activeElement;
+        const button = current instanceof HTMLButtonElement && current.closest('[data-studio],.studio-dialog') ? current : document.getElementById('studio-save');
+        if (button)
+            finishBusy = window.sfFeedback?.pending(button);
+    }
+    else if (!value) {
+        finishBusy?.();
+        finishBusy = undefined;
+    } busy = value; for (const id of ['studio-save', 'studio-publish', 'studio-request-review', 'studio-review']) {
         const button = document.getElementById(id);
         button.disabled = value || !allowed;
     } host.setAttribute('aria-busy', String(value)); }

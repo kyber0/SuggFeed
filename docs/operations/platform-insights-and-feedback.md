@@ -1,0 +1,42 @@
+# Platform insights and interaction feedback
+
+## Analytics scope
+
+The school-admin overview and super-admin overview are separate. The platform overview now queries `platform_overview_analytics(actor, days)` for 7/30/90-day reporting:
+
+- Workspace counts by status across the entire service, independent of directory pagination.
+- Membership records marked active in active schools (not unique people or online users).
+- Ideas received per Philippine calendar day and a previous-window comparison when that window is nonempty.
+- Current aggregate idea statuses across all schools.
+
+Demo records are included and the current calendar day is partial. No student identities, content, school drafts or email addresses are returned by this RPC. The verified server operator/MFA guard and a fresh database operator check both apply. Execution is restricted to `service_role`; browser roles and `tenant_executor` cannot execute it. Migration: `202610210006_platform_overview_analytics.sql`.
+
+School management remains available if the insights call fails, with a retry state in the overview. Charts share their presentation and client interactions with the school overview. No extra animation/chart dependencies are installed.
+
+## Cursors
+
+Enabled buttons, links, native disclosure summaries and button-like controls use the native pointing hand. Drag targets use `grab`, then `grabbing` while held or dragged. Pointer cancellation, release, drop, drag end and window blur clear the held state. Existing move-arrow overrides were removed from staff cards, timelines and studio reorder controls. The decorative cursor follower is suppressed over draggable content. Native cursor artwork follows the operating system; there are no cursor image downloads.
+
+## Request and navigation feedback
+
+The shared `interaction-feedback` script is mounted once in the normal layout and standalone customization editor. It provides:
+
+- Button/link spinners and a thin page progress indicator after a 120 ms delay, avoiding flicker for quick actions.
+- A counter for concurrent requests from the same control and cleanup on success, error, cancellation and page restoration.
+- Duplicate activation prevention while a control has pending work.
+- Native GET/POST form feedback without disabling successful form controls or changing submitted values.
+- Normal same-origin navigation feedback; fragment-only changes, downloads and new-tab actions are excluded.
+- Reduced-motion fallbacks and preserved fixed/sticky control positioning, focus and accessible labels.
+
+`window.fetch` is decorated once to associate requests started in the current user-event turn with that event's control. It forwards the original arguments, response and errors; it does not read request headers, add retries or inspect credentials. Background requests without a current interaction do not activate controls. Fetch feedback ends when response headers arrive; application-specific processing or work started in a later task can use the explicit API:
+
+```ts
+const finish = window.sfFeedback?.pending(button);
+try { await delayedWork(); } finally { finish?.(); }
+```
+
+`window.sfFeedback.reset()` clears owned visual state, including cancellation of the existing navigation loader. It does not claim that a server write was cancelled.
+
+## Release checks
+
+Typechecking, the production build, local responsive views at 320/375/768/1440 px, delayed-request feedback, native form values and cursor states were inspected. The live aggregate was read in a database read-only transaction. No automated test suite, real-device cursor inspection, invitation sends or live membership changes were run.

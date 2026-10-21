@@ -341,7 +341,8 @@ html:has(.staff-review-dialog[open]) { overflow:hidden; }
 .staff-title-button::after {content:"";position:absolute;inset:0;z-index:1;border-radius:6px;}
 .staff-row:focus-within {outline:2px solid var(--focus-ring,var(--navy));outline-offset:-2px;}
 .staff-row .staff-title-button:focus-visible {outline:none;}
-.staff-flow-card,.staff-flow-board.is-dragging .staff-flow-card {cursor:move;}
+.staff-flow-card {cursor:grab;}
+.staff-flow-board.is-dragging .staff-flow-card {cursor:grabbing;}
 .staff-main:has(.staff-rows) {padding-top:24px;}
 .staff-row-title {display:flex;align-items:center;gap:8px;min-width:0;}
 .staff-row-title > .workspace-tag {flex:none;font-size:10px;}

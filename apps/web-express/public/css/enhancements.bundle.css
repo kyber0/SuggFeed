@@ -3204,8 +3204,9 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
 .header-school-identity strong {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .header-school-identity small {flex:none;padding:3px 5px;border-radius:4px;background:var(--bg-2);color:var(--muted);font-size:10px;}
 @media(max-width:900px) {.header-school-identity {display:none;}}
-.work-timeline-scroll.is-panning {cursor:move;}
-.staff-flow-card,.staff-flow-board.is-dragging .staff-flow-card {cursor:move;}
+.work-timeline-scroll.is-panning {cursor:grabbing;}
+.staff-flow-card {cursor:grab;}
+.staff-flow-board.is-dragging .staff-flow-card {cursor:grabbing;}
 
 /* A modest mobile text reduction. Keep form controls at 16px to avoid focus zoom. */
 @media (max-width:768px) {
