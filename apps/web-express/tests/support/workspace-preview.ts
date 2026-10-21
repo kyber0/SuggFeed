@@ -72,8 +72,8 @@ export function createWorkspacePreview() {
  app.post('/api/vote/:id',(req,res)=>{
   const item=items.find(i=>i.id===req.params.id);if(!item)return res.sendStatus(404);
   if(voteAttempts++===0)return res.status(503).json({success:false});
-  const already_voted=voted.has(item.id);if(!already_voted){voted.add(item.id);item.vote_count++;}
-  res.json({success:true,vote_count:item.vote_count,already_voted});
+  const already_voted=voted.has(item.id),support=req.body?.action!=='unvote';if(support&&!already_voted){voted.add(item.id);item.vote_count++;}else if(!support&&already_voted){voted.delete(item.id);item.vote_count--;}
+  res.json({success:true,vote_count:item.vote_count,voted:support,already_voted});
  });
  app.get('/idea/:id',(req,res)=>{
   const submission=items.find(i=>i.id===req.params.id);if(!submission)return res.sendStatus(404);

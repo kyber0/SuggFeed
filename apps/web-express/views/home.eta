@@ -342,7 +342,7 @@
                 aria-pressed="<%= (it.votedIds || []).includes(item.id) %>"
                 data-id="<%= item.id %>"
                 data-sf-click="action-80" data-sf-click-arg-0="<%= item.id %>"
-                aria-label="Upvote: <%= item.title %>"
+                aria-label="<%= (it.votedIds || []).includes(item.id) ? 'Undo your vote' : 'Support idea' %>: <%= item.title %>"
               >
                 <svg class="sf-vote-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="18 15 12 9 6 15"/>
@@ -408,4 +408,4 @@
   </footer>
 </main>
 
-<script defer src="/js/home.js?v=20261021-persistent-votes"></script>
+<script defer src="/js/home.js?v=20261021-toggle-votes"></script>

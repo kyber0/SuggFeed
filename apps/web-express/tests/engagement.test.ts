@@ -110,7 +110,7 @@ test('engagement routes enforce session identity, CSRF, payloads, private cachin
 
 test('Express vote routes use one database RPC and never accept a browser-supplied account ID', async () => {
   const original = supabaseService.rpc; const calls: any[] = []; let signedIn = false;
-  supabaseService.rpc = (async (name, args) => { calls.push([name, args]); return { error: null, data: { vote_count: 41, already_voted: false } }; }) as any;
+  supabaseService.rpc = (async (name, args) => { calls.push([name, args]); return { error: null, data: { vote_count: 41, voted:true, already_voted: false } }; }) as any;
   const app = express(); app.use(express.json());
   app.use((req, _res, next) => { req.session = { user: signedIn ? { id, role: 'student' } : undefined } as any; req.cookies = { sf_anon_token: otherId }; next(); });
   app.use(withTestSchool); app.use('/api', apiRouter);
@@ -120,9 +120,9 @@ test('Express vote routes use one database RPC and never accept a browser-suppli
   try {
     assert.equal((await vote('bad')).status, 400); assert.equal(calls.length, 0);
     const response = await vote(); assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), { success: true, vote_count: 41, already_voted: false });
-    assert.deepEqual(calls[0], ['cast_idea_vote', { p_submission_id: otherId, p_user_id: null, p_anon_token: otherId }]);
+    assert.deepEqual(await response.json(), { success: true, vote_count: 41, voted:true, already_voted: false });
+    assert.deepEqual(calls[0], ['set_idea_vote', { p_submission_id: otherId, p_user_id: null, p_anon_token: otherId,p_device_hash:null,p_ip_hash:null,p_action:'vote' }]);
     signedIn = true; await vote();
-    assert.deepEqual(calls[1], ['cast_idea_vote', { p_submission_id: otherId, p_user_id: id, p_anon_token: null }]);
+    assert.deepEqual(calls[1], ['set_idea_vote', { p_submission_id: otherId, p_user_id: id, p_anon_token: null,p_device_hash:null,p_ip_hash:null,p_action:'vote' }]);
   } finally { supabaseService.rpc = original; server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
 });

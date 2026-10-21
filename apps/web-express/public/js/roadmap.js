@@ -405,6 +405,7 @@
     document.querySelectorAll('[data-vote-id]').forEach(btn => {
         if (btn.dataset.voteId && hasVoted(btn.dataset.voteId)) {
             btn.classList.add('is-voted');
+            btn.title = 'Undo your support';
             btn.setAttribute('aria-pressed', 'true');
         }
     });
@@ -417,11 +418,11 @@
         const id = btn.dataset.voteId;
         if (!uuid.test(id) || voting.has(id))
             return;
+        const voted = !btn.classList.contains('is-voted');
         voting.add(id);
         const matching = Array.from(document.querySelectorAll(`[data-vote-id="${id}"]`));
         const previous = matching.map(button => ({ button, pressed: button.getAttribute('aria-pressed'), voted: button.classList.contains('is-voted'), counts: Array.from(button.querySelectorAll('.roadmap-card-vote-count,#roadmap-detail-votes')).map(el => ({ el, text: el.textContent })) }));
-        previous.forEach(saved => { saved.button.classList.add('is-voted'); saved.button.setAttribute('aria-pressed', 'true'); saved.counts.forEach(({ el, text }) => { if (!saved.voted)
-            el.textContent = String((Number(text) || 0) + 1); }); });
+        previous.forEach(saved => { saved.button.classList.toggle('is-voted', voted); saved.button.setAttribute('aria-pressed', String(voted)); saved.counts.forEach(({ el, text }) => { el.textContent = String(Math.max(0, (Number(text) || 0) + (voted ? 1 : -1))); }); });
         matching.forEach(b => { b.disabled = true; b.setAttribute('aria-busy', 'true'); });
         const voteStatus = document.getElementById('roadmap-vote-status');
         if (voteStatus)
@@ -433,20 +434,20 @@
                 method: 'POST',
                 signal: controller.signal,
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ action: 'up' }),
+                body: JSON.stringify({ action: voted ? 'up' : 'unvote' }),
             });
             const data = await res.json();
-            if (!res.ok || !data.success || typeof data.vote_count !== 'number')
+            if (!res.ok || !data.success || typeof data.voted !== 'boolean' || typeof data.vote_count !== 'number')
                 throw new Error();
             if (data.success) {
-                saveVotedId(id);
+                sfRememberVote(id, data.voted, data.vote_count);
                 matching.forEach(b => {
                     if (b.dataset.voteId !== id)
                         return;
-                    b.classList.add('is-voted');
+                    b.classList.toggle('is-voted', data.voted);
                     b.classList.add('vote-success');
                     setTimeout(() => b.classList.remove('vote-success'), 350);
-                    b.setAttribute('aria-pressed', 'true');
+                    b.setAttribute('aria-pressed', String(data.voted));
                     const countEl = b.querySelector('.roadmap-card-vote-count');
                     if (countEl)
                         countEl.textContent = String(data.vote_count);
@@ -459,10 +460,10 @@
                     detailVotes.textContent = String(data.vote_count);
                 }
                 if (typeof window.sfToast === 'function') {
-                    window.sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
+                    window.sfToast(data.voted ? 'Your support has been recorded.' : 'Your support has been removed.', 'success');
                 }
                 if (voteStatus)
-                    voteStatus.textContent = data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded.';
+                    voteStatus.textContent = data.voted ? 'Your support has been recorded.' : 'Your support has been removed.';
             }
         }
         catch {

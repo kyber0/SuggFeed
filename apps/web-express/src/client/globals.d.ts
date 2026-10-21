@@ -112,3 +112,5 @@ declare function sfSaveProfilePrefs(...args: any[]): any;
 
 interface SFEmptyStateOptions { heading: string; description: string; icon?: string; compact?: boolean; href?: string; label?: string; }
 interface Window {sfFeedback?:{pending(element:HTMLElement):()=>void;reset():void;};}
+
+declare function sfRememberVote(id:string,voted:boolean,count:number):void;

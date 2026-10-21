@@ -404,6 +404,6 @@
  <%~ include('partials/work-record', it) %>
 </main>
 <script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items || []).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/roadmap.js?v=20261018-customization"></script>
+<script defer src="/js/roadmap.js?v=20261021-toggle-votes"></script>
 <script defer src="/js/roadmap-timeline.js?v=20261016-school-isolation"></script>
 <script defer src="/js/roadmap-views.js?v=20261016-school-isolation"></script>

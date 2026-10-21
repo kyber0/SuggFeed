@@ -1,4 +1,16 @@
 (() => {
+  function sfRememberVote(id:string,voted:boolean,count:number){
+    try{const raw:unknown=JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas'))||'[]');const ids=new Set<string>(Array.isArray(raw)?raw.filter((value):value is string=>typeof value==='string'):[]);if(voted)ids.add(id);else ids.delete(id);localStorage.setItem(sfSchoolKey('sf_voted_ideas'),JSON.stringify([...ids]));}catch{}
+    for(const button of document.querySelectorAll<HTMLElement>('.sf-vote-btn[data-id],.action-like[data-id],[data-vote-id]')){
+      if((button.dataset.voteId||button.dataset.id)!==id)continue;
+      const state=button.matches('.sf-vote-btn')?'sf-vote-btn--voted':button.matches('.action-like')?'active':'is-voted';button.classList.toggle(state,voted);button.setAttribute('aria-pressed',String(voted));button.title=voted?'Undo your support':'Support this idea';button.setAttribute('aria-label',button.title);
+      for(const number of button.querySelectorAll('.sf-vote-num,.action-count,.roadmap-card-vote-count,#roadmap-detail-votes'))number.textContent=String(count);
+      const label=button.querySelector('.action-label');if(label)label.textContent=voted?'Supported':'Support';
+      const card=button.closest<HTMLElement>('[data-votes]');if(card)card.dataset.votes=String(count);
+    }
+    document.dispatchEvent(new CustomEvent('sf:vote-changed',{detail:{id,voted,count}}));
+  }
+  Object.assign(window,{sfRememberVote});
   const requests = new WeakMap<HTMLButtonElement, AbortController>();
   const signedIn = () => !!document.getElementById('sf-auth-config')?.dataset.user;
   async function sync(button: HTMLButtonElement) {

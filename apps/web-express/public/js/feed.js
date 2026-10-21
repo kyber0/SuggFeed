@@ -164,7 +164,7 @@
     function setSupportedState(button, supported) {
         button.classList.toggle('active', supported);
         button.setAttribute('aria-pressed', String(supported));
-        button.setAttribute('title', supported ? 'You supported this idea' : 'Support this idea');
+        button.setAttribute('title', supported ? 'Undo your support' : 'Support this idea');
         const label = button.querySelector('.action-label');
         if (label)
             label.textContent = supported ? 'Supported' : 'Support';
@@ -259,17 +259,22 @@
         document.querySelectorAll('.action-like[data-id]').forEach(button => setSupportedState(button, votes.has(button.dataset.id || '')));
         document.querySelectorAll('.action-bookmark[data-id]').forEach(button => setSavedState(button, saved.has(button.dataset.id || '')));
     }
+    document.addEventListener('sf:vote-changed', event => { const { id, voted } = event.detail; if (voted)
+        rememberedVotes.add(id);
+    else
+        rememberedVotes.delete(id); });
     const pendingVotes = new Set();
     async function sfVoteFeed(id, button) {
         if (!id || pendingVotes.has(id))
             return;
+        const voted = !button.classList.contains('active');
         pendingVotes.add(id);
         const matchingButtons = Array.from(document.querySelectorAll('.action-like[data-id]')).filter(other => other.dataset.id === id);
         if (!matchingButtons.includes(button))
             matchingButtons.push(button);
         const previous = matchingButtons.map(other => ({ other, supported: other.classList.contains('active'), count: other.querySelector('.action-count')?.textContent || '0' }));
-        previous.forEach(saved => { setSupportedState(saved.other, true); const count = saved.other.querySelector('.action-count'); if (count && !saved.supported)
-            count.textContent = String((Number(saved.count) || 0) + 1); });
+        previous.forEach(saved => { setSupportedState(saved.other, voted); const count = saved.other.querySelector('.action-count'); if (count)
+            count.textContent = String(Math.max(0, (Number(saved.count) || 0) + (voted ? 1 : -1))); });
         matchingButtons.forEach(other => { other.disabled = true; other.setAttribute('aria-busy', 'true'); });
         const controller = new AbortController();
         const timeout = window.setTimeout(() => controller.abort(), 15000);
@@ -277,17 +282,17 @@
             const response = await sfSchoolFetch('/api/vote/' + encodeURIComponent(id), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                body: JSON.stringify({ action: 'up' }),
+                body: JSON.stringify({ action: voted ? 'up' : 'unvote' }),
                 signal: controller.signal
             });
             if (!response.ok)
                 throw new Error(response.status === 429 ? 'rate-limit' : 'request-failed');
             const data = await response.json();
-            if (!data.success || !Number.isFinite(Number(data.vote_count)))
+            if (!data.success || typeof data.voted !== 'boolean' || !Number.isFinite(Number(data.vote_count)))
                 throw new Error('invalid-response');
-            sfSaveVotedId(id);
+            sfRememberVote(id, data.voted, data.vote_count);
             matchingButtons.forEach(other => {
-                setSupportedState(other, true);
+                setSupportedState(other, data.voted);
                 other.classList.add('vote-success');
                 window.setTimeout(() => other.classList.remove('vote-success'), 350);
                 const count = other.querySelector('.action-count');
@@ -295,7 +300,7 @@
                     count.textContent = String(Math.max(0, Number(data.vote_count)));
             });
             if (window.sfToast)
-                window.sfToast(data.already_voted ? 'You already supported this idea.' : 'Your support has been recorded. Thank you!', data.already_voted ? 'info' : 'success');
+                window.sfToast(data.voted ? 'Your support has been recorded.' : 'Your support has been removed.', 'success');
         }
         catch (error) {
             previous.forEach(saved => { setSupportedState(saved.other, saved.supported); const count = saved.other.querySelector('.action-count'); if (count)
@@ -409,7 +414,7 @@
         </a></div>` : ''}
         <div class="post-footer" data-sf-click="stop">
           <button type="button" class="care-report" data-report-idea="${id}">Report</button>
-          <button type="button" class="action-btn action-like${supported ? ' active' : ''}" data-id="${id}" data-sf-click="vote-feed" aria-pressed="${supported}" title="${supported ? 'You supported this idea' : 'Support this idea'}">
+          <button type="button" class="action-btn action-like${supported ? ' active' : ''}" data-id="${id}" data-sf-click="vote-feed" aria-pressed="${supported}" title="${supported ? 'Undo your support' : 'Support this idea'}">
             <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="action-count">${votes}</span><span class="action-label">${supported ? 'Supported' : 'Support'}</span>
           </button>
           <button type="button" class="action-btn action-comment" data-sf-click="comment-feed" data-idea-id="${id}" aria-label="Open discussion, ${comments} comments" title="Open discussion">

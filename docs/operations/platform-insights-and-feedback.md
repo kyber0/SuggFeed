@@ -85,3 +85,18 @@ Home votes also update the existing school-scoped device hint after the API
 confirms success. Browser storage failures cannot undo a recorded vote. Pending
 requests prevent repeated clicks; failed requests restore the previous count and
 selection. The server remains authoritative on refresh.
+
+### Removing support
+
+Click a selected support button again to remove your vote. Home, feed, roadmap,
+standalone idea details and the idea drawer send explicit `up` / `unvote` requests
+to the same endpoint. The endpoint uses the existing serialized `set_idea_vote`
+function with `vote` / `unvote`, never a blind toggle: repeating a removal cannot
+restore support. School and voter identity come from the existing verified
+context and cookie, not browser-supplied account IDs. Removing support is allowed
+when new voting is disabled; the database still enforces school access.
+
+Successful responses synchronize visible counts and the existing device hint;
+selected controls expose “Undo your support.” Pending requests disable the
+control, failures retain or restore its previous state, and the home route reads
+the saved state from the database on refresh. No schema migration is needed.

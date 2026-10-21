@@ -185,6 +185,7 @@ let sfCurrentIdea = null;
 
     const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
     const hasVoted = votedIds.includes(idea.id);
+    voteBtn.setAttribute('aria-pressed',String(hasVoted));voteBtn.title=hasVoted?'Undo your support':'Support this idea';
 
     if (idea.status === 'pending') {
       voteBtn.classList.remove('voted');
@@ -377,45 +378,25 @@ let sfCurrentIdea = null;
   }
 
   async function sfDrawerVote() {
-    if (!sfCurrentIdea) return;
-    if (sfCurrentIdea.status === 'pending') {
-      if (window.sfToast) sfToast('This idea is pending staff review. Voting opens once approved.', 'info');
-      return;
-    }
-
-    const btn = (document.getElementById('drawer-vote-btn') as HTMLButtonElement);
-    if (btn.classList.contains('voted')) return;
-
+    if(!sfCurrentIdea || sfCurrentIdea.status==='pending')return;
+    const id=sfCurrentIdea.id;
+    const btn=document.getElementById('drawer-vote-btn') as HTMLButtonElement;
+    if(!btn || btn.disabled)return;
+    const voted=!btn.classList.contains('voted');btn.disabled=true;btn.setAttribute('aria-busy','true');
+    const controller=new AbortController(),timer=window.setTimeout(()=>controller.abort(),15000);
     try {
-      const res = await sfSchoolFetch(`/api/vote/${sfCurrentIdea.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'up' })
-      });
-      const data = await res.json();
-      if (data.success) {
-        btn.classList.add('voted');
-        (document.getElementById('drawer-vote-count') as HTMLElement).textContent = data.vote_count;
-        (document.getElementById('drawer-vote-summary') as HTMLElement).textContent = data.vote_count;
-        (document.getElementById('drawer-vote-label') as HTMLElement).textContent = 'Supported';
-        (document.getElementById('drawer-vote-icon') as unknown as SVGElement).innerHTML = '<polyline points="20 6 9 17 4 12"/>';
-
-        // Remember vote locally
-        const votedIds = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
-        if (!votedIds.includes(sfCurrentIdea.id)) {
-          votedIds.push(sfCurrentIdea.id);
-          localStorage.setItem(sfSchoolKey('sf_voted_ideas'), JSON.stringify(votedIds));
-        }
-
-        // Also reflect on feed cards if present
-        const feedCardVote = document.querySelector<HTMLElement>(`[data-idea-id="${sfCurrentIdea.id}"] .action-like .action-count`);
-        if (feedCardVote) feedCardVote.textContent = data.vote_count;
-
-        if (window.sfToast) sfToast('Vote recorded! Thank you.', 'success');
-      }
-    } catch {
-      if (window.sfToast) sfToast('Could not record vote.', 'error');
-    }
+      const response=await sfSchoolFetch('/api/vote/'+encodeURIComponent(id),{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({action:voted?'up':'unvote'})});
+      const data=await response.json();if(!response.ok||!data.success||typeof data.voted!=='boolean'||typeof data.vote_count!=='number')throw new Error();
+      sfRememberVote(id,data.voted,data.vote_count);
+      if(sfCurrentIdea?.id!==id)return;
+      sfCurrentIdea.vote_count=data.vote_count;
+      btn.classList.toggle('voted',data.voted);btn.setAttribute('aria-pressed',String(data.voted));btn.title=data.voted?'Undo your support':'Support this idea';
+      for(const name of ['drawer-vote-count','drawer-vote-summary']){const node=document.getElementById(name);if(node)node.textContent=String(data.vote_count);}
+      const label=document.getElementById('drawer-vote-label');if(label)label.textContent=data.voted?'Supported':'Support this idea';
+      const icon=document.getElementById('drawer-vote-icon');if(icon)icon.innerHTML=data.voted?'<polyline points="20 6 9 17 4 12"/>':'<path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>';
+      window.sfToast?.(data.voted?'Your support has been recorded.':'Your support has been removed.','success');
+    }catch{window.sfToast?.('Could not update your support. Try again to confirm its status.','error');}
+    finally{clearTimeout(timer);if(sfCurrentIdea?.id===id){btn.disabled=false;btn.removeAttribute('aria-busy');}}
   }
 
   function sfDrawerReplyTo(commentId, author) {

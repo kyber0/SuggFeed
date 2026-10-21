@@ -73,7 +73,7 @@
 <!-- Theme toggle logic -->
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>
 <% if (!it.accountArea && !it.platformDashboard) { %>
-<script defer src="/js/engagement.js?v=20261016-school-isolation"></script>
+<script defer src="/js/engagement.js?v=20261021-toggle-votes"></script>
 <script defer src="/js/community.js?v=20261018-customization"></script>
 
 <script defer src="/js/public-history.js?v=20261018-empty-states"></script>

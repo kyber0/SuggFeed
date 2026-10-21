@@ -391,49 +391,41 @@
         search?.focus();
     }
     async function sfVote(id, btn) {
-        if (btn.disabled || btn.classList.contains('sf-vote-btn--voted'))
+        if (btn.disabled)
             return;
+        const voted = !btn.classList.contains('sf-vote-btn--voted');
         // Optimistic UI update
-        btn.classList.add('sf-vote-btn--voted');
-        btn.setAttribute('aria-pressed', 'true');
+        btn.classList.toggle('sf-vote-btn--voted', voted);
+        btn.setAttribute('aria-pressed', String(voted));
         btn.disabled = true;
         btn.setAttribute('aria-busy', 'true');
         const numSpan = btn.querySelector('.sf-vote-num');
         const prevCount = Number(numSpan?.textContent || 0);
         if (numSpan)
-            numSpan.textContent = String(prevCount + 1);
+            numSpan.textContent = String(Math.max(0, prevCount + (voted ? 1 : -1)));
         const controller = new AbortController(), timeout = window.setTimeout(() => controller.abort(), 15000);
         try {
             const res = await sfSchoolFetch(`/api/vote/${encodeURIComponent(id)}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'up' }),
+                body: JSON.stringify({ action: voted ? 'up' : 'unvote' }),
                 signal: controller.signal
             });
             const data = await res.json();
-            if (res.ok && data.success && Number.isFinite(Number(data.vote_count))) {
-                try {
-                    const raw = JSON.parse(localStorage.getItem(sfSchoolKey('sf_voted_ideas')) || '[]');
-                    const ids = new Set(Array.isArray(raw) ? raw.filter(value => typeof value === 'string') : []);
-                    ids.add(id);
-                    localStorage.setItem(sfSchoolKey('sf_voted_ideas'), JSON.stringify([...ids]));
-                }
-                catch { }
-                const card = btn.closest('[data-votes]');
-                if (card)
-                    card.dataset.votes = String(data.vote_count);
-                if (!data.already_voted)
+            if (res.ok && data.success && typeof data.voted === 'boolean' && Number.isFinite(Number(data.vote_count))) {
+                sfRememberVote(id, data.voted, data.vote_count);
+                if (data.voted && !data.already_voted)
                     spawnVoteParticles(btn);
                 if (numSpan && data.vote_count !== undefined) {
                     numSpan.textContent = data.vote_count;
                 }
                 if (window.sfToast)
-                    sfToast(data.already_voted ? 'You already supported this idea.' : 'Vote recorded! Thank you for supporting this idea.', data.already_voted ? 'info' : 'success');
+                    sfToast(data.voted ? 'Your support has been recorded.' : 'Your support has been removed.', 'success');
             }
             else {
                 // Revert
-                btn.classList.remove('sf-vote-btn--voted');
-                btn.setAttribute('aria-pressed', 'false');
+                btn.classList.toggle('sf-vote-btn--voted', !voted);
+                btn.setAttribute('aria-pressed', String(!voted));
                 if (numSpan)
                     numSpan.textContent = String(prevCount);
                 if (window.sfToast)
@@ -441,8 +433,8 @@
             }
         }
         catch (err) {
-            btn.classList.remove('sf-vote-btn--voted');
-            btn.setAttribute('aria-pressed', 'false');
+            btn.classList.toggle('sf-vote-btn--voted', !voted);
+            btn.setAttribute('aria-pressed', String(!voted));
             if (numSpan)
                 numSpan.textContent = String(prevCount);
             if (window.sfToast)

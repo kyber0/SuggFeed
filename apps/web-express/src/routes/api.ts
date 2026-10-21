@@ -20,7 +20,7 @@ import {
 import { feedFilters } from '../lib/feed-filters';
 import { submissionContext, submissionHash, receiptTrackingCode } from '../lib/submission-context';
 const router = Router();
-router.use((req,res,next)=>{const feature=req.method==='POST'&&req.path.startsWith('/vote/')?'voting':req.method==='POST'&&/^\/comments\/[^/]+$/.test(req.path)?'comments':null;if(feature&&!schoolFeature(feature))return res.status(403).json({success:false,code:'FEATURE_DISABLED',error:'Your school disabled new '+feature+'.'});next();});
+router.use((req,res,next)=>{const feature=req.method==='POST'&&req.path.startsWith('/vote/')&&req.body?.action!=='unvote'?'voting':req.method==='POST'&&/^\/comments\/[^/]+$/.test(req.path)?'comments':null;if(feature&&!schoolFeature(feature))return res.status(403).json({success:false,code:'FEATURE_DISABLED',error:'Your school disabled new '+feature+'.'});next();});
 router.use(engagementRouter);
 router.use(publicHistoryRouter);
 router.use('/saved-searches',savedSearchesRouter);
@@ -47,6 +47,8 @@ router.post(
     const id = req.params["id"] as string;
 
     if (!ENGAGEMENT_UUID.test(id)) return res.status(400).json({ success: false, error: 'Invalid idea ID.' });
+    const action=req.body?.action ?? 'up';
+    if(!['up','unvote'].includes(action))return res.status(400).json({success:false,error:'Choose up or unvote.'});
     const user = schoolUser(req);
     let anonToken: string | null = null;
     if (!user?.id) {
@@ -62,15 +64,16 @@ router.post(
       }
 
     }
-    const { data, error } = await supabaseService.rpc('cast_idea_vote', {
+    const { data, error } = await supabaseService.rpc('set_idea_vote', {
       p_submission_id: id, p_user_id: user?.id || null, p_anon_token: anonToken,
+      p_device_hash:null,p_ip_hash:null,p_action:action==='unvote'?'unvote':'vote',
     });
     if (error?.code === 'P0002') return res.status(404).json({ success: false, error: 'Submission not found or not public.' });
     if (error) throw error;
     invalidateCache(`submission_${id}`);
     invalidateCache("feed_");
     invalidateCache("roadmap_");
-    return res.json({ success: true, vote_count: data.vote_count, already_voted: data.already_voted });
+    return res.json({ success: true, vote_count: data.vote_count, voted:data.voted, already_voted: data.already_voted });
   })
 );
 

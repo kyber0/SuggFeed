@@ -161,6 +161,6 @@ const feedUrl = (changes = {}) => {
 <div id="sf-feed-account-state" hidden data-user="<%= it.accountState.userId %>" data-bookmarks="<%= JSON.stringify(it.accountState.bookmarks) %>" data-searches="<%= JSON.stringify(it.accountState.searches) %>"></div>
 <% } %>
 <div id="sf-feed-config" hidden data-sort="<%= sort %>" data-category="<%= category %>" data-search="<%= search %>" data-total="<%= total ?? '' %>" data-page="<%= it.page || 1 %>" data-has-more="<%= it.hasMore ? 'true' : 'false' %>"></div>
-<script defer src="/js/feed.js?v=20261021-pane-scroll"></script>
+<script defer src="/js/feed.js?v=20261021-toggle-votes"></script>
 
 <script defer src="/js/saved-searches.js?v=20261018-customization"></script>
