@@ -138,6 +138,7 @@
         if (Array.isArray(next.categories)) {
             const grid = document.querySelector('.sip-cat-grid'), selected = document.querySelector('input[name="sip-category"]:checked')?.value;
             if (grid) {
+                const defaults = JSON.parse(grid.dataset.defaultIcons || '{}');
                 grid.replaceChildren();
                 for (const category of next.categories.filter((c) => c.active)) {
                     const label = document.createElement('label');
@@ -152,14 +153,33 @@
                     radio.required = true;
                     radio.checked = category.id === selected;
                     radio.dataset.sfChange = 'action-116';
+                    const icon = document.createElement('div');
+                    icon.className = 'sip-cat-icon-wrap';
+                    icon.setAttribute('aria-hidden', 'true');
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    for (const [key, value] of Object.entries({ width: '20', height: '20', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }))
+                        svg.setAttribute(key, value);
+                    const use = document.createElementNS(svg.namespaceURI, 'use');
+                    const defaultIcon = defaults[category.name.trim().toLowerCase()];
+                    const name = category.icon && category.icon !== 'message' ? category.icon : typeof defaultIcon === 'string' ? defaultIcon : 'message';
+                    use.setAttribute('href', '#ws-' + name);
+                    svg.append(use);
+                    icon.append(svg);
                     const content = document.createElement('div');
                     content.className = 'sip-cat-card-content';
-                    const title = document.createElement('strong');
+                    const header = document.createElement('div');
+                    header.className = 'sip-cat-card-header';
+                    const title = document.createElement('span');
+                    title.className = 'sip-cat-card-title';
                     title.textContent = category.name;
-                    const description = document.createElement('p');
-                    description.textContent = category.description;
-                    content.append(title, description);
-                    label.append(radio, content);
+                    const check = document.createElement('span');
+                    check.className = 'sip-cat-check-dot';
+                    header.append(title, check);
+                    const description = document.createElement('div');
+                    description.className = 'sip-cat-card-sub';
+                    description.textContent = category.description || 'Share feedback and suggestions about this topic.';
+                    content.append(header, description);
+                    label.append(radio, icon, content);
                     grid.append(label);
                 }
                 if (!document.querySelector('input[name="sip-category"]:checked'))

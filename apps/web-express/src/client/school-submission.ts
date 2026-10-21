@@ -26,7 +26,30 @@
    input.className='workspace-input';input.dataset.schoolQuestion=q.id;input.required=q.required;input.value=q.type==='choice'&&!q.options.includes(previous[q.id])?'':previous[q.id]||'';label.append(input);if(q.help){const hint=document.createElement('small');hint.textContent=q.help;label.append(hint);}fields.append(label);
   }
   const wrapper=document.querySelector('[data-school-attachment-fields]');if(wrapper){wrapper.replaceChildren();if(schema.attachments!=='off'||uploads.length){const label=document.createElement('label');label.className='school-question';label.textContent='Supporting images '+(schema.attachments==='required'?'(at least one required)':schema.attachments==='off'?'(remove images to continue)':'(optional)');if(schema.attachments!=='off'){const input=document.createElement('input');input.type='file';input.accept='image/png,image/jpeg,image/webp';input.multiple=true;input.dataset.submissionImages='';label.append(input);}const list=document.createElement('ul');list.dataset.submissionUploadList='';const status=document.createElement('p');status.dataset.submissionUploadStatus='';status.setAttribute('role','status');wrapper.append(label,list,status);}}
-  if(Array.isArray(next.categories)){const grid=document.querySelector('.sip-cat-grid'),selected=document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked')?.value;if(grid){grid.replaceChildren();for(const category of next.categories.filter((c:any)=>c.active)){const label=document.createElement('label');label.className='sip-cat-card';label.id='cat-card-'+category.id;const radio=document.createElement('input');radio.type='radio';radio.name='sip-category';radio.value=category.id;radio.dataset.categoryName=category.name;radio.className='sip-cat-radio';radio.required=true;radio.checked=category.id===selected;radio.dataset.sfChange='action-116';const content=document.createElement('div');content.className='sip-cat-card-content';const title=document.createElement('strong');title.textContent=category.name;const description=document.createElement('p');description.textContent=category.description;content.append(title,description);label.append(radio,content);grid.append(label);}if(!document.querySelector('input[name="sip-category"]:checked'))(window as any).sfRestoreSubmissionStep?.(false);}}
+  if(Array.isArray(next.categories)){
+   const grid=document.querySelector<HTMLElement>('.sip-cat-grid'),selected=document.querySelector<HTMLInputElement>('input[name="sip-category"]:checked')?.value;
+   if(grid){
+    const defaults=JSON.parse(grid.dataset.defaultIcons||'{}');grid.replaceChildren();
+    for(const category of next.categories.filter((c:any)=>c.active)){
+     const label=document.createElement('label');label.className='sip-cat-card';label.id='cat-card-'+category.id;
+     const radio=document.createElement('input');radio.type='radio';radio.name='sip-category';radio.value=category.id;radio.dataset.categoryName=category.name;radio.className='sip-cat-radio';radio.required=true;radio.checked=category.id===selected;radio.dataset.sfChange='action-116';
+     const icon=document.createElement('div');icon.className='sip-cat-icon-wrap';icon.setAttribute('aria-hidden','true');
+     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+     for(const [key,value] of Object.entries({width:'20',height:'20',viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'2'}))svg.setAttribute(key,value);
+     const use=document.createElementNS(svg.namespaceURI,'use');
+     const defaultIcon=defaults[category.name.trim().toLowerCase()];
+     const name=category.icon&&category.icon!=='message'?category.icon:typeof defaultIcon==='string'?defaultIcon:'message';
+     use.setAttribute('href','#ws-'+name);svg.append(use);icon.append(svg);
+     const content=document.createElement('div');content.className='sip-cat-card-content';
+     const header=document.createElement('div');header.className='sip-cat-card-header';
+     const title=document.createElement('span');title.className='sip-cat-card-title';title.textContent=category.name;
+     const check=document.createElement('span');check.className='sip-cat-check-dot';header.append(title,check);
+     const description=document.createElement('div');description.className='sip-cat-card-sub';description.textContent=category.description||'Share feedback and suggestions about this topic.';
+     content.append(header,description);label.append(radio,icon,content);grid.append(label);
+    }
+    if(!document.querySelector('input[name="sip-category"]:checked'))(window as any).sfRestoreSubmissionStep?.(false);
+   }
+  }
   const anonymous=document.getElementById('sip-anon') as HTMLInputElement|null;if(anonymous){anonymous.disabled=!next.features.anonymous;if(anonymous.disabled)anonymous.checked=false;}
   document.body.classList.toggle('school-anonymous-off',!next.features.anonymous);renderFiles();renderPreserved();
   document.getElementById('submit-idea-form')?.dispatchEvent(new Event('input',{bubbles:true}));

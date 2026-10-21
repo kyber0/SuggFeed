@@ -92,9 +92,10 @@
         <p class="sip-section-sub">Select the area that best describes your idea or concern.</p>
       </div>
 
-      <div class="sip-cat-grid" role="radiogroup" aria-label="Feedback category">
-       <% const schoolCats=it.schoolCategories || (it.categories || ['Facilities','Learning','Safety','Student life','Other']).map(name=>({id:name,name,icon:'message',description:''})); for(const cat of schoolCats) { %>
-        <label class="sip-cat-card" id="cat-card-<%= cat.id %>"><input type="radio" name="sip-category" value="<%= cat.id %>" data-category-name="<%= cat.name %>" class="sip-cat-radio" required data-sf-change="action-116"/><div class="sip-cat-icon-wrap" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#ws-<%= cat.icon || 'message' %>"/></svg></div><div class="sip-cat-card-content"><div class="sip-cat-card-header"><span class="sip-cat-card-title"><%= cat.name %></span><span class="sip-cat-check-dot"></span></div><div class="sip-cat-card-sub"><%= cat.description || 'Share feedback and suggestions about this topic.' %></div></div></label>
+      <% const categoryIcons={facilities:"building",learning:"book",safety:"shield","student life":"users",other:"message"}; %>
+      <div class="sip-cat-grid" role="radiogroup" aria-label="Feedback category" data-default-icons="<%= JSON.stringify(categoryIcons) %>">
+       <% const schoolCats=it.schoolCategories || (it.categories || ['Facilities','Learning','Safety','Student life','Other']).map(name=>({id:name,name,icon:'message',description:''})); for(const cat of schoolCats) { const defaultIcon=categoryIcons[cat.name.trim().toLowerCase()]; const categoryIcon=cat.icon && cat.icon !== 'message' ? cat.icon : typeof defaultIcon === 'string' ? defaultIcon : 'message'; %>
+        <label class="sip-cat-card" id="cat-card-<%= cat.id %>"><input type="radio" name="sip-category" value="<%= cat.id %>" data-category-name="<%= cat.name %>" class="sip-cat-radio" required data-sf-change="action-116"/><div class="sip-cat-icon-wrap" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#ws-<%= categoryIcon %>"/></svg></div><div class="sip-cat-card-content"><div class="sip-cat-card-header"><span class="sip-cat-card-title"><%= cat.name %></span><span class="sip-cat-check-dot"></span></div><div class="sip-cat-card-sub"><%= cat.description || 'Share feedback and suggestions about this topic.' %></div></div></label>
        <% } %>
       </div>
     </div>
