@@ -40,3 +40,17 @@ try { await delayedWork(); } finally { finish?.(); }
 ## Release checks
 
 Typechecking, the production build, local responsive views at 320/375/768/1440 px, delayed-request feedback, native form values and cursor states were inspected. The live aggregate was read in a database read-only transaction. No automated test suite, real-device cursor inspection, invitation sends or live membership changes were run.
+
+### Manage Work drag cursors
+
+Mouse dragging uses pointer capture after a 6px movement threshold. The source card
+shows an open hand at rest; the document keeps the native closed hand during a drag,
+including over lane controls. Forbidden transitions show an unavailable destination
+border and message without invoking the browser's blocked drag cursor. Valid drops
+open the existing review form; they do not save a stage change directly.
+
+Escape, pointer cancellation, window blur and page departure clear the drag state.
+Ordinary links and form controls keep their existing click behavior. Stage menus
+remain available for keyboard and touch input; native non-mouse dragging retains
+the existing guarded fallback. Native cursor appearance depends on the operating
+system; no downloaded cursor image is used.

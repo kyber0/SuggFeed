@@ -201,27 +201,33 @@
         const tellDrag = (text) => { if (dragStatus)
             dragStatus.textContent = text; };
         let dragPreview = null;
+        let pointerDrag = null;
+        let dragFrame = 0, ghostWidth = 0, ghostHeight = 0, lastPointerLane = null;
+        let suppressedCard = null, suppressUntil = 0, lastPointerType = '';
         function clearDrag() {
+            const pointer = pointerDrag;
+            pointerDrag = null;
+            cancelAnimationFrame(dragFrame);
+            dragFrame = 0;
+            lastPointerLane = null;
+            document.documentElement.removeAttribute('data-sf-board-dragging');
+            if (pointer?.started) {
+                suppressedCard = pointer.card;
+                suppressUntil = performance.now() + 250;
+            }
+            if (pointer) {
+                pointer.card.removeAttribute('data-sf-held');
+                if (pointer.capture.hasPointerCapture(pointer.pointerId))
+                    pointer.capture.releasePointerCapture(pointer.pointerId);
+            }
             board.classList.remove('is-dragging');
             board.querySelectorAll('[data-dragging]').forEach(card => { delete card.dataset.dragging; card.dataset.draggedAt = String(Date.now()); });
-            board.querySelectorAll('[data-drop-stage]').forEach(lane => { lane.classList.remove('is-drop-target'); delete lane.dataset.dropLabel; lane.querySelector('.staff-lane-heading')?.removeAttribute('data-drop-label'); });
+            board.querySelectorAll('[data-drop-stage]').forEach(lane => { lane.classList.remove('is-drop-target', 'is-invalid-drop-target'); delete lane.dataset.dropLabel; lane.querySelector('.staff-lane-heading')?.removeAttribute('data-drop-label'); });
             dragPreview?.remove();
             dragPreview = null;
             dragging = null;
         }
-        board.addEventListener('dragstart', e => {
-            const target = e.target, card = target.closest('[data-board-id]');
-            if (!card)
-                return;
-            if (busy || loading || target.closest('input,select,button,summary,label,details')) {
-                e.preventDefault();
-                return;
-            }
-            const item = items.get(card.dataset.boardId);
-            if (!item) {
-                e.preventDefault();
-                return;
-            }
+        function beginDrag(item, card) {
             dragging = item.id;
             card.dataset.dragging = 'true';
             board.classList.add('is-dragging');
@@ -232,21 +238,161 @@
                     lane.querySelector('.staff-lane-heading').dataset.dropLabel = lane.dataset.dropLabel;
                 }
             });
+            dragPreview = document.createElement('div');
+            dragPreview.className = 'staff-drag-preview';
+            dragPreview.setAttribute('aria-hidden', 'true');
+            const title = document.createElement('strong');
+            title.textContent = item.title;
+            const hint = document.createElement('span');
+            hint.textContent = 'Move idea · review before saving';
+            dragPreview.append(title, hint);
+            document.body.append(dragPreview);
+            tellDrag('Drop onto a highlighted stage to review the move. Nothing changes until you save.');
+        }
+        function pointerLane() { return document.elementFromPoint(pointerDrag.x, pointerDrag.y)?.closest('[data-drop-stage]') || null; }
+        function paintPointer() {
+            dragFrame = 0;
+            const pointer = pointerDrag;
+            if (!pointer?.started)
+                return;
+            if (busy || loading) {
+                clearDrag();
+                tellDrag('Drag cancelled while the board updates. No changes saved.');
+                return;
+            }
+            const lane = pointerLane(), inside = lane && board.contains(lane), allowed = inside && !!lane.dataset.dropLabel;
+            if (lane !== lastPointerLane) {
+                lastPointerLane = lane;
+                board.querySelectorAll('.is-drop-target,.is-invalid-drop-target').forEach(el => el.classList.remove('is-drop-target', 'is-invalid-drop-target'));
+                if (inside)
+                    lane.classList.add(allowed ? 'is-drop-target' : 'is-invalid-drop-target');
+                const hint = allowed ? lane.dataset.dropLabel : inside ? (lane.dataset.dropStage === pointer.item.status ? 'Already in this stage · release to cancel' : 'This move is unavailable · release to cancel') : 'Release over a highlighted stage, or release here to cancel';
+                const label = dragPreview?.querySelector('span');
+                if (label)
+                    label.textContent = hint;
+                tellDrag(hint);
+            }
+            if (dragPreview)
+                dragPreview.style.transform = `translate3d(${Math.max(8, Math.min(pointer.x + 18, innerWidth - ghostWidth - 8))}px,${Math.max(8, Math.min(pointer.y + 18, innerHeight - ghostHeight - 8))}px,0)`;
+            const rect = board.getBoundingClientRect(), previousX = board.scrollLeft, previousY = window.scrollY;
+            if (pointer.y >= Math.max(0, rect.top) && pointer.y <= Math.min(innerHeight, rect.bottom)) {
+                if (pointer.x < Math.max(0, rect.left) + 40)
+                    board.scrollLeft -= 12;
+                else if (pointer.x > Math.min(innerWidth, rect.right) - 40)
+                    board.scrollLeft += 12;
+            }
+            if (pointer.y < 96)
+                window.scrollBy({ top: -10, behavior: 'instant' });
+            else if (pointer.y > innerHeight - 48)
+                window.scrollBy({ top: 10, behavior: 'instant' });
+            if (board.scrollLeft !== previousX || window.scrollY !== previousY)
+                dragFrame = requestAnimationFrame(paintPointer);
+        }
+        board.addEventListener('pointerdown', event => {
+            lastPointerType = event.pointerType;
+            if (event.pointerType !== 'mouse' || event.button !== 0 || busy || loading || pointerDrag || !(event.target instanceof Element) || event.target.closest('input,select,textarea,button,summary,label,details,[contenteditable]'))
+                return;
+            const card = event.target.closest('[data-board-id]'), item = card ? items.get(card.dataset.boardId) : null;
+            if (!card || !item)
+                return;
+            const capture = event.target instanceof HTMLElement ? event.target : card;
+            pointerDrag = { pointerId: event.pointerId, card, capture, item, startX: event.clientX, startY: event.clientY, x: event.clientX, y: event.clientY, started: false };
+            try {
+                capture.setPointerCapture(event.pointerId);
+            }
+            catch {
+                pointerDrag = null;
+            }
+        });
+        board.addEventListener('pointermove', event => {
+            const pointer = pointerDrag;
+            if (!pointer || event.pointerId !== pointer.pointerId)
+                return;
+            pointer.x = event.clientX;
+            pointer.y = event.clientY;
+            if (!pointer.started) {
+                if (Math.hypot(pointer.x - pointer.startX, pointer.y - pointer.startY) < 6)
+                    return;
+                if (busy || loading) {
+                    clearDrag();
+                    return;
+                }
+                pointer.started = true;
+                beginDrag(pointer.item, pointer.card);
+                document.documentElement.setAttribute('data-sf-board-dragging', '');
+                dragPreview.setAttribute('data-pointer-drag', '');
+                const size = dragPreview.getBoundingClientRect();
+                ghostWidth = size.width;
+                ghostHeight = size.height;
+                window.getSelection()?.removeAllRanges();
+            }
+            event.preventDefault();
+            if (!dragFrame)
+                dragFrame = requestAnimationFrame(paintPointer);
+        });
+        board.addEventListener('pointerup', event => {
+            const pointer = pointerDrag;
+            if (!pointer || event.pointerId !== pointer.pointerId)
+                return;
+            pointer.x = event.clientX;
+            pointer.y = event.clientY;
+            const lane = pointer.started ? pointerLane() : null, stage = lane?.dataset.dropStage;
+            const allowed = pointer.started && lane && board.contains(lane) && !!lane.dataset.dropLabel && !busy && !loading;
+            if (pointer.started) {
+                suppressedCard = pointer.card;
+                suppressUntil = performance.now() + 250;
+                event.preventDefault();
+            }
+            clearDrag();
+            if (allowed && stage) {
+                tellDrag('Opening the move form. Review the change before saving.');
+                void move(pointer.item.id, stage);
+            }
+            else if (pointer.started)
+                tellDrag('Drag cancelled. No changes saved.');
+        });
+        board.addEventListener('click', event => { if (performance.now() < suppressUntil && event.target instanceof Node && suppressedCard?.contains(event.target)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        } }, true);
+        for (const name of ['pointercancel', 'lostpointercapture'])
+            board.addEventListener(name, () => { if (pointerDrag) {
+                clearDrag();
+                tellDrag('Drag cancelled. No changes saved.');
+            } });
+        window.addEventListener('blur', () => { if (pointerDrag) {
+            clearDrag();
+            tellDrag('Drag cancelled. No changes saved.');
+        } });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape' && pointerDrag) {
+            event.preventDefault();
+            clearDrag();
+            tellDrag('Drag cancelled. No changes saved.');
+        } }, true);
+        board.addEventListener('dragstart', e => {
+            // Native HTML drag owns the OS cursor; mouse dragging uses pointer capture instead.
+            if (pointerDrag || lastPointerType === 'mouse') {
+                e.preventDefault();
+                return;
+            }
+            const target = e.target, card = target.closest('[data-board-id]');
+            if (!card)
+                return;
+            if (busy || loading || target.closest('a,input,select,textarea,button,summary,label,details')) {
+                e.preventDefault();
+                return;
+            }
+            const item = items.get(card.dataset.boardId);
+            if (!item) {
+                e.preventDefault();
+                return;
+            }
+            beginDrag(item, card);
             if (e.dataTransfer) {
                 e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', dragging);
-                dragPreview = document.createElement('div');
-                dragPreview.className = 'staff-drag-preview';
-                dragPreview.setAttribute('aria-hidden', 'true');
-                const title = document.createElement('strong');
-                title.textContent = item.title;
-                const hint = document.createElement('span');
-                hint.textContent = 'Move idea · review before saving';
-                dragPreview.append(title, hint);
-                document.body.append(dragPreview);
+                e.dataTransfer.setData('text/plain', item.id);
                 e.dataTransfer.setDragImage(dragPreview, 24, 20);
             }
-            tellDrag('Drop onto a highlighted stage to review the move. Nothing changes until you save.');
         });
         board.addEventListener('dragend', () => { const cancelled = !!dragging; clearDrag(); if (cancelled)
             tellDrag('Drag cancelled. No changes saved.'); });
