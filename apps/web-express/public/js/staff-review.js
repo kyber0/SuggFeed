@@ -40,11 +40,14 @@
         if (!group)
             return;
         const entry = group.entries[group.index], locked = busy || noteBusy || !!window.sfStaffProgress?.isBusy() || dialog.hasAttribute('aria-busy');
-        document.getElementById('review-group-position').textContent = `Group move · ${group.index + 1} of ${group.entries.length} · ${labels[group.stage]}`;
+        document.getElementById('review-group-position').textContent = `Group · ${group.index + 1} / ${group.entries.length} · ${labels[group.stage]}${entry.result === 'saved' ? ' · Saved' : ''}`;
         document.getElementById('review-group-message').textContent = group.notice;
+        if (/could not|cannot enter|has not reached/.test(group.notice))
+            groupPanel.querySelector('details').open = true;
         groupNext.disabled = locked || entry.result === 'pending';
         groupSkip.disabled = locked || entry.result !== 'pending';
-        groupNext.textContent = group.index === group.entries.length - 1 ? 'Finish group review' : 'Next idea';
+        groupNext.textContent = group.index === group.entries.length - 1 ? 'Finish' : 'Next';
+        groupNext.setAttribute('aria-label', group.index === group.entries.length - 1 ? 'Finish group review' : 'Review next idea');
         const list = document.getElementById('review-group-results');
         list.replaceChildren();
         const names = { pending: 'Not moved', saved: 'Move saved', skipped: 'Skipped', already: 'Already in target stage' };
@@ -128,6 +131,7 @@
             entries.push({ id: item.id, title: String(item.title || 'Idea'), result: 'pending' });
         }
         group = { entries, stage: detail.stage, index: 0, notice: '' };
+        groupPanel.querySelector('details').open = false;
         returnFocus = detail.trigger instanceof HTMLElement ? detail.trigger : null;
         void openGroupItem();
     });

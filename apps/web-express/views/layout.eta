@@ -29,7 +29,7 @@
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261021-platform-insights" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261021-mobile-audit"/><% } %>
   <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
-  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-group-drag"/>
+  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>
   <script defer src="/js/interaction-feedback.js?v=20261021-feedback"></script>
   <script defer src="/js/events.js?v=20261018-customization"></script>
 

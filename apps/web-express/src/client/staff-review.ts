@@ -38,10 +38,11 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   function paintGroup(){
     if(!groupPanel)return;groupPanel.hidden=!group;if(!group)return;
     const entry=group.entries[group.index],locked=busy||noteBusy||!!window.sfStaffProgress?.isBusy()||dialog.hasAttribute('aria-busy');
-    document.getElementById('review-group-position')!.textContent=`Group move · ${group.index+1} of ${group.entries.length} · ${labels[group.stage]}`;
+    document.getElementById('review-group-position')!.textContent=`Group · ${group.index+1} / ${group.entries.length} · ${labels[group.stage]}${entry.result==='saved'?' · Saved':''}`;
     document.getElementById('review-group-message')!.textContent=group.notice;
+    if(/could not|cannot enter|has not reached/.test(group.notice))groupPanel.querySelector('details')!.open=true;
     groupNext.disabled=locked||entry.result==='pending';groupSkip.disabled=locked||entry.result!=='pending';
-    groupNext.textContent=group.index===group.entries.length-1?'Finish group review':'Next idea';
+    groupNext.textContent=group.index===group.entries.length-1?'Finish':'Next';groupNext.setAttribute('aria-label',group.index===group.entries.length-1?'Finish group review':'Review next idea');
     const list=document.getElementById('review-group-results')!;list.replaceChildren();
     const names={pending:'Not moved',saved:'Move saved',skipped:'Skipped',already:'Already in target stage'};
     for(const item of group.entries){const row=document.createElement('li');row.textContent=item.title+' · '+names[item.result];if(item===entry)row.setAttribute('aria-current','step');list.append(row);}
@@ -72,7 +73,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     if(!Array.isArray(detail?.items)||detail.items.length<2||detail.items.length>25||!['approved','in_progress','resolved'].includes(detail.stage))return;
     const ids=new Set<string>();const entries:GroupEntry[]=[];
     for(const item of detail.items){if(typeof item?.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id)||ids.has(item.id))return;ids.add(item.id);entries.push({id:item.id,title:String(item.title||'Idea'),result:'pending'});}
-    group={entries,stage:detail.stage,index:0,notice:''};returnFocus=detail.trigger instanceof HTMLElement?detail.trigger:null;void openGroupItem();
+    group={entries,stage:detail.stage,index:0,notice:''};groupPanel.querySelector('details')!.open=false;returnFocus=detail.trigger instanceof HTMLElement?detail.trigger:null;void openGroupItem();
   });
 
   let repairRetry:{payload:string;id:string}|undefined;

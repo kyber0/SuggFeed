@@ -26,6 +26,6 @@
 </div><%~ include('partials/staff-review',{...it,staffMembers:it.members}) %></main>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
 <script defer src="/js/staff-progress.js?v=20261022-group-drag"></script>
-<script defer src="/js/staff-review.js?v=20261022-group-drag"></script>
+<script defer src="/js/staff-review.js?v=20261022-compact-group"></script>
 <script defer src="/js/staff-tools.js?v=20261022-group-drag"></script>
 <section class="staff-mobile-notice"><h1>Staff workspace</h1><p>Use a desktop or larger screen to review community care.</p><a class="workspace-button" href="/roadmap">Explore the roadmap</a></section>

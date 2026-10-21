@@ -115,7 +115,8 @@ Dropping a group opens individual reviews with fresh server details. Save the
 required work action for one idea, then choose Next idea. Completion evidence,
 reopening confirmation, permissions and optimistic concurrency remain enforced
 by the existing per-idea workflow. An incompatible/stale idea can be skipped.
-The queue shows per-idea results and can be stopped; each save is independent,
+The compact queue toolbar keeps instructions and per-idea results under Details;
+errors expand Details automatically. The queue can be stopped; each save is independent,
 so stopping does not undo earlier saves. Successful moves are removed from the checkbox
 selection; skipped and unreviewed selections remain. Confirmed receipt retries
 also mark their move saved, without issuing a second mutation. No database or
