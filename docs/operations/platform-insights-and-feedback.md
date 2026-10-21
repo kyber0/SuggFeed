@@ -121,3 +121,11 @@ so stopping does not undo earlier saves. Successful moves are removed from the c
 selection; skipped and unreviewed selections remain. Confirmed receipt retries
 also mark their move saved, without issuing a second mutation. No database or
 bulk status endpoint is added.
+
+### Compact review chrome
+
+The fixed review header contains the idea title, current status and a 44px close
+control, followed by the group toolbar (when active) and tabs. Context, received
+date, submission ID and private clarification are under Submission details in
+the scroll region, so long metadata cannot enlarge the fixed header. On short
+screens the existing flowing-dialog and keyboard behavior remains in effect.

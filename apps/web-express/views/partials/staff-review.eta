@@ -1,16 +1,13 @@
 <% const labels={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'}; %>
   <dialog class="workspace-dialog staff-review-dialog" id="staff-review-dialog" aria-labelledby="review-title">
-    <header class="workspace-dialog-header"><div><span class="workspace-kicker">SUBMISSION REVIEW</span><span id="review-position" class="staff-review-position"></span></div><button type="button" class="workspace-icon-button" data-close-review aria-label="Close review">×</button></header>
+    <header class="workspace-dialog-header"><div class="staff-review-heading-title"><h2 id="review-title"></h2><span class="workspace-status" id="review-current-status"></span></div><button type="button" class="workspace-icon-button" data-close-review aria-label="Close review">×</button></header>
     <section id="review-group" class="staff-group-review" aria-label="Selected idea moves" hidden>
       <div class="staff-group-review-heading"><strong id="review-group-position"></strong><details><summary>Details</summary><p id="review-group-message" role="status" aria-live="polite"></p><ol id="review-group-results" aria-label="Selected ideas and results"></ol></details></div>
       <div class="staff-group-review-actions"><button type="button" class="workspace-button" id="review-group-skip" aria-label="Skip this idea">Skip</button><button type="button" class="workspace-button" id="review-group-next" disabled>Next</button><button type="button" class="workspace-text-link" data-close-review aria-label="Stop group review">Stop</button></div>
     </section>
-    <div class="staff-review-heading">
-      <div class="staff-review-heading-title"><h2 id="review-title"></h2><span class="workspace-status" id="review-current-status"></span></div>
-      <div class="staff-review-heading-meta"><p id="review-meta" class="workspace-detail-meta"></p><a id="review-clarification-link" class="workspace-text-link" href="/admin/community" title="Request private clarification">Private clarification →</a></div>
-    </div>
     <div class="staff-review-tabs" role="tablist" aria-label="Submission sections"><% for(const [key,name] of [['decision','Decision'],['progress','Work updates'],['notes','Internal notes'],['history','History']]) { %><button type="button" role="tab" id="review-tab-<%= key %>" aria-controls="review-panel-<%= key %>" aria-selected="<%= key==='decision' %>" tabindex="<%= key==='decision' ? '0' : '-1' %>" data-review-tab="<%= key %>"><%= name %><% if(key==='notes') { %><span class="workspace-tag">Private</span><% } %></button><% } %></div>
     <div class="staff-review-scroll">
+      <details class="staff-review-details"><summary>Submission details</summary><span id="review-position" class="staff-review-position"></span><p id="review-meta" class="workspace-detail-meta"></p><a id="review-clarification-link" class="workspace-text-link" href="/admin/community" title="Request private clarification">Private clarification →</a></details>
       <section role="tabpanel" id="review-panel-decision" aria-labelledby="review-tab-decision" class="staff-review-panel">
         <section class="staff-review-context" aria-labelledby="review-context-title"><h3 class="workspace-field-label" id="review-context-title">The suggestion</h3><p class="workspace-description" id="review-description"></p><p class="staff-footnote">Read the original suggestion before changing its status or publishing a response.</p><section class="workflow-guidance" aria-labelledby="workflow-guidance-title"><h3 id="workflow-guidance-title">Next step</h3><p id="workflow-state" role="status"></p><div id="workflow-actions" class="workspace-actions"></div></section>
           <form id="work-date-repair-form" class="care-form" hidden>
