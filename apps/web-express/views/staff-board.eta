@@ -10,7 +10,7 @@
  const meta={filters,totalCount:it.totalCount,lanes:it.lanes.map(({items,...lane})=>lane)};
 %>
 <main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main staff-board-main">
- <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / DELIVERY</p><h1>Manage work</h1><p>Plan → start → publish updates → complete with evidence. Select cards to assign them together.</p></div><a class="workspace-button" href="/admin">Review submissions</a></header>
+ <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / DELIVERY</p><h1>Manage work</h1><p>Plan → start → publish updates → complete with evidence. Select cards to assign or drag them together. Review each move before saving.</p></div><a class="workspace-button" href="/admin">Review submissions</a></header>
  <form class="staff-board-toolbar" action="/admin/board" method="get" role="search" id="staff-board-filters">
   <label class="staff-board-search"><span>Search work</span><input class="workspace-input" type="search" name="search" value="<%= filters.search %>" maxlength="120" placeholder="Search suggestions…" aria-label="Search the work board"/></label>
   <label>Order<select class="workspace-input" name="sort"><option value="oldest" <%= filters.sort==='oldest'?'selected':'' %>>Oldest first</option><option value="newest" <%= filters.sort==='newest'?'selected':'' %>>Newest first</option></select></label>
@@ -30,13 +30,13 @@
   <% for(const lane of it.lanes) { %><%~ include('partials/staff-board-lane',{lane,urlFor,pageFields}) %><% } %>
  </section>
  <p class="staff-board-safety">Move or drag opens an action form; nothing changes until you save. Needs review and Declined submissions are now in <a href="/admin">Review submissions</a>. Existing links and idea IDs still work.</p>
- <details class="staff-board-help"><summary>Board controls and recovery</summary><p>Use the stage menu on each card with a keyboard, or drag a card with a pointer. Scroll down to see all cards on this page. Each stage pages independently. Selection can include other pages and is kept only during this visit.</p><p>Assignments save together: if any selected version changed, none are saved. After a timeout, refresh to confirm before retrying. Published history is corrected with a new update; merges require an operator to review the audit for recovery.</p></details>
+ <details class="staff-board-help"><summary>Board controls and recovery</summary><p>Use Move on a selected card to review the selected group with a keyboard, or drag a selected card with a pointer. Scroll down to see all cards on this page. Each stage pages independently. Selection can include other pages and is kept only during this visit. Drag a selected card to review moves for the selected group, one idea at a time. A destination must support every selected idea. Dragging an unselected card moves only that idea.</p><p>Assignments save together: if any selected version changed, none are saved. After a timeout, refresh to confirm before retrying. Published history is corrected with a new update; merges require an operator to review the audit for recovery.</p></details>
  <script id="staff-board-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script>
  <script id="staff-board-meta" type="application/json"><%~ JSON.stringify(meta).replace(/</g,'\\u003c') %></script>
- <script defer src="/js/staff-tools.js?v=20261021-cursor-outline"></script>
+ <script defer src="/js/staff-tools.js?v=20261022-group-drag"></script>
 </div>
 <%~ include('partials/staff-review',{...it,staffMembers:it.members}) %>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
-<script defer src="/js/staff-progress.js?v=20261020-security"></script>
-<script defer src="/js/staff-review.js?v=20261018-empty-states"></script>
+<script defer src="/js/staff-progress.js?v=20261022-group-drag"></script>
+<script defer src="/js/staff-review.js?v=20261022-group-drag"></script>
 </main><section class="staff-mobile-notice"><h1>Staff workspace</h1><p>Use a desktop or larger screen to manage the work board.</p><a class="workspace-button" href="/roadmap">Explore the roadmap</a></section>

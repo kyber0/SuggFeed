@@ -499,6 +499,8 @@
             const synchronized = host?.applySnapshot(snapshot) !== false;
             const updates = Array.isArray(data.updates) ? data.updates : [];
             const confirmedRetry = retry && updates.some(update => update.request_id === retry.requestId);
+            if (confirmedRetry)
+                host?.confirmed?.(snapshot);
             drawSummary();
             drawHistory(updates);
             if (!hadDraft || confirmedRetry) {
@@ -637,6 +639,7 @@
             snapshot = data.submission;
             setWorkflow(data.workflow);
             host?.applySnapshot(snapshot);
+            host?.confirmed?.(snapshot);
             resetDraft(false);
             drawSummary();
             try {

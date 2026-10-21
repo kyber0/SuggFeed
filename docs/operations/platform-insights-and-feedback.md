@@ -102,3 +102,21 @@ Successful responses synchronize visible counts and the existing device hint;
 selected controls expose “Undo your support.” Pending requests disable the
 control, failures retain or restore its previous state, and the home route reads
 the saved state from the database on refresh. No schema migration is needed.
+
+### Selected group moves on Manage Work
+
+Select up to 25 ideas, then drag one selected card. The preview shows a stacked
+bundle, the total count and up to three titles; visible selected source cards
+are dimmed together. An unselected card still drags alone. Destinations are
+available only when every selected snapshot supports that transition. The Move
+menu on a selected card uses the same group review for keyboard interaction.
+
+Dropping a group opens individual reviews with fresh server details. Save the
+required work action for one idea, then choose Next idea. Completion evidence,
+reopening confirmation, permissions and optimistic concurrency remain enforced
+by the existing per-idea workflow. An incompatible/stale idea can be skipped.
+The queue shows per-idea results and can be stopped; each save is independent,
+so stopping does not undo earlier saves. Successful moves are removed from the checkbox
+selection; skipped and unreviewed selections remain. Confirmed receipt retries
+also mark their move saved, without issuing a second mutation. No database or
+bulk status endpoint is added.

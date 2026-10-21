@@ -1,6 +1,11 @@
 <% const labels={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'}; %>
   <dialog class="workspace-dialog staff-review-dialog" id="staff-review-dialog" aria-labelledby="review-title">
     <header class="workspace-dialog-header"><div><span class="workspace-kicker">SUBMISSION REVIEW</span><span id="review-position" class="staff-review-position"></span></div><button type="button" class="workspace-icon-button" data-close-review aria-label="Close review">×</button></header>
+    <section id="review-group" class="staff-group-review" aria-label="Selected idea moves" hidden>
+      <div class="staff-group-review-heading"><strong id="review-group-position"></strong><p id="review-group-message" role="status" aria-live="polite"></p></div>
+      <div class="staff-group-review-actions"><button type="button" class="workspace-button" id="review-group-skip">Skip idea</button><button type="button" class="workspace-button" id="review-group-next" disabled>Next idea</button><button type="button" class="workspace-text-link" data-close-review>Stop group review</button></div>
+      <details><summary>Selected ideas and results</summary><ol id="review-group-results"></ol></details>
+    </section>
     <div class="staff-review-heading">
       <div class="staff-review-heading-title"><h2 id="review-title"></h2><span class="workspace-status" id="review-current-status"></span></div>
       <div class="staff-review-heading-meta"><p id="review-meta" class="workspace-detail-meta"></p><a id="review-clarification-link" class="workspace-text-link" href="/admin/community" title="Request private clarification">Private clarification →</a></div>

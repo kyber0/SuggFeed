@@ -185,7 +185,7 @@
                     return;
                 if (input.checked && !selected.has(id) && selected.size >= 25) {
                     input.checked = false;
-                    tell('Select no more than 25 ideas for one assignment.');
+                    tell('Select no more than 25 ideas for one group.');
                     return;
                 }
                 if (input.checked)
@@ -194,13 +194,27 @@
                     selected.delete(id);
                 selectionState();
             }
-            else if (input.matches('[data-stage-select]'))
-                void move(input.dataset.stageSelect, input.value);
+            else if (input.matches('[data-stage-select]')) {
+                const item = items.get(input.dataset.stageSelect);
+                if (!item)
+                    return;
+                const stage = input.value;
+                input.value = item.status;
+                const group = selected.has(item.id) ? Array.from(selected.values()).map(value => items.get(value.id) || value) : [item];
+                if (busy || loading)
+                    return;
+                if (!group.every(value => moveAction(value, stage))) {
+                    tell('Not every selected idea can move to this stage. Adjust the selection or choose another stage.');
+                    return;
+                }
+                dropGroup(group, stage);
+            }
         });
         const dragStatus = document.getElementById('staff-drag-status');
         const tellDrag = (text) => { if (dragStatus)
             dragStatus.textContent = text; };
         let dragPreview = null;
+        let dragItems = [];
         let pointerDrag = null;
         let dragFrame = 0, ghostWidth = 0, ghostHeight = 0, lastPointerLane = null;
         let suppressedCard = null, suppressUntil = 0, lastPointerType = '';
@@ -227,26 +241,47 @@
             dragPreview?.remove();
             dragPreview = null;
             dragging = null;
+            dragItems = [];
         }
         function beginDrag(item, card) {
             dragging = item.id;
-            card.dataset.dragging = 'true';
+            dragItems = selected.has(item.id) ? Array.from(selected.values()).map(value => items.get(value.id) || value) : [item];
+            const ids = new Set(dragItems.map(value => value.id));
+            board.querySelectorAll('[data-board-id]').forEach(source => { if (ids.has(source.dataset.boardId))
+                source.dataset.dragging = 'true'; });
             board.classList.add('is-dragging');
             board.querySelectorAll('[data-drop-stage]').forEach(lane => {
-                const action = moveAction(item, lane.dataset.dropStage);
+                const action = dragItems.every(value => moveAction(value, lane.dataset.dropStage)) ? moveAction(item, lane.dataset.dropStage) : null;
                 if (action) {
-                    lane.dataset.dropLabel = ({ start: 'Release to start work', reopen: 'Release to reopen work', complete: 'Release to review completion', approve: 'Release to review approval', decline: 'Release to review decline', withdraw: 'Release to review withdrawal' })[action];
+                    lane.dataset.dropLabel = dragItems.length > 1 ? `Release to review ${dragItems.length} moves to ${labels[lane.dataset.dropStage]}` : ({ start: 'Release to start work', reopen: 'Release to reopen work', complete: 'Release to review completion', approve: 'Release to review approval', decline: 'Release to review decline', withdraw: 'Release to review withdrawal' })[action];
                     lane.querySelector('.staff-lane-heading').dataset.dropLabel = lane.dataset.dropLabel;
                 }
             });
             dragPreview = document.createElement('div');
             dragPreview.className = 'staff-drag-preview';
             dragPreview.setAttribute('aria-hidden', 'true');
+            if (dragItems.length > 1)
+                dragPreview.dataset.group = 'true';
             const title = document.createElement('strong');
-            title.textContent = item.title;
+            title.textContent = dragItems.length > 1 ? `${dragItems.length} selected ideas` : item.title;
+            dragPreview.append(title);
+            if (dragItems.length > 1) {
+                const list = document.createElement('ul');
+                for (const entry of dragItems.slice(0, 3)) {
+                    const row = document.createElement('li');
+                    row.textContent = entry.title;
+                    list.append(row);
+                }
+                if (dragItems.length > 3) {
+                    const row = document.createElement('li');
+                    row.textContent = `+${dragItems.length - 3} more`;
+                    list.append(row);
+                }
+                dragPreview.append(list);
+            }
             const hint = document.createElement('span');
-            hint.textContent = 'Move idea · review before saving';
-            dragPreview.append(title, hint);
+            hint.textContent = dragItems.length > 1 ? 'Move group · review each idea before saving' : 'Move idea · review before saving';
+            dragPreview.append(hint);
             document.body.append(dragPreview);
             tellDrag('Drop onto a highlighted stage to review the move. Nothing changes until you save.');
         }
@@ -267,7 +302,7 @@
                 board.querySelectorAll('.is-drop-target,.is-invalid-drop-target').forEach(el => el.classList.remove('is-drop-target', 'is-invalid-drop-target'));
                 if (inside)
                     lane.classList.add(allowed ? 'is-drop-target' : 'is-invalid-drop-target');
-                const hint = allowed ? lane.dataset.dropLabel : inside ? (lane.dataset.dropStage === pointer.item.status ? 'Already in this stage · release to cancel' : 'This move is unavailable · release to cancel') : 'Release over a highlighted stage, or release here to cancel';
+                const hint = allowed ? lane.dataset.dropLabel : inside ? (dragItems.length === 1 && lane.dataset.dropStage === pointer.item.status ? 'Already in this stage · release to cancel' : (dragItems.length > 1 ? 'Not all selected ideas can enter this stage · release to cancel' : 'This move is unavailable · release to cancel')) : 'Release over a highlighted stage, or release here to cancel';
                 const label = dragPreview?.querySelector('span');
                 if (label)
                     label.textContent = hint;
@@ -345,11 +380,10 @@
                 suppressUntil = performance.now() + 250;
                 event.preventDefault();
             }
+            const group = [...dragItems];
             clearDrag();
-            if (allowed && stage) {
-                tellDrag('Opening the move form. Review the change before saving.');
-                void move(pointer.item.id, stage);
-            }
+            if (allowed && stage)
+                dropGroup(group, stage);
             else if (pointer.started)
                 tellDrag('Drag cancelled. No changes saved.');
         });
@@ -420,15 +454,24 @@
             if (!lane || !dragging)
                 return;
             e.preventDefault();
-            const id = dragging, stage = lane.dataset.dropStage, allowed = !!lane.dataset.dropLabel;
+            const group = [...dragItems], stage = lane.dataset.dropStage, allowed = !!lane.dataset.dropLabel;
             clearDrag();
-            if (allowed) {
-                tellDrag('Opening the move form. Review the change before saving.');
-                void move(id, stage);
-            }
+            if (allowed)
+                dropGroup(group, stage);
             else
                 tellDrag('That stage is unavailable for this idea. No changes saved.');
         });
+        function dropGroup(group, stage) {
+            if (!group.length)
+                return;
+            tellDrag(group.length > 1 ? 'Opening group review. Each idea must be saved individually.' : 'Opening the move form. Review the change before saving.');
+            if (group.length === 1) {
+                void move(group[0].id, stage);
+                return;
+            }
+            document.dispatchEvent(new CustomEvent('sf:review-group', { detail: { items: group.map(item => ({ id: item.id, title: item.title })), stage, trigger: board.querySelector(`[data-review="${group[0].id}"]`) } }));
+        }
+        document.addEventListener('sf:board-group-saved', event => { const { id } = event.detail; selected.delete(id); selectionState(); });
         window.addEventListener('pagehide', clearDrag);
         retry.addEventListener('click', () => { if (failedPage)
             void navigate(failedPage.stage, failedPage.url, failedPage.push); });

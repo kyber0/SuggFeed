@@ -34,3 +34,24 @@ html[data-sf-board-dragging],html[data-sf-board-dragging] *,html[data-sf-board-d
  body[data-school-colors] {--sf-school-pointer:pointer;--sf-school-grab:grab;--sf-school-grabbing:grabbing;}
  [data-theme="dark"] body[data-school-colors] {--sf-school-pointer:pointer;--sf-school-grab:grab;--sf-school-grabbing:grabbing;}
 }
+
+.staff-drag-preview[data-group] {isolation:isolate;}
+.staff-drag-preview[data-group]::before,.staff-drag-preview[data-group]::after {content:"";position:absolute;inset:0;border:1px solid var(--navy);border-radius:inherit;background:var(--surface);pointer-events:none;z-index:-1;}
+.staff-drag-preview[data-group]::before {transform:translate(5px,5px) rotate(2deg);}
+.staff-drag-preview[data-group]::after {transform:translate(10px,10px) rotate(4deg);z-index:-2;}
+.staff-drag-preview ul {margin:8px 0 0;padding-left:18px;font-size:12px;line-height:1.5;}
+.staff-drag-preview li {overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+.staff-group-review {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;align-items:center;padding:12px 20px;background:var(--sky);border-bottom:1px solid var(--line);font-size:14px;}
+.staff-group-review[hidden] {display:none;}
+.staff-group-review p {margin:4px 0 8px;line-height:1.5;}
+.staff-group-review-actions {display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.staff-group-review summary {cursor:pointer;padding:8px 0;min-height:44px;}
+.staff-group-review ol {max-height:120px;overflow:auto;padding-left:24px;margin:0;}
+.staff-group-review li {padding:4px;overflow-wrap:anywhere;}
+.staff-group-review [aria-current="step"] {font-weight:700;}
+@media(prefers-reduced-motion:no-preference) {.staff-drag-preview[data-group]::before {animation:sf-stack-back 200ms ease-out;}.staff-drag-preview[data-group]::after {animation:sf-stack-far 200ms ease-out;}}
+@keyframes sf-stack-back {from{transform:translate(0,0) rotate(0);opacity:0;}to{transform:translate(5px,5px) rotate(2deg);opacity:1;}}
+@keyframes sf-stack-far {from{transform:translate(0,0) rotate(0);opacity:0;}to{transform:translate(10px,10px) rotate(4deg);opacity:1;}}
+
+.staff-group-review > details {grid-column:1/-1;}
+@media(max-width:700px) {.staff-group-review {grid-template-columns:minmax(0,1fr);}.staff-group-review-actions {gap:8px;}}

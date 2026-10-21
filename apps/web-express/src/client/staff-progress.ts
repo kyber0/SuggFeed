@@ -7,6 +7,7 @@ interface StaffProgressHost {
   canPost():boolean;
   applySnapshot(submission:StaffProgressSnapshot):boolean;
   afterPost(submission:StaffProgressSnapshot):Promise<void>;
+  confirmed?(submission:StaffProgressSnapshot):void;
   changed():void;
   posting(busy:boolean):void;
 }
@@ -292,6 +293,7 @@ interface Window {
       const synchronized=host?.applySnapshot(snapshot)!==false;
       const updates:ProgressEvent[]=Array.isArray(data.updates)?data.updates:[];
       const confirmedRetry=retry && updates.some(update=>update.request_id===retry!.requestId);
+      if(confirmedRetry)host?.confirmed?.(snapshot);
       drawSummary();drawHistory(updates);
       if(!hadDraft || confirmedRetry){resetDraft(!confirmedRetry);}else updateComposer();
       if(confirmedRetry)setMessage('Your previous update was posted successfully. The history and review are now current.',true);
@@ -349,7 +351,7 @@ interface Window {
         throw new Error('We could not confirm the update. Retry the same draft to safely check and complete this post.');
       }
       if(generation!==ownGeneration)return;
-      snapshot=data.submission;setWorkflow(data.workflow);host?.applySnapshot(snapshot);resetDraft(false);drawSummary();
+      snapshot=data.submission;setWorkflow(data.workflow);host?.applySnapshot(snapshot);host?.confirmed?.(snapshot);resetDraft(false);drawSummary();
       try{await host?.afterPost(snapshot);setMessage(workflow?'Action saved. The originating workspace has been refreshed.':payload.visibility==='public'?'Public update posted. The workspace has been refreshed.':'Staff-only update posted. The public roadmap is unchanged.',true);}
       catch{setMessage('Saved successfully, but the workspace could not refresh. Refresh the list before reviewing another idea.',true);}
     }catch(error){if(generation===ownGeneration)setMessage(error instanceof Error && error.name!=='AbortError' && !(error instanceof TypeError)?error.message:'We could not confirm the update. Your draft is safe. Retry this same draft to avoid a duplicate.');}

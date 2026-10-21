@@ -28,6 +28,109 @@
     let requestedId = '', requestedSection = 'decision';
     let active;
     let returnFocus = null;
+    let group = null;
+    const groupPanel = document.getElementById('review-group');
+    const groupNext = document.getElementById('review-group-next');
+    const groupSkip = document.getElementById('review-group-skip');
+    function groupAction(item) { return { approved: { in_progress: 'start' }, in_progress: { resolved: 'complete' }, resolved: { in_progress: 'reopen' } }[item.status]?.[group?.stage || '']; }
+    function paintGroup() {
+        if (!groupPanel)
+            return;
+        groupPanel.hidden = !group;
+        if (!group)
+            return;
+        const entry = group.entries[group.index], locked = busy || noteBusy || !!window.sfStaffProgress?.isBusy() || dialog.hasAttribute('aria-busy');
+        document.getElementById('review-group-position').textContent = `Group move · ${group.index + 1} of ${group.entries.length} · ${labels[group.stage]}`;
+        document.getElementById('review-group-message').textContent = group.notice;
+        groupNext.disabled = locked || entry.result === 'pending';
+        groupSkip.disabled = locked || entry.result !== 'pending';
+        groupNext.textContent = group.index === group.entries.length - 1 ? 'Finish group review' : 'Next idea';
+        const list = document.getElementById('review-group-results');
+        list.replaceChildren();
+        const names = { pending: 'Not moved', saved: 'Move saved', skipped: 'Skipped', already: 'Already in target stage' };
+        for (const item of group.entries) {
+            const row = document.createElement('li');
+            row.textContent = item.title + ' · ' + names[item.result];
+            if (item === entry)
+                row.setAttribute('aria-current', 'step');
+            list.append(row);
+        }
+    }
+    async function openGroupItem(discard = false) {
+        const current = group;
+        if (!current)
+            return;
+        const index = current.index, entry = current.entries[index];
+        current.notice = 'Loading current details…';
+        paintGroup();
+        await openReview(entry.id, undefined, 'progress', discard);
+        if (group !== current || group.index !== index)
+            return;
+        if (active?.id !== entry.id) {
+            current.notice = 'This idea could not load. Retry loading it or skip it; no move was saved.';
+            paintGroup();
+            return;
+        }
+        if (active.status === current.stage) {
+            entry.result = 'already';
+            current.notice = 'Already in this stage. No change was saved; continue to the next idea.';
+        }
+        else {
+            const action = groupAction(active);
+            current.notice = action ? 'Review this idea and save its work action before continuing. Each move is saved separately.' : 'This idea changed and cannot enter the selected stage. Skip it or stop to refresh the board.';
+            if (action)
+                window.sfStaffProgress?.prepareAction?.(action);
+        }
+        selectTab('progress');
+        paintGroup();
+    }
+    async function advanceGroup(skip = false) {
+        if (!group || busy || noteBusy || window.sfStaffProgress?.isBusy() || dialog.hasAttribute('aria-busy'))
+            return;
+        const current = group, entry = current.entries[current.index];
+        if (!skip && entry.result === 'pending')
+            return;
+        let discard = false;
+        if (hasUnsavedChanges()) {
+            if (!await window.sfConfirm('Discard the unsaved changes for this idea and continue the group review?'))
+                return;
+            discard = true;
+        }
+        if (group !== current || busy || noteBusy || window.sfStaffProgress?.isBusy())
+            return;
+        if (skip)
+            entry.result = 'skipped';
+        if (current.index === current.entries.length - 1) {
+            close(discard);
+            return;
+        }
+        current.index++;
+        await openGroupItem(discard);
+    }
+    groupNext?.addEventListener('click', () => void advanceGroup());
+    groupSkip?.addEventListener('click', () => void advanceGroup(true));
+    document.addEventListener('sf:review-group', event => {
+        if (!groupPanel || !document.getElementById('staff-board-data'))
+            return;
+        if (group || busy || noteBusy || window.sfStaffProgress?.isBusy() || dialog.open) {
+            pageMessage.textContent = 'Finish the current review before starting a selected group move.';
+            return;
+        }
+        const detail = event.detail;
+        if (!Array.isArray(detail?.items) || detail.items.length < 2 || detail.items.length > 25 || !['approved', 'in_progress', 'resolved'].includes(detail.stage))
+            return;
+        const ids = new Set();
+        const entries = [];
+        for (const item of detail.items) {
+            if (typeof item?.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id) || ids.has(item.id))
+                return;
+            ids.add(item.id);
+            entries.push({ id: item.id, title: String(item.title || 'Idea'), result: 'pending' });
+        }
+        group = { entries, stage: detail.stage, index: 0, notice: '' };
+        returnFocus = detail.trigger instanceof HTMLElement ? detail.trigger : null;
+        void openGroupItem();
+    });
     let repairRetry;
     const repairForm = document.getElementById('work-date-repair-form');
     function hasRepairDraft() { return !!repairForm && !repairForm.hidden && ['repair-source', 'repair-reason', 'repair-start', 'repair-end'].some(id => { const input = document.getElementById(id); return input && input.value !== input.defaultValue; }); }
@@ -47,6 +150,8 @@
         more.append(caption);
         const primary = active.status === 'pending' ? ['approve', 'decline'] : active.status === 'approved' ? ['start'] : context.allowedActions.includes('resume') ? ['resume', 'complete'] : active.status === 'in_progress' ? ['update', 'complete'] : ['reopen', 'correction'];
         for (const action of context.allowedActions) {
+            if (group && action !== groupAction(active))
+                continue;
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'workspace-button';
@@ -54,7 +159,7 @@
             button.dataset.workflowAction = action;
             (primary.includes(action) ? actions : more).append(button);
         }
-        if (context.allowedActions.includes('withdraw')) {
+        if (!group && context.allowedActions.includes('withdraw')) {
             const merge = document.createElement('a');
             merge.className = 'workspace-button';
             merge.textContent = 'Merge duplicate';
@@ -71,7 +176,10 @@
         selectTab('progress');
         window.sfStaffProgress?.prepareAction?.(button.dataset.workflowAction);
     } });
-    document.addEventListener('sf:review-action', event => { const { id, action, trigger } = event.detail || {}; if (typeof id !== 'string')
+    document.addEventListener('sf:review-action', event => { if (group) {
+        pageMessage.textContent = 'Finish the selected group review first.';
+        return;
+    } const { id, action, trigger } = event.detail || {}; if (typeof id !== 'string')
         return; void openReview(id, trigger).then(() => { if (active?.id === id) {
         selectTab('progress');
         window.sfStaffProgress?.prepareAction?.(action);
@@ -231,10 +339,10 @@
             updateDraft();
         }
     });
-    async function openReview(id, trigger, section = 'decision') {
+    async function openReview(id, trigger, section = 'decision', discard = false) {
         if (busy || noteBusy || window.sfStaffProgress?.isBusy())
             return;
-        if (dialog.open && hasUnsavedChanges()) {
+        if (!discard && dialog.open && hasUnsavedChanges()) {
             discardWarning.hidden = false;
             document.getElementById('review-keep-editing').focus();
             return;
@@ -244,7 +352,7 @@
         window.sfStaffProgress?.close();
         requestedId = id;
         requestedSection = section === 'progress' ? 'progress' : 'decision';
-        if (!dialog.open)
+        if (!dialog.open && !group)
             returnFocus = trigger || document.activeElement;
         active = undefined;
         internalNote.value = '';
@@ -291,6 +399,7 @@
             clearTimeout(timer);
             if (detailRequest === controller)
                 dialog.removeAttribute('aria-busy');
+            paintGroup();
         }
     }
     document.addEventListener('click', event => {
@@ -313,7 +422,10 @@
                 void openReview(card.dataset.boardId, title);
         }
     });
-    document.getElementById('review-retry-detail').addEventListener('click', () => void openReview(requestedId, undefined, requestedSection));
+    document.getElementById('review-retry-detail').addEventListener('click', () => { if (group)
+        void openGroupItem();
+    else
+        void openReview(requestedId, undefined, requestedSection); });
     document.querySelectorAll('[data-close-review]').forEach(button => button.addEventListener('click', () => close()));
     document.getElementById('review-keep-editing').addEventListener('click', () => { discardWarning.hidden = true; if (window.sfStaffProgress?.hasDraft()) {
         selectTab('progress');
@@ -327,7 +439,14 @@
     dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
     dialog.addEventListener('click', event => { if (event.target === dialog && event.clientX < dialog.getBoundingClientRect().left)
         close(); });
-    dialog.addEventListener('close', () => { detailRequest?.abort(); activityRequest?.abort(); window.sfStaffProgress?.close(); if (returnFocus?.isConnected)
+    dialog.addEventListener('close', () => { if (group) {
+        const counts = { saved: 0, skipped: 0, already: 0, pending: 0 };
+        for (const item of group.entries)
+            counts[item.result]++;
+        pageMessage.textContent = `Group review ended: ${counts.saved} moves saved, ${counts.skipped} skipped, ${counts.already} already in target stage, ${counts.pending} not moved. Saved changes remain; other selections are retained.`;
+        group = null;
+        paintGroup();
+    } detailRequest?.abort(); activityRequest?.abort(); window.sfStaffProgress?.close(); if (returnFocus?.isConnected)
         returnFocus.focus();
     else
         document.querySelector('#staff-queue-title,.workspace-heading h1')?.focus(); });
@@ -682,8 +801,20 @@
             updateCount();
             return true;
         },
+        confirmed(submission) {
+            if (group) {
+                const entry = group.entries[group.index];
+                if (entry.id === submission.id) {
+                    entry.result = submission.status === group.stage ? 'saved' : 'pending';
+                    group.notice = entry.result === 'saved' ? 'Move saved. Continue to the next idea when ready.' : 'Update saved, but this idea has not reached the selected stage.';
+                    if (entry.result === 'saved')
+                        document.dispatchEvent(new CustomEvent('sf:board-group-saved', { detail: { id: entry.id } }));
+                    paintGroup();
+                }
+            }
+        },
         async afterPost() { await refreshQueue(); void loadActivity(); },
-        changed: updateDraft,
+        changed() { updateDraft(); paintGroup(); },
         posting(value) {
             fields.disabled = value || saved;
             save.disabled = value || saved;
@@ -691,6 +822,7 @@
             document.getElementById('review-add-note').disabled = value;
             dialog.querySelectorAll('[data-close-review]').forEach(button => { button.disabled = value; });
             updateDraft();
+            paintGroup();
         }
     });
     const initial = new URL(window.location.href).searchParams.get('idea');
