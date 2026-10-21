@@ -137,13 +137,14 @@ router.get('/platform/schools', run(async (req, res) => {
   if (applications.error || schools.error || release.error) throw Object.assign(new Error('School review unavailable.'), {status:503});
   const visibleSchools = (schools.data || []).slice(0, 24);
   const ids = visibleSchools.map(school => school.id);
-  const [settings, memberships,policyDrafts] = visibleSchools.length ? await Promise.all([
+  const [settings, memberships,policyDrafts,customizationStates] = visibleSchools.length ? await Promise.all([
     supabasePlatform.from('school_settings').select('school_id,version,privacy_notice,terms_notice,privacy_contact,school_contact,age_policy,publication_policy,retention_days,approved_at').in('school_id', ids),
     supabasePlatform.from('school_memberships').select('school_id').eq('user_id', user.id).eq('role', 'admin').eq('status', 'active').in('school_id', ids),
     supabasePlatform.from('school_policy_drafts').select('school_id,version,settings').in('school_id',ids),
-  ]) : [{ data: [], error: null }, { data: [], error: null },{data:[],error:null}];
-  if (settings.error || memberships.error || policyDrafts.error) throw Object.assign(new Error('School policy review unavailable.'), {status:503});
-  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', release: release.data, demoSchoolId: DEMO_SCHOOL_ID, applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings:(settings.data || []).map(s=>{const draft=policyDrafts.data?.find(d=>d.school_id===s.school_id);return draft?{...s,...draft.settings,version:draft.version,approved_at:null,live_approved_at:s.approved_at}:s;}), adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1' });
+    supabasePlatform.from('school_customization_state').select('school_id,editing_enabled').in('school_id',ids),
+  ]) : [{ data: [], error: null }, { data: [], error: null },{data:[],error:null},{data:[],error:null}];
+  if (settings.error || memberships.error || policyDrafts.error || customizationStates.error) throw Object.assign(new Error('School policy review unavailable.'), {status:503});
+  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', customizationStates: customizationStates.data || [], release: release.data, demoSchoolId: DEMO_SCHOOL_ID, applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings:(settings.data || []).map(s=>{const draft=policyDrafts.data?.find(d=>d.school_id===s.school_id);return draft?{...s,...draft.settings,version:draft.version,approved_at:null,live_approved_at:s.approved_at}:s;}), adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1' });
 }));
 router.post('/platform/schools/:id/review', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;
