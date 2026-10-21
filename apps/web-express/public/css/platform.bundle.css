@@ -458,3 +458,33 @@
  .platform-dashboard--overview .platform-nav a { min-width:0; white-space:normal; justify-content:flex-start; }
  .platform-dashboard--overview .platform-nav-count { margin-left:auto; }
 }
+
+/* Sensitive school lifecycle changes have their own confirmation page. */
+.platform-lifecycle { margin-top:20px; padding-top:12px; border-top:1px solid var(--line); }
+.platform-lifecycle>summary { min-height:44px; display:list-item; list-style-position:inside; cursor:pointer; font-size:13px; font-weight:650; }
+.platform-lifecycle>div { display:grid; justify-items:start; gap:12px; padding-top:12px; }
+.platform-lifecycle>div p { font-size:13px; }
+.platform-close-link { color:var(--error); }
+.platform-closed-note { border-top:1px solid var(--line); margin-top:20px!important; padding-top:16px; }
+.school-status-page { width:min(680px,calc(100% - 32px)); margin:28px auto 64px; color:var(--ink); }
+.school-status-heading { margin:20px 0 24px; }
+.school-status-heading h1 { font-size:clamp(28px,4vw,36px); letter-spacing:-.03em; line-height:1.2; margin:10px 0 12px; }
+.school-status-heading>p:last-child { color:var(--ink-2); overflow-wrap:anywhere; }
+.school-status-card { border:1px solid var(--line); border-radius:16px; background:var(--surface); padding:28px; }
+.school-status-context { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding-bottom:20px; margin-bottom:24px; border-bottom:1px solid var(--line); font-size:14px; }
+.school-status-context strong { overflow-wrap:anywhere; }
+.school-status-card h2 { font-size:18px; margin:0 0 12px; }
+.school-status-card p { color:var(--ink-2); font-size:14px; line-height:1.7; }
+.school-status-form { display:grid; gap:24px; margin-top:28px; }
+.school-status-form label { display:block; font-size:14px; font-weight:650; margin-bottom:8px; }
+.school-status-form div>p { font-size:13px; margin:0 0 12px; }
+.school-status-form :is(textarea,input[type=text]) { width:100%; min-width:0; padding:12px; border:1px solid var(--line); border-radius:9px; color:var(--ink); background:var(--bg); font:inherit; font-size:16px; }
+.school-status-form textarea { min-height:130px; resize:vertical; }
+.school-status-form .school-status-acknowledgement { display:flex; align-items:flex-start; gap:12px; margin:0; font-weight:400; line-height:1.7; cursor:pointer; }
+.school-status-acknowledgement input { flex:0 0 20px; width:20px; height:20px; margin-top:3px; accent-color:var(--navy); }
+.school-status-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:12px; padding-top:24px; border-top:1px solid var(--line); }
+.school-status-actions .platform-button { min-height:44px; font-size:14px; }
+.school-status-actions .platform-button--danger { border-color:var(--error); }
+.school-status-error { padding:16px; margin-top:24px; border:1px solid var(--error); border-radius:9px; color:var(--error); background:var(--error-bg); line-height:1.7; font-size:14px; }
+.school-status-page :is(a,button,input,textarea):focus-visible { outline:3px solid var(--navy); outline-offset:3px; }
+@media(max-width:600px) { .school-status-card { padding:22px 16px; } .school-status-actions { flex-direction:column-reverse; } .school-status-actions .platform-button { width:100%; } }

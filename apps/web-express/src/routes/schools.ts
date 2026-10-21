@@ -144,7 +144,7 @@ router.get('/platform/schools', run(async (req, res) => {
     supabasePlatform.from('school_customization_state').select('school_id,editing_enabled').in('school_id',ids),
   ]) : [{ data: [], error: null }, { data: [], error: null },{data:[],error:null},{data:[],error:null}];
   if (settings.error || memberships.error || policyDrafts.error || customizationStates.error) throw Object.assign(new Error('School policy review unavailable.'), {status:503});
-  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', customizationStates: customizationStates.data || [], release: release.data, demoSchoolId: DEMO_SCHOOL_ID, applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings:(settings.data || []).map(s=>{const draft=policyDrafts.data?.find(d=>d.school_id===s.school_id);return draft?{...s,...draft.settings,version:draft.version,approved_at:null,live_approved_at:s.approved_at}:s;}), adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1' });
+  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', customizationStates: customizationStates.data || [], release: release.data, demoSchoolId: DEMO_SCHOOL_ID, applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings:(settings.data || []).map(s=>{const draft=policyDrafts.data?.find(d=>d.school_id===s.school_id);return draft?{...s,...draft.settings,version:draft.version,approved_at:null,live_approved_at:s.approved_at}:s;}), adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1', statusSaved:req.query.statusSaved==='1' });
 }));
 router.post('/platform/schools/:id/review', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;
@@ -163,14 +163,56 @@ router.post('/platform/schools/:id/policies', run(async (req, res) => {
   if (error) return failed(res, 'Policies not approved', 'Complete current notices, contacts and age policy before recording an actual review.');
   return res.redirect(303, '/platform/schools?saved=1');
 }));
+const schoolStatusActions = {
+  suspended: { title: 'Suspend school', description: 'Pause access to the school workspace. Accounts, memberships and school records are retained. A super admin can reactivate it after the required checks pass.' },
+  active: { title: 'Reactivate school', description: 'Restore access for eligible members. Reviewed policies, an active school administrator, service setup and school isolation verification are still required.' },
+  closed: { title: 'Close school', description: 'Close this workspace to its members and administrators. Accounts and school records are retained. Closed schools cannot be reopened through these controls. Use suspension for a temporary restriction.' },
+} as const;
+type SchoolStatusAction = keyof typeof schoolStatusActions;
+const validSchoolId = (value: unknown): value is string => typeof value === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(value);
+const validStatusTransition = (from: string, to: SchoolStatusAction) => to === 'active' ? from === 'suspended' : to === 'suspended' ? from === 'active' : ['pending','active','suspended'].includes(from);
+router.get('/platform/schools/:id/status', run(async (req,res) => {
+  const user=await operator(req,res);if(!user)return;
+  if(!validSchoolId(req.params.id) || typeof req.query.to!=='string' || !Object.prototype.hasOwnProperty.call(schoolStatusActions,req.query.to))return failed(res,'Invalid school action','Choose a school action from the platform directory.');
+  const target=req.query.to as SchoolStatusAction;
+  const {data:school,error}=await supabasePlatform.from('schools').select('id,name,slug,status').eq('id',req.params.id).maybeSingle();
+  if(error)throw Object.assign(new Error('School status unavailable.'),{status:503});
+  if(!school)return failed(res,'School not found','Return to the platform directory and select an existing school.',404);
+  if(!validStatusTransition(school.status,target))return failed(res,'School action unavailable','The school’s status changed or this action is not available. Return to the directory to review its current status.',409);
+  return res.render('school-status',{title:schoolStatusActions[target].title+' — '+school.name,school,target,action:schoolStatusActions[target],submitted:{},errorMessage:''});
+}));
+router.post('/platform/schools/:id/status', run(async (req,res) => {
+  const user=await operator(req,res);if(!user)return;
+  const {target,expected_status,confirmation,reason,acknowledged}=req.body||{};
+  if(!validSchoolId(req.params.id) || typeof target!=='string' || !Object.prototype.hasOwnProperty.call(schoolStatusActions,target))return failed(res,'Invalid school action','Choose a school action from the platform directory.');
+  const status=target as SchoolStatusAction;
+  const {data:school,error}=await supabasePlatform.from('schools').select('id,name,slug,status').eq('id',req.params.id).maybeSingle();
+  if(error)throw Object.assign(new Error('School status unavailable.'),{status:503});
+  if(!school)return failed(res,'School not found','Return to the platform directory and select an existing school.',404);
+  const submitted={confirmation:typeof confirmation==='string'?confirmation.slice(0,63):'',reason:typeof reason==='string'?reason.slice(0,2000):''};
+  const reject=(message:string,code=400)=>res.status(code).render('school-status',{title:schoolStatusActions[status].title+' — '+school.name,school,target:status,action:schoolStatusActions[status],submitted,errorMessage:message});
+  if(!validStatusTransition(school.status,status))return failed(res,'School action unavailable','This action is no longer available for the current school status. Return to the directory to review the school.',409);
+  if(expected_status!==school.status)return reject('The school status changed. Review the current status above and confirm again, or return to the directory.',409);
+  if(typeof confirmation!=='string' || confirmation!==school.slug || typeof reason!=='string' || reason.trim().length<10 || reason.length>2000 || acknowledged!=='yes')return reject('Enter the exact school address slug, a reason of 10–2,000 characters, and confirm the effect of this change.');
+  if(status==='active' && !schoolApplicationsConfigured() && school.id!==DEMO_SCHOOL_ID)return reject('Complete service setup before reactivating a real school.',409);
+  const result=await supabasePlatform.rpc('manage_school_status',{p_school:school.id,p_actor:user.id,p_status:status,p_expected_status:expected_status,p_confirmation:confirmation,p_reason:reason.trim()});
+  if(result.error)return reject('The change was not saved. Check current school status, reviewed policies, administrator access and isolation verification, then try again. If it persists, ask the service operator to check the status-management migration.',409);
+  return res.redirect(303,'/platform/schools?statusSaved=1&q='+encodeURIComponent(school.name.slice(0,100))+'#school-'+school.id);
+}));
 router.post('/platform/schools/:id/activate', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;
-  const { data: policy, error: policyError } = await supabasePlatform.from('school_settings').select('approved_at').eq('school_id', req.params.id).maybeSingle();
-  if (policyError) throw Object.assign(new Error('School policy unavailable.'), {status:503});
-  if ((!schoolApplicationsConfigured() && req.params.id !== DEMO_SCHOOL_ID) || !policy?.approved_at) return failed(res, 'Activation unavailable', 'Reviewed policies are required. Real schools also need completed service business configuration.');
-  const { error } = await supabasePlatform.rpc('change_school_status', { p_school: req.params.id, p_actor: user.id, p_status: 'active' });
+  if(!validSchoolId(req.params.id))return failed(res,'Invalid school','Select an existing school from the directory.');
+  const [policyResult,schoolResult]=await Promise.all([
+    supabasePlatform.from('school_settings').select('approved_at').eq('school_id',req.params.id).maybeSingle(),
+    supabasePlatform.from('schools').select('id,slug,status').eq('id',req.params.id).maybeSingle(),
+  ]);
+  if(policyResult.error || schoolResult.error)throw Object.assign(new Error('School activation unavailable.'),{status:503});
+  const school=schoolResult.data;
+  if(!school || school.status!=='pending')return failed(res,'Activation unavailable','Only pending schools use this action. Use Reactivate school for a suspended workspace.',409);
+  if ((!schoolApplicationsConfigured() && school.id !== DEMO_SCHOOL_ID) || !policyResult.data?.approved_at) return failed(res, 'Activation unavailable', 'Reviewed policies are required. Real schools also need completed service business configuration.');
+  const { error } = await supabasePlatform.rpc('manage_school_status', { p_school:school.id,p_actor:user.id,p_status:'active',p_expected_status:'pending',p_confirmation:school.slug,p_reason:'Initial workspace activation requested from the platform dashboard.' });
   if (error) return failed(res, 'Activation locked', 'The isolation release gate, school status and administrator requirements must all pass before activation.', 409);
-  return res.redirect(303, '/platform/schools?saved=1');
+  return res.redirect(303, '/platform/schools?statusSaved=1');
 }));
 async function renderSettings(req: Request, res: Response, context: NonNullable<Awaited<ReturnType<typeof schoolAdmin>>>, submitted?: Record<string, string | number>, errorMessage?: string, enrollmentDraft?:{version:number;mode:string;text:string}) {
   const [{data,error},domains,enrollment,pendingPolicy,customization]=await Promise.all([supabasePlatform.from('school_settings').select('*').eq('school_id',context.school.id).maybeSingle(),supabasePlatform.from('school_email_domains').select('id,domain,verification_token,verified_at,join_enabled').eq('school_id',context.school.id).order('created_at'),supabasePlatform.rpc('get_school_enrollment',{p_school:context.school.id,p_actor:context.user.id}),supabasePlatform.from('school_policy_drafts').select('version,settings,updated_at').eq('school_id',context.school.id).maybeSingle(),supabasePlatform.from('school_customization_state').select('editing_enabled').eq('school_id',context.school.id).maybeSingle()]);

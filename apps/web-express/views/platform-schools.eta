@@ -22,6 +22,7 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
       <div><p class="platform-eyebrow">Platform administration</p><h1>Platform overview</h1><p>Your schools, reviews, and next steps in one place.</p></div>
       <a class="platform-button platform-button--primary" href="<%= !it.businessReady ? '#setup' : it.applications.length ? '#applications' : '#schools' %>"><%~ icon('inbox') %> <%= !it.businessReady ? 'Complete service setup' : it.applications.length ? 'Review applications' : 'Manage schools' %></a>
     </header>
+    <% if (it.statusSaved) { %><div class="platform-feedback" role="status">School status updated successfully.</div><% } %>
     <% if (it.saved) { %><div class="platform-feedback" role="status"><%~ icon('shield') %> Your review was saved successfully.</div><% } %>
     <section class="platform-stats" aria-label="Current page summary">
       <article class="platform-stat"><span class="platform-stat-icon"><%~ icon('users') %></span><p>Schools listed</p><strong><%= it.schools.length %></strong><small>On this page</small></article>
@@ -70,24 +71,31 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
               </section>
               <section class="platform-management-group" aria-labelledby="manage-<%= school.id %>">
                 <h3 id="manage-<%= school.id %>">School management</h3>
-                <% if (canEdit) { %>
+                <% if (canEdit && school.status!=='closed') { %>
                 <nav class="platform-management-links" aria-label="Manage <%= school.name %>">
                   <a href="/platform/schools/<%= school.id %>/settings"><%~ icon('list') %><span>Policies & school settings</span><%~ icon('arrow') %></a>
                   <a href="/platform/schools/<%= school.id %>/invitations"><%~ icon('user-plus') %><span>Members & invitations</span><%~ icon('arrow') %></a>
                   <% if (editorEnabled) { %><a href="/platform/schools/<%= school.id %>/customization"><%~ icon('board') %><span>Customize workspace</span><%~ icon('arrow') %></a><% } %>
                 </nav>
                 <% } else { %><p>School settings and invitations are managed by the school’s administrators. Platform controls are available below.</p><% } %>
-                <form class="platform-editor-access" method="post" action="/platform/schools/<%= school.id %>/customization-rollout">
+                <% if (school.status!=='closed') { %><form class="platform-editor-access" method="post" action="/platform/schools/<%= school.id %>/customization-rollout">
                   <input type="hidden" name="enabled" value="<%= editorEnabled ? 'false' : 'true' %>"/>
                   <div><strong>Visual editor access</strong><p><%= editorEnabled ? 'Published appearance stays available when editing is paused.' : 'Allow this school’s admins to edit their workspace.' %></p></div>
                   <button class="platform-button" type="submit"><%= editorEnabled ? 'Pause editing' : 'Enable editing' %></button>
-                </form>
-                <% if (['pending','suspended'].includes(school.status)) { %>
+                </form><% } %>
+                <% if (school.status==='pending') { %>
                 <form class="platform-activation-action" method="post" action="/platform/schools/<%= school.id %>/activate">
                   <p>Activation checks verify administrator access and school isolation.</p>
                   <button class="platform-button platform-button--primary" type="submit" aria-describedby="school-reason-<%= school.id %>" <%= canRequest ? '' : 'disabled' %>>Request activation</button>
                 </form>
                 <% } %>
+                <% if (school.status==='suspended') { %><div class="platform-activation-action"><p>Restore access after the school meets activation requirements.</p><a class="platform-button platform-button--primary" href="/platform/schools/<%= school.id %>/status?to=active">Reactivate school</a></div><% } %>
+                <% if (school.status!=='closed') { %>
+                <details class="platform-lifecycle"><summary>School access & closure</summary><div>
+                  <% if (school.status==='active') { %><p>Suspend access temporarily while retaining the school’s records.</p><a class="platform-button" href="/platform/schools/<%= school.id %>/status?to=suspended">Suspend school</a><% } %>
+                  <p>Close the workspace without deleting accounts or school records. Closed schools cannot be reopened through these controls.</p><a class="platform-text-link platform-close-link" href="/platform/schools/<%= school.id %>/status?to=closed">Close school</a>
+                </div></details>
+                <% } else { %><p class="platform-closed-note">This school is closed. Accounts and records are retained; reopening is unavailable through these controls.</p><% } %>
               </section>
             </div>
           </details>

@@ -12,6 +12,7 @@ import '../src/types';
 const original={from:supabasePlatform.from,rpc:supabasePlatform.rpc,getUser:supabasePlatform.auth.getUser,name:process.env.PLATFORM_OPERATOR_NAME,email:process.env.PRIVACY_CONTACT_EMAIL,resend:process.env.RESEND_API_KEY,sender:process.env.RESEND_FROM_EMAIL,origin:process.env.APP_ORIGIN};
 let server:Server,origin:string;
 let calls:{name:string,args:any}[]=[];
+const activationSchoolId='00000000-0000-4000-8000-000000000002';
 const school={id:'school-a',slug:'school-a',name:'School A',status:'pending'};
 const policy={school_id:'school-a',version:2,...Object.fromEntries(['privacy_notice','terms_notice','age_policy'].map(key=>[key,'Reviewed school policy text.'])),privacy_contact:'privacy@example.test',school_contact:'school@example.test',publication_policy:'private',retention_days:365,approved_at:null};
 let schoolRows:any[]=[school], applicationRows:any[]=[], policyRows:any[]=[policy];
@@ -26,6 +27,7 @@ before(async()=>{
   const read:{table:string;filters:Record<string,any>;start?:number;end?:number}={table,filters};reads.push(read);
   const data=()=>{
    let rows=table==='schools'?schoolRows:table==='school_settings'?policyRows:table==='school_applications'?applicationRows:table==='school_memberships'?(['user-a','operator'].includes(filters.user_id)?[{school_id:'school-a',role:'admin',status:'active',schools:school}]:[]):[];
+   if(table==='schools' && filters.id)rows=rows.filter(row=>row.id===filters.id);
    if(filters.school_ids)rows=rows.filter(row=>filters.school_ids.includes(row.school_id));
    return read.start===undefined?rows:rows.slice(read.start,(read.end??read.start)+1);
   };
@@ -98,15 +100,16 @@ test('super admin dashboard shows school setup blockers, scoped actions and dash
  assert.match(html,/<button[^>]+disabled[^>]*>Request activation<\/button>/);
  assert.doesNotMatch(html,/class="mobile-tab-bar"/);
  assert.match(html,/platform\.bundle\.css/);
- assert.equal(calls.some(call=>call.name==='change_school_status'),false);
+ assert.equal(calls.some(call=>call.name==='manage_school_status'),false);
  const alias=await fetch(origin+'/platform',{redirect:'manual'});assert.equal(alias.status,303);assert.equal(alias.headers.get('location'),'/platform/schools');
  const oldActivation=await fetch(origin+'/platform/schools/school-a/activate',{redirect:'manual'});assert.equal(oldActivation.status,303);assert.equal(oldActivation.headers.get('location'),'/platform/schools#schools');
  delete process.env.PLATFORM_OPERATOR_NAME;
  try{
-  const blocked=await post('/platform/schools/school-a/activate',{}, {'x-user':'operator'});
+  schoolRows=[{...school,id:activationSchoolId}];
+  const blocked=await post('/platform/schools/'+activationSchoolId+'/activate',{}, {'x-user':'operator'});
   assert.equal(blocked.status,400);assert.match(await blocked.text(),/Back to super admin dashboard/);
-  assert.equal(calls.some(call=>call.name==='change_school_status'),false);
- }finally{process.env.PLATFORM_OPERATOR_NAME='Test Business';}
+  assert.equal(calls.some(call=>call.name==='manage_school_status'),false);
+ }finally{schoolRows=[school];process.env.PLATFORM_OPERATOR_NAME='Test Business';}
 });
 
 test('dashboard pages schools and applications independently and only loads policies for visible schools',async()=>{
@@ -136,13 +139,14 @@ test('dashboard denies school admins and unverified operators before loading sch
 
 test('a reviewed school still honors a database activation rejection and keeps the operator on the dashboard',async()=>{
  const rpc=supabasePlatform.rpc;
+ schoolRows=[{...school,id:activationSchoolId}];
  policyRows=[{...policy,approved_at:'2026-10-17T00:00:00Z'}];
- supabasePlatform.rpc=(async(name:string,args:any)=>name==='change_school_status'?{data:null,error:{code:'42501'}}:rpc.call(supabasePlatform,name,args)) as any;
+ supabasePlatform.rpc=(async(name:string,args:any)=>name==='manage_school_status'?{data:null,error:{code:'42501'}}:rpc.call(supabasePlatform,name,args)) as any;
  try{
-  const response=await post('/platform/schools/school-a/activate',{}, {'x-user':'operator'});
+  const response=await post('/platform/schools/'+activationSchoolId+'/activate',{}, {'x-user':'operator'});
   assert.equal(response.status,409);const html=await response.text();
   assert.match(html,/Activation locked/);assert.match(html,/Back to super admin dashboard/);
- }finally{supabasePlatform.rpc=rpc;policyRows=[policy];}
+ }finally{supabasePlatform.rpc=rpc;policyRows=[policy];schoolRows=[school];}
 });
 
 test('account home honors role landing and platform settings remain inside the platform shell',async()=>{
@@ -167,14 +171,15 @@ test('rejected policy edits retain input while readiness reflects only persisted
 
 test('only the reserved fictional demo can activate without real-school business configuration',async()=>{
  const originalRpc=supabasePlatform.rpc;const originalFrom=supabasePlatform.from;
+ schoolRows=[{...school,id:'00000000-0000-4000-8000-000000000001'},{...school,id:activationSchoolId}];
  delete process.env.PLATFORM_OPERATOR_NAME;
  supabasePlatform.from=((table:string)=>table==='school_settings'?{select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{approved_at:'2026-10-17'},error:null})}:originalFrom.call(supabasePlatform,table)) as any;
  try{
   const response=await post('/platform/schools/00000000-0000-4000-8000-000000000001/activate',{}, {'x-user':'operator'});assert.equal(response.status,303);
-  const real=await post('/platform/schools/school-a/activate',{}, {'x-user':'operator'});assert.equal(real.status,400);
-  supabasePlatform.rpc=(async(name:string,args:any)=>name==='change_school_status'?{data:null,error:{code:'42501'}}:originalRpc.call(supabasePlatform,name,args)) as any;
+  const real=await post('/platform/schools/'+activationSchoolId+'/activate',{}, {'x-user':'operator'});assert.equal(real.status,400);
+  supabasePlatform.rpc=(async(name:string,args:any)=>name==='manage_school_status'?{data:null,error:{code:'42501'}}:originalRpc.call(supabasePlatform,name,args)) as any;
   const locked=await post('/platform/schools/00000000-0000-4000-8000-000000000001/activate',{}, {'x-user':'operator'});assert.equal(locked.status,409);
- }finally{supabasePlatform.rpc=originalRpc;supabasePlatform.from=originalFrom;process.env.PLATFORM_OPERATOR_NAME='Test Business';}
+ }finally{supabasePlatform.rpc=originalRpc;supabasePlatform.from=originalFrom;schoolRows=[school];process.env.PLATFORM_OPERATOR_NAME='Test Business';}
 });
 
 test('invitation acceptance preserves form origin without exposing the token path in referrers',async()=>{

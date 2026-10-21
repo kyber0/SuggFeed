@@ -15,7 +15,7 @@ export function safeSecurityReturnTo(value: unknown): string {
   try {
     const url = new URL(value, 'https://suggfeed.invalid');
     if (!value.startsWith('/') || url.origin !== 'https://suggfeed.invalid' || url.pathname !== value.split(/[?#]/)[0]) return '/schools';
-    if (url.pathname === '/schools' || /^\/platform\/schools(?:\/[^/]+\/(?:settings|invitations|customization(?:\/preview(?:\/content)?)?))?$/.test(url.pathname) || url.pathname === '/account/home' || url.pathname === '/platform/customization') return value;
+    if (url.pathname === '/schools' || /^\/platform\/schools(?:\/[^/]+\/(?:settings|invitations|status|customization(?:\/preview(?:\/content)?)?))?$/.test(url.pathname) || url.pathname === '/account/home' || url.pathname === '/platform/customization') return value;
     const school = /^\/s\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/|$)/.exec(url.pathname);
     return school && school[1].length >= 3 && school[1].length <= 63 ? value : '/schools';
   } catch { return '/schools'; }
