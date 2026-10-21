@@ -66,8 +66,10 @@ school's student and staff screens. Other schools and the platform dashboard
 retain their own appearance.
 
 The theme supplies compact inline SVG pointing/open/closed hands with solid black
-outlines and native cursor fallbacks. Schools without a published design also use navy/light-blue hand
-colors. Touch and forced-colors modes keep
+outlines and native cursor fallbacks. Schools without a published design also use brand light-blue/orange hand
+colors (`#dbeafe`, light `--sky-2`; `#f97316`, dark `--accent` in tokens.css).
+Saved school cursor overrides are retained; the Cursor reset control restores
+these brand defaults into a draft for preview and publication. Touch and forced-colors modes keep
 native cursors. Operating systems may use their own cursor during native file or
 section dragging; Manage Work mouse dragging uses the themed closed hand.
 

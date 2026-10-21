@@ -17,7 +17,8 @@ namespace SfSchoolDesign {
  };
  export function page(value:string){const p=value.replace(/^\/s\/[^/]+/,'').split('?')[0];return p==='/'?'home':p.startsWith('/idea/')?'idea':p.startsWith('/admin')||p.startsWith('/staff')?'staff':p.startsWith('/notifications')?'notifications':p.startsWith('/inbox')?'inbox':p.startsWith('/profile')?'profile':p.startsWith('/roadmap')?'roadmap':p.startsWith('/feed')?'feed':'';}
  export const pageDefaults=():Page=>({layout:'default',spacing:'comfortable',cards:'outlined',hidden:[],order:[],sections:{}});
- export function defaults(palette='navy'):Design {const colors=typeof SfSchoolColors!=='undefined'?SfSchoolColors:require('./school-colors');const primary=colors.resolve(palette);return {light:{primary,secondary:'#c2410c',background:'#f8fafc',surface:'#ffffff',raised:'#f1f5f9',text:'#0f172a',muted:'#526278',border:'#cbd5e1',link:'#164e83',cursor:'#123e5c'},dark:{primary,secondary:'#fdba74',background:'#0f172a',surface:'#162238',raised:'#1e293b',text:'#f1f5f9',muted:'#b4c1d3',border:'#475569',link:'#93c5fd',cursor:'#93c5fd'},corners:'rounded',font:'brand',pages:{}};}
+ // Cursor defaults match tokens.css: light --sky-2 and dark --accent.
+ export function defaults(palette='navy'):Design {const colors=typeof SfSchoolColors!=='undefined'?SfSchoolColors:require('./school-colors');const primary=colors.resolve(palette);return {light:{primary,secondary:'#c2410c',background:'#f8fafc',surface:'#ffffff',raised:'#f1f5f9',text:'#0f172a',muted:'#526278',border:'#cbd5e1',link:'#164e83',cursor:'#dbeafe'},dark:{primary,secondary:'#fdba74',background:'#0f172a',surface:'#162238',raised:'#1e293b',text:'#f1f5f9',muted:'#b4c1d3',border:'#475569',link:'#93c5fd',cursor:'#f97316'},corners:'rounded',font:'brand',pages:{}};}
  const object=(v:unknown,keys:readonly string[])=>{if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!keys.includes(k)))throw new Error('Unsupported design fields.');return v as Record<string,any>;};
  function lum(hex:string){const c=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));return c[0]*.2126+c[1]*.7152+c[2]*.0722;}
  export function contrast(a:string,b:string){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
@@ -28,7 +29,7 @@ namespace SfSchoolDesign {
  }
  // A solid black outline remains identical in all hand states.
  function handCursor(color:string,shape:'pointer'|'grab'|'grabbing'){
-  const fill=/^#[0-9a-f]{6}$/i.test(color)?color:'#123e5c';
+  const fill=/^#[0-9a-f]{6}$/i.test(color)?color:'#dbeafe';
   const paths={pointer:'M9 21 5 14Q4 11 7 12L10 15V4Q10 1 13 2Q14 2 14 4V10Q17 8 18 11Q21 9 22 13Q25 12 25 16V20Q25 26 20 27H14Q12 27 9 21Z',grab:'M7 17 4 13Q2 10 5 9Q6 9 8 12L10 14V5Q10 2 13 3V12H14V3Q14 0 17 2V12H18V5Q18 2 21 4V13H22V9Q22 6 25 8V20Q25 28 18 28H15Q12 28 10 24Z',grabbing:'M7 18V12Q7 9 10 10V8Q10 5 14 7Q17 4 19 8Q23 6 24 10L25 18Q25 26 19 27H14Q9 27 7 18Z'};
   const svg='<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="'+paths[shape]+'" fill="'+fill+'" stroke="black" stroke-width="2.5" stroke-linejoin="round"/></svg>';
   return 'url("data:image/svg+xml,'+encodeURIComponent(svg)+'") '+(shape==='pointer'?'12 3':'16 16')+','+shape;
