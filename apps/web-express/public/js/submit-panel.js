@@ -291,7 +291,7 @@
             sipCurrentStep = 2;
             updateSipUI();
             // Scroll to top of step 2
-            const step2 = document.getElementById('sip-step-2');
+            const step2 = document.getElementById('sip-scroll-body');
             if (step2)
                 step2.scrollTop = 0;
             document.getElementById('sip-title')?.focus();
@@ -334,7 +334,7 @@
             document.getElementById('rev-anon-badge').textContent = isAnon ? 'Anonymous Submission' : 'Public Profile';
             sipCurrentStep = 3;
             updateSipUI();
-            const step3 = document.getElementById('sip-step-3');
+            const step3 = document.getElementById('sip-scroll-body');
             if (step3)
                 step3.scrollTop = 0;
             document.getElementById('sip-consent')?.focus();

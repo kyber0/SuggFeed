@@ -151,13 +151,14 @@
 /* ── Reset ──────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 [hidden] { display: none !important; }
-html { scroll-behavior: smooth; overflow-x: hidden; }
+html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.6;
+  overflow-wrap: anywhere;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -175,6 +176,12 @@ a  { color: inherit; text-decoration: none; }
 
 /* Ã¢â€â‚¬Ã¢â€â‚¬ Layout Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 main { max-width: 1200px; margin: auto; }
+
+/* Intrinsic sizes must not force the document wider than its container. */
+fieldset { min-inline-size:0; }
+img,video,canvas { max-inline-size:100%; }
+video { height:auto; }
+pre { max-inline-size:100%; overflow-x:auto; overscroll-behavior-inline:contain; }
 
 /* Ã¢â€â‚¬Ã¢â€â‚¬ Header Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 @keyframes header-slide-down {
@@ -1855,7 +1862,7 @@ dialog.am-card::backdrop { background:rgba(10,20,40,.65); }
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(580px, 94vw);
-  max-height: 90vh;
+  max-height: 90dvh;
   background: var(--surface-card, #ffffff);
   border: 1px solid var(--line, #e2e8f0);
   border-radius: var(--radius-card, 18px);
@@ -3445,6 +3452,12 @@ dialog.am-card::backdrop { background:rgba(10,20,40,.65); }
 /* Hidden native radios still need a visible keyboard focus indicator. */
 .sip-cat-card:focus-within { outline:3px solid var(--focus-ring); outline-offset:3px; }
 
+.sip-form {min-height:0;}
+.sip-scroll-body {flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:16px;}
+.sip-scroll-body > .sip-toggle-desc {padding:16px 20px 0;margin:0;}
+.sip-scroll-body > .submission-recovery {margin:16px 20px 0;}
+.sip-scroll-body > .sip-step-body {overflow:visible;flex:none;}
+
 /* Ã¢â€â‚¬Ã¢â€â‚¬ Feed section Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .feed {
   padding: 64px 8%; background: var(--bg);
@@ -4741,7 +4754,7 @@ input.feed-search {
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(540px, 96vw);
-  max-height: 90vh;
+  max-height: 90dvh;
   background: var(--surface-card);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
@@ -4765,8 +4778,8 @@ input.feed-search {
 /* Wide two-column variant */
 .detail-panel-split {
   width: min(1600px, 96vw);
-  height: min(900px, 93vh);
-  max-height: 93vh;
+  height: min(900px, 93dvh);
+  max-height: 93dvh;
 }
 
 @keyframes panel-in {
@@ -5905,7 +5918,7 @@ input.feed-search {
 .standalone-idea-page {
   padding: 40px 20px 80px;
   background: var(--bg-alt);
-  min-height: calc(100vh - 60px);
+  min-height: calc(100dvh - 60px);
 }
 
 .standalone-container,
@@ -5953,7 +5966,7 @@ input.feed-search {
 
 @media (min-width: 769px) {
   .standalone-split {
-    height: min(850px, calc(100vh - 140px)) !important;
+    height: min(850px, calc(100dvh - 140px)) !important;
     min-height: 560px !important;
     max-height: none !important;
   }
@@ -7686,8 +7699,8 @@ body:has(.workspace-dialog[open]) { overflow:hidden; }
     left:auto;
     width:480px;
     max-width:90vw;
-    height:100vh;
-    max-height:100vh;
+    height:100dvh;
+    max-height:100dvh;
     margin:0;
     border:none;
     border-left:1px solid var(--line);

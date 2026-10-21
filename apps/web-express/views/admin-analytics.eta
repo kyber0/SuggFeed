@@ -110,7 +110,7 @@
           <!-- Dynamically generated SVG chart rendered via client script -->
           <div class="analytics-chart-loading">Rendering chart…</div>
         </div>
-        <details class="analytics-data"><summary>View chart data as a table</summary><div class="analytics-table-wrap"><table class="analytics-table"><caption>Daily counts for the selected snapshot, Philippine time</caption><thead><tr><th scope="col">Submission date</th><th scope="col">Ideas</th><th scope="col">Currently approved</th><th scope="col">Current votes</th></tr></thead><tbody><% for(const row of a.timeline || []) { %><tr><th scope="row"><%= row.fullDate %></th><td><%= row.submissions %></td><td><%= row.approved %></td><td><%= row.votes %></td></tr><% } %><% if(!a.timeline?.length) { %><tr><td colspan="4">No activity in this snapshot.</td></tr><% } %></tbody></table></div></details>
+        <details class="analytics-data"><summary>View chart data as a table</summary><div class="analytics-table-wrap sf-responsive-table" tabindex="0" role="region" aria-label="Scrollable analytics table"><table class="analytics-table"><caption>Daily counts for the selected snapshot, Philippine time</caption><thead><tr><th scope="col">Submission date</th><th scope="col">Ideas</th><th scope="col">Currently approved</th><th scope="col">Current votes</th></tr></thead><tbody><% for(const row of a.timeline || []) { %><tr><th scope="row"><%= row.fullDate %></th><td><%= row.submissions %></td><td><%= row.approved %></td><td><%= row.votes %></td></tr><% } %><% if(!a.timeline?.length) { %><tr><td colspan="4">No activity in this snapshot.</td></tr><% } %></tbody></table></div></details>
         <div class="analytics-legend">
           <span class="analytics-legend-item"><span class="analytics-dot analytics-dot--blue"></span> Submissions</span>
           <span class="analytics-legend-item"><span class="analytics-dot analytics-dot--green"></span> Approved / Active</span>
@@ -174,7 +174,7 @@
           <p class="analytics-card-subtitle">Detailed breakdown of review progress and completion rates by department.</p>
         </div>
       </div>
-      <p class="analytics-table-hint">Scroll across the table to see all columns.</p><div class="analytics-table-wrap">
+      <p class="analytics-table-hint">Scroll across the table to see all columns.</p><div class="analytics-table-wrap sf-responsive-table" tabindex="0" role="region" aria-label="Scrollable analytics table">
         <table class="analytics-table">
           <thead>
             <tr>

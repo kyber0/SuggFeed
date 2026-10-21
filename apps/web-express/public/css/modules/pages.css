@@ -3,7 +3,7 @@
    ========================================================================== */
 
 .sf-main {
-  min-height: calc(100vh - 64px);
+  min-height: calc(100dvh - 64px);
   background: var(--bg);
   color: var(--ink);
 }
@@ -1859,7 +1859,7 @@
    Legal Pages  (/privacy, /terms)
    ============================================================ */
 .sf-legal-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--surface, #fafafa);
   padding: 0 0 80px;
 }
@@ -2171,3 +2171,9 @@
 
 .sf-legal-content a { color:var(--text-link); text-underline-offset:3px; }
 [data-theme="dark"] .sf-btn-empty-action { background:var(--navy-2); }
+
+/* School category names are administrator-defined, not fixed short labels. */
+.sf-sort-dropdown-wrap {min-width:0;max-width:100%;}
+.sf-category-pills {min-width:0;max-width:100%;}
+.sf-cat-pill {min-width:0;max-width:100%;height:auto;padding-block:8px;white-space:normal;overflow-wrap:anywhere;}
+.sf-cat-pill .sf-cat-count {flex-shrink:0;}

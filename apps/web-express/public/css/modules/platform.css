@@ -385,3 +385,7 @@
  .customization-approval-form .platform-button { width:100%; }
  .customization-form-review { padding-top:20px; }
 }
+
+/* Workspace applications use the same bounded fields as school settings. */
+.school-directory-section form :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select) {display:block;width:100%;min-width:0;max-width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit;}
+.school-directory-section form :is(label,p),.school-directory-memberships > li > div {min-width:0;}

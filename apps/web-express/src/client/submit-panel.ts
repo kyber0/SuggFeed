@@ -273,7 +273,7 @@
       sipCurrentStep = 2;
       updateSipUI();
       // Scroll to top of step 2
-      const step2 = (document.getElementById('sip-step-2') as HTMLElement);
+      const step2 = document.getElementById('sip-scroll-body');
       if (step2) step2.scrollTop = 0;
       (document.getElementById('sip-title') as HTMLInputElement)?.focus();
     } else if (sipCurrentStep === 2) {
@@ -310,7 +310,7 @@
 
       sipCurrentStep = 3;
       updateSipUI();
-      const step3 = (document.getElementById('sip-step-3') as HTMLElement);
+      const step3 = document.getElementById('sip-scroll-body');
       if (step3) step3.scrollTop = 0;
       (document.getElementById('sip-consent') as HTMLInputElement)?.focus();
     } else if (sipCurrentStep === 3) {

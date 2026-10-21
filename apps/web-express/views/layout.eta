@@ -3,7 +3,7 @@
 <html lang="en" data-theme="light"<% if(motionTransitionPage) { %> data-sf-transitions<% } %>>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
   <meta name="description" content="<%= it.description ?? 'Share campus feedback and follow submission progress on SuggFeed.' %>" />
   <title><%= it.title ?? 'SuggFeed' %></title>
 
@@ -22,12 +22,12 @@
   <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/base.bundle.css?v=20261018-action-audit" />
+  <link rel="stylesheet" href="/css/base.bundle.css?v=20261021-mobile-audit" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
-  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261021-compact-review" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261021-admin-shell" />
-  <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261020-review-layout" /><% } %>
-  <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261020-studio-colors"/><% } %>
+  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261021-mobile-audit" /><% } %>
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261021-mobile-audit" />
+  <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261021-mobile-audit" /><% } %>
+  <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261021-mobile-audit"/><% } %>
   <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
   <script defer src="/js/events.js?v=20261018-customization"></script>
 
@@ -79,7 +79,7 @@
 
 <% } %>
 <script defer src="/js/file-upload.js?v=20261021-upload"></script>
-<script defer src="/js/responsive.js?v=20261016-school-isolation"></script>
+<script defer src="/js/responsive.js?v=20261021-mobile-audit"></script>
 <script defer src="/js/animations.js?v=20261020-motion"></script>
 </body>
 </html>

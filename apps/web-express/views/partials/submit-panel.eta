@@ -74,6 +74,7 @@
   </div>
 
   <form id="submit-idea-form" data-sf-submit="action-115" class="sip-form">
+    <div class="sip-scroll-body" id="sip-scroll-body">
     <p class="sip-toggle-desc">Reviewed ideas may be public. Avoid personal details; read the <a href="/privacy">Privacy Notice</a> and <a href="/terms">Terms</a> before sending.</p>
     <details class="submission-recovery care-card">
       <summary>Draft recovery and queued ideas</summary>
@@ -298,6 +299,7 @@
       </div>
     </div>
 
+    </div><!-- One scroll region keeps notices and expanded recovery reachable. -->
     <!-- Footer Action Buttons -->
     <div id="sip-footer" class="sip-footer">
       <div class="sip-footer-left">
@@ -333,4 +335,4 @@
 
 <script defer src="/js/submission-storage.js?v=20261018-customization"></script>
 <script defer src="/js/submission-recovery.js?v=20261018-customization"></script>
-<script defer src="/js/submit-panel.js?v=20261018-customization"></script>
+<script defer src="/js/submit-panel.js?v=20261021-mobile-audit"></script>

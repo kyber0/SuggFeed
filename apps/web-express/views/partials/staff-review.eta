@@ -49,7 +49,7 @@
         <p id="review-activity-message" role="status" aria-live="polite"></p><div id="review-history" class="staff-activity-list"></div><p class="staff-footnote">Up to 100 recent events of each type.</p>
       </section>
     </div>
-    <footer class="staff-review-footer">
+    <footer class="staff-review-footer sf-sticky-action-bar">
       <p id="review-message" class="workspace-message" role="status" aria-live="polite" tabindex="-1"></p>
       <button type="button" class="workspace-button" id="review-retry-detail" hidden>Retry loading submission</button>
       <div id="review-discard-warning" class="staff-discard-warning" role="alert" hidden><strong>Leave without saving?</strong><p>Unsaved review, progress, and private-note drafts will be discarded.</p><div><button type="button" class="workspace-button" id="review-keep-editing">Keep editing</button><button type="button" class="workspace-button" id="review-discard-confirm">Discard draft</button></div></div>

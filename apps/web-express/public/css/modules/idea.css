@@ -45,7 +45,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(540px, 96vw);
-  max-height: 90vh;
+  max-height: 90dvh;
   background: var(--surface-card);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
@@ -69,8 +69,8 @@
 /* Wide two-column variant */
 .detail-panel-split {
   width: min(1600px, 96vw);
-  height: min(900px, 93vh);
-  max-height: 93vh;
+  height: min(900px, 93dvh);
+  max-height: 93dvh;
 }
 
 @keyframes panel-in {
@@ -1209,7 +1209,7 @@
 .standalone-idea-page {
   padding: 40px 20px 80px;
   background: var(--bg-alt);
-  min-height: calc(100vh - 60px);
+  min-height: calc(100dvh - 60px);
 }
 
 .standalone-container,
@@ -1257,7 +1257,7 @@
 
 @media (min-width: 769px) {
   .standalone-split {
-    height: min(850px, calc(100vh - 140px)) !important;
+    height: min(850px, calc(100dvh - 140px)) !important;
     min-height: 560px !important;
     max-height: none !important;
   }

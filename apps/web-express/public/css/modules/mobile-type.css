@@ -20,17 +20,17 @@
  :is(.post-title,.sip-section-title,.sf-track-title-head) { font-size:16px; }
  .care-card h2 { font-size:18px; }
  :is(.sf-card-title,.roadmap-lane h2,.prof-empty-state h3) { font-size:15px; }
- :is(.prof-activity-title,.roadmap-completion-card h4) { font-size:13px; }
- .work-timeline-card strong { font-size:12.5px; }
- :is(.workspace-heading p:not(.workspace-kicker),.roadmap-subtitle,.detail-description-text,.sf-dialog__message) { font-size:13px; }
+ :is(.prof-activity-title,.roadmap-completion-card h4) { font-size:14px; }
+ .work-timeline-card strong { font-size:14px; }
+ :is(.workspace-heading p:not(.workspace-kicker),.roadmap-subtitle,.detail-description-text,.sf-dialog__message) { font-size:14px; }
  :is(.sf-legal-content p,.sf-legal-content li,.care-card p,.care-row span) { font-size:14px; }
- :is(.post-body,.idea-card p,.comment-body-text,.am-subtext,.am-magic-body,.auth-callback-sub,.sip-section-sub) { font-size:12.5px; }
- .workspace-description { font-size:13px; }
+ :is(.post-body,.idea-card p,.comment-body-text,.am-subtext,.am-magic-body,.auth-callback-sub,.sip-section-sub) { font-size:14px; }
+ .workspace-description { font-size:14px; }
  #staff-review-dialog .staff-review-context .workspace-description { font-size:14px; }
- .work-record-body p,.work-record-history summary { font-size:12.5px; }
- .work-record-body h3,.roadmap-public-history h3 { font-size:13px; }
+ .work-record-body p,.work-record-history summary { font-size:14px; }
+ .work-record-body h3,.roadmap-public-history h3 { font-size:14px; }
  .workspace-dialog#roadmap-dialog .roadmap-public-history > h3 { font-size:16px; }
- :is(.workspace-button,.btn-ghost) { font-size:12.5px; }
+ :is(.workspace-button,.btn-ghost) { font-size:14px; }
  :is(.btn-primary,.am-btn-primary) { font-size:14px; }
  .site-header .brand .sf-wordmark { font-size:17px; }
  :is(input,textarea,select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]) { font-size:16px; }

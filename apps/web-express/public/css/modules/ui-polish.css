@@ -71,6 +71,7 @@ html { scrollbar-gutter:stable; }
   width:min(100% - 40px, 520px); max-width:520px; margin:48px auto 72px; padding:0; text-align:left;
 }
 .account-flow-card {
+  overflow-wrap:anywhere;
   display:flex; flex-direction:column; gap:24px; min-width:0; padding:32px;
   border:1px solid var(--line); border-radius:20px; background:var(--surface);
   box-shadow:0 8px 32px color-mix(in srgb,var(--ink) 5%,transparent);

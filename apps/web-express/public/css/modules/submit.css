@@ -25,7 +25,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(580px, 94vw);
-  max-height: 90vh;
+  max-height: 90dvh;
   background: var(--surface-card, #ffffff);
   border: 1px solid var(--line, #e2e8f0);
   border-radius: var(--radius-card, 18px);
@@ -1614,3 +1614,9 @@
 
 /* Hidden native radios still need a visible keyboard focus indicator. */
 .sip-cat-card:focus-within { outline:3px solid var(--focus-ring); outline-offset:3px; }
+
+.sip-form {min-height:0;}
+.sip-scroll-body {flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:16px;}
+.sip-scroll-body > .sip-toggle-desc {padding:16px 20px 0;margin:0;}
+.sip-scroll-body > .submission-recovery {margin:16px 20px 0;}
+.sip-scroll-body > .sip-step-body {overflow:visible;flex:none;}

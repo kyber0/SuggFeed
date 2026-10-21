@@ -46,3 +46,37 @@
 .studio-repeat-toolbar[draggable="true"] {cursor:move;}
 html[data-studio-mode="edit"] [draggable="true"] {cursor:default!important;}
 .studio-frame-edit .mobile-drag-handle {cursor:default;}
+
+/* Preview controls collapse on phones so the canvas keeps usable height. */
+.studio-preview-controls {display:contents;}
+.studio-preview-controls > summary {display:none;}
+@media(max-width:1023px) {
+ .studio-preview-controls {display:block;order:3;width:100%;min-width:0;}
+ .studio-preview-controls > summary {display:list-item;cursor:pointer;min-height:44px;padding:12px;border:1px solid #d6dde7;border-radius:7px;font-size:14px;}
+ .studio-preview-controls .studio-toolbar-controls {margin-top:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+ .studio-toolbar-controls :is(label,select) {min-width:0;width:100%;}
+ .studio-toolbar-controls label {font-size:12px;}
+ .studio :is(button,select),.studio-dialog button {min-height:44px;}
+ .studio :is(button,a),.studio-dialog button {min-width:44px;}
+ .studio-mobile-tools {flex-wrap:wrap;gap:8px;}
+ .studio-mobile-tools button {min-height:44px;flex:1;}
+ .studio-mobile-tools span {display:none;}
+ .studio-toolbar-actions,.studio-repeat-toolbar,.studio-color-presets {gap:8px;}
+ .studio-theme-row {grid-template-columns:minmax(0,1fr) 44px 90px 44px;gap:8px;}
+ .studio-theme-row input[type="color"] {width:44px;height:44px;}
+ .studio-theme-row button {min-height:44px;}
+ .studio-theme-row input[type="text"] {font-size:16px;}
+ .studio-theme-row label {font-size:12px;}
+ .studio-panel :is(button,a,summary) {min-height:44px;}
+ .studio-dialog :is(p,label) {font-size:14px;}
+ .studio-dialog-actions {gap:8px;}
+ .studio-history-row {flex-wrap:wrap;gap:12px;}
+}
+
+@media(max-width:768px) {.studio-frame-banner {bottom:calc(68px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px);width:max-content;}}
+
+/* Tablet landscape: the explicit open state overrides the default hidden rail. */
+@media(min-width:1024px) and (max-width:1279px) {
+ .studio[data-pages-collapsed="false"] .studio-pages {display:flex;}
+ .studio[data-properties-collapsed="false"] .studio-properties {display:flex;}
+}

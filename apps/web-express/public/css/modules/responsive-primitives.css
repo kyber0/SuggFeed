@@ -1,0 +1,82 @@
+/* Shared responsive primitives. Nested data/canvas scrollers keep their own overflow. */
+:root {--sf-mobile-nav-height:60px;--sf-page-gutter:16px;--sf-layer-header:100;--sf-layer-sheet:301;--sf-layer-toast:10000;}
+.sf-page-container {width:calc(100% - 2 * var(--sf-page-gutter));max-width:1200px;margin:24px auto;min-width:0;}
+.sf-button-group {display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.sf-button-group > * {min-width:0;}
+.sf-responsive-table {max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-inline:contain;}
+.sf-sticky-action-bar {flex-shrink:0;padding-bottom:max(16px,env(safe-area-inset-bottom,0px));}
+.sf-bottom-sheet {max-width:calc(100% - 32px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;}
+.site-header {z-index:var(--sf-layer-header);}
+.sip-panel {z-index:var(--sf-layer-sheet);}
+.toast-region {z-index:var(--sf-layer-toast);}
+.sf-safe-bottom {padding-bottom:max(16px,env(safe-area-inset-bottom,0px));}
+@media (max-width:1024px), (pointer:coarse) {
+ /* Later feature styles must not reduce input text below iOS's focus-zoom threshold. */
+ button,[role="button"],summary,nav a,a.workspace-button,a.platform-button,.idea-secondary-actions > a,.submission-file-list > a {min-height:44px!important;min-width:44px!important;touch-action:manipulation;}
+ .site-header .brand {min-height:44px;display:inline-flex;align-items:center;}
+ :is(.dropdown-link,.dropdown-btn,nav > a) {min-height:44px;}
+ nav a {display:inline-flex;align-items:center;}
+ :is(input,textarea,select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="hidden"]):not([type="file"]):not([type="submit"]):not([type="button"]) {font-size:max(16px,1em)!important;}
+}
+@media (max-width:768px) {
+ .sf-button-group {align-items:stretch;flex-direction:column;}
+ .sf-button-group > :is(button,a) {width:100%;min-height:44px;}
+ :is(.panel-close-btn,.panel-action-btn,.post-menu-btn,.theme-toggle,.btn-comment-post,.post-footer .action-btn,.dropdown-link,.dropdown-btn,.sip-step-item) {min-height:44px;min-width:44px;}
+ .site-header nav,.post-footer,.sf-button-group {gap:8px;}
+ :is(.post-body,.comment-body-text,.detail-description-text,.sip-section-sub,.work-record-body p) {font-size:14px;}
+ .sf-responsive-table:focus-visible {outline:3px solid var(--focus-ring);outline-offset:2px;}
+ .sf-bottom-sheet {width:calc(100% - 32px);}
+}
+/* Short screens need one flowing dialog, not a sliver between fixed chrome. */
+@media (max-height:500px) {
+ .workspace-dialog#staff-review-dialog[open],.workspace-dialog#roadmap-dialog[open] {display:block;overflow-y:auto;}
+ #staff-review-dialog .staff-review-scroll,.workspace-dialog#roadmap-dialog .workspace-dialog-body {overflow:visible;max-height:none;}
+ .workspace-dialog#staff-review-dialog .workspace-dialog-header,.workspace-dialog#roadmap-dialog .workspace-dialog-header {position:sticky;top:0;z-index:2;}
+ #staff-review-dialog .staff-review-footer,.workspace-dialog#roadmap-dialog .roadmap-drawer-footer {position:static;}
+ .sip-panel {overflow-y:auto;}
+ .sip-panel .sip-form {overflow:visible;flex:none;}
+ .sip-panel .sip-scroll-body {overflow:visible;flex:none;}
+ .sip-panel .sip-header {position:sticky;top:0;z-index:2;}
+ .sip-panel .sip-footer {position:static;}
+}
+/* visualViewport accounts for keyboards on browsers that keep the layout viewport. */
+html[data-virtual-keyboard] :is(dialog[open],.detail-panel:not([hidden])) {max-height:calc(var(--sf-viewport-height) - 16px);}
+html[data-virtual-keyboard] dialog[open] {top:var(--sf-viewport-top);bottom:auto;margin-block:8px;}
+html[data-virtual-keyboard] .detail-panel:not([hidden]) {top:calc(var(--sf-viewport-top) + 8px);left:0;right:0;bottom:auto;margin-inline:auto;transform:none!important;}
+@media (hover:none) and (pointer:coarse) {
+ .sip-overlay,.panel-overlay,.am-backdrop,.am-card::backdrop,.workspace-dialog::backdrop {backdrop-filter:none;-webkit-backdrop-filter:none;}
+}
+
+html[data-virtual-keyboard] :is(#staff-review-dialog,#roadmap-dialog)[open] {display:block;overflow-y:auto;}
+html[data-virtual-keyboard] :is(.staff-review-scroll,#roadmap-dialog .workspace-dialog-body,.sip-panel .sip-form,.sip-panel .sip-scroll-body) {overflow:visible;max-height:none;flex:none;}
+html[data-virtual-keyboard] .sip-panel {overflow-y:auto;}
+
+@media(max-width:800px) {
+ .mobile-tab-bar {height:calc(var(--sf-mobile-nav-height) + env(safe-area-inset-bottom,0px));}
+ .toast-region {bottom:calc(var(--sf-mobile-nav-height) + 20px + env(safe-area-inset-bottom,0px));}
+}
+
+html[data-virtual-keyboard] :is(.sip-panel .sip-header,#staff-review-dialog .workspace-dialog-header,#roadmap-dialog .workspace-dialog-header) {position:sticky;top:0;z-index:2;}
+html[data-virtual-keyboard] .sip-panel {scroll-padding-top:88px;}
+.am-close-wrap,.am-scroll-body {display:contents;}
+@media(max-width:1024px),(pointer:coarse) {
+ .am-card[open] {display:flex;flex-direction:column;overflow:hidden;}
+ .am-close-wrap {display:flex;justify-content:flex-end;flex-shrink:0;min-height:44px;margin-bottom:8px;}
+ .am-close-wrap .am-close {position:static;flex-shrink:0;}
+ .am-scroll-body {display:block;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:12px;padding:4px;}
+ .am-card .am-handle {flex-shrink:0;}
+}
+/* A touch keyboard can also reduce a wide viewport. */
+html[data-virtual-keyboard] .am-card[open] {display:flex;flex-direction:column;overflow:hidden;}
+html[data-virtual-keyboard] .am-close-wrap {display:flex;justify-content:flex-end;flex-shrink:0;min-height:44px;margin-bottom:8px;}
+html[data-virtual-keyboard] .am-close-wrap .am-close {position:static;flex-shrink:0;}
+html[data-virtual-keyboard] .am-scroll-body {display:block;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:12px;padding:4px;}
+html[data-virtual-keyboard] .am-card .am-handle {flex-shrink:0;}
+
+@media(max-width:1024px),(pointer:coarse) {
+ .submission-file-list {display:flex;flex-wrap:wrap;gap:8px;}
+ .submission-file-list > a {display:inline-flex;align-items:center;}
+}
+@media(max-width:800px) {
+ .mobile-tab-bar {gap:8px;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));}
+}

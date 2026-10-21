@@ -1,4 +1,27 @@
 "use strict";
+// Keep fixed forms inside the visible area when a mobile keyboard opens.
+(() => {
+    const viewport = window.visualViewport;
+    if (!viewport)
+        return;
+    let frame = 0;
+    const update = () => { frame = 0; const root = document.documentElement; root.style.setProperty('--sf-viewport-height', viewport.height + 'px'); root.style.setProperty('--sf-viewport-top', viewport.offsetTop + 'px'); root.toggleAttribute('data-virtual-keyboard', window.innerHeight - viewport.height > 120 && viewport.scale === 1); };
+    const schedule = () => { if (!frame)
+        frame = requestAnimationFrame(update); };
+    const start = () => { viewport.addEventListener('resize', schedule); viewport.addEventListener('scroll', schedule); update(); };
+    const stop = () => { viewport.removeEventListener('resize', schedule); viewport.removeEventListener('scroll', schedule); cancelAnimationFrame(frame); frame = 0; };
+    window.addEventListener('pagehide', stop);
+    window.addEventListener('pageshow', start);
+    start();
+})();
+(() => {
+    const controls = document.querySelector('.studio-preview-controls');
+    if (!controls)
+        return;
+    const desktop = matchMedia('(min-width:1024px)');
+    controls.open = desktop.matches;
+    desktop.addEventListener('change', event => { controls.open = event.matches; });
+})();
 (() => {
     const navigation = document.querySelector('.staff-navigation-disclosure');
     if (!navigation)

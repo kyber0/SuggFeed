@@ -4,11 +4,12 @@
     <!-- Mobile drag handle -->
     <div class="am-handle" aria-hidden="true"></div>
 
-    <!-- Close button -->
-    <button type="button" class="am-close" id="auth-modal-close" aria-label="Close dialog">
+    <!-- Close button stays reachable while scrolling the form. -->
+    <div class="am-close-wrap"><button type="button" class="am-close" id="auth-modal-close" aria-label="Close dialog">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    </button></div>
 
+    <div class="am-scroll-body">
     <!-- Tab Switcher -->
     <div class="am-tabs" id="auth-modal-tabs" role="tablist">
       <button type="button" role="tab" class="am-tab am-tab--active" id="tab-signin" data-tab="signin" aria-controls="panel-signin" aria-selected="true" tabindex="0">Sign in</button>
@@ -143,6 +144,7 @@
         </button>
       </form>
     </div>
+    </div><!-- Scroll fields independently from the close action. -->
   </dialog>
 </div>
 

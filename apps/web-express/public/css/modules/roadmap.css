@@ -696,8 +696,8 @@
     left:auto;
     width:480px;
     max-width:90vw;
-    height:100vh;
-    max-height:100vh;
+    height:100dvh;
+    max-height:100dvh;
     margin:0;
     border:none;
     border-left:1px solid var(--line);
