@@ -27,7 +27,7 @@ export async function operator(req: Request, res: Response) {
   requireStrongAuth(req, res, () => { assured = true; });
   return assured ? user : null;
 }
-async function confirmedAccount(req: Request, res: Response) {
+export async function confirmedAccount(req: Request, res: Response) {
   const user = account(req, res); if (!user) return null;
   const { data, error } = await supabasePlatform.auth.getUser(req.session.accessToken || '');
   if (error || !data.user || data.user.id !== user.id || !data.user.email_confirmed_at || !data.user.email) {
@@ -74,19 +74,26 @@ router.get('/account/home', run(async (req, res) => {
 }));
 router.get('/schools', run(async (req, res) => {
   const user = req.session.user;
-  let schools: unknown[] = [], applications: unknown[] = [], joinOptions: unknown[] = [];
+  let schools: unknown[] = [], applications: unknown[] = [], joinOptions: unknown[] = [], studentAccess:unknown={confirmed:false,roster:[],discover:[],requests:[]};
+  const find=typeof req.query.find==='string'?req.query.find.trim():'';
+  if((req.query.find!==undefined&&typeof req.query.find!=='string')||find.length>100)return failed(res,'Check school search','Search using a school name of up to 100 characters.');
   if (user) {
     if (await platformAuthority(req, res)) return res.redirect(303, '/platform/schools');
-    const [membership, pending, eligible] = await Promise.all([
+    const [membership, pending, eligible, access] = await Promise.all([
       supabasePlatform.rpc('school_account_memberships',{p_actor:user.id}),
       supabasePlatform.from('school_applications').select('id,name,slug,status,created_at').eq('applicant_id', user.id).order('created_at', { ascending: false }).limit(20),
       supabasePlatform.rpc('school_email_join_options',{p_actor:user.id}),
+      supabasePlatform.rpc('school_student_access_options',{p_actor:user.id,p_search:find}),
     ]);
-    if (membership.error || pending.error || eligible.error) throw Object.assign(new Error('School directory unavailable.'), {status:503});
+    if (membership.error || pending.error || eligible.error || access.error) throw Object.assign(new Error('School directory unavailable.'), {status:503});
 
-    schools = membership.data || []; applications = pending.data || [];joinOptions=eligible.data || [];
+    schools = membership.data || []; applications = pending.data || [];
+    const rosterSlugs=new Set<string>((access.data?.roster||[]).map((school:{slug:string})=>school.slug));
+    joinOptions=(eligible.data||[]).filter((school:{slug:string})=>!rosterSlugs.has(school.slug));
+    const domainSlugs=new Set<string>((eligible.data||[]).filter((school:{can_join:boolean})=>school.can_join!==false).map((school:{slug:string})=>school.slug));
+    studentAccess={...access.data,discover:(access.data?.discover||[]).filter((school:{slug:string})=>!domainSlugs.has(school.slug))};
   }
-  return res.render('school-directory', { title: 'Your schools — SuggFeed', schools, applications, joinOptions, applicationEnabled: schoolApplicationsConfigured(), legal: legalDetails(), saved: req.query.saved === '1' });
+  return res.render('school-directory', { title: 'Your schools — SuggFeed', schools, applications, joinOptions, studentAccess,find,studentNotice:req.query.studentNotice==='requested'?'Your access request was sent. Your school administrator will review it.':'', applicationEnabled: schoolApplicationsConfigured(), legal: legalDetails(), saved: req.query.saved === '1' });
 }));
 router.post('/schools/join',run(async(req,res)=>{
   const user=await confirmedAccount(req,res);if(!user)return;
@@ -259,7 +266,7 @@ router.post(['/s/:schoolSlug/admin/enrollment','/platform/schools/:id/enrollment
 router.post(['/s/:schoolSlug/admin/domains','/platform/schools/:id/domains'],run(async(req,res)=>{
   const context=await schoolAdmin(req,res);if(!context)return;
   const domain=schoolEmailDomain(req.body?.domain);
-  if(!domain)return failed(res,'Use a school email domain','Enter only a school-controlled domain, such as my.cspc.edu.ph. Personal email providers and @ prefixes are not supported.');
+  if(!domain)return failed(res,'Use a school email domain','Enter only a school-controlled domain, such as my.cspc.edu.ph. Personal email providers and @ prefixes are not supported here. Use Student joining for approved email lists or access requests.');
   const {error}=await supabasePlatform.rpc('request_school_email_domain',{p_school:context.school.id,p_actor:context.user.id,p_domain:domain,p_token:invitationToken()});
   req.session.schoolDomainNotice=error?'Domain was not added. It may already be listed, or the school has reached its ten-domain limit.':'Domain added. Publish its DNS TXT record, verify it, then enable student joining.';
   return res.redirect(303,invitationBase(req,context.school)+(req.path.toLowerCase().startsWith('/platform/')?'/settings':'/school-settings')+'#school-domains');

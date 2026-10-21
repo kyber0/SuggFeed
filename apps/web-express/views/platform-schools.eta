@@ -75,6 +75,7 @@ const statusLabel = {pending:'Pending setup',active:'Active',suspended:'Suspende
                 <nav class="platform-management-links" aria-label="Manage <%= school.name %>">
                   <a href="/platform/schools/<%= school.id %>/settings"><%~ icon('list') %><span>Policies & school settings</span><%~ icon('arrow') %></a>
                   <a href="/platform/schools/<%= school.id %>/invitations"><%~ icon('user-plus') %><span>Members & invitations</span><%~ icon('arrow') %></a>
+                  <a href="/platform/schools/<%= school.id %>/student-access"><%~ icon('users') %><span>Student joining & requests</span><%~ icon('arrow') %></a>
                   <% if (editorEnabled) { %><a href="/platform/schools/<%= school.id %>/customization"><%~ icon('board') %><span>Customize workspace</span><%~ icon('arrow') %></a><% } %>
                 </nav>
                 <% } else { %><p>School settings and invitations are managed by the school’s administrators. Platform controls are available below.</p><% } %>

@@ -25,6 +25,7 @@ import { resolveSchool } from './lib/school-context';
 import { schoolUser } from './lib/school-scope';
 import { schoolHtml } from './lib/school-path';
 import schoolsRouter from './routes/schools';
+import studentAccessRouter from './routes/student-access';
 import schoolSubmissionsRouter from './routes/school-submissions';
 import schoolBrandingRouter from './routes/school-branding';
 import schoolCustomizationRouter from './routes/school-customization';
@@ -256,6 +257,7 @@ app.use(navigationContext);
 app.use('/account/security', accountSecurityRouter);
 app.use('/', schoolCustomizationRouter);
 app.use('/', schoolsRouter);
+app.use('/', studentAccessRouter);
 app.use('/', digestRouter); // only global internal cron matches without a school
 app.get('/internal/progress-evidence-cleanup', cleanupHandler);
 app.use('/', legalRouter);

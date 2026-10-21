@@ -9,6 +9,7 @@
   "include": [
     "src/client/globals.d.ts",
     "src/client/file-upload.ts",
+    "src/client/student-access.ts",
     "src/client/auth-confirm.ts",
     "src/client/school-colors.ts",
     "src/client/school-design.ts",
