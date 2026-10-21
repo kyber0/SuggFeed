@@ -54,3 +54,21 @@ Ordinary links and form controls keep their existing click behavior. Stage menus
 remain available for keyboard and touch input; native non-mouse dragging retains
 the existing guarded fallback. Native cursor appearance depends on the operating
 system; no downloaded cursor image is used.
+
+### School hand colors
+
+In Customize workspace, select **Colors & theme**, then set **Cursor** under
+Light appearance and Dark appearance. Each field has a color picker, hex entry
+and reset. Save the draft, inspect the preview, then publish to apply it to the
+school's student and staff screens. Other schools and the platform dashboard
+retain their own appearance.
+
+The theme supplies compact inline SVG pointing/open/closed hands with white and
+black outlines and native cursor fallbacks. Old themes use navy/light-blue hand
+colors when they have a design configuration. Touch and forced-colors modes keep
+native cursors. Operating systems may use their own cursor during native file or
+section dragging; Manage Work mouse dragging uses the themed closed hand.
+
+Migration `202610210007_school_cursor_colors.sql` allows the optional `cursor`
+color in each appearance; it preserves all other database validation and does
+not publish drafts or change permissions.

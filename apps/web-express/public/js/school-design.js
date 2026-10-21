@@ -2,7 +2,7 @@
 /** Shared allowlisted presentation schema used by the server, studio and published pages. */
 var SfSchoolDesign;
 (function (SfSchoolDesign) {
-    SfSchoolDesign.roles = ['primary', 'secondary', 'background', 'surface', 'raised', 'text', 'muted', 'border', 'link'];
+    SfSchoolDesign.roles = ['primary', 'secondary', 'background', 'surface', 'raised', 'text', 'muted', 'border', 'link', 'cursor'];
     SfSchoolDesign.pages = {
         home: { label: 'Home', root: '.sf-main', sections: { hero: { label: 'Welcome hero', selector: '.sf-hero', reorder: true }, hub: { label: 'Share & track', selector: '#action-hub', reorder: true }, ideas: { label: 'Community highlights', selector: '#feed', reorder: true }, points: { label: 'Welcome benefits', selector: '.sf-hero-points', optional: true } } },
         feed: { label: 'Community ideas', root: '.community-page-wrapper', sections: { topics: { label: 'Topics sidebar', selector: '.community-left-nav' }, cards: { label: 'Idea cards', selector: '.community-feed-main' }, promo: { label: 'Roadmap invitation', selector: '.feed-roadmap-promo', optional: true, reorder: true }, supported: { label: 'Most supported', selector: '.feed-side-card--supported', optional: true, reorder: true }, help: { label: 'Community guidance', selector: '.feed-guidance-panel', optional: true, reorder: true } } },
@@ -17,7 +17,7 @@ var SfSchoolDesign;
     function page(value) { const p = value.replace(/^\/s\/[^/]+/, '').split('?')[0]; return p === '/' ? 'home' : p.startsWith('/idea/') ? 'idea' : p.startsWith('/admin') || p.startsWith('/staff') ? 'staff' : p.startsWith('/notifications') ? 'notifications' : p.startsWith('/inbox') ? 'inbox' : p.startsWith('/profile') ? 'profile' : p.startsWith('/roadmap') ? 'roadmap' : p.startsWith('/feed') ? 'feed' : ''; }
     SfSchoolDesign.page = page;
     SfSchoolDesign.pageDefaults = () => ({ layout: 'default', spacing: 'comfortable', cards: 'outlined', hidden: [], order: [], sections: {} });
-    function defaults(palette = 'navy') { const colors = typeof SfSchoolColors !== 'undefined' ? SfSchoolColors : require('./school-colors'); const primary = colors.resolve(palette); return { light: { primary, secondary: '#c2410c', background: '#f8fafc', surface: '#ffffff', raised: '#f1f5f9', text: '#0f172a', muted: '#526278', border: '#cbd5e1', link: '#164e83' }, dark: { primary, secondary: '#fdba74', background: '#0f172a', surface: '#162238', raised: '#1e293b', text: '#f1f5f9', muted: '#b4c1d3', border: '#475569', link: '#93c5fd' }, corners: 'rounded', font: 'brand', pages: {} }; }
+    function defaults(palette = 'navy') { const colors = typeof SfSchoolColors !== 'undefined' ? SfSchoolColors : require('./school-colors'); const primary = colors.resolve(palette); return { light: { primary, secondary: '#c2410c', background: '#f8fafc', surface: '#ffffff', raised: '#f1f5f9', text: '#0f172a', muted: '#526278', border: '#cbd5e1', link: '#164e83', cursor: '#123e5c' }, dark: { primary, secondary: '#fdba74', background: '#0f172a', surface: '#162238', raised: '#1e293b', text: '#f1f5f9', muted: '#b4c1d3', border: '#475569', link: '#93c5fd', cursor: '#93c5fd' }, corners: 'rounded', font: 'brand', pages: {} }; }
     SfSchoolDesign.defaults = defaults;
     const object = (v, keys) => { if (!v || typeof v !== 'object' || Array.isArray(v) || Object.keys(v).some(k => !keys.includes(k)))
         throw new Error('Unsupported design fields.'); return v; };
@@ -39,6 +39,8 @@ var SfSchoolDesign;
         for (const mode of ['light', 'dark']) {
             const c = object(d[mode], SfSchoolDesign.roles);
             for (const key of SfSchoolDesign.roles) {
+                if (key === 'cursor' && c[key] === undefined)
+                    c[key] = defaults(palette)[mode].cursor;
                 if (typeof c[key] !== 'string' || !/^#[0-9a-f]{6}$/i.test(c[key]))
                     throw new Error('Use six-digit hex colors for ' + mode + ' ' + key + '.');
                 c[key] = c[key].toLowerCase();
@@ -72,12 +74,21 @@ var SfSchoolDesign;
         return result;
     }
     SfSchoolDesign.normalize = normalize;
+    // Two contrasting outlines keep the colored hand legible on mixed backgrounds.
+    function handCursor(color, shape) {
+        const fill = /^#[0-9a-f]{6}$/i.test(color) ? color : '#123e5c';
+        const paths = { pointer: 'M9 21 5 14Q4 11 7 12L10 15V4Q10 1 13 2Q14 2 14 4V10Q17 8 18 11Q21 9 22 13Q25 12 25 16V20Q25 26 20 27H14Q12 27 9 21Z', grab: 'M7 17 4 13Q2 10 5 9Q6 9 8 12L10 14V5Q10 2 13 3V12H14V3Q14 0 17 2V12H18V5Q18 2 21 4V13H22V9Q22 6 25 8V20Q25 28 18 28H15Q12 28 10 24Z', grabbing: 'M7 18V12Q7 9 10 10V8Q10 5 14 7Q17 4 19 8Q23 6 24 10L25 18Q25 26 19 27H14Q9 27 7 18Z' };
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="' + paths[shape] + '" fill="' + fill + '" stroke="white" stroke-width="4" stroke-linejoin="round"/><path d="' + paths[shape] + '" fill="' + fill + '" stroke="black" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+        return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '") ' + (shape === 'pointer' ? '12 3' : '16 16') + ',' + shape;
+    }
     function style(value) {
         let style = '';
         for (const mode of ['light', 'dark']) {
             const c = value[mode];
             for (const role of SfSchoolDesign.roles)
-                style += `--sd-${mode}-${role}:${c[role]};`;
+                style += `--sd-${mode}-${role}:${(c[role] || defaults()[mode][role])};`;
+            for (const shape of ['pointer', 'grab', 'grabbing'])
+                style += `--sd-${mode}-cursor-${shape}:${handCursor(c.cursor || defaults()[mode].cursor, shape)};`;
             style += `--sd-${mode}-on-primary:${contrast(c.primary, '#000000') >= 4.5 ? '#000000' : '#ffffff'};`;
             style += `--sd-${mode}-primary-text:${contrast(c.primary, c.surface) >= 4.5 ? c.primary : c.link};`;
         }
