@@ -1,0 +1,12 @@
+<% layout('layout'); const state=it.member.status==='active'?'active':it.member.access_state==='active'?'removed':it.member.access_state; %>
+<main class="school-settings-page member-confirmation">
+ <a class="school-settings-back" href="<%= it.base %>">← School members</a>
+ <section class="platform-panel"><div class="platform-panel-heading"><div><p class="platform-eyebrow"><%= it.school.name %> · Member access</p><h1><%= it.details.label %></h1><p><%= it.details.description %></p></div></div><div class="member-confirmation-body">
+ <dl class="platform-facts"><div><dt>Member</dt><dd><%= it.profile?.display_name||it.profile?.email||'School member' %></dd></div><div><dt>Email</dt><dd><%= it.profile?.email||'Not available' %></dd></div><div><dt>Current access</dt><dd><%= it.member.role %> · <%= state %></dd></div></dl>
+ <% if(it.message) { %><p class="school-settings-feedback" role="alert"><%= it.message %></p><% } %>
+ <form class="care-form" method="post" action="<%= it.base %>/<%= it.member.user_id %>"><input type="hidden" name="action" value="<%= it.action %>" /><input type="hidden" name="expected" value="<%= it.member.updated_at %>" />
+ <label for="member-reason">Reason for this change</label><textarea id="member-reason" name="reason" rows="4" minlength="10" maxlength="1000" required aria-describedby="member-reason-help"><%= it.reason %></textarea><p id="member-reason-help" class="platform-help">Saved in the school’s administrative audit history. Do not include unnecessary sensitive information.</p>
+ <label class="enrollment-confirm"><input type="checkbox" name="acknowledged" value="yes" required /><span>I understand this changes access to this school and preserves the account and historical records.</span></label>
+ <div class="platform-form-actions"><button class="platform-button <%= it.action==='restore'?'platform-button--primary':'platform-button--danger' %>" type="submit"><%= it.details.label %></button><a class="platform-button" href="<%= it.base %>">Cancel</a></div></form>
+ </div></section>
+</main>

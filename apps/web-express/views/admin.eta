@@ -16,12 +16,18 @@
 <a class="workspace-skip" href="#staff-queue-title">Skip to review queue</a>
 <main class="staff-workspace">
   <%~ include('partials/staff-sidebar', it) %>
-  <div class="staff-main">
+  <div class="staff-main" data-workspace-sections data-default-section="review-workspace">
     <header class="workspace-heading">
-      <div><p class="workspace-kicker">WORKSPACE / REVIEW</p><h1>Review submissions<span class="workspace-title-dot" aria-hidden="true">.</span></h1><p>Review new suggestions. Track approved work in <a href="/admin/board">Manage work</a>.</p></div>
-      <div class="workspace-actions"><button class="workspace-button" id="staff-refresh" type="button"><%~ icon('refresh') %> Refresh</button><button class="workspace-button" id="staff-export" type="button" <%= it.submissions.length ? '' : 'disabled' %>><%~ icon('export') %> Export page</button></div>
+      <div><p class="workspace-kicker">WORKSPACE / <%= it.user?.role==='admin'?'ADMINISTRATION':'REVIEW' %></p><h1><%= it.user?.role==='admin'?'School dashboard':'Review submissions' %><span class="workspace-title-dot" aria-hidden="true">.</span></h1><p><%= it.user?.role==='admin'?'Review feedback and manage your school from dedicated sections.':'Review new suggestions and track approved work.' %> Open <a href="/admin/board">Manage work</a> to follow delivery.</p></div>
+      <div class="workspace-actions" data-workspace-panel-footer="review-workspace"><button class="workspace-button" id="staff-refresh" type="button"><%~ icon('refresh') %> Refresh</button><button class="workspace-button" id="staff-export" type="button" <%= it.submissions.length ? '' : 'disabled' %>><%~ icon('export') %> Export page</button></div>
     </header>
-    <% if(it.user?.role==='admin') { %><nav class="admin-school-tools" aria-label="School administration"><a href="/admin/school-settings"><%~ icon('shield') %> School settings</a><a href="/admin/customization"><%~ icon('board') %> Customize workspace</a><a href="/admin/student-access"><%~ icon('users') %> Student joining</a><a href="/admin/invitations"><%~ icon('users') %> Invite members</a><a href="/schools">Switch school</a></nav><% } %>
+    <% if(it.user?.role==='admin') { %>
+    <nav class="admin-dashboard-sections" data-section-navigation aria-label="School dashboard sections"><a href="#review-workspace">Review queue</a><a href="#administration-workspace">School administration</a></nav>
+    <section id="administration-workspace" data-workspace-panel class="admin-administration" aria-labelledby="administration-title"><header><p class="workspace-kicker">SCHOOL ADMINISTRATION</p><h2 id="administration-title">Manage your school</h2><p>Choose a task. Changes to people, policies and appearance have their own dedicated screens.</p></header><div class="admin-administration-grid">
+    <% for(const [href,name,description,graphic] of [['/admin/members','Members & access','Find students and moderators. Suspend, ban, remove or restore school access.','users'],['/admin/student-access','Student joining','Review access requests and control joining from your approved email list.','user-plus'],['/admin/staff','Staff roles','Manage your administrator and moderator team.','shield'],['/admin/invitations','Member invitations','Send invitations and track acceptance.','mail'],['/admin/school-settings','School settings','Policies, contacts, email domains and enrollment settings.','list'],['/admin/customization','Workspace appearance','Open the visual editor when enabled for your school.','board']]) { %><a class="admin-task-card" href="<%= href %>"><%~ icon(graphic) %><span><strong><%= name %></strong><small><%= description %></small></span><%~ icon('arrow') %></a><% } %>
+    </div></section>
+    <% } %>
+    <div id="review-workspace" data-workspace-panel>
     <div class="staff-overview-caption"><span>School-wide overview</span><span>All submissions · independent of queue filters</span></div>
     <section class="staff-metrics" aria-label="School-wide submission counts">
       <% for(const [key,caption] of [['pending','Awaiting a decision'],['in_progress','Work underway'],['resolved','Ideas put into action'],['all','Across every status']]) { %>
@@ -75,6 +81,7 @@
       <p>Private notes stay private. Conflicting edits retain your draft. Review the audit history before correcting a saved change.</p>
     </details>
     <p class="staff-footnote">Only planned, in-progress, and completed ideas appear publicly. Check for private details before publishing. Keyboard: / searches, J and K move between ideas. Open private clarifications from a selected suggestion, or use the title picker in <a href="/admin/community">Follow-ups</a>.</p>
+    </div>
   </div>
   <%~ include('partials/staff-review',it) %>
   <dialog class="staff-save-view-dialog" id="staff-save-view-dialog" aria-labelledby="staff-save-view-title"><form id="staff-save-view"><header><h2 id="staff-save-view-title">Save this queue view</h2><button type="button" class="workspace-icon-button" id="staff-close-save-view" aria-label="Close save view">×</button></header><p>Save the currently applied filters. This view is private to you.</p><label class="workspace-field-label" for="staff-view-name">View name</label><input id="staff-view-name" class="workspace-input" required maxlength="60" placeholder="e.g. Urgent facilities"/><p id="staff-view-message" class="workspace-message" role="status"></p><div class="workspace-dialog-actions"><button class="workspace-button workspace-button--primary" type="submit">Save view</button></div></form></dialog>
@@ -85,4 +92,4 @@
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
 <script defer src="/js/staff-progress.js?v=20261020-security"></script>
 <script defer src="/js/staff-review.js?v=20261021-compact-review"></script>
-<script defer src="/js/staff-tools.js?v=20261021-compact-review"></script>
+<script defer src="/js/staff-tools.js?v=20261021-admin-sections"></script>

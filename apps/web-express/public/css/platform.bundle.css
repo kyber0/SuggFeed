@@ -540,3 +540,57 @@
 }
 
 .student-joining-choice>span>span,.student-access-check { font-weight:400; }
+
+/* Admin sections show one focused workspace while retaining native fragment navigation. */
+[data-workspace-sections] [data-workspace-panel][hidden],
+[data-workspace-sections] [data-workspace-panel-footer][hidden] { display:none !important; }
+.platform-review-grid--sections { display:block; }
+.platform-review-grid--sections:has(> [hidden]):not(:has(> :not([hidden]))) { display:none; }
+.school-settings-sidebar nav a[aria-current="location"] { background:var(--bg-2);color:var(--navy);font-weight:700;box-shadow:inset 3px 0 var(--navy); }
+.member-section-nav { display:flex;flex-wrap:wrap;gap:8px;margin:20px 0; }
+.member-section-nav a { min-height:44px;display:flex;align-items:center;padding:10px 16px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--text-secondary);background:var(--surface); }
+.member-section-nav a[aria-current] { color:var(--navy);border-color:var(--navy);font-weight:700; }
+.member-directory-list { margin:0;padding:0 24px;list-style:none; }
+.member-directory-row { display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:20px 0;border-top:1px solid var(--line); }
+.member-directory-identity { display:flex;align-items:center;gap:12px;flex:1 1 260px;min-width:0; }
+.member-directory-identity > div { min-width:0;display:grid;gap:4px; }
+.member-directory-identity strong,.member-directory-identity span { overflow-wrap:anywhere; }
+.member-directory-identity > div > span { color:var(--text-secondary);font-size:.875rem; }
+.member-avatar { display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border-radius:50%;background:var(--bg-2);color:var(--navy);font-weight:700; }
+.member-directory-meta { display:flex;gap:8px;flex-wrap:wrap; }
+.member-actions { flex:0 0 170px; }
+.member-actions summary { min-height:44px;display:flex;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;color:var(--navy);font-weight:600; }
+.member-actions summary::after { content:'⌄';margin-left:12px; }
+.member-actions[open] summary::after { content:'⌃'; }
+.member-actions > div { display:grid;gap:8px;padding-top:8px; }
+.member-actions a { display:flex;align-items:center;min-height:44px;padding:8px 12px;border-radius:8px;color:var(--navy);background:var(--bg-2);text-decoration:none; }
+.member-actions a:focus-visible,.member-actions summary:focus-visible { outline:2px solid var(--navy);outline-offset:3px; }
+.member-confirmation { max-width:800px; }
+.member-confirmation > .platform-panel { margin-top:20px; }
+.member-confirmation h1 { font-size:clamp(1.5rem,4vw,2.25rem); }
+.member-confirmation-body { padding:0 24px 24px; }
+.member-confirmation .care-form { display:grid;gap:12px; }
+@media(max-width:600px) {
+ .member-directory-list { padding:0 16px; }
+ .member-directory-row { gap:12px; }
+ .member-actions { flex:1 1 100%; }
+ .member-section-nav { display:grid;grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .member-section-nav a { padding:10px;font-size:.875rem;overflow-wrap:anywhere; }
+ .member-confirmation-body { padding:0 16px 20px; }
+}
+
+#overview[data-workspace-panel] { display:grid; gap:24px; }
+.school-settings-form:not(:has([data-workspace-panel]:not([hidden]))) { display:none; }
+
+.workspace-section-picker { display:none; }
+@media(max-width:900px) {
+ .workspace-section-picker { display:grid;gap:8px;font-size:14px;font-weight:650;color:var(--ink); }
+ .workspace-section-picker select { width:100%;min-width:0;min-height:48px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px; }
+ .has-section-picker { display:none!important; }
+ .school-settings-summary { display:none; }
+}
+
+.member-directory .school-settings-header { flex-wrap:wrap; }
+.member-directory .school-settings-header > div { flex:1 1 320px;min-width:0; }
+.member-directory .school-settings-header > a { flex:0 0 auto;min-height:44px; }
+@media(max-width:600px) { .member-directory .school-settings-header > a { width:100%; } }

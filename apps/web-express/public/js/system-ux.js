@@ -17,7 +17,13 @@
     window.addEventListener('online', updateConnection);
     window.addEventListener('offline', updateConnection);
     const forms = Array.from(document.querySelectorAll('form[data-preserve-form]'));
-    const snapshot = (form) => JSON.stringify(Array.from(new FormData(form).entries()));
+    const snapshot = (form) => {
+        const values = new FormData(form);
+        for (const field of form.querySelectorAll('[data-workspace-section-field]'))
+            if (field.name)
+                values.delete(field.name);
+        return JSON.stringify(Array.from(values.entries()));
+    };
     const initial = new Map(forms.map(form => [form, snapshot(form)]));
     const submitted = new Set();
     function dirty(form) { return form.dataset.unsaved === 'true' || snapshot(form) !== initial.get(form); }

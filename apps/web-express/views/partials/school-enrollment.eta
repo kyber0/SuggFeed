@@ -1,5 +1,5 @@
 <% const enrollment=it.enrollment || {mode:'email',version:0,emails:[]}; const draft=it.enrollmentDraft; %>
-<section class="school-settings-card" id="school-enrollment" aria-labelledby="school-enrollment-title">
+<section class="school-settings-card" id="school-enrollment" data-workspace-panel aria-labelledby="school-enrollment-title">
  <header><span class="school-settings-step" aria-hidden="true"><svg class="workspace-svg"><use href="#ws-users"/></svg></span><div><h2 id="school-enrollment-title">Student enrollment</h2><p>Choose whether students need a place on your approved enrollment roster.</p></div></header>
  <div class="school-settings-card-body">
   <% if(it.enrollmentNotice) { %><p class="school-settings-feedback" role="status"><%= it.enrollmentNotice %></p><% } %>

@@ -200,6 +200,7 @@
   note.value=templates[template] || '';note.dispatchEvent(new Event('input',{bubbles:true}));note.focus();select.value='';
  });
  document.addEventListener('keydown',e=>{
+  if(document.getElementById('review-workspace')?.hidden)return;
   if(e.altKey || e.ctrlKey || e.metaKey || (e.target as HTMLElement).closest('input,textarea,select,[contenteditable=true]') || document.querySelector('dialog[open]')) return;
   if(e.key==='/') {const search=document.querySelector<HTMLInputElement>('.staff-search-form input[type=search]');if(search){e.preventDefault();search.focus();}}
   if(e.key==='j' || e.key==='k') {const buttons=Array.from(document.querySelectorAll<HTMLButtonElement>('.staff-row .staff-title-button'));const current=buttons.indexOf(document.activeElement as HTMLButtonElement);const next=e.key==='j' ? current+1 : current-1;if(buttons.length){e.preventDefault();buttons[Math.max(0,Math.min(buttons.length-1,next))].focus();}}

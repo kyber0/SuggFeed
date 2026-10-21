@@ -13,10 +13,10 @@
       <div>
         <p class="workspace-kicker">PORTAL GOVERNANCE</p>
         <h1>Staff & access management<span class="workspace-title-dot" aria-hidden="true">.</span></h1>
-        <p>Manage moderator roles, promote student leaders, and invite faculty.</p>
+        <p>Manage team roles here. Use Members & access to suspend, ban or remove school members.</p>
       </div>
       <div class="workspace-actions">
-        <button class="workspace-button" id="staff-refresh-btn" type="button"><%~ icon('refresh') %> Refresh</button>
+        <a class="workspace-button" href="/admin/members">Members & access</a><button class="workspace-button" id="staff-refresh-btn" type="button"><%~ icon('refresh') %> Refresh</button>
       </div>
     </header>
 

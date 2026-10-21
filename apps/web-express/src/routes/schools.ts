@@ -160,7 +160,7 @@ router.post('/platform/schools/:id/review', run(async (req, res) => {
   if (decision === 'approved' && !schoolApplicationsConfigured()) return failed(res, 'Business setup incomplete', 'Configure the service business identity and monitored privacy contact before approval.', 503);
   const { error } = await supabasePlatform.rpc('review_school_application', { p_application: req.params.id, p_actor: user.id, p_decision: decision, p_reference: reference });
   if (error) return failed(res, 'Review not saved', 'The pending application is unavailable or its school address is already in use.');
-  return res.redirect(303, '/platform/schools?saved=1');
+  return res.redirect(303, '/platform/schools?saved=1#applications');
 }));
 router.post('/platform/schools/:id/policies', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;
@@ -168,7 +168,7 @@ router.post('/platform/schools/:id/policies', run(async (req, res) => {
   if (!Number.isSafeInteger(version) || typeof reference !== 'string' || reference.length > 2000) return failed(res, 'Review required', 'Provide the current policy version and verification reference.');
   const { error } = await supabasePlatform.rpc('approve_school_settings', { p_school: req.params.id, p_actor: user.id, p_version: version, p_reference: reference });
   if (error) return failed(res, 'Policies not approved', 'Complete current notices, contacts and age policy before recording an actual review.');
-  return res.redirect(303, '/platform/schools?saved=1');
+  return res.redirect(303, '/platform/schools?saved=1#policies');
 }));
 const schoolStatusActions = {
   suspended: { title: 'Suspend school', description: 'Pause access to the school workspace. Accounts, memberships and school records are retained. A super admin can reactivate it after the required checks pass.' },
@@ -230,7 +230,7 @@ async function renderSettings(req: Request, res: Response, context: NonNullable<
   const displayedSettings = submitted ? { ...(draftPolicy || data || {}), ...submitted } : draftPolicy || data;
   const domainNotice=req.session.schoolDomainNotice || '';delete req.session.schoolDomainNotice;
   const enrollmentNotice=req.session.schoolEnrollmentNotice || '';delete req.session.schoolEnrollmentNotice;
-  return res.status(errorMessage ? 400 : 200).render('school-settings', { title: 'School settings — ' + context.school.name, school: context.school, customizationEnabled: !customization.error && customization.data?.editing_enabled && process.env.SCHOOL_CUSTOMIZATION_EDITING_DISABLED!=='true', enrollment:enrollment.data,enrollmentDraft,enrollmentNotice,enrollmentAction:invitationBase(req,context.school)+'/enrollment', domains:domains.data || [],domainAction:invitationBase(req,context.school)+'/domains',domainNotice, savedSettings: data, pendingPolicy:pendingPolicy.data, settings: displayedSettings || { version: 1, publication_policy: 'private', retention_days: 365 }, settingsAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings', invitationAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/invitations' : '/s/' + context.school.slug + '/admin/invitations', saved: !errorMessage && req.query.saved === '1', errorMessage });
+  return res.status(errorMessage ? 400 : 200).render('school-settings', { title: 'School settings — ' + context.school.name, school: context.school, settingsSection: enrollmentDraft?'school-enrollment':req.path.endsWith('/domains')?'school-domains':(['school-policies','school-contacts','school-access'].includes(req.body?.section)?req.body.section:'school-overview'), customizationEnabled: !customization.error && customization.data?.editing_enabled && process.env.SCHOOL_CUSTOMIZATION_EDITING_DISABLED!=='true', enrollment:enrollment.data,enrollmentDraft,enrollmentNotice,enrollmentAction:invitationBase(req,context.school)+'/enrollment', domains:domains.data || [],domainAction:invitationBase(req,context.school)+'/domains',domainNotice, savedSettings: data, pendingPolicy:pendingPolicy.data, settings: displayedSettings || { version: 1, publication_policy: 'private', retention_days: 365 }, settingsAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings', invitationAction: req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/invitations' : '/s/' + context.school.slug + '/admin/invitations', saved: !errorMessage && req.query.saved === '1', errorMessage });
 }
 router.get(['/s/:schoolSlug/admin/school-settings', '/platform/schools/:id/settings'], run(async (req, res) => {
   const context = await schoolAdmin(req, res); if (!context) return;
@@ -247,7 +247,7 @@ router.post(['/s/:schoolSlug/admin/school-settings', '/platform/schools/:id/sett
   if (!Number.isSafeInteger(version)) return failed(res, 'Reload settings', 'Reload the current settings before saving.');
   const { error } = await supabasePlatform.rpc('update_school_settings', { p_school: context.school.id, p_actor: context.user.id, p_version: version, p_settings: settings });
   if (error) return renderSettings(req, res, context, { ...settings, version }, 'Your changes were not saved. Check required fields and valid emails. If another administrator saved a newer version, reload this page before trying again. Your entered text is retained below.');
-  return res.redirect(303, (req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings') + '?saved=1');
+  return res.redirect(303, (req.path.toLowerCase().startsWith('/platform/') ? '/platform/schools/' + context.school.id + '/settings' : '/s/' + context.school.slug + '/admin/school-settings') + '?saved=1#'+(['school-policies','school-contacts','school-access'].includes(req.body?.section)?req.body.section:'school-policies'));
 }));
 router.post(['/s/:schoolSlug/admin/enrollment','/platform/schools/:id/enrollment'],run(async(req,res)=>{
   const context=await schoolAdmin(req,res);if(!context)return;

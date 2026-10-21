@@ -350,3 +350,22 @@ html:has(.staff-review-dialog[open]) { overflow:hidden; }
 .staff-row-title-text {display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 .staff-row-content > p {margin:3px 0;}
 .staff-row-content > small {margin-top:3px;}
+
+/* Keep review work separate from school configuration. */
+.admin-dashboard-sections { display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px;border-bottom:1px solid var(--line);padding-bottom:12px; }
+.admin-dashboard-sections a { display:flex;align-items:center;min-height:44px;padding:10px 16px;border-radius:10px;color:var(--text-secondary);font-weight:650;text-decoration:none; }
+.admin-dashboard-sections a.is-current { background:var(--sky);color:var(--ink); }
+.staff-main [data-workspace-panel][hidden],.staff-main [data-workspace-panel-footer][hidden] { display:none!important; }
+.admin-administration header { margin-bottom:24px; }
+.admin-administration header h2 { font-size:clamp(22px,3vw,30px);margin:6px 0 10px; }
+.admin-administration header p { color:var(--text-secondary);max-width:65ch; }
+.admin-administration-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px; }
+.admin-task-card { display:flex;align-items:flex-start;gap:16px;padding:24px;border:1px solid var(--line);border-radius:14px;background:var(--surface);text-decoration:none;color:var(--ink);min-width:0; }
+.admin-task-card > .workspace-svg { flex:0 0 22px;width:22px;height:22px;color:var(--navy); }
+.admin-task-card > .workspace-svg:last-child { margin-left:auto;width:18px;flex-basis:18px; }
+.admin-task-card > span { display:grid;gap:8px;min-width:0; }
+.admin-task-card strong { font-size:16px; }
+.admin-task-card small { color:var(--text-secondary);font-size:14px;line-height:1.6;overflow-wrap:anywhere; }
+.admin-task-card:hover { border-color:var(--navy); }
+.admin-task-card:focus-visible,.admin-dashboard-sections a:focus-visible { outline:3px solid var(--navy);outline-offset:3px; }
+@media(max-width:700px) { .admin-administration-grid { grid-template-columns:minmax(0,1fr); } .admin-task-card { padding:20px; } }

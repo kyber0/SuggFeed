@@ -11,7 +11,11 @@
  if(!navigator.onLine)updateConnection();
  window.addEventListener('online',updateConnection);window.addEventListener('offline',updateConnection);
  const forms=Array.from(document.querySelectorAll<HTMLFormElement>('form[data-preserve-form]'));
- const snapshot=(form:HTMLFormElement)=>JSON.stringify(Array.from(new FormData(form).entries()));
+ const snapshot=(form:HTMLFormElement)=>{
+  const values=new FormData(form);
+  for(const field of form.querySelectorAll<HTMLInputElement>('[data-workspace-section-field]'))if(field.name)values.delete(field.name);
+  return JSON.stringify(Array.from(values.entries()));
+ };
  const initial=new Map(forms.map(form=>[form,snapshot(form)]));
  const submitted=new Set<HTMLFormElement>();
  function dirty(form:HTMLFormElement){return form.dataset.unsaved==='true' || snapshot(form)!==initial.get(form);}

@@ -396,6 +396,8 @@
         select.value = '';
     });
     document.addEventListener('keydown', e => {
+        if (document.getElementById('review-workspace')?.hidden)
+            return;
         if (e.altKey || e.ctrlKey || e.metaKey || e.target.closest('input,textarea,select,[contenteditable=true]') || document.querySelector('dialog[open]'))
             return;
         if (e.key === '/') {

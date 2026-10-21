@@ -1,4 +1,4 @@
-<section class="school-settings-card" id="school-domains" aria-labelledby="school-domains-title">
+<section class="school-settings-card" id="school-domains" data-workspace-panel aria-labelledby="school-domains-title">
  <header><span class="school-settings-step" aria-hidden="true"><svg class="workspace-svg"><use href="#ws-mail"/></svg></span><div><h2 id="school-domains-title">Student joining by school email</h2><p>Let students join with a verified school email instead of individual invitations.</p></div></header>
  <div class="school-settings-card-body">
   <% if(it.domainNotice) { %><p class="school-settings-feedback" role="status"><%= it.domainNotice %></p><% } %>

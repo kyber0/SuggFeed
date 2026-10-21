@@ -1,5 +1,73 @@
 "use strict";
 (() => {
+    // Section links retain native history and deep links; without JS all content remains available.
+    for (const workspace of document.querySelectorAll('[data-workspace-sections]')) {
+        const panels = [...workspace.querySelectorAll('[data-workspace-panel]')];
+        if (!panels.length)
+            continue;
+        const form = workspace.querySelector('.school-settings-form');
+        const field = form?.querySelector('[data-workspace-section-field]');
+        const nav = workspace.querySelector('.school-settings-sidebar nav,.platform-nav');
+        let picker;
+        if (nav) {
+            const label = document.createElement('label');
+            label.className = 'workspace-section-picker';
+            label.textContent = 'Section';
+            picker = document.createElement('select');
+            for (const link of nav.querySelectorAll('a')) {
+                const option = document.createElement('option');
+                option.value = link.getAttribute('href') || '';
+                option.textContent = link.textContent?.trim() || '';
+                picker.append(option);
+            }
+            picker.addEventListener('change', () => { if (picker)
+                location.assign(picker.value); });
+            label.append(picker);
+            nav.before(label);
+            nav.classList.add('has-section-picker');
+        }
+        const select = () => {
+            let target = null;
+            try {
+                target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+            }
+            catch { /* Ignore malformed fragments. */ }
+            const panel = panels.find(item => item === target || (!!target && item.contains(target))) || panels.find(item => item.id === workspace.dataset.defaultSection) || panels[0];
+            for (const item of panels)
+                item.hidden = item !== panel;
+            for (const footer of workspace.querySelectorAll('[data-workspace-panel-footer]'))
+                footer.hidden = !footer.dataset.workspacePanelFooter?.split(' ').includes(panel.id);
+            if (field)
+                field.value = panel.id;
+            if (picker)
+                picker.value = '#' + panel.id;
+            for (const link of workspace.querySelectorAll('[data-section-navigation] a[href^="#"]')) {
+                const current = link.hash === '#' + panel.id;
+                link.classList.toggle('is-current', current);
+                if (current)
+                    link.setAttribute('aria-current', 'location');
+                else
+                    link.removeAttribute('aria-current');
+            }
+            if (target instanceof HTMLDetailsElement)
+                target.open = true;
+        };
+        select();
+        window.addEventListener('hashchange', select);
+        // Required fields on another policy tab must become visible before native validation focuses them.
+        let handlingInvalid = false;
+        form?.addEventListener('invalid', event => {
+            if (handlingInvalid)
+                return;
+            handlingInvalid = true;
+            window.setTimeout(() => { handlingInvalid = false; }, 0);
+            const panel = panels.find(item => event.target instanceof Node && item.contains(event.target));
+            if (panel && panel.hidden) {
+                history.replaceState(null, '', '#' + panel.id);
+                select();
+            }
+        }, true);
+    }
     function updateSectionNavigation() {
         let target = null;
         try {
@@ -9,6 +77,8 @@
         if (target instanceof HTMLDetailsElement)
             target.open = true;
         for (const nav of document.querySelectorAll('[data-section-navigation]')) {
+            if (nav.closest('[data-workspace-sections]'))
+                continue;
             const links = [...nav.querySelectorAll('a[href^="#"]')];
             const active = links.find(link => {
                 const section = document.getElementById(link.hash.slice(1));

@@ -18,14 +18,14 @@
   <div class="staff-navigation-body">
   <p class="workspace-kicker">WORKSPACE</p>
   <nav aria-label="Staff navigation">
-    <a class="staff-nav-item<%= activeSection === 'queue' && !isFiltered ? ' is-current' : '' %>" href="/admin" <%= activeSection === 'queue' && !isFiltered ? 'aria-current="page"' : '' %>><%~ icon('inbox') %> Review submissions <span class="staff-nav-count" id="staff-pending-count"><%= counts.pending || 0 %></span></a>
+    <a class="staff-nav-item<%= activeSection === 'queue' && !isFiltered ? ' is-current' : '' %>" href="/admin" <%= activeSection === 'queue' && !isFiltered ? 'aria-current="page"' : '' %>><%~ icon('inbox') %> <%= it.user?.role==='admin'?'School dashboard':'Review submissions' %> <span class="staff-nav-count" id="staff-pending-count"><%= counts.pending || 0 %></span></a>
     <a class="staff-nav-item<%= activeSection === 'board' ? ' is-current' : '' %>" href="/admin/board" aria-current="<%= activeSection === 'board' ? 'page' : 'false' %>"><%~ icon('board') %> Manage work</a>
     <a class="staff-nav-item<%= activeSection === 'community' ? ' is-current' : '' %>" href="/admin/community" aria-current="<%= activeSection === 'community' ? 'page' : 'false' %>"><%~ icon('care') %> Follow-ups</a>
   <a href="/admin/form-responses" class="staff-nav-link">School form responses</a></nav>
   <p class="workspace-kicker">ADMINISTRATION</p>
   <nav aria-label="Administration">
     <a class="staff-nav-item<%= activeSection === 'analytics' ? ' is-current' : '' %>" href="/admin/analytics" <%= activeSection === 'analytics' ? 'aria-current="page"' : '' %>><%~ icon('chart') %> Analytics</a>
-    <% if (it.user?.role === 'admin') { %><a class="staff-nav-item<%= activeSection === 'staff' ? ' is-current' : '' %>" href="/admin/staff" <%= activeSection === 'staff' ? 'aria-current="page"' : '' %>><%~ icon('users') %> Manage staff</a><a class="staff-nav-item" href="/admin/school-settings"><%~ icon('shield') %> School settings</a><a class="staff-nav-item" href="/admin/invitations"><%~ icon('users') %> Member invitations</a><% } %>
+    <% if (it.user?.role === 'admin') { %><a class="staff-nav-item<%= activeSection === 'staff' ? ' is-current' : '' %>" href="/admin/staff" <%= activeSection === 'staff' ? 'aria-current="page"' : '' %>><%~ icon('users') %> Manage staff</a><a class="staff-nav-item" href="/admin/school-settings"><%~ icon('shield') %> School settings</a><a class="staff-nav-item" href="/admin/members"><%~ icon('users') %> Members & access</a><a class="staff-nav-item" href="/admin/invitations"><%~ icon('users') %> Member invitations</a><% } %>
   </nav>
   <% if (activeSection === 'queue') { %>
   <p class="workspace-kicker">YOUR QUEUES</p>

@@ -25,4 +25,4 @@
   <footer class="account-flow-footer"><a href="/schools" class="account-flow-back">Return to your schools</a><p>Two-step verification is required for school staff and platform operators.</p></footer>
  </section>
 </main>
-<script defer src="/js/account-security.js?v=20261021-student-access"></script>
+<script defer src="/js/account-security.js?v=20261021-member-access"></script>

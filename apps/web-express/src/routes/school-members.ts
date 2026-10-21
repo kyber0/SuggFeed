@@ -1,0 +1,42 @@
+import {Router,type Request,type Response,type NextFunction} from 'express';
+import {schoolAdmin} from './schools';
+import {supabasePlatform} from '../lib/supabase';
+const router=Router();
+const run=(fn:(req:Request,res:Response)=>Promise<unknown>)=>(req:Request,res:Response,next:NextFunction)=>{void fn(req,res).catch(next);};
+const paths=['/s/:schoolSlug/admin/members','/platform/schools/:id/members'];
+const base=(req:Request,school:{id:string;slug:string})=>req.path.toLowerCase().startsWith('/platform/')?'/platform/schools/'+school.id+'/members':'/s/'+school.slug+'/admin/members';
+const actions={suspended:{label:'Suspend member',description:'Pause this person’s school access until an administrator restores it.'},banned:{label:'Ban member',description:'Block this person from this school. Joining links and email matching cannot restore access; an administrator must explicitly lift the ban.'},removed:{label:'Remove from school',description:'Remove this person’s school access. Their account, submitted ideas and historical activity remain saved. Rejoining requires an administrator to restore access.'},restore:{label:'Restore school access',description:'Restore the saved school role. Student enrollment rules still apply.'}};
+type Action=keyof typeof actions;
+const validAction=(value:unknown):value is Action=>typeof value==='string'&&Object.prototype.hasOwnProperty.call(actions,value);
+const uuid=(value:unknown):value is string=>typeof value==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(value);
+router.get(paths,run(async(req,res)=>{
+ res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','strict-origin');
+ const context=await schoolAdmin(req,res);if(!context)return;
+ const q=typeof req.query.q==='string'?req.query.q.trim():'',page=Number(req.query.page||0);
+ if((req.query.q!==undefined&&typeof req.query.q!=='string')||q.length>100||!Number.isSafeInteger(page)||page<0||page>10000)return res.status(400).render('school-message',{title:'Check member search',message:'Enter a name or email of up to 100 characters and choose a valid page.'});
+ const {data,error}=await supabasePlatform.rpc('get_school_members',{p_school:context.school.id,p_actor:context.user.id,p_search:q,p_page:page});
+ if(error)throw Object.assign(new Error('School members unavailable.'),{status:503});
+ res.setHeader('Cache-Control','private, no-store');
+ return res.render('school-members',{title:'Members & access — '+context.school.name,school:context.school,base:base(req,context.school),members:(data.members||[]).slice(0,50),next:data.members?.length>50,page,q,saved:req.query.saved==='1'});
+}));
+async function confirmation(req:Request,res:Response,submit:boolean){
+ res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','strict-origin');
+ const context=await schoolAdmin(req,res);if(!context)return;
+ const action=submit?req.body?.action:req.query.action;
+ if(!uuid(req.params.memberId)||!validAction(action))return res.status(400).render('school-message',{title:'Choose a member action',message:'Return to Members & access and select an available action.'});
+ const {data:member,error}=await supabasePlatform.from('school_memberships').select('user_id,role,status,access_state,updated_at').eq('school_id',context.school.id).eq('user_id',req.params.memberId).maybeSingle();
+ if(error)throw Object.assign(new Error('School member unavailable.'),{status:503});
+ if(!member||!['student','moderator'].includes(member.role)||member.user_id===context.user.id)return res.status(403).render('school-message',{title:'Member action unavailable',message:'These controls manage students and moderators in your own school.'});
+ const {data:profile,error:profileError}=await supabasePlatform.from('profiles').select('display_name,email').eq('id',member.user_id).maybeSingle();
+ if(profileError)throw Object.assign(new Error('School member unavailable.'),{status:503});
+ const reason=typeof req.body?.reason==='string'?req.body.reason.slice(0,1000):'';
+ const render=(message='',code=200)=>{res.setHeader('Cache-Control','private, no-store');return res.status(code).render('school-member-action',{title:actions[action].label,school:context.school,member,profile,action,details:actions[action],base:base(req,context.school),reason,message});};
+ if(!submit)return render();
+ if(reason.trim().length<10||typeof req.body?.reason!=='string'||req.body.reason.length>1000||req.body?.acknowledged!=='yes'||typeof req.body?.expected!=='string'||!Number.isFinite(Date.parse(req.body.expected)))return render('Enter a reason of 10–1,000 characters and confirm the effect of this change.',400);
+ const result=await supabasePlatform.rpc('manage_school_member',{p_school:context.school.id,p_actor:context.user.id,p_user:member.user_id,p_action:action,p_expected:req.body.expected,p_reason:reason.trim()});
+ if(result.error)return render('The change could not be confirmed. Review the current access status and try again. Administrator and platform-operator accounts are protected.',409);
+ return res.redirect(303,base(req,context.school)+'?saved=1');
+}
+router.get(paths.map(path=>path+'/:memberId'),run((req,res)=>confirmation(req,res,false)));
+router.post(paths.map(path=>path+'/:memberId'),run((req,res)=>confirmation(req,res,true)));
+export default router;
