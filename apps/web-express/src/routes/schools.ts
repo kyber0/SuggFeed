@@ -66,8 +66,9 @@ router.get('/account/home', run(async (req, res) => {
   const memberships = ((data || []) as {role:string;eligible:boolean;schools:{slug:string;status:string}|null}[]).filter(m=>m.eligible);
   const destination = safeAccountReturn(req.query.returnTo);
   if (destination) {
-    const slug = /^\/s\/([^/]+)/.exec(destination)?.[1];
+    const slug = /^\/s\/([^/?#]+)/.exec(destination)?.[1];
     if ((!slug && !destination.startsWith('/platform/')) || memberships.some(m => m.schools?.slug === slug && m.schools?.status === 'active')) return res.redirect(303, destination);
+    if(slug)return res.redirect(303,'/schools?school='+encodeURIComponent(slug));
   }
   const available = memberships.filter(m => m.schools && (m.schools?.status === 'active' || (m.schools.status === 'pending' && m.role === 'admin')));
   return res.redirect(303, available.length === 1 ? schoolLanding(available[0].schools!, available[0].role) : '/schools');
@@ -75,7 +76,14 @@ router.get('/account/home', run(async (req, res) => {
 router.get('/schools', run(async (req, res) => {
   const user = req.session.user;
   let schools: unknown[] = [], applications: unknown[] = [], joinOptions: unknown[] = [], studentAccess:unknown={confirmed:false,roster:[],discover:[],requests:[]};
-  const find=typeof req.query.find==='string'?req.query.find.trim():'';
+  let find=typeof req.query.find==='string'?req.query.find.trim():'';
+  const intendedSchool=req.query.school;
+  if(intendedSchool!==undefined){
+    if(typeof intendedSchool!=='string'||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(intendedSchool)||intendedSchool.length>63)return failed(res,'Check school link','Open the school link again or find your school below.');
+    const intended=await supabasePlatform.rpc('school_presentation',{p_slug:intendedSchool});
+    if(intended.error)throw Object.assign(new Error('School lookup unavailable.'),{status:503});
+    if(intended.data?.status==='active')find=String(intended.data.name).slice(0,100);
+  }
   if((req.query.find!==undefined&&typeof req.query.find!=='string')||find.length>100)return failed(res,'Check school search','Search using a school name of up to 100 characters.');
   if (user) {
     if (await platformAuthority(req, res)) return res.redirect(303, '/platform/schools');

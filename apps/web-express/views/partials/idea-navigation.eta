@@ -1,0 +1,4 @@
+<nav class="student-idea-navigation" aria-label="Ideas and progress">
+ <a href="/feed"<% if(it.currentPath==='/feed'){ %> aria-current="page"<% } %>>All ideas</a>
+ <% if(it.schoolCustomization?.features.roadmap!==false){ %><a href="/roadmap"<% if(it.currentPath==='/roadmap'){ %> aria-current="page"<% } %>>Progress</a><% } %>
+</nav>

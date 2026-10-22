@@ -62,11 +62,13 @@
   };
 
   window.sfCompleteSignIn = async function (session) {
+    (window as any).sfSubmissionRecovery?.preserveForSignIn();
     await window.sfSyncSession(session);
     window.sfAuthNavigate();
   };
 
   window.sfStartGoogleSignIn = async function () {
+    (window as any).sfSubmissionRecovery?.preserveForSignIn();
     try { sessionStorage.setItem('sf-auth-return', window.location.pathname + window.location.search); } catch (_) {}
     var result = await sb.auth.signInWithOAuth({
       provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback', skipBrowserRedirect: true }

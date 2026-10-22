@@ -391,6 +391,11 @@
             window.sfSubmissionRecovery.tell('Complete the idea and accept the community notice before submitting.');
             return;
         }
+        if (!document.getElementById('sip-anon').checked && !document.getElementById('sf-auth-config')?.dataset.user) {
+            window.sfSubmissionRecovery.tell('Sign in to attach this idea to your account. Your draft will be kept in this tab for 30 minutes.');
+            window.openAuthModal('signin');
+            return;
+        }
         sipSending = true;
         const nextBtn = document.getElementById('sip-next-btn');
         const nextText = document.getElementById('sip-next-text');
@@ -467,7 +472,7 @@
         }
         const summary = document.querySelector('.sip-success-sub');
         if (summary)
-            summary.textContent = sipTrackingCode ? 'Your idea is recorded. Copy its private tracking code or choose to remember it on this device.' : 'Your idea is recorded. Sign in to your account to follow its status.';
+            summary.textContent = sipTrackingCode ? 'Received for school review. Keep your private tracking code to check its status and any requests for clarification.' : 'Received for school review. Follow its status from My activity; the school may ask for clarification before publishing.';
     }
     function copyTrackingCode() {
         if (!sipTrackingCode)

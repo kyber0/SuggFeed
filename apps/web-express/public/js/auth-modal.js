@@ -73,6 +73,13 @@
         }
         window.openAuthModal = function (tab) {
             if (modal) {
+                try {
+                    window.sfSubmissionRecovery?.preserveForSignIn();
+                }
+                catch (error) {
+                    window.sfToast?.(error.message, 'error');
+                    return;
+                }
                 if (!dialog.open) {
                     returnFocusTo = document.activeElement;
                     previousBodyOverflow = document.body.style.overflow;
@@ -271,6 +278,7 @@
                         sessionStorage.setItem('sf-auth-return', window.location.pathname + window.location.search);
                     }
                     catch { }
+                    window.sfSubmissionRecovery?.preserveForSignIn();
                     var { data, error } = await sb.auth.signUp({
                         email: email,
                         password: password,
@@ -294,7 +302,7 @@
                     }
                     if (generation !== panelGeneration || !dialog.open)
                         return;
-                    sfToast('Account created! Please check your email to confirm.', 'success', generation);
+                    sfToast(document.getElementById('submit-panel')?.hidden === false ? 'Account created. Confirm your email, then return to this tab to continue your idea.' : 'Account created! Please check your email to confirm.', 'success', generation);
                 }
                 catch (error) {
                     sfToast(error.message || 'Connection interrupted. Please try again.', 'error', generation);

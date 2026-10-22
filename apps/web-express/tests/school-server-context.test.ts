@@ -59,7 +59,7 @@ test('school middleware ignores legacy roles, fails closed for private/unreviewe
  let approved=true,publication='private',memberRole:string|null='student',status='active',outage=false;
  supabasePlatform.from=((table:string)=>{
   const data=table==='schools'?{id:A.id,slug:A.slug,name:A.name,status}:table==='school_memberships'?(memberRole?{role:memberRole}:null):{approved_at:approved?'2026-10-16':null,publication_policy:publication};
-  const q:any={select(){return q;},eq(){return q;},async maybeSingle(){return {data,error:outage?{message:'private provider failure'}:null};}};return q;
+  const q:any={select(){return q;},eq(){return q;},async maybeSingle(){return {data,error:outage?{message:'private provider failure'}:null};},then(resolve:any,reject:any){return Promise.resolve({data:table==='school_memberships'?(memberRole?[{school_id:A.id,role:memberRole}]:[]):data,error:outage?{message:'private provider failure'}:null}).then(resolve,reject);}};return q;
  }) as any;
  async function resolve(path='/feed'){
   const req:any={url:'/s/school-a'+path,session:{user:{id:A.actorId,role:'admin'}}};

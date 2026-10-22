@@ -21,9 +21,11 @@ export function resolveSchool(req: Request, res: Response, next: NextFunction) {
     const userId = req.session.user?.id;
     let role: 'student' | 'moderator' | 'admin' | null = null;
     if (userId) {
-      const membership = await supabasePlatform.from('school_memberships').select('role').eq('school_id', school.id).eq('user_id', userId).eq('status', 'active').maybeSingle();
+      const membership = await supabasePlatform.from('school_memberships').select('school_id,role').eq('user_id', userId).eq('status', 'active');
       if (membership.error) throw Object.assign(new Error('School permissions are unavailable.'), {status:503});
-      if (['student','moderator','admin'].includes(membership.data?.role)) role = membership.data!.role;
+      const current = membership.data?.find(member => member.school_id === school.id);
+      if (current && ['student','moderator','admin'].includes(current.role)) role = current.role;
+      res.locals.schoolSwitchAvailable = (membership.data?.length || 0) > 1;
     }
     if (school.status !== 'active' && !unsubscribe) {
       if (!role) return res.status(404).render('404', { title: 'School unavailable' });
@@ -39,7 +41,7 @@ export function resolveSchool(req: Request, res: Response, next: NextFunction) {
     if(settingsError || eligibility.error) throw Object.assign(new Error('School access checks unavailable.'), {status:503});
     if(eligibility.data!==true){res.locals.accountArea=true;return res.status(403).render('school-message',{title:'School access is paused',message:'Your school requires a current enrollment roster, and your confirmed account email is not on it. Ask your school administrator to check your email and enrollment. Your account and submitted ideas have not been deleted.',nextHref:'/schools',nextLabel:'View your schools'});}
     if(!settings?.approved_at && !unsubscribe) { res.locals.accountArea = true; return res.status(503).render('school-message',{title:'School temporarily unavailable',message:'The school must complete its current policy review before community access resumes.', nextHref: role === 'admin' ? '/s/' + school.slug + '/admin/school-settings' : '/schools', nextLabel: role === 'admin' ? 'Review school setup' : 'Your schools' }); }
-    if(!role && settings?.publication_policy!=='public' && !unsubscribe) return res.status(403).render('school-message',{title:'School membership required',message:'This school is available to its members. Sign in or ask your school administrator for an invitation.'});
+    if(!role && settings?.publication_policy!=='public' && !unsubscribe){res.locals.accountArea=true;return res.status(403).render('school-message',{title:'School membership required',message:userId?'Your account does not have school access yet. Check your joining options, request access where available, or ask your school for an invitation.':'Sign in with your school email or approved email address. We’ll check your joining options without opening private school content.',signInRequired:!userId,nextHref:'/schools?find='+encodeURIComponent(school.name.slice(0,100)),nextLabel:'Find my school access'});}
     res.locals.accountArea = false;
     res.locals.demoWorkspace = school.id === DEMO_SCHOOL_ID;
     res.locals.schoolBase = '/s/' + school.slug;

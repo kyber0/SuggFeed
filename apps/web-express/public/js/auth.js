@@ -69,10 +69,12 @@
             window.location.replace('/account/home?returnTo=' + encodeURIComponent(window.location.pathname + window.location.search));
     };
     window.sfCompleteSignIn = async function (session) {
+        window.sfSubmissionRecovery?.preserveForSignIn();
         await window.sfSyncSession(session);
         window.sfAuthNavigate();
     };
     window.sfStartGoogleSignIn = async function () {
+        window.sfSubmissionRecovery?.preserveForSignIn();
         try {
             sessionStorage.setItem('sf-auth-return', window.location.pathname + window.location.search);
         }

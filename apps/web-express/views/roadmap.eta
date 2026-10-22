@@ -23,10 +23,11 @@
  const activeView=otherViews.find(([view])=>view===filters.view);
 %>
 <main class="campus-roadmap">
+ <%~ include('partials/idea-navigation',it) %>
  <header class="workspace-heading roadmap-heading">
   <div>
    <span class="workspace-kicker">Campus Roadmap</span>
-   <h1>Roadmap<span class="workspace-title-dot" aria-hidden="true">.</span></h1>
+   <h1>Progress<span class="workspace-title-dot" aria-hidden="true">.</span></h1>
    <p class="roadmap-subtitle">Track community suggestions from planned to completion.</p>
   </div>
   <div class="roadmap-summary-pills" role="region" aria-label="Roadmap stages">

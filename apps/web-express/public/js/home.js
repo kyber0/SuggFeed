@@ -78,6 +78,8 @@
         const prompt = document.querySelector('.sf-prompt-trigger');
         ['mouseenter', 'focusin'].forEach(name => prompt?.addEventListener(name, () => clearTimeout(promptTimer)));
         ['mouseleave', 'focusout'].forEach(name => prompt?.addEventListener(name, () => setTimeout(syncPromptMotion, 0)));
+        if (new URLSearchParams(window.location.search).get('track') === '1')
+            sfSwitchTab('track');
         window.addEventListener('resize', () => {
             updateGlider();
         });

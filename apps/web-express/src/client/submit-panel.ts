@@ -356,6 +356,7 @@
     e.preventDefault();
     if (sipSending) return;
     if(!document.querySelector('input[name="sip-category"]:checked') || !(document.getElementById('sip-consent') as HTMLInputElement).checked){(window as any).sfSubmissionRecovery.tell('Complete the idea and accept the community notice before submitting.');return;}
+    if(!(document.getElementById('sip-anon') as HTMLInputElement).checked && !document.getElementById('sf-auth-config')?.dataset.user){(window as any).sfSubmissionRecovery.tell('Sign in to attach this idea to your account. Your draft will be kept in this tab for 30 minutes.');window.openAuthModal('signin');return;}
     sipSending = true;
     const nextBtn = (document.getElementById('sip-next-btn') as HTMLButtonElement);
     const nextText = (document.getElementById('sip-next-text') as HTMLElement);
@@ -419,7 +420,7 @@
       successView.classList.add('sip-step-animate-in');
       const card=document.querySelector<HTMLElement>('.sip-tracking-card');if(card)card.hidden=!sipTrackingCode;
       const heading=document.querySelector<HTMLElement>('.sip-success-title');if(heading){heading.tabIndex=-1;heading.focus();}
-      const summary=document.querySelector<HTMLElement>('.sip-success-sub');if(summary)summary.textContent=sipTrackingCode?'Your idea is recorded. Copy its private tracking code or choose to remember it on this device.':'Your idea is recorded. Sign in to your account to follow its status.';
+      const summary=document.querySelector<HTMLElement>('.sip-success-sub');if(summary)summary.textContent=sipTrackingCode?'Received for school review. Keep your private tracking code to check its status and any requests for clarification.':'Received for school review. Follow its status from My activity; the school may ask for clarification before publishing.';
   }
 
   function copyTrackingCode() {

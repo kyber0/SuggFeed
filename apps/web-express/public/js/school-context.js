@@ -71,7 +71,7 @@ async function sfClearSchoolState() {
         try {
             for (let i = storage.length - 1; i >= 0; i--) {
                 const key = storage.key(i);
-                if (key?.startsWith('sf:school:') && key.includes(marker))
+                if (key?.startsWith('sf:school:') && (key.includes(marker) || key.endsWith(':sign-in-draft:v1')))
                     storage.removeItem(key);
             }
         }

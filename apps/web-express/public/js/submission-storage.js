@@ -85,5 +85,5 @@
             tx.onabort = () => reject(new Error('This saved item could not be removed.'));
         });
     }
-    Object.assign(window, { sfSubmissionStorage: { records, put, remove, lifetime } });
+    Object.assign(window, { sfSubmissionStorage: { records, put, remove, lifetime, validPayload } });
 })();

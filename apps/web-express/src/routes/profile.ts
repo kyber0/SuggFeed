@@ -25,7 +25,7 @@ router.get(
     if (!user) {
       return res.render("profile", {
         title: "Profile — SuggFeed",
-        description: "Sign in to view your profile and manage your ideas.",
+        description: "Sign in to see your ideas, school updates and private messages.",
         profile: null,
         submissions: [],
         bookmarks: [],
@@ -42,7 +42,7 @@ router.get(
 
     res.append('Server-Timing',`data;dur=${(performance.now()-dataStarted).toFixed(1)}`);
     res.render("profile", {
-      title: "My Profile — SuggFeed",
+      title: "My activity — SuggFeed",
       description: "Manage your ideas and bookmarks.",
       profile,
       submissions,

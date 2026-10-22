@@ -74,6 +74,13 @@
     }
     async function finish(data, operation) {
         clearReceipt();
+        try {
+            sessionStorage.removeItem(handoffKey);
+        }
+        catch { }
+        const notice = document.getElementById('sip-signin-draft-notice');
+        if (notice)
+            notice.hidden = true;
         dirty = false;
         savedFingerprint = '';
         remember.checked = false;
@@ -238,30 +245,85 @@
             }
         }
     });
+    function restorePayload(value, keepOnDevice) {
+        title.value = value.title;
+        description.value = value.description;
+        anon.checked = value.isAnonymous;
+        if (window.sfSchoolCustomization?.features?.anonymous === false)
+            anon.checked = false;
+        window.sfSchoolForm?.restore(value);
+        document.querySelectorAll('input[name="sip-category"]').forEach(radio => radio.checked = radio.value === value.category || radio.dataset.categoryName === value.category);
+        onCategorySelected(document.querySelector('input[name="sip-category"]:checked')?.value || '');
+        handleTitleInput();
+        handleDescInput();
+        handleAnonToggle();
+        remember.checked = keepOnDevice;
+        dirty = true;
+        savedFingerprint = keepOnDevice ? JSON.stringify(payload()) : '';
+        tell(value.schemaVersion === 2 && value.formVersion !== window.sfSchoolCustomization?.formVersion ? 'Draft restored. The school form changed; review its questions and reattach expired images.' : 'Draft restored. Review it before sending.');
+        window.sfRestoreSubmissionStep(!!value.category);
+    }
     restore.addEventListener('click', async () => {
         if (!savedDraft)
             return;
         if ((title.value || description.value) && !await window.sfConfirm('Replace the current text with the saved draft?'))
             return;
-        if (!savedDraft)
-            return;
-        title.value = savedDraft.payload.title;
-        description.value = savedDraft.payload.description;
-        anon.checked = savedDraft.payload.isAnonymous;
-        if (window.sfSchoolCustomization?.features?.anonymous === false)
-            anon.checked = false;
-        window.sfSchoolForm?.restore(savedDraft.payload);
-        document.querySelectorAll('input[name="sip-category"]').forEach(radio => radio.checked = radio.value === savedDraft.payload.category || radio.dataset.categoryName === savedDraft.payload.category);
-        onCategorySelected(document.querySelector('input[name="sip-category"]:checked')?.value || '');
-        handleTitleInput();
-        handleDescInput();
-        handleAnonToggle();
-        remember.checked = true;
-        dirty = true;
-        savedFingerprint = JSON.stringify(payload());
-        tell(savedDraft.payload.schemaVersion === 2 && savedDraft.payload.formVersion !== window.sfSchoolCustomization?.formVersion ? 'Draft restored. The school form changed; review its current questions and reattach expired images.' : 'Draft restored. Review it before sending.');
-        window.sfRestoreSubmissionStep(!!savedDraft.payload.category);
+        if (savedDraft)
+            restorePayload(savedDraft.payload, true);
     });
+    // Only this temporary handoff spans anonymous -> signed-in actors; ordinary drafts stay actor-scoped.
+    const handoffSchool = document.querySelector('meta[name="school-id"]')?.content || sfSchoolBase || 'no-school';
+    const handoffKey = 'sf:school:' + encodeURIComponent(handoffSchool) + ':sign-in-draft:v1';
+    function preserveForSignIn() {
+        if (document.getElementById('submit-panel')?.hidden || !document.getElementById('sip-success')?.hidden || (!title.value.trim() && !description.value.trim()))
+            return;
+        const value = { ...payload(), ...(window.sfSchoolForm?.draftExtra() || {}) };
+        if (!storage.validPayload(value))
+            throw new Error('Review this draft before signing in. Your text is still here.');
+        try {
+            sessionStorage.setItem(handoffKey, JSON.stringify({ version: 1, expiresAt: Date.now() + 30 * 60000, actor: document.getElementById('sf-auth-config')?.dataset.user || '', payload: value }));
+            savedFingerprint = JSON.stringify(payload());
+        }
+        catch {
+            throw new Error('This browser could not keep your draft during sign-in. Copy your text or enable browser storage before continuing.');
+        }
+    }
+    function resumeAfterSignIn() {
+        try {
+            const value = JSON.parse(sessionStorage.getItem(handoffKey) || 'null');
+            if (!value)
+                return;
+            const actor = document.getElementById('sf-auth-config')?.dataset.user;
+            if (value.version !== 1 || !Number.isFinite(value.expiresAt) || value.expiresAt <= Date.now() || value.expiresAt > Date.now() + 30 * 60000 || !storage.validPayload(value.payload)) {
+                sessionStorage.removeItem(handoffKey);
+                return;
+            }
+            if (!actor)
+                return;
+            if (value.actor && value.actor !== actor) {
+                sessionStorage.removeItem(handoffKey);
+                return;
+            }
+            if (title.value || description.value)
+                return;
+            window.openSubmitPanel();
+            restorePayload(value.payload, false);
+            sessionStorage.removeItem(handoffKey);
+            const notice = document.getElementById('sip-signin-draft-notice');
+            if (notice) {
+                notice.hidden = false;
+                notice.textContent = 'Your draft is restored. Review it before sending; nothing was submitted automatically.';
+            }
+            tell('Welcome back. Your idea is restored; review it and submit when ready. Nothing was sent automatically.');
+        }
+        catch {
+            tell('Your draft could not be restored. Check saved drafts or return to the original tab.');
+        }
+    }
+    if (document.readyState === 'complete')
+        resumeAfterSignIn();
+    else
+        document.addEventListener('DOMContentLoaded', resumeAfterSignIn, { once: true });
     discard.addEventListener('click', async () => { if (!await window.sfConfirm('Discard the saved draft on this device?'))
         return; try {
         await storage.remove('draft');
@@ -356,5 +418,5 @@
     window.addEventListener('sf:submission-open', () => { if (navigator.onLine)
         void getContext().catch(() => { }); });
     void renderQueue(true).catch(e => tell(e.message));
-    Object.assign(window, { sfSubmissionRecovery: { prepare, finish, failed, request, tell } });
+    Object.assign(window, { sfSubmissionRecovery: { prepare, finish, failed, request, tell, preserveForSignIn } });
 })();

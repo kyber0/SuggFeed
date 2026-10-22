@@ -24,7 +24,8 @@
       <% if(welcome?.message) { %><p class="school-welcome-message"><%= welcome.message %></p><% } %>
       <div class="sf-hero-actions">
         <a data-sf-magnetic class="sf-hero-action-primary" href="#action-hub">Share feedback</a>
-        <a class="sf-hero-action-secondary" href="#feed">Browse community ideas</a>
+        <a class="sf-hero-action-secondary" href="#feed">Browse ideas</a>
+        <% if(it.user){ %><a class="sf-hero-action-secondary" href="/profile">Track my ideas</a><% } else { %><a class="sf-hero-action-secondary" href="#action-hub" data-sf-click="action-59">Track with a code</a><% } %>
       </div>
 
       <% if(welcome?.help) { %><p class="school-welcome-help"><%= welcome.help %></p><% } %>
@@ -396,7 +397,7 @@
         <span class="sf-footer-sep">•</span>
         <a href="/terms" class="sf-footer-link">Terms</a>
         <span class="sf-footer-sep">•</span>
-        <a href="/roadmap" class="sf-footer-link">Roadmap</a>
+        <a href="/roadmap" class="sf-footer-link">Progress</a>
         <span class="sf-footer-sep">•</span>
         <a href="/admin" class="sf-footer-link">Staff Portal</a>
       </div>
@@ -404,4 +405,4 @@
   </footer>
 </main>
 
-<script defer src="/js/home.js?v=20261022-home-polish"></script>
+<script defer src="/js/home.js?v=20261022-student-journey"></script>

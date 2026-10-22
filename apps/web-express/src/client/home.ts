@@ -79,6 +79,7 @@ let activeCategory = 'All';
     const prompt = document.querySelector<HTMLElement>('.sf-prompt-trigger');
     ['mouseenter', 'focusin'].forEach(name => prompt?.addEventListener(name, () => clearTimeout(promptTimer)));
     ['mouseleave', 'focusout'].forEach(name => prompt?.addEventListener(name, () => setTimeout(syncPromptMotion, 0)));
+    if(new URLSearchParams(window.location.search).get('track')==='1')sfSwitchTab('track');
     window.addEventListener('resize', () => {
       updateGlider();
     });

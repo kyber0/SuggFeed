@@ -19,6 +19,8 @@
 %>
 
 <main class="prof-page">
+  <p class="student-activity-heading">My activity</p>
+  <p class="student-tracking-shortcut">Submitted anonymously? <a href="/?track=1#action-hub">Track with your private code</a>.</p>
   <!-- ── Hero Banner ── -->
   <div class="prof-hero">
     <div class="prof-hero-inner">

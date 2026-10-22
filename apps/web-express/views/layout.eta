@@ -10,7 +10,7 @@
   <meta name="school-base" content="<%= it.schoolBase || '' %>" />
   <meta name="school-id" content="<%= it.schoolId || '' %>" />
   <meta name="school-actor" content="<%= it.user?.id || '' %>" />
-  <script src="/js/school-context.js?v=20261016-school-isolation"></script>
+  <script src="/js/school-context.js?v=20261022-student-journey"></script>
 
   <!-- PWA / Icons -->
   <link rel="icon" href="/branding/favicon.ico" sizes="any" />
@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-calendar" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261021-platform-insights" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261022-home-polish" />
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261022-student-journey" />
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261021-platform-insights" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261021-mobile-audit"/><% } %>
   <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
@@ -64,11 +64,11 @@
 <%~ include('partials/submit-panel', it) %>
 <% if (['/','/feed','/feed/'].includes(it.currentPath || '/')) { %><%~ include('partials/idea-detail-drawer', it) %><% } %>
 <%~ include('partials/report-dialog', it) %>
-<% if (!/^\/admin(?:\/|$)/.test(it.currentPath || '')) { %><%~ include('partials/mobile-nav', it) %><% } %>
+<% if (!it.accountArea && !it.platformDashboard && it.currentPath!=='/schools' && !/^\/(?:admin|account)(?:\/|$)/.test(it.currentPath || '')) { %><%~ include('partials/mobile-nav', it) %><% } %>
 <% } %>
 
 <!-- Client-side auth state sync -->
-<script defer src="/js/auth.js?v=20261021-confirm-email"></script>
+<script defer src="/js/auth.js?v=20261022-student-journey"></script>
 
 <!-- Theme toggle logic -->
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>

@@ -7,6 +7,7 @@
    <h1 class="auth-callback-title" id="account-message-title"><%= it.title %></h1>
    <p class="auth-callback-sub" role="status"><%= it.message %></p>
   </header>
+  <% if(it.signInRequired){ %><button type="button" class="am-btn-primary" data-sf-click="action-94">Sign in to join your school</button><% } %>
   <% if (it.nextHref) { %><a class="am-btn-primary" href="<%= it.nextHref %>"><%= it.nextLabel %></a><% } %>
   <% if (it.invitationUrl) { %><div class="am-field"><label class="am-label" for="invitation-url">One-time invitation path</label><input class="am-input account-invitation-path" id="invitation-url" readonly value="<%= it.invitationUrl %>" /><a class="am-btn-ghost" href="<%= it.invitationUrl %>">Open invitation</a></div><% } %>
   <footer class="account-flow-footer"><a class="account-flow-back" href="<%= it.platformDashboard ? '/platform/schools' : '/schools' %>"><%= it.platformDashboard ? 'Back to super admin dashboard' : 'Return to your schools' %></a></footer>

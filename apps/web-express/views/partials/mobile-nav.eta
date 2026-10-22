@@ -5,8 +5,8 @@
     <span>Home</span>
   </a>
 
-  <a href="/feed" class="mobile-tab<%= it.currentPath === '/feed' ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/feed' ? 'page' : 'false' %>">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/feed' ? '2.5' : '1.8' %>"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <a href="/feed" class="mobile-tab<%= it.currentPath === '/feed' || it.currentPath === '/roadmap' ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/feed' || it.currentPath === '/roadmap' ? 'page' : 'false' %>">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/feed' || it.currentPath === '/roadmap' ? '2.5' : '1.8' %>"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     <span>Ideas</span>
   </a>
 
@@ -15,14 +15,9 @@
     <span>Submit</span>
   </button>
 
-  <% if(it.schoolCustomization?.features.roadmap!==false) { %><a href="/roadmap" class="mobile-tab<%= it.currentPath === '/roadmap' ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/roadmap' ? 'page' : 'false' %>">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/roadmap' ? '2.5' : '1.8' %>"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-    <span>Roadmap</span>
-  </a><% } %>
-
-  <a href="/profile" class="mobile-tab<%= it.currentPath === '/profile' ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/profile' ? 'page' : 'false' %>">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/profile' ? '2.5' : '1.8' %>"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Profile</span>
+  <a href="/profile" class="mobile-tab<%= ['/profile','/notifications','/inbox'].includes(it.currentPath) ? ' mobile-tab--active' : '' %>" aria-current="<%= ['/profile','/notifications','/inbox'].includes(it.currentPath) ? 'page' : 'false' %>">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= ['/profile','/notifications','/inbox'].includes(it.currentPath) ? '2.5' : '1.8' %>"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>My activity</span>
   </a>
 
 </nav>

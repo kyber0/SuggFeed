@@ -75,6 +75,7 @@
 
   <form id="submit-idea-form" data-sf-submit="action-115" class="sip-form">
     <div class="sip-scroll-body" id="sip-scroll-body">
+      <p id="sip-signin-draft-notice" class="care-guidance" role="status" hidden></p>
     <p class="sip-toggle-desc">Reviewed ideas may be public. Avoid personal details; read the <a href="/privacy">Privacy Notice</a> and <a href="/terms">Terms</a> before sending.</p>
     <details class="submission-recovery care-card">
       <summary>Draft recovery and queued ideas</summary>
@@ -174,6 +175,7 @@
           </div>
         </label>
       </div>
+      <% if(!it.user){ %><p class="care-guidance">Want this idea in My activity? Turn off anonymous submission, then sign in when you’re ready. Your draft stays in this tab during sign-in for 30 minutes.</p><% } %>
       <%~ include('school-custom-questions',it) %>
     </div>
 
@@ -293,7 +295,7 @@
         </div>
       </div>
 
-      <div class="sip-success-actions"><a class="workspace-button" id="sip-private-details" hidden>View your private answers & images</a>
+      <div class="sip-success-actions"><% if(it.user){ %><a class="workspace-button" href="/profile">Go to My activity</a><% } %><a class="workspace-button" id="sip-private-details" hidden>View your private answers & images</a>
         <button type="button" class="sip-btn-done" data-sf-click="action-129">
           Done
         </button>
@@ -334,6 +336,6 @@
   </form>
 </aside>
 
-<script defer src="/js/submission-storage.js?v=20261018-customization"></script>
-<script defer src="/js/submission-recovery.js?v=20261018-customization"></script>
-<script defer src="/js/submit-panel.js?v=20261021-mobile-audit"></script>
+<script defer src="/js/submission-storage.js?v=20261022-student-journey"></script>
+<script defer src="/js/submission-recovery.js?v=20261022-student-journey"></script>
+<script defer src="/js/submit-panel.js?v=20261022-student-journey"></script>
