@@ -1856,9 +1856,13 @@
 .comment-actions {grid-column:2;grid-row:1;display:flex;align-items:center;gap:8px;justify-self:end;}
 .comment-actions :is(.care-report,.comment-reply-btn) {display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;box-sizing:border-box;padding:4px 6px;font-size:12px;line-height:1.2;border:0;background:transparent;color:var(--muted);border-radius:6px;cursor:pointer;}
 .comment-reply-btn:hover {color:var(--text-link);background:var(--sky);}
+/* Extend the parent avatar stem into the same rail used by its replies. */
+.comment-card:has(+ .comment-replies-thread:not(:empty)) {position:relative;border-bottom:0;--reply-color:color-mix(in srgb,var(--text-link) 50%,var(--surface));}
+.comment-card:has(+ .comment-replies-thread:not(:empty))::before {content:"";position:absolute;pointer-events:none;left:11.25px;top:42px;bottom:0;width:1.5px;background:var(--reply-color,var(--muted));}
+.comment-card:has(+ .comment-replies-thread:not(:empty)) > .comment-body {padding-left:30px;}
 .comment-replies-thread {--reply-indent:24px;--reply-arrow-y:30px;--reply-color:color-mix(in srgb,var(--text-link) 50%,var(--surface));margin-left:12px;padding-left:var(--reply-indent);display:flex;flex-direction:column;gap:0;margin-top:0;}
 .comment-replies-thread > .comment-reply-card {position:relative;}
-.comment-replies-thread > .comment-reply-card::before {content:"";position:absolute;pointer-events:none;left:calc(-1 * var(--reply-indent) - .75px);top:0;bottom:0;width:1.5px;background:var(--reply-color,var(--muted));}
+.comment-replies-thread > .comment-reply-card::before {content:"";position:absolute;pointer-events:none;left:calc(-1 * var(--reply-indent) - .75px);top:0;bottom:-1px;width:1.5px;background:var(--reply-color,var(--muted));}
 .comment-replies-thread > .comment-reply-card:last-child::before {bottom:calc(100% - var(--reply-arrow-y) + 12px);}
 .comment-replies-thread > .comment-reply-card::after {
  content:"";position:absolute;pointer-events:none;left:calc(-1 * var(--reply-indent) - .75px);top:calc(var(--reply-arrow-y) - 12px);width:22px;height:24px;background:var(--reply-color,var(--muted));
@@ -1869,6 +1873,7 @@
  .comment-card-header {grid-column:1/-1;}
  .comment-actions {grid-column:1/-1;grid-row:3;}
  .comment-replies-thread {--reply-arrow-y:20px;}
+ .comment-card:has(+ .comment-replies-thread:not(:empty))::before {top:32px;}
 }
 
 /* ── Empty comment state ─────────────────────────────────────────── */
