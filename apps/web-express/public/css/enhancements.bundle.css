@@ -2249,10 +2249,7 @@
 .sf-story-pages:focus-visible {outline:2px solid var(--focus-ring,var(--navy));outline-offset:-3px;}
 @media(prefers-reduced-motion:reduce) {.sf-story-controls [data-story-go]::after {transition:none;}}
 
-/* Four student destinations; progress lives within Ideas. */
-.student-submit-nav {font:inherit;color:var(--muted);background:none;border:0;min-height:44px;padding:8px 12px;cursor:pointer;}
-.student-submit-nav:hover {color:var(--text-link);}
-.student-submit-nav:focus-visible {outline:2px solid var(--focus-ring,var(--navy));outline-offset:2px;}
+/* Student navigation keeps progress within Ideas. */
 .student-idea-navigation {display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;}
 .student-idea-navigation a {display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;color:var(--muted);text-decoration:none;}
 .student-idea-navigation [aria-current="page"] {color:var(--text-link);background:var(--sky);border-color:currentColor;}

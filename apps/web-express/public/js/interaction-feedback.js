@@ -2,7 +2,7 @@
 (() => {
     if (window.sfFeedback)
         return;
-    const states = new Map();
+    const states = new Map(), deferred = new Set();
     const progress = document.createElement('div');
     progress.className = 'sf-action-progress';
     progress.hidden = true;
@@ -62,9 +62,12 @@
             return; if (--current.count === 0)
             restore(element, current); };
     };
-    const reset = () => { clearTimeout(interactionTimer); initiator = null; for (const [element, state] of states)
+    const reset = () => { deferred.forEach(clearTimeout); deferred.clear(); clearTimeout(interactionTimer); initiator = null; for (const [element, state] of states)
         restore(element, state); };
     window.sfFeedback = { pending, reset };
+    // Capture listeners wait until delegated handlers can cancel native navigation.
+    const afterDispatch = (event, element) => { const task = window.setTimeout(() => { deferred.delete(task); if (!event.defaultPrevented && element.isConnected)
+        pending(element); }, 0); deferred.add(task); };
     const activate = (element) => { initiator = element; clearTimeout(interactionTimer); interactionTimer = window.setTimeout(() => { initiator = null; }, 0); };
     document.addEventListener('click', event => {
         const element = event.target instanceof Element ? event.target.closest('button,a[href],[role="button"],input[type="submit"],input[type="button"]') : null;
@@ -81,8 +84,7 @@
         const url = new URL(element.href, location.href);
         if (url.origin !== location.origin || (url.pathname === location.pathname && url.search === location.search))
             return;
-        queueMicrotask(() => { if (!event.defaultPrevented)
-            pending(element); });
+        afterDispatch(event, element);
     }, true);
     document.addEventListener('change', event => { if (event.target instanceof HTMLSelectElement || (event.target instanceof HTMLInputElement && event.target.type === 'file'))
         activate(event.target); }, true);
@@ -97,8 +99,7 @@
         const method = submitter?.getAttribute('formmethod') || form.method, target = submitter?.getAttribute('formtarget') || form.target;
         if (method.toLowerCase() === 'dialog' || (target && target !== '_self'))
             return;
-        queueMicrotask(() => { if (!event.defaultPrevented)
-            pending(element); });
+        afterDispatch(event, element);
     }, true);
     // Track only requests started by the current user event, never background polling.
     const request = window.fetch.bind(window);

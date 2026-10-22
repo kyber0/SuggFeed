@@ -70,9 +70,10 @@
  const cancel=document.getElementById('navigation-cancel');
  const body=document.getElementById('navigation-skeleton-body');
  if(!shell || !content || !title || !status || !body)return;
- let timer:number;
+ let timer:number,pendingNavigation=0;
  let wasInert=content.inert;
- function reset(){window.sfFeedback?.reset();clearTimeout(timer);shell.hidden=true;content.inert=wasInert;content.removeAttribute('aria-busy');document.documentElement.classList.remove('is-navigating');}
+ function reset(){window.sfFeedback?.reset();clearTimeout(pendingNavigation);pendingNavigation=0;clearTimeout(timer);shell.hidden=true;content.inert=wasInert;content.removeAttribute('aria-busy');document.documentElement.classList.remove('is-navigating');}
+ function afterDispatch(event:Event,destination:URL){clearTimeout(pendingNavigation);pendingNavigation=window.setTimeout(()=>{pendingNavigation=0;if(!event.defaultPrevented)show(destination);},0);}
  function destinationScreen(destination:URL):[string,string] {
   const path=sfSchoolRoute(destination.pathname).replace(/\/+$/, '') || '/';
   if(path==='/')return ['home','SuggFeed'];
@@ -134,7 +135,7 @@
   if(destination.pathname===location.pathname && destination.search===location.search)return;
   // Keep ordinary browser navigation: start it in this click, with no fetch or
   // artificial wait. Only the old document's pending visual state changes.
-  queueMicrotask(()=>{if(!event.defaultPrevented)show(destination);});
+  afterDispatch(event,destination);
  });
  document.addEventListener('submit',event=>{
   if(event.defaultPrevented)return;const form=event.target as HTMLFormElement;
@@ -145,7 +146,7 @@
   destination.search='';
   for(const [key,value] of new FormData(form).entries())if(typeof value==='string')destination.searchParams.append(key,value);
   if(button?.name)destination.searchParams.append(button.name,button.value);
-  if(canLoad(destination))queueMicrotask(()=>{if(!event.defaultPrevented)show(destination);});
+  if(canLoad(destination))afterDispatch(event,destination);
  });
  cancel?.addEventListener('click',()=>{window.stop();reset();});
  window.addEventListener('pageshow',event=>{if(event.persisted)reset();});window.addEventListener('pagehide',reset);

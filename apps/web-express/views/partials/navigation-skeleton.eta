@@ -45,6 +45,6 @@
 <% for (const [key, markup] of Object.entries(layouts)) { %>
 <template id="navigation-template-<%= key %>"><%~ markup %></template>
 <% } %>
-<script defer src="/js/navigation.js?v=20261021-feedback"></script>
+<script defer src="/js/navigation.js?v=20261022-pending-reset"></script>
 
 <script defer src="/js/navigation-cache.js?v=20261016-school-isolation"></script>

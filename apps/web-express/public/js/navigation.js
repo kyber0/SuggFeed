@@ -103,9 +103,11 @@
     const body = document.getElementById('navigation-skeleton-body');
     if (!shell || !content || !title || !status || !body)
         return;
-    let timer;
+    let timer, pendingNavigation = 0;
     let wasInert = content.inert;
-    function reset() { window.sfFeedback?.reset(); clearTimeout(timer); shell.hidden = true; content.inert = wasInert; content.removeAttribute('aria-busy'); document.documentElement.classList.remove('is-navigating'); }
+    function reset() { window.sfFeedback?.reset(); clearTimeout(pendingNavigation); pendingNavigation = 0; clearTimeout(timer); shell.hidden = true; content.inert = wasInert; content.removeAttribute('aria-busy'); document.documentElement.classList.remove('is-navigating'); }
+    function afterDispatch(event, destination) { clearTimeout(pendingNavigation); pendingNavigation = window.setTimeout(() => { pendingNavigation = 0; if (!event.defaultPrevented)
+        show(destination); }, 0); }
     function destinationScreen(destination) {
         const path = sfSchoolRoute(destination.pathname).replace(/\/+$/, '') || '/';
         if (path === '/')
@@ -203,8 +205,7 @@
             return;
         // Keep ordinary browser navigation: start it in this click, with no fetch or
         // artificial wait. Only the old document's pending visual state changes.
-        queueMicrotask(() => { if (!event.defaultPrevented)
-            show(destination); });
+        afterDispatch(event, destination);
     });
     document.addEventListener('submit', event => {
         if (event.defaultPrevented)
@@ -222,8 +223,7 @@
         if (button?.name)
             destination.searchParams.append(button.name, button.value);
         if (canLoad(destination))
-            queueMicrotask(() => { if (!event.defaultPrevented)
-                show(destination); });
+            afterDispatch(event, destination);
     });
     cancel?.addEventListener('click', () => { window.stop(); reset(); });
     window.addEventListener('pageshow', event => { if (event.persisted)
