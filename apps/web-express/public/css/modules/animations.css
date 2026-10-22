@@ -4,7 +4,7 @@ html.lenis.lenis-smooth {scroll-behavior:auto!important;}
 .lenis-smooth [data-lenis-prevent] {overscroll-behavior:contain;}
 [data-sf-motion-item] {animation:none!important;}
 /* Inline word spans retain native CJK, hyphen and long-word wrapping. */
-[data-sf-word] {display:inline;}
+[data-sf-word] {display:inline-block;max-width:100%;overflow-wrap:anywhere;vertical-align:baseline;}
 [data-sf-split-text] {animation:none!important;}
 [data-sf-cursor] {position:fixed;z-index:10000;left:0;top:0;width:12px;height:12px;pointer-events:none!important;opacity:0;color:var(--brand,#12324a);}
 [data-sf-cursor]::before {content:"";display:block;width:100%;height:100%;border:1px solid currentColor;border-radius:50%;opacity:.45;transform:translate(-50%,-50%);transition:transform var(--sf-motion-interaction,200ms) var(--sf-motion-ease,ease),opacity var(--sf-motion-interaction,200ms) ease;}

@@ -49,7 +49,7 @@ var SfMotion;
                         continue;
                     context.seen.add(heading);
                     const interval = Math.min(SfMotion.config.stagger, (SfMotion.config.headline - SfMotion.config.word) / Math.max(1, words.length - 1));
-                    words.forEach((word, index) => { const animation = word.animate([{ opacity: .9 }, { opacity: 1 }], { duration: SfMotion.config.word, delay: index * interval, easing: SfMotion.config.ease }); active.add(animation); animation.onfinish = animation.oncancel = () => active.delete(animation); });
+                    words.forEach((word, index) => { const frames = context.reduced.matches ? [{ opacity: .9 }, { opacity: 1 }] : [{ opacity: .85, transform: `translateY(${SfMotion.config.mobileDistance}px)` }, { opacity: 1, transform: 'translateY(0)' }]; const animation = word.animate(frames, { duration: SfMotion.config.word, delay: index * interval, easing: SfMotion.config.ease }); active.add(animation); animation.onfinish = animation.oncancel = () => active.delete(animation); });
                 }
             }, remove(root) { for (const heading of records.keys())
                 if (root === heading || (root instanceof Node && root.contains(heading)))

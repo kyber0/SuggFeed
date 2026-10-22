@@ -29,17 +29,13 @@
 
       <% if(welcome?.help) { %><p class="school-welcome-help"><%= welcome.help %></p><% } %>
       <% if(welcome?.links.length) { %><nav class="school-welcome-links" aria-label="Official school links"><% for(const link of welcome.links) { %><a href="<%= link.url %>" target="_blank" rel="noopener noreferrer"><%= link.label %> ↗</a><% } %></nav><% } %>
-      <div class="sf-hero-points" aria-label="How SuggFeed works">
-        <span>Choose a topic</span>
-        <span>Submit anonymously or with your account</span>
-        <span>Keep your code to check status</span>
-      </div>
+      <%~ include('partials/home-story',it) %>
     </div>
   </section>
 
   <!-- Interactive Action Hub / Workspace -->
   <section class="sf-workspace-section" id="action-hub" aria-label="Share feedback or track a submission">
-    <div class="sf-workspace-wrapper">
+    <div class="sf-workspace-wrapper" data-sf-reveal="fade">
       <!-- Modern Segmented Tabs -->
       <div class="sf-segmented-tabs" role="tablist" aria-label="Action hub tabs" id="sf-segmented-tabs">
         <div class="sf-segmented-glider" id="sf-tab-glider"></div>
@@ -197,7 +193,7 @@
   <!-- Feed Section -->
   <section class="sf-feed-section" id="feed">
     <!-- Header -->
-    <div class="sf-feed-header-bar">
+    <div class="sf-feed-header-bar" data-sf-reveal="slide-up">
       <div>
         <div class="sf-feed-kicker">COMMUNITY IDEAS</div>
         <h2 class="sf-feed-headline">What the campus is talking about</h2>
@@ -408,4 +404,4 @@
   </footer>
 </main>
 
-<script defer src="/js/home.js?v=20261021-toggle-votes"></script>
+<script defer src="/js/home.js?v=20261022-home-story"></script>

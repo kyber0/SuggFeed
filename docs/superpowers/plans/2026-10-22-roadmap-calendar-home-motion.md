@@ -162,18 +162,18 @@ This becomes the signature Home motion effect, rather than making generic fades 
 
 ### Task 3 — Reference-inspired story and hero choreography
 
-- [ ] Register one Home-specific factory before controller initialization; reuse current duration/easing tokens.
-- [ ] Build the progressive three-chapter story from the current guidance, preserving its customization visibility and static fallback.
-- [ ] Implement directional page turns inside the explainer, with stationary controls and bounded geometry.
-- [ ] Coordinate the existing headline/reveal effects with finite decorative entrances.
-- [ ] Move hero pointer behavior out of `home.ts`, remove superseded orb loops and add complete cancellation/cleanup.
+- [x] Register one Home-specific factory before controller initialization; reuse current duration/easing tokens.
+- [x] Build the progressive three-chapter story from the current guidance, preserving its customization visibility and static fallback.
+- [x] Implement directional page turns inside the explainer, with stationary controls and bounded geometry.
+- [x] Coordinate the existing headline/reveal effects with finite decorative entrances.
+- [x] Move hero pointer behavior out of `home.ts`, remove superseded orb loops and add complete cancellation/cleanup.
 - [ ] Inspect first load, mid-scroll reload, reduced motion, coarse pointer, hidden page and studio edit/preview behavior. Run type checking and build.
 
 ### Task 4 — Section and state motion
 
-- [ ] Apply section-level entrances and bounded card staggering through the current shared observer.
-- [ ] Consolidate tab-glider/panel transitions and remove competing filter/sort delays.
-- [ ] Preserve immediate voting/undo, errors, tracking inputs, search, links and action-hub keyboard behavior.
+- [x] Apply section-level entrances and bounded card staggering through the current shared observer.
+- [x] Consolidate tab-glider/panel transitions and remove competing filter/sort delays.
+- [x] Preserve immediate voting/undo, errors, tracking inputs, search, links and action-hub keyboard behavior.
 - [ ] Inspect rapid tab/filter changes and reveal-then-hover release for jumps. Run focused animation lint, type checking and build.
 
 ### Task 5 — Integration and delivery
@@ -181,8 +181,8 @@ This becomes the signature Home motion effect, rather than making generic fades 
 - [ ] Inspect both areas in light/dark and a customized school palette, with long names and empty/populated states.
 - [ ] Check responsive widths above, 200% zoom, keyboard focus, dialog return focus, browser back/forward and no-JavaScript content.
 - [ ] Inspect layout shift and interaction responsiveness locally. Do not claim a Lighthouse score without actual equivalent measurements.
-- [ ] Document behavior and any browser limitations; review the diff and secret scan before committing/pushing the implementation.
-- [ ] Report actual checks and skipped tests/device coverage. Keep calendar and Home changes in separate reviewable commits.
+- [x] Document behavior and any browser limitations; review the diff and secret scan before committing/pushing the implementation.
+- [x] Report actual checks and skipped tests/device coverage. Keep calendar and Home changes in separate reviewable commits.
 
 ## Acceptance and limits
 
@@ -200,3 +200,9 @@ This becomes the signature Home motion effect, rather than making generic fades 
 ## Review checkpoint
 
 Planning only. No app, database, dependency or deployment change is authorized by this document itself. Review the proposed calendar presentation and motion direction before implementation. Execution is native in this session unless the user explicitly chooses another approach.
+
+### Delivery evidence
+
+Implementation is complete. Detailed actual checks and remaining device coverage
+are recorded in `docs/operations/roadmap-calendar-home-motion.md`. Unchecked
+inspection items above are explicitly not claims of complete device coverage.

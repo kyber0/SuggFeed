@@ -2,7 +2,7 @@
 "use strict";
 var SfMotion;
 (function (SfMotion) {
-    SfMotion.config = Object.freeze({ interaction: 200, page: 240, reveal: 400, word: 400, headline: 720, stagger: 40, maxDelay: 160, scroll: 650, distance: 12, mobileDistance: 6, magnet: 4, marqueeSpeed: 24, ease: 'cubic-bezier(.22,1,.36,1)', threshold: .08 });
+    SfMotion.config = Object.freeze({ interaction: 200, page: 240, story: 600, storyOverlap: 140, reveal: 400, word: 400, headline: 720, stagger: 40, maxDelay: 160, scroll: 650, distance: 12, mobileDistance: 6, magnet: 4, marqueeSpeed: 24, ease: 'cubic-bezier(.22,1,.36,1)', threshold: .08 });
     SfMotion.factories = [];
     function elements(root, selector) { const found = [...root.querySelectorAll(selector)]; if (root instanceof HTMLElement && root.matches(selector))
         found.unshift(root); return found; }
@@ -190,7 +190,7 @@ var SfMotion;
                         continue;
                     context.seen.add(heading);
                     const interval = Math.min(SfMotion.config.stagger, (SfMotion.config.headline - SfMotion.config.word) / Math.max(1, words.length - 1));
-                    words.forEach((word, index) => { const animation = word.animate([{ opacity: .9 }, { opacity: 1 }], { duration: SfMotion.config.word, delay: index * interval, easing: SfMotion.config.ease }); active.add(animation); animation.onfinish = animation.oncancel = () => active.delete(animation); });
+                    words.forEach((word, index) => { const frames = context.reduced.matches ? [{ opacity: .9 }, { opacity: 1 }] : [{ opacity: .85, transform: `translateY(${SfMotion.config.mobileDistance}px)` }, { opacity: 1, transform: 'translateY(0)' }]; const animation = word.animate(frames, { duration: SfMotion.config.word, delay: index * interval, easing: SfMotion.config.ease }); active.add(animation); animation.onfinish = animation.oncancel = () => active.delete(animation); });
                 }
             }, remove(root) { for (const heading of records.keys())
                 if (root === heading || (root instanceof Node && root.contains(heading)))
@@ -419,6 +419,121 @@ var SfMotion;
                     queue();
                 }
             }, remove, pause(value) { paused = value; records.forEach(record => record.sync()); }, destroy() { records.forEach(record => record.destroy()); records.clear(); } };
+    });
+})(SfMotion || (SfMotion = {}));
+
+"use strict";
+var SfMotion;
+(function (SfMotion) {
+    SfMotion.factories.push(context => {
+        const stories = new Map(), feedback = new Map();
+        let paused = false;
+        function fade(element, duration = SfMotion.config.page, delay = 0) {
+            if (paused || SfMotion.editing() || context.reduced.matches || !Element.prototype.animate || !element.isConnected)
+                return;
+            feedback.get(element)?.cancel();
+            const animation = element.animate([{ opacity: .8 }, { opacity: 1 }], { duration, delay, easing: SfMotion.config.ease });
+            feedback.set(element, animation);
+            animation.onfinish = animation.oncancel = () => { if (feedback.get(element) === animation)
+                feedback.delete(element); };
+        }
+        function register(root) {
+            const pages = Array.from(root.querySelectorAll('[data-story-page]')), controls = root.querySelector('[data-story-controls]'), status = root.querySelector('[data-story-status]'), fold = root.querySelector('.sf-story-fold');
+            if (pages.length !== 3 || !controls || !status || !fold)
+                return;
+            const previous = root.querySelector('[data-story-prev]'), next = root.querySelector('[data-story-next]'), choices = Array.from(root.querySelectorAll('[data-story-go]'));
+            const lifetime = new AbortController(), wide = matchMedia('(min-width:768px)'), animations = new Set();
+            let index = 0, enabled = false, suspended = paused, visible = true, frame = 0, rect, dx = 0, dy = 0;
+            const settle = () => { animations.forEach(animation => animation.cancel()); animations.clear(); pages.forEach(page => { delete page.dataset.storyOutgoing; }); };
+            const resetArt = () => { cancelAnimationFrame(frame); frame = 0; rect = undefined; for (const art of root.querySelectorAll('.sf-story-art'))
+                art.style.removeProperty('transform'); };
+            const paint = () => {
+                pages.forEach((page, i) => { page.toggleAttribute('data-story-active', i === index); page.inert = enabled && i !== index; if (enabled)
+                    page.setAttribute('aria-hidden', String(i !== index));
+                else
+                    page.removeAttribute('aria-hidden'); });
+                choices.forEach((button, i) => { button.setAttribute('aria-pressed', String(i === index)); if (i === index)
+                    button.setAttribute('aria-current', 'step');
+                else
+                    button.removeAttribute('aria-current'); });
+                previous.disabled = index === 0;
+                next.disabled = index === pages.length - 1;
+                status.textContent = enabled ? `${index + 1} / ${pages.length}` : 'Three simple steps';
+            };
+            const resize = () => { settle(); resetArt(); enabled = wide.matches && !context.reduced.matches && !SfMotion.saveData() && !!Element.prototype.animate && !SfMotion.editing(); root.toggleAttribute('data-story-ready', enabled); controls.hidden = !enabled; paint(); };
+            function turn(target) {
+                if (!enabled || target < 0 || target >= pages.length || target === index)
+                    return;
+                const old = pages[index], direction = target > index ? 1 : -1;
+                settle();
+                resetArt();
+                index = target;
+                paint();
+                if (suspended || !visible)
+                    return;
+                old.dataset.storyOutgoing = '';
+                const incoming = pages[index], origin = direction > 0 ? 'left center' : 'right center';
+                const outgoing = old.animate([{ transform: 'perspective(900px) rotateY(0deg)', opacity: 1 }, { transform: `perspective(900px) rotateY(${-direction * 100}deg)`, opacity: 0 }], { duration: SfMotion.config.story, easing: SfMotion.config.ease, fill: 'both' });
+                const entering = incoming.animate([{ transform: `perspective(900px) rotateY(${direction * 65}deg)`, opacity: .35 }, { transform: 'perspective(900px) rotateY(0deg)', opacity: 1 }], { duration: SfMotion.config.story - SfMotion.config.storyOverlap, delay: SfMotion.config.storyOverlap, easing: SfMotion.config.ease, fill: 'both' });
+                old.style.transformOrigin = origin;
+                incoming.style.transformOrigin = origin;
+                const shading = fold.animate([{ opacity: 0, transform: 'scaleX(.02)' }, { opacity: .18, transform: 'scaleX(.6)', offset: .4 }, { opacity: 0, transform: 'scaleX(1)' }], { duration: SfMotion.config.story, easing: SfMotion.config.ease });
+                for (const animation of [outgoing, entering, shading])
+                    animations.add(animation);
+                entering.onfinish = settle;
+            }
+            root.addEventListener('click', event => { const button = event.target.closest('button'); if (!button || button.disabled)
+                return; if (button.hasAttribute('data-story-prev'))
+                turn(index - 1);
+            else if (button.hasAttribute('data-story-next'))
+                turn(index + 1);
+            else if (button.dataset.storyGo !== undefined)
+                turn(Number(button.dataset.storyGo)); }, { signal: lifetime.signal });
+            root.addEventListener('pointerenter', () => { if (enabled && context.fine.matches && !suspended)
+                rect = root.getBoundingClientRect(); }, { signal: lifetime.signal });
+            root.addEventListener('pointermove', event => { if (!enabled || !context.fine.matches || event.pointerType !== 'mouse' || suspended || !visible || !rect)
+                return; dx = Math.max(-SfMotion.config.magnet, Math.min(SfMotion.config.magnet, ((event.clientX - rect.left) / rect.width - .5) * SfMotion.config.magnet * 2)); dy = Math.max(-SfMotion.config.magnet, Math.min(SfMotion.config.magnet, ((event.clientY - rect.top) / rect.height - .5) * SfMotion.config.magnet * 2)); if (!frame)
+                frame = requestAnimationFrame(() => { frame = 0; const art = pages[index].querySelector('.sf-story-art'); if (art)
+                    art.style.transform = `translate3d(${dx}px,${dy}px,0)`; }); }, { signal: lifetime.signal, passive: true });
+            for (const type of ['pointerleave', 'pointerdown', 'focusin', 'pointercancel'])
+                root.addEventListener(type, resetArt, { signal: lifetime.signal });
+            wide.addEventListener('change', resize, { signal: lifetime.signal });
+            window.addEventListener('resize', resetArt, { signal: lifetime.signal, passive: true });
+            window.addEventListener('scroll', resetArt, { signal: lifetime.signal, passive: true });
+            const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => { visible = entries.some(entry => entry.isIntersecting); if (!visible) {
+                settle();
+                resetArt();
+            } }, { threshold: 0 }) : undefined;
+            observer?.observe(root);
+            resize();
+            stories.set(root, { pause(value) { suspended = value; if (value) {
+                    settle();
+                    resetArt();
+                } }, dispose() { lifetime.abort(); observer?.disconnect(); settle(); resetArt(); root.removeAttribute('data-story-ready'); controls.hidden = true; pages.forEach(page => { page.inert = false; page.removeAttribute('aria-hidden'); page.removeAttribute('data-story-active'); page.style.removeProperty('transform-origin'); }); status.textContent = 'Three simple steps'; } });
+        }
+        context.on(document, 'sf:home-panel', event => { const panel = event.detail; if (panel instanceof HTMLElement)
+            fade(panel); });
+        context.on(document, 'sf:home-cards', event => { const cards = event.detail; if (!Array.isArray(cards))
+            return; cards.forEach((card, index) => { if (card instanceof HTMLElement) {
+            context.seen.add(card);
+            fade(card, SfMotion.config.reveal, SfMotion.staggerDelay(index));
+        } }); });
+        const remove = (root) => { for (const [element, story] of stories)
+            if (element === root || (root instanceof Node && root.contains(element))) {
+                story.dispose();
+                stories.delete(element);
+            } for (const [element, animation] of feedback)
+            if (element === root || (root instanceof Node && root.contains(element))) {
+                animation.cancel();
+                feedback.delete(element);
+            } };
+        return { refresh(root) { if (SfMotion.editing())
+                return; for (const element of SfMotion.elements(root, '[data-sf-home-story]'))
+                if (!stories.has(element))
+                    register(element); }, remove, pause(value) { paused = value; stories.forEach(story => story.pause(value)); if (value) {
+                feedback.forEach(animation => animation.cancel());
+                feedback.clear();
+            } }, destroy() { stories.forEach(story => story.dispose()); stories.clear(); feedback.forEach(animation => animation.cancel()); feedback.clear(); } };
     });
 })(SfMotion || (SfMotion = {}));
 

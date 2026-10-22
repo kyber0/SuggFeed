@@ -4,7 +4,6 @@ let activeCategory = 'All';
   let activeSort = 'popular';
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
   const campusPrompts = [
     'Extend library quiet study hours during finals week…',
     'Add water refill stations near classrooms…',
@@ -54,19 +53,7 @@ let activeCategory = 'All';
     pop.setAttribute('aria-hidden', 'true');
     button.appendChild(pop);
     setTimeout(() => pop.remove(), 750);
-    ['#10b981', '#3b82f6', '#f59e0b', '#06b6d4', '#6366f1'].forEach((color, index) => {
-      const particle = document.createElement('span');
-      particle.className = 'sf-particle';
-      particle.setAttribute('aria-hidden', 'true');
-      const angle = index * Math.PI * 2 / 5;
-      particle.style.setProperty('--tx', `${Math.cos(angle) * 24}px`);
-      particle.style.setProperty('--ty', `${Math.sin(angle) * 24}px`);
-      particle.style.background = color;
-      particle.style.left = '50%';
-      particle.style.top = '50%';
-      button.appendChild(particle);
-      setTimeout(() => particle.remove(), 600);
-    });
+
   }
 
   // Smooth Tab Glider
@@ -92,14 +79,6 @@ let activeCategory = 'All';
     const prompt = document.querySelector<HTMLElement>('.sf-prompt-trigger');
     ['mouseenter', 'focusin'].forEach(name => prompt?.addEventListener(name, () => clearTimeout(promptTimer)));
     ['mouseleave', 'focusout'].forEach(name => prompt?.addEventListener(name, () => setTimeout(syncPromptMotion, 0)));
-    const hero = (document.getElementById('top') as HTMLElement);
-    hero?.addEventListener('pointermove', event => {
-      if (reducedMotion.matches || !finePointer.matches) return;
-      const rect = hero.getBoundingClientRect();
-      hero.style.setProperty('--hero-mouse-x', `${event.clientX - rect.left}px`);
-      hero.style.setProperty('--hero-mouse-y', `${event.clientY - rect.top}px`);
-    });
-
     window.addEventListener('resize', () => {
       updateGlider();
     });
@@ -217,13 +196,7 @@ let activeCategory = 'All';
       if (activeSort === 'oldest') return dA - dB;
       return 0;
     });
-    cards.forEach((c, idx) => {
-      c.style.animationDelay = `${idx * 25}ms`;
-      c.classList.remove('sf-card-enter');
-      void c.offsetWidth;
-      c.classList.add('sf-card-enter');
-      grid.appendChild(c);
-    });
+    cards.forEach(card=>grid.appendChild(card));
   }
 
   function sfSwitchTab(mode) {
@@ -246,6 +219,7 @@ let activeCategory = 'All';
     if (panelShare) panelShare.hidden = !isShare;
     if (panelTrack) panelTrack.hidden = isShare;
     updateGlider();
+    document.dispatchEvent(new CustomEvent('sf:home-panel',{detail:isShare?panelShare:panelTrack}));
   }
 
   function sfTrackInputChanged() {
@@ -341,7 +315,7 @@ let activeCategory = 'All';
     if (kbdHint) kbdHint.style.opacity = q ? '0' : '1';
 
     const cards = document.querySelectorAll<HTMLElement>('#ideas-grid .sf-idea-card');
-    let visibleCount = 0;
+    let visibleCount = 0;const entering:HTMLElement[]=[];
 
     cards.forEach(card => {
       const cat = card.getAttribute('data-category');
@@ -352,17 +326,15 @@ let activeCategory = 'All';
       const matchSearch = !q || title.includes(q) || desc.includes(q);
 
       if (matchCat && matchSearch) {
+        if(card.style.display==='none')entering.push(card);
         card.style.display = '';
-        card.classList.remove('sf-card-enter');
-        void card.offsetWidth;
-        card.style.animationDelay = `${visibleCount * 25}ms`;
-        card.classList.add('sf-card-enter');
         visibleCount++;
       } else {
         card.style.display = 'none';
       }
     });
 
+    document.dispatchEvent(new CustomEvent('sf:home-cards',{detail:entering}));
     const countEl = (document.getElementById('sf-visible-count') as HTMLElement);
     if (countEl) countEl.textContent = `${visibleCount} ${visibleCount === 1 ? 'idea' : 'ideas'} shown`;
     const emptyState = (document.getElementById('sf-filter-empty') as HTMLElement);

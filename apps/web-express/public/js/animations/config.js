@@ -1,7 +1,7 @@
 "use strict";
 var SfMotion;
 (function (SfMotion) {
-    SfMotion.config = Object.freeze({ interaction: 200, page: 240, reveal: 400, word: 400, headline: 720, stagger: 40, maxDelay: 160, scroll: 650, distance: 12, mobileDistance: 6, magnet: 4, marqueeSpeed: 24, ease: 'cubic-bezier(.22,1,.36,1)', threshold: .08 });
+    SfMotion.config = Object.freeze({ interaction: 200, page: 240, story: 600, storyOverlap: 140, reveal: 400, word: 400, headline: 720, stagger: 40, maxDelay: 160, scroll: 650, distance: 12, mobileDistance: 6, magnet: 4, marqueeSpeed: 24, ease: 'cubic-bezier(.22,1,.36,1)', threshold: .08 });
     SfMotion.factories = [];
     function elements(root, selector) { const found = [...root.querySelectorAll(selector)]; if (root instanceof HTMLElement && root.matches(selector))
         found.unshift(root); return found; }

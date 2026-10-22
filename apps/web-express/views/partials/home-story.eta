@@ -1,0 +1,13 @@
+<section class="sf-hero-points sf-home-story" data-sf-home-story aria-labelledby="sf-story-title">
+ <header class="sf-story-header"><h2 id="sf-story-title">How SuggFeed works</h2><span data-story-status role="status" aria-live="polite">Three simple steps</span></header>
+ <div class="sf-story-pages" tabindex="0" role="region" aria-label="Three steps to share feedback">
+  <% const steps=[['Choose a topic','Find the category that fits your campus suggestion.','M4 5h7l9 9-6 6-9-9V5ZM8 8h.01'],['Share your feedback','Submit anonymously or with your account. Your choice stays yours.','M4 5h16v12H9l-5 4V5ZM8 9h8M8 13h5'],['Keep your tracking code','Save your private code to check your submission’s status and updates.','M8 3h8v4H8zM8 5H5v16h14V5h-3M8 12h8M8 16h5']];for(let index=0;index<steps.length;index++){const [title,description,path]=steps[index]; %>
+  <article class="sf-story-page" id="sf-story-page-<%= index %>" data-story-page>
+   <div class="sf-story-art" aria-hidden="true"><div class="sf-story-art-sheet"></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="<%= path %>"/></svg><b>0<%= index+1 %></b></div>
+   <div class="sf-story-copy"><p class="sf-story-step">Step 0<%= index+1 %></p><h3><%= title %></h3><p><%= description %></p></div>
+  </article>
+  <% } %>
+  <div class="sf-story-fold" aria-hidden="true"></div>
+ </div>
+ <footer class="sf-story-footer"><p class="sf-story-fallback">Explore the three steps above.</p><div class="sf-story-controls" data-story-controls hidden><button type="button" data-story-prev aria-label="Previous step" disabled>←</button><div role="group" aria-label="Choose a step"><% for(let i=0;i<steps.length;i++){ %><button type="button" data-story-go="<%= i %>" aria-controls="sf-story-page-<%= i %>" aria-label="Step <%= i+1 %>: <%= steps[i][0] %>">0<%= i+1 %></button><% } %></div><button type="button" data-story-next aria-label="Next step">→</button></div></footer>
+</section>

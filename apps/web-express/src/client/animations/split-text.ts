@@ -9,7 +9,7 @@ namespace SfMotion {
    for(const text of texts){const fragment=document.createDocumentFragment(),nodes:Node[]=[];for(const part of text.data.split(/(\s+)/)){if(!part)continue;let child:Node;if(/^\s+$/.test(part))child=document.createTextNode(part);else{const span=document.createElement('span');span.dataset.sfWord='';span.dataset.sfGenerated='';span.textContent=part;words.push(span);child=span;}nodes.push(child);fragment.append(child);}text.replaceWith(fragment);originals.push({original:text,nodes});}
    records.set(heading,originals);if(context.seen.has(heading))continue;context.seen.add(heading);
    const interval=Math.min(config.stagger,(config.headline-config.word)/Math.max(1,words.length-1));
-   words.forEach((word,index)=>{const animation=word.animate([{opacity:.9},{opacity:1}],{duration:config.word,delay:index*interval,easing:config.ease});active.add(animation);animation.onfinish=animation.oncancel=()=>active.delete(animation);});
+   words.forEach((word,index)=>{const frames:Keyframe[]=context.reduced.matches?[{opacity:.9},{opacity:1}]:[{opacity:.85,transform:`translateY(${config.mobileDistance}px)`},{opacity:1,transform:'translateY(0)'}];const animation=word.animate(frames,{duration:config.word,delay:index*interval,easing:config.ease});active.add(animation);animation.onfinish=animation.oncancel=()=>active.delete(animation);});
   }},remove(root){for(const heading of records.keys())if(root===heading||(root instanceof Node&&root.contains(heading)))restore(heading);},pause(value){if(value)active.forEach(animation=>animation.finish());},destroy(){active.forEach(animation=>animation.cancel());active.clear();for(const heading of records.keys())restore(heading);}};
  });
 }
