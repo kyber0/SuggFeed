@@ -66,3 +66,22 @@ Android, live deployment, actual email or authenticated production flows were
 checked. Full editor integration, 200% system zoom, all school palettes and touch
 hardware still need device review. Desktop 3D rendering varies by browser; the
 static fallback remains available.
+
+## Home polish follow-up
+
+The guide now includes layered, school-palette illustrations, a transform-driven
+chapter progress line and a visible active-chapter underline. Incoming step text
+settles in a bounded stagger within the 600ms page turn. Less extreme rotation
+keeps the incoming text legible; the fold shade reverses with navigation.
+Arrow Left/Right, Home and End work when focus is inside the enhanced guide.
+They do not intercept keys from form controls or modified keyboard shortcuts.
+All new animations remain owned by the same lifecycle and stop offscreen or on
+interruption. Mobile and reduced-motion static guidance remains intact.
+
+Follow-up checks: type checking, focused animation lint and production build
+passed. Local Chromium inspection repeated at 320, 375, 768 and 1440px: no page
+overflow or JavaScript errors observed; no layout-shift entries on the measured
+load. Repeated mounting, rapid reversal, reduced motion, no-JavaScript guidance,
+studio edit exclusion and simulated cache suspension remained usable. Keyboard
+chapter navigation was inspected separately. Real-device and live deployment
+checks remain outstanding; no new dependency or backend change was introduced.

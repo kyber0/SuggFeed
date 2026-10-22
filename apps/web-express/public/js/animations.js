@@ -2,7 +2,7 @@
 "use strict";
 var SfMotion;
 (function (SfMotion) {
-    SfMotion.config = Object.freeze({ interaction: 200, page: 240, story: 600, storyOverlap: 140, reveal: 400, word: 400, headline: 720, stagger: 40, maxDelay: 160, scroll: 650, distance: 12, mobileDistance: 6, magnet: 4, marqueeSpeed: 24, ease: 'cubic-bezier(.22,1,.36,1)', threshold: .08 });
+    SfMotion.config = Object.freeze({ interaction: 200, page: 240, story: 600, storyOverlap: 100, storyPerspective: 1100, storyAngle: 78, reveal: 400, word: 400, headline: 720, stagger: 40, maxDelay: 160, scroll: 650, distance: 12, mobileDistance: 6, magnet: 4, marqueeSpeed: 24, ease: 'cubic-bezier(.22,1,.36,1)', threshold: .08 });
     SfMotion.factories = [];
     function elements(root, selector) { const found = [...root.querySelectorAll(selector)]; if (root instanceof HTMLElement && root.matches(selector))
         found.unshift(root); return found; }
@@ -442,6 +442,7 @@ var SfMotion;
             if (pages.length !== 3 || !controls || !status || !fold)
                 return;
             const previous = root.querySelector('[data-story-prev]'), next = root.querySelector('[data-story-next]'), choices = Array.from(root.querySelectorAll('[data-story-go]'));
+            const progress = root.querySelector('[data-story-progress]');
             const lifetime = new AbortController(), wide = matchMedia('(min-width:768px)'), animations = new Set();
             let index = 0, enabled = false, suspended = paused, visible = true, frame = 0, rect, dx = 0, dy = 0;
             const settle = () => { animations.forEach(animation => animation.cancel()); animations.clear(); pages.forEach(page => { delete page.dataset.storyOutgoing; }); };
@@ -456,6 +457,8 @@ var SfMotion;
                     button.setAttribute('aria-current', 'step');
                 else
                     button.removeAttribute('aria-current'); });
+                if (progress)
+                    progress.style.transform = `scaleX(${(index + 1) / pages.length})`;
                 previous.disabled = index === 0;
                 next.disabled = index === pages.length - 1;
                 status.textContent = enabled ? `${index + 1} / ${pages.length}` : 'Three simple steps';
@@ -464,7 +467,7 @@ var SfMotion;
             function turn(target) {
                 if (!enabled || target < 0 || target >= pages.length || target === index)
                     return;
-                const old = pages[index], direction = target > index ? 1 : -1;
+                const oldIndex = index, old = pages[index], direction = target > index ? 1 : -1;
                 settle();
                 resetArt();
                 index = target;
@@ -473,13 +476,17 @@ var SfMotion;
                     return;
                 old.dataset.storyOutgoing = '';
                 const incoming = pages[index], origin = direction > 0 ? 'left center' : 'right center';
-                const outgoing = old.animate([{ transform: 'perspective(900px) rotateY(0deg)', opacity: 1 }, { transform: `perspective(900px) rotateY(${-direction * 100}deg)`, opacity: 0 }], { duration: SfMotion.config.story, easing: SfMotion.config.ease, fill: 'both' });
-                const entering = incoming.animate([{ transform: `perspective(900px) rotateY(${direction * 65}deg)`, opacity: .35 }, { transform: 'perspective(900px) rotateY(0deg)', opacity: 1 }], { duration: SfMotion.config.story - SfMotion.config.storyOverlap, delay: SfMotion.config.storyOverlap, easing: SfMotion.config.ease, fill: 'both' });
+                const outgoing = old.animate([{ transform: `perspective(${SfMotion.config.storyPerspective}px) rotateY(0deg)`, opacity: 1 }, { transform: `perspective(${SfMotion.config.storyPerspective}px) rotateY(${-direction * SfMotion.config.storyAngle}deg) translateX(${-direction * SfMotion.config.distance}px)`, opacity: 0 }], { duration: SfMotion.config.story, easing: SfMotion.config.ease, fill: 'both' });
+                const entering = incoming.animate([{ transform: `perspective(${SfMotion.config.storyPerspective}px) rotateY(${direction * SfMotion.config.storyAngle / 2}deg)`, opacity: .65 }, { transform: `perspective(${SfMotion.config.storyPerspective}px) rotateY(0deg)`, opacity: 1 }], { duration: SfMotion.config.story - SfMotion.config.storyOverlap, delay: SfMotion.config.storyOverlap, easing: SfMotion.config.ease, fill: 'both' });
                 old.style.transformOrigin = origin;
                 incoming.style.transformOrigin = origin;
+                fold.style.transformOrigin = origin;
                 const shading = fold.animate([{ opacity: 0, transform: 'scaleX(.02)' }, { opacity: .18, transform: 'scaleX(.6)', offset: .4 }, { opacity: 0, transform: 'scaleX(1)' }], { duration: SfMotion.config.story, easing: SfMotion.config.ease });
                 for (const animation of [outgoing, entering, shading])
                     animations.add(animation);
+                if (progress)
+                    animations.add(progress.animate([{ transform: `scaleX(${(oldIndex + 1) / pages.length})` }, { transform: `scaleX(${(index + 1) / pages.length})` }], { duration: SfMotion.config.story, easing: SfMotion.config.ease }));
+                incoming.querySelectorAll('.sf-story-step,h3,.sf-story-copy > p:last-child,.sf-story-art-detail').forEach((element, i) => { animations.add(element.animate([{ opacity: .5, transform: `translateY(${SfMotion.config.mobileDistance}px)` }, { opacity: 1, transform: 'translateY(0)' }], { duration: SfMotion.config.word, delay: SfMotion.config.storyOverlap + Math.min(i, 2) * SfMotion.config.stagger, easing: SfMotion.config.ease, fill: 'backwards' })); });
                 entering.onfinish = settle;
             }
             root.addEventListener('click', event => { const button = event.target.closest('button'); if (!button || button.disabled)
@@ -489,6 +496,11 @@ var SfMotion;
                 turn(index + 1);
             else if (button.dataset.storyGo !== undefined)
                 turn(Number(button.dataset.storyGo)); }, { signal: lifetime.signal });
+            root.addEventListener('keydown', event => { if (!enabled || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || !(event.target instanceof Element) || event.target.closest('input,textarea,select,[contenteditable]'))
+                return; const target = event.key === 'ArrowRight' ? index + 1 : event.key === 'ArrowLeft' ? index - 1 : event.key === 'Home' ? 0 : event.key === 'End' ? pages.length - 1 : undefined; if (target !== undefined) {
+                event.preventDefault();
+                turn(target);
+            } }, { signal: lifetime.signal });
             root.addEventListener('pointerenter', () => { if (enabled && context.fine.matches && !suspended)
                 rect = root.getBoundingClientRect(); }, { signal: lifetime.signal });
             root.addEventListener('pointermove', event => { if (!enabled || !context.fine.matches || event.pointerType !== 'mouse' || suspended || !visible || !rect)
@@ -509,7 +521,7 @@ var SfMotion;
             stories.set(root, { pause(value) { suspended = value; if (value) {
                     settle();
                     resetArt();
-                } }, dispose() { lifetime.abort(); observer?.disconnect(); settle(); resetArt(); root.removeAttribute('data-story-ready'); controls.hidden = true; pages.forEach(page => { page.inert = false; page.removeAttribute('aria-hidden'); page.removeAttribute('data-story-active'); page.style.removeProperty('transform-origin'); }); status.textContent = 'Three simple steps'; } });
+                } }, dispose() { lifetime.abort(); observer?.disconnect(); settle(); resetArt(); root.removeAttribute('data-story-ready'); controls.hidden = true; progress?.style.removeProperty('transform'); fold.style.removeProperty('transform-origin'); pages.forEach(page => { page.inert = false; page.removeAttribute('aria-hidden'); page.removeAttribute('data-story-active'); page.style.removeProperty('transform-origin'); }); status.textContent = 'Three simple steps'; } });
         }
         context.on(document, 'sf:home-panel', event => { const panel = event.detail; if (panel instanceof HTMLElement)
             fade(panel); });
