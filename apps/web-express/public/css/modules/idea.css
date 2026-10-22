@@ -1833,97 +1833,34 @@
   margin: 0;
 }
 
-/* ── Comment cards: elevated + hover state ───────────────────────── */
+/* Compact discussion rows shared by the idea page and drawer. */
 .comment-card {
-  padding: 11px 13px;
-  background: var(--surface-card);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  margin-bottom: 10px;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:4px 8px;
+  padding:8px 0;
+  margin-bottom:0;
+  background:transparent;
+  border:0;
+  border-bottom:1px solid var(--line);
+  border-radius:0;
+  box-shadow:none;
 }
-.comment-card:hover {
-  border-color: var(--line-2);
-  box-shadow: 0 2px 8px rgba(11,56,87,0.05);
-}
-.comment-reply-card {
-  background: var(--bg-alt, var(--bg));
-  border-radius: 8px;
-}
-
-/* ── Comment avatar ──────────────────────────────────────────────── */
-.comment-avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--navy) 0%, #1e5a8a 100%);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10.5px;
-  font-weight: 800;
-  flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(11,56,87,0.2);
-}
-
-/* ── Comment card header row ─────────────────────────────────────── */
-.comment-card-header {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 6px;
-}
-.comment-author-name {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.comment-date {
-  font-size: 11px;
-  color: var(--muted);
-  margin-left: auto;
-}
-.comment-body {
-  font-size: 13px;
-  color: var(--ink);
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
-  margin-bottom: 7px;
-}
-.comment-actions {
-  display: flex;
-  gap: 4px;
-}
-.comment-reply-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--muted);
-  background: transparent;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 120ms;
-}
-.comment-reply-btn:hover {
-  color: var(--navy);
-  background: rgba(11,56,87,0.06);
-}
-
-/* ── Comment thread indentation ──────────────────────────────────── */
-.comment-replies-thread {
-  margin-left: 20px;
-  padding-left: 12px;
-  border-left: 2px solid var(--line-2);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 6px;
+.comment-card:hover {border-color:var(--line);box-shadow:none;}
+.comment-reply-card {background:transparent;border-radius:0;}
+.comment-avatar {width:24px;height:24px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;box-shadow:none;}
+.comment-card-header {display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;margin:0;min-width:0;grid-column:1;grid-row:1;}
+.comment-author-name {font-size:12.5px;font-weight:700;color:var(--ink);min-width:0;overflow-wrap:anywhere;}
+.comment-date {font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap;}
+.comment-body {grid-column:1/-1;grid-row:2;font-size:14px;color:var(--ink);line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;min-width:0;margin:0;}
+.comment-actions {grid-column:2;grid-row:1;display:flex;align-items:center;gap:8px;justify-self:end;}
+.comment-actions :is(.care-report,.comment-reply-btn) {display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;box-sizing:border-box;padding:4px 6px;font-size:12px;line-height:1.2;border:0;background:transparent;color:var(--muted);border-radius:6px;cursor:pointer;}
+.comment-reply-btn:hover {color:var(--text-link);background:var(--sky);}
+.comment-replies-thread {margin-left:12px;padding-left:10px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:0;margin-top:0;}
+@media(max-width:540px) {
+ .comment-card-header {grid-column:1/-1;}
+ .comment-actions {grid-column:1/-1;grid-row:3;}
+ .comment-replies-thread {margin-left:8px;padding-left:8px;}
 }
 
 /* ── Empty comment state ─────────────────────────────────────────── */
@@ -2106,10 +2043,10 @@
 
   /* Comment cards: less padding on mobile */
   .comment-card {
-    padding: 9px 11px;
-    border-radius: 8px;
+    padding: 8px 0;
+    border-radius: 0;
   }
-  .comment-body { font-size: 13.5px; }
+  .comment-body { font-size: 14px; }
 
   /* Status stepper on mobile: fully visible, clear labels, no clipping */
   .status-stepper {
@@ -2166,12 +2103,12 @@
 
 /* ── Dark mode refinements ───────────────────────────────────────── */
 [data-theme="dark"] .comment-card {
-  background: var(--surface-hover, rgba(255,255,255,0.04));
-  border-color: rgba(255,255,255,0.08);
+  background: transparent;
+  border-color: var(--line);
 }
 [data-theme="dark"] .comment-card:hover {
-  border-color: rgba(255,255,255,0.14);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  border-color: var(--line);
+  box-shadow: none;
 }
 [data-theme="dark"] .detail-support-card {
   background: rgba(56,189,248,0.04);
