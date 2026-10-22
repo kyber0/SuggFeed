@@ -22,7 +22,7 @@
   <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-reply-arrows" />
+  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-curved-replies" />
   <% if ((it.currentPath || '').startsWith('/profile')) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261014-profile-mobile" /><% } %>
   <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261021-platform-insights" /><% } %>
   <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261022-student-journey" />
