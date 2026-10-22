@@ -166,6 +166,7 @@ export function buildWorkTimeline(items: Array<ReturnType<typeof publicItem>>, n
     const recordedEnd = item.status === 'resolved' ? manilaDay(item.resolved_at || '') : today;
     const actualEnd = Math.min(today, recordedEnd ?? today);
     return {
+      monthKey:new Date(actualStart*dayMs).toISOString().slice(0,7),monthLabel:new Date(actualStart*dayMs).toLocaleDateString('en-PH',{timeZone:'UTC',month:'long',year:'numeric'}),
       item, left: percent(actualStart), width: Math.max(0, percent(actualEnd + 1) - percent(actualStart)),
       clipped: actualStart < startDay,
       dateLabel: `${formatManilaDate(item.started_at)} → ${item.status === 'resolved' && item.resolved_at ? (item.resolved_at_estimated ? 'around ' : '') + formatManilaDate(item.resolved_at) : 'Today'}`,
@@ -175,7 +176,8 @@ export function buildWorkTimeline(items: Array<ReturnType<typeof publicItem>>, n
   const undated = items.filter(item => !plotted.has(item.id)).map(item => ({ item,
     reason: !item.started_at ? item.status === 'approved' ? 'Not scheduled — a start date has not been announced.' : 'A work start date has not been recorded.' : item.status === 'resolved' && !item.resolved_at ? 'A completion date has not been recorded.' : 'Confirmed work dates are unavailable in this calendar window.',
   }));
-  return { months, rows, undated, todayLeft: percent(today), minWidth: Math.max(1040, months.length * 270), totalDays,
+  const agenda=Array.from(new Set(rows.map(row=>row.monthKey))).sort().reverse().map(key=>({key,label:rows.find(row=>row.monthKey===key)!.monthLabel,rows:rows.filter(row=>row.monthKey===key).sort((a,b)=>Date.parse(b.item.started_at!)-Date.parse(a.item.started_at!))}));
+  return { months, rows, agenda, undated, todayLeft: percent(today), minWidth: Math.max(1040, months.length * 270), totalDays,
     todayLabel: formatManilaDate(now.toISOString()), weekWidth: 7 / totalDays * 100 };
 }
 

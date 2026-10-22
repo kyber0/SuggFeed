@@ -2199,13 +2199,7 @@
 @media(max-width:430px){.post-footer>.care-report {grid-column:1/-1;justify-self:end;}}
 @media(max-width:600px) { .care-card {padding:18px;} .community-care-page {padding-inline:16px;} }
 @media(prefers-reduced-motion:no-preference) { .workspace-button,.care-report {transition:background-color .15s ease,box-shadow .15s ease;} .workspace-button:active {transform:translateY(1px);} .vote-success {animation:support-confirm .28s ease;} @keyframes support-confirm {50%{transform:scale(1.06)}} }
-.work-timeline-months { position:sticky; top:0; z-index:3; background:var(--surface); }
 .work-timeline-scroll.is-panning {cursor:grabbing;user-select:none;}
-.work-timeline-scroll {max-height:70vh;overflow:auto;}
-.timeline-controls {display:grid;grid-template-columns:minmax(140px,1fr) 44px 44px;gap:8px;align-items:end;flex:0 0 280px;max-width:100%;}
-.timeline-controls > label {margin-bottom:0;min-width:0;}
-.timeline-controls .workspace-input {height:44px;}
-.timeline-controls > .workspace-button {width:44px;height:44px;min-height:44px;padding:0;font-size:18px;}
 .staff-board-main {padding:24px clamp(18px,2vw,36px);}
 .staff-board-help {margin-top:20px;padding:0 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);}
 .staff-board-help summary {min-height:44px;padding:12px 0;font-size:13px;font-weight:600;cursor:pointer;}
@@ -2902,14 +2896,6 @@ html { scrollbar-gutter:stable; }
 :is(.workspace-dialog,.work-record-dialog) [hidden] { display:none!important; }
 
 /* Compact cards keep each rail anchored to the recorded start. */
-.work-timeline-row { height:122px; }
-.work-timeline-card { width:224px; padding:10px 12px; border-top-width:3px; border-radius:10px; gap:6px; box-shadow:none; }
-.work-timeline-card strong { font-size:13px; line-height:1.35; }
-.work-timeline-card-top { gap:8px; }
-.work-timeline-card-state { font-size:11px; }
-.work-timeline-card-dates { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.work-timeline-card:hover { transform:translateY(-1px); border-color:var(--work-accent); }
-.work-timeline-rail { top:12px; height:4px; }
 .roadmap-completion-card { position:relative; display:block; padding:16px; border-radius:12px; }
 .roadmap-completion-tags,.roadmap-completion-meta { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
 .roadmap-completion-card h4 { margin:12px 0 8px; font-size:14px; line-height:1.45; }
@@ -3071,9 +3057,7 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
  .roadmap-category-label { min-width:0; }
  .roadmap-recent-strip-cards { grid-template-columns:minmax(0,1fr); }
  .roadmap-pagination { flex-wrap:wrap; gap:12px; }
- .work-timeline-heading { align-items:stretch; }
  .timeline-controls { width:100%; flex-basis:auto; }
- .work-timeline-card { width:206px; }
  .work-record-dialog { width:100%; border:0; }
  .work-record-header,.work-record-body,.work-record-footer { padding-left:16px; padding-right:16px; }
  .work-record-footer .workspace-button { width:100%; }

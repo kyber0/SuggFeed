@@ -53,14 +53,19 @@
   }
   const calendar=document.getElementById('work-calendar-scroll');
   const chart=calendar?.querySelector<HTMLElement>('.work-timeline-chart');
-  if(chart)chart.style.setProperty('--chart-width',Math.max(1040,Number(chart.dataset.timelineDays)*22)+'px');
+  const calendarSection=document.querySelector<HTMLElement>('.roadmap-work-timeline');
+  const mobileCalendar=matchMedia('(max-width:639px)');let chosenPresentation=false;
+  function presentCalendar(value:string){if(!calendarSection)return;calendarSection.dataset.presentation=value;calendarSection.querySelectorAll('[data-calendar-mode]').forEach(button=>button.setAttribute('aria-pressed',String((button as HTMLElement).dataset.calendarMode===value)));}
+  if(calendarSection&&calendar){calendarSection.querySelector<HTMLElement>('.work-calendar-modes')!.hidden=false;presentCalendar(mobileCalendar.matches?'agenda':'timeline');calendarSection.querySelectorAll<HTMLElement>('[data-calendar-mode]').forEach(button=>button.addEventListener('click',()=>{chosenPresentation=true;presentCalendar(button.dataset.calendarMode!);}));mobileCalendar.addEventListener('change',()=>{if(!chosenPresentation)presentCalendar(mobileCalendar.matches?'agenda':'timeline');});}
+  const labelWidth=()=>calendarSection?parseFloat(getComputedStyle(calendarSection).getPropertyValue('--work-label-width'))||280:280;
+  if(chart&&calendar)chart.style.setProperty('--chart-width',Math.max(calendar.clientWidth,labelWidth()+Number(chart.dataset.timelineDays)*22)+'px');
   if(!calendar)document.querySelectorAll<HTMLButtonElement|HTMLSelectElement>('[data-timeline-pan],#timeline-jump-today,#timeline-zoom').forEach(control=>{control.disabled=true;control.title='There are no recorded work dates in this window.';});
   const smooth=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' as const : 'smooth' as const;
   document.getElementById('timeline-zoom')?.addEventListener('change',e=>{
     if(!calendar || !chart) return;
-    const scale=(e.target as HTMLSelectElement).value, midpoint=(calendar.scrollLeft+calendar.clientWidth/2)/calendar.scrollWidth;
-    chart.style.setProperty('--chart-width',Math.max(1040,Number(chart.dataset.timelineDays)*({week:48,month:22,term:9}[scale] || 22))+'px');
-    calendar.scrollLeft=midpoint*calendar.scrollWidth-calendar.clientWidth/2;
+    const scale=(e.target as HTMLSelectElement).value,label=labelWidth(),visible=Math.max(0,calendar.clientWidth-label),midpoint=(calendar.scrollLeft+visible/2)/Math.max(1,chart.scrollWidth-label);
+    chart.style.setProperty('--chart-width',Math.max(calendar.clientWidth,label+Number(chart.dataset.timelineDays)*({week:48,month:22,term:9}[scale] || 22))+'px');
+    calendar.scrollLeft=midpoint*(chart.scrollWidth-label)-visible/2;
   });
   document.querySelectorAll<HTMLElement>('[data-timeline-pan]').forEach(button=>button.addEventListener('click',()=>calendar?.scrollBy({left:Number(button.dataset.timelinePan)*calendar.clientWidth*.8,behavior:smooth()})));
   let pan:{id:number;x:number;left:number}|null=null;
@@ -74,7 +79,7 @@
   document.getElementById('timeline-jump-today')?.addEventListener('click', () => {
     const calendar = document.getElementById('work-calendar-scroll');
     if (!calendar) return;
-    calendar.scrollTo({ left: calendar.scrollWidth * Number(calendar.dataset.todayLeft) / 100 - calendar.clientWidth / 2,
+    calendar.scrollTo({ left: (calendar.scrollWidth-labelWidth()) * Number(calendar.dataset.todayLeft) / 100 - Math.max(0,calendar.clientWidth-labelWidth()) / 2,
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   });
 

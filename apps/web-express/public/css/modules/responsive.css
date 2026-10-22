@@ -9,14 +9,6 @@
 :is(.workspace-dialog,.work-record-dialog) [hidden] { display:none!important; }
 
 /* Compact cards keep each rail anchored to the recorded start. */
-.work-timeline-row { height:122px; }
-.work-timeline-card { width:224px; padding:10px 12px; border-top-width:3px; border-radius:10px; gap:6px; box-shadow:none; }
-.work-timeline-card strong { font-size:13px; line-height:1.35; }
-.work-timeline-card-top { gap:8px; }
-.work-timeline-card-state { font-size:11px; }
-.work-timeline-card-dates { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.work-timeline-card:hover { transform:translateY(-1px); border-color:var(--work-accent); }
-.work-timeline-rail { top:12px; height:4px; }
 .roadmap-completion-card { position:relative; display:block; padding:16px; border-radius:12px; }
 .roadmap-completion-tags,.roadmap-completion-meta { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
 .roadmap-completion-card h4 { margin:12px 0 8px; font-size:14px; line-height:1.45; }
@@ -178,9 +170,7 @@ body:has(.work-record-dialog[open]) { overflow:hidden; }
  .roadmap-category-label { min-width:0; }
  .roadmap-recent-strip-cards { grid-template-columns:minmax(0,1fr); }
  .roadmap-pagination { flex-wrap:wrap; gap:12px; }
- .work-timeline-heading { align-items:stretch; }
  .timeline-controls { width:100%; flex-basis:auto; }
- .work-timeline-card { width:206px; }
  .work-record-dialog { width:100%; border:0; }
  .work-record-header,.work-record-body,.work-record-footer { padding-left:16px; padding-right:16px; }
  .work-record-footer .workspace-button { width:100%; }

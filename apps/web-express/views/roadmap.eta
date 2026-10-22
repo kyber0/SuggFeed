@@ -117,32 +117,29 @@
    <% if (filters.view === 'timeline' && workTimeline) { %>
     <section class="roadmap-work-timeline" aria-labelledby="work-timeline-title">
      <header class="work-timeline-heading">
-      <div class="timeline-controls"><label>Calendar scale <select id="timeline-zoom" class="workspace-input"><option value="month">Month detail</option><option value="week">Week detail</option><option value="term">Term overview</option></select></label><button type="button" class="workspace-button" data-timeline-pan="-1" aria-label="Scroll calendar earlier">←</button><button type="button" class="workspace-button" data-timeline-pan="1" aria-label="Scroll calendar later">→</button></div>
-      <div><h2 id="work-timeline-title">Work calendar</h2><p id="work-timeline-help">Cards mark recorded starts. Rails run to completion or today—not a promised deadline. Percentages are school estimates. Records without verified dates appear separately below.</p></div>
-      <button type="button" class="workspace-button work-timeline-today-date" id="timeline-jump-today" aria-controls="work-calendar-scroll">Today · <%= workTimeline.todayLabel %></button>
+      <div><h2 id="work-timeline-title">Work calendar</h2><span class="work-calendar-count"><%= workTimeline.rows.length %> dated records on this page</span></div>
+      <div class="work-calendar-modes" role="group" aria-label="Calendar presentation" hidden><button type="button" data-calendar-mode="timeline" aria-pressed="true">Timeline</button><button type="button" data-calendar-mode="agenda" aria-pressed="false">Agenda</button></div>
+      <div class="timeline-controls"><label>Scale <select id="timeline-zoom" class="workspace-input"><option value="month">Month</option><option value="week">Week</option><option value="term">Term</option></select></label><button type="button" class="workspace-button" data-timeline-pan="-1" aria-label="Scroll calendar earlier">←</button><button type="button" class="workspace-button" data-timeline-pan="1" aria-label="Scroll calendar later">→</button><button type="button" class="workspace-button work-timeline-today-date" id="timeline-jump-today" aria-controls="work-calendar-scroll">Today</button></div>
      </header>
+     <details class="work-calendar-about"><summary>About these dates</summary><p id="work-timeline-help">Rails run from recorded starts to completion or today (<%= workTimeline.todayLabel %>), not a promised deadline. Percentages are school estimates. Records without verified dates appear separately below. This calendar shows the current page of filtered results.</p></details>
      <% if (workTimeline.rows.length) { %>
       <div class="work-timeline-scroll" id="work-calendar-scroll" data-today-left="<%= workTimeline.todayLeft %>" tabindex="0" role="region" aria-label="Work calendar; scroll horizontally to explore months" aria-describedby="work-timeline-help">
        <div class="work-timeline-chart" data-timeline-days="<%= workTimeline.totalDays %>" style="--chart-width:<%= workTimeline.minWidth %>px;--week-width:<%= workTimeline.weekWidth %>%;--today-left:<%= workTimeline.todayLeft %>%">
-        <div class="work-timeline-months" aria-hidden="true">
-         <% for (const month of workTimeline.months) { %><span style="left:<%= month.left %>%;width:<%= month.width %>%"><%= month.label %></span><% } %>
-        </div>
+        <div class="work-timeline-months" aria-hidden="true"><span class="work-timeline-label-heading">Work record</span><div class="work-timeline-month-track"><% for (const month of workTimeline.months) { %><span style="left:<%= month.left %>%;width:<%= month.width %>%"><%= month.label %></span><% } %></div></div>
         <div class="work-timeline-rows">
-         <span class="work-timeline-today" aria-hidden="true"><span>Today</span></span>
-         <% for (const row of workTimeline.rows) { const item = row.item; %>
-          <article class="work-timeline-row" data-status="<%= item.is_blocked ? 'blocked' : item.status %>" style="--work-left:<%= row.left %>%;--work-width:<%= row.width %>%">
-           <span class="work-timeline-rail" aria-hidden="true"></span>
-           <button type="button" class="work-timeline-card" data-timeline-open="<%= item.id %>" aria-haspopup="dialog" aria-label="Open work record: <%= item.title %>. <%= item.is_blocked ? 'Paused' : (it.schoolCustomization?.labels[item.status] || (item.status === 'resolved' ? 'Completed' : 'In progress')) %>. <%= row.dateLabel %>. <%= item.progress_percent === null ? 'Progress not estimated' : item.progress_percent + ' percent complete, school estimate' %>">
-            <span class="work-timeline-card-top"><span class="work-timeline-card-state"><%= item.is_blocked ? 'Paused' : (it.schoolCustomization?.labels[item.status] || (item.status === 'resolved' ? 'Completed' : 'In progress')) %></span><span class="work-timeline-card-percent"><%= item.progress_percent === null ? '—' : item.progress_percent + '%' %></span></span>
-            <strong><%= item.title %></strong>
-            <span class="work-timeline-card-dates"><%= row.clipped ? '← ' : '' %><%= row.dateLabel %></span>
-           </button>
+         <% for (const row of workTimeline.rows) { const item=row.item,state=item.is_blocked?'Paused':(it.schoolCustomization?.labels[item.status] || (item.status==='resolved'?'Completed':'In progress')),percent=typeof item.progress_percent==='number'?item.progress_percent+'% estimate':'No estimate'; %>
+          <article class="work-timeline-row" data-status="<%= item.is_blocked?'blocked':item.status %>" style="--work-left:<%= row.left %>%;--work-width:<%= row.width %>%">
+           <button type="button" class="work-timeline-card" data-timeline-open="<%= item.id %>" aria-haspopup="dialog" title="<%= item.title %>"><strong><%= item.title %></strong><span class="work-timeline-card-meta"><span class="work-timeline-card-state"><%= state %></span><span><%= percent %></span></span></button>
+           <div class="work-timeline-range"><span class="work-timeline-today" aria-hidden="true"></span><button type="button" class="work-timeline-rail" data-timeline-open="<%= item.id %>" aria-haspopup="dialog" aria-label="Open <%= item.title %>: <%= state %>, <%= row.dateLabel %>, <%= percent %>" title="<%= row.dateLabel %> · <%= percent %>"><span><%= row.clipped?'← ':'' %><%= row.dateLabel %></span></button></div>
           </article>
          <% } %>
         </div>
        </div>
       </div>
-      <p class="work-timeline-scroll-hint">Scroll across the calendar · Select a card to open its work record.</p>
+      <p class="work-timeline-scroll-hint">Pan across dates · Select an idea or rail to read its work record · Dashed line marks today.</p>
+      <div class="work-calendar-agenda" aria-label="Work calendar agenda">
+       <% for(const month of workTimeline.agenda || [{label:'Recorded work',rows:workTimeline.rows}]) { %><section class="work-agenda-month"><h3><%= month.label %></h3><ul><% for(const row of month.rows) {const item=row.item; %><li><button type="button" data-timeline-open="<%= item.id %>" aria-haspopup="dialog"><strong><%= item.title %></strong><span><%= item.is_blocked?'Paused':(it.schoolCustomization?.labels[item.status] || (item.status==='resolved'?'Completed':'In progress')) %><%= typeof item.progress_percent==='number'?' · '+item.progress_percent+'% estimate':'' %></span><span><%= row.clipped?'Started before this window · ':'' %><%= row.dateLabel %></span></button></li><% } %></ul></section><% } %>
+      </div>
      <% } else { %>
       <div class="roadmap-lane-empty">
         <% if(filtered) { %><a class="workspace-text-link" data-roadmap-state-link href="<%= urlFor({search:'',category:'all',stage:'all',page:'1'}) %>">Clear filters</a><% } %><h3>No work dates recorded yet</h3><p>When the school posts a Started update, its recorded work will appear on this calendar.</p></div>
@@ -404,6 +401,6 @@
  <%~ include('partials/work-record', it) %>
 </main>
 <script id="sf-roadmap-data" type="application/json"><%~ JSON.stringify(it.items || []).replace(/</g, '\\u003c') %></script>
-<script defer src="/js/roadmap.js?v=20261021-toggle-votes"></script>
+<script defer src="/js/roadmap.js?v=20261022-calendar"></script>
 <script defer src="/js/roadmap-timeline.js?v=20261016-school-isolation"></script>
 <script defer src="/js/roadmap-views.js?v=20261016-school-isolation"></script>

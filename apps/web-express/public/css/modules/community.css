@@ -18,13 +18,7 @@
 @media(max-width:430px){.post-footer>.care-report {grid-column:1/-1;justify-self:end;}}
 @media(max-width:600px) { .care-card {padding:18px;} .community-care-page {padding-inline:16px;} }
 @media(prefers-reduced-motion:no-preference) { .workspace-button,.care-report {transition:background-color .15s ease,box-shadow .15s ease;} .workspace-button:active {transform:translateY(1px);} .vote-success {animation:support-confirm .28s ease;} @keyframes support-confirm {50%{transform:scale(1.06)}} }
-.work-timeline-months { position:sticky; top:0; z-index:3; background:var(--surface); }
 .work-timeline-scroll.is-panning {cursor:grabbing;user-select:none;}
-.work-timeline-scroll {max-height:70vh;overflow:auto;}
-.timeline-controls {display:grid;grid-template-columns:minmax(140px,1fr) 44px 44px;gap:8px;align-items:end;flex:0 0 280px;max-width:100%;}
-.timeline-controls > label {margin-bottom:0;min-width:0;}
-.timeline-controls .workspace-input {height:44px;}
-.timeline-controls > .workspace-button {width:44px;height:44px;min-height:44px;padding:0;font-size:18px;}
 .staff-board-main {padding:24px clamp(18px,2vw,36px);}
 .staff-board-help {margin-top:20px;padding:0 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);}
 .staff-board-help summary {min-height:44px;padding:12px 0;font-size:13px;font-weight:600;cursor:pointer;}
