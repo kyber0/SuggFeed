@@ -259,7 +259,6 @@ let sfCurrentIdea = null;
       if (replies.length > 0) {
         const repliesContainer = document.createElement('div');
         repliesContainer.className = 'comment-replies-thread';
-        repliesContainer.style.cssText = 'margin-left: 24px; padding-left: 12px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 8px; margin-top: 6px;';
         replies.forEach(rc => {
           repliesContainer.appendChild(sfCreateCommentCardEl(rc, true));
         });

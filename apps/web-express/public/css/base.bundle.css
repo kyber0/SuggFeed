@@ -6565,11 +6565,15 @@ input.feed-search {
 .comment-actions {grid-column:2;grid-row:1;display:flex;align-items:center;gap:8px;justify-self:end;}
 .comment-actions :is(.care-report,.comment-reply-btn) {display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;box-sizing:border-box;padding:4px 6px;font-size:12px;line-height:1.2;border:0;background:transparent;color:var(--muted);border-radius:6px;cursor:pointer;}
 .comment-reply-btn:hover {color:var(--text-link);background:var(--sky);}
-.comment-replies-thread {margin-left:12px;padding-left:10px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:0;margin-top:0;}
+.comment-replies-thread {--reply-indent:22px;--reply-arrow-y:30px;margin-left:12px;padding-left:var(--reply-indent);display:flex;flex-direction:column;gap:0;margin-top:0;}
+.comment-replies-thread > .comment-reply-card {position:relative;}
+.comment-replies-thread > .comment-reply-card::before {content:"";position:absolute;pointer-events:none;left:calc(-1 * var(--reply-indent));top:0;bottom:0;border-left:1.5px solid var(--muted);opacity:.6;}
+.comment-replies-thread > .comment-reply-card:last-child::before {bottom:calc(100% - var(--reply-arrow-y));}
+.comment-replies-thread > .comment-reply-card::after {content:"";position:absolute;pointer-events:none;left:calc(-1 * var(--reply-indent));top:calc(var(--reply-arrow-y) - 4px);width:calc(var(--reply-indent) - 4px);height:8px;background:var(--muted);opacity:.6;clip-path:polygon(0 40%,70% 40%,70% 0,100% 50%,70% 100%,70% 60%,0 60%);}
 @media(max-width:540px) {
  .comment-card-header {grid-column:1/-1;}
  .comment-actions {grid-column:1/-1;grid-row:3;}
- .comment-replies-thread {margin-left:8px;padding-left:8px;}
+ .comment-replies-thread {--reply-indent:20px;--reply-arrow-y:20px;margin-left:8px;}
 }
 
 /* ── Empty comment state ─────────────────────────────────────────── */

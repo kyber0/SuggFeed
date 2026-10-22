@@ -226,7 +226,6 @@
                     if (!thread || !thread.classList.contains('comment-replies-thread')) {
                         thread = document.createElement('div');
                         thread.className = 'comment-replies-thread';
-                        thread.style.cssText = 'margin-left: 24px; padding-left: 12px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 8px; margin-top: 6px;';
                         parentCard.after(thread);
                     }
                     thread.appendChild(card);
