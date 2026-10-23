@@ -31,7 +31,7 @@
         let configuration = clean(initial.configuration), saved = copy(configuration), selection = { componentId: 'school.theme' }, page = 'home';
         let revision = initial.serverRevision || 0;
         const past = [], future = [], listeners = new Set();
-        let lastKey = '', lastAt = 0, bytes = 0;
+        let lastKey = '', lastAt = 0, bytes = 0, grouped = false;
         const getState = () => ({ configuration, savedConfiguration: saved, serverRevision: revision, selection, page, dirty: JSON.stringify(configuration) !== JSON.stringify(saved), canUndo: past.length > 0, canRedo: future.length > 0 });
         const emit = () => { for (const listener of listeners)
             listener(getState()); };
@@ -74,7 +74,7 @@
             if (JSON.stringify(next) === JSON.stringify(configuration))
                 return;
             const key = componentId + ':' + property, now = Date.now();
-            if (key !== lastKey || now - lastAt > 500) {
+            if (key !== lastKey || !grouped && now - lastAt > 500) {
                 const entry = copy(configuration);
                 past.push(entry);
                 bytes += JSON.stringify(entry).length;
@@ -89,7 +89,7 @@
             configuration = next;
             emit();
         }
-        return { getState, applyChange, select(value) { selection = value; lastKey = ''; emit(); }, setPage(value) { page = value; selection = null; lastKey = ''; emit(); }, endGroup() { lastKey = ''; }, undo() { if (!past.length)
+        return { getState, applyChange, select(value) { selection = value; lastKey = ''; emit(); }, setPage(value) { page = value; selection = null; lastKey = ''; emit(); }, beginGroup() { grouped = true; }, endGroup() { grouped = false; lastKey = ''; }, undo() { if (!past.length)
                 return; future.push(copy(configuration)); const entry = past.pop(); bytes -= JSON.stringify(entry).length; configuration = entry; lastKey = ''; emit(); }, redo() { if (!future.length)
                 return; past.push(copy(configuration)); bytes += JSON.stringify(configuration).length; configuration = future.pop(); lastKey = ''; emit(); }, markSaved(value, nextRevision, sent) { const canonical = clean(value); if (JSON.stringify(configuration) === JSON.stringify(clean(sent)))
                 configuration = copy(canonical); saved = canonical; revision = nextRevision; emit(); }, replaceDraft(value, nextRevision) { configuration = clean(value); saved = copy(configuration); revision = nextRevision; past.length = 0; future.length = 0; bytes = 0; lastKey = ''; emit(); }, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); } };

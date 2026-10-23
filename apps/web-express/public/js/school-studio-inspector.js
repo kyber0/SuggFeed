@@ -1,14 +1,14 @@
 "use strict";
 (() => {
     const escape = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const input = (field, label, value, max = 200, kind = 'text') => '<label>' + escape(label) + (kind === 'textarea' ? '<textarea rows="3" maxlength="' + max + '" data-property="' + field + '">' + escape(value) + '</textarea>' : '<input type="' + kind + '" maxlength="' + max + '" data-property="' + field + '" value="' + escape(value) + '">') + '</label>';
-    function colors(value) { return '<fieldset class="studio-colors"><legend>Brand color presets</legend><div class="studio-color-presets">' + Object.entries(SfSchoolColors.presets).map(([name, color]) => '<button type="button" data-palette="' + name + '" aria-pressed="' + (value === name || value === color) + '" title="' + name + '" aria-label="Use ' + name + ' primary"><span style="background:' + color + '"></span></button>').join('') + '</div><p>Start with a primary color, then customize each appearance below.</p></fieldset>'; }
+    const input = (field, label, value, max = 200, kind = 'text') => '<label>' + escape(label) + (kind === 'textarea' ? '<textarea rows="3" maxlength="' + max + '" data-property="' + field + '">' + escape(value) + '</textarea><span class="studio-field-count" aria-hidden="true">' + String(value ?? '').length + ' / ' + max + '</span>' : '<input type="' + kind + '" maxlength="' + max + '" data-property="' + field + '" value="' + escape(value) + '">') + '</label>';
+    function colors(value) { return '<fieldset class="studio-colors"><legend>Brand color presets</legend><div class="studio-color-presets">' + Object.entries(SfSchoolColors.presets).map(([name, color]) => '<button type="button" data-palette="' + name + '" aria-pressed="' + (value === name || value === color) + '" title="' + name + '" aria-label="Use ' + name + ' primary"><span style="background:' + color + '"></span></button>').join('') + '</div><p>Choose a preset or fine-tune the colors below.</p></fieldset>'; }
     const select = (field, label, value, options, disabled = false) => '<label>' + escape(label) + '<select data-property="' + field + '" ' + (disabled ? 'disabled' : '') + '>' + options.map(option => { const [key, text] = Array.isArray(option) ? option : [option, option]; return '<option value="' + escape(key) + '" ' + (key === value ? 'selected' : '') + '>' + escape(text) + '</option>'; }).join('') + '</select></label>';
     const check = (field, label, value, hint = '') => '<label class="studio-check"><input type="checkbox" data-property="' + field + '" ' + (value ? 'checked' : '') + '><span>' + escape(label) + (hint ? '<small style="display:block;font-weight:400">' + escape(hint) + '</small>' : '') + '</span></label>';
-    function themeEditor(p) { const d = p.design || SfSchoolDesign.defaults(p.palette); let html = '<p class="studio-scope-badge">Workspace · all student and staff screens</p><p>Build a complete school theme. Colors are checked for readable text in both modes before saving. Cursor sets the pointing, open and closed hands; a contrasting outline stays visible.</p>' + colors(d.light.primary) + '<div class="studio-theme-modes">'; for (const mode of ['light', 'dark']) {
+    function themeEditor(p) { const d = p.design || SfSchoolDesign.defaults(p.palette); let html = '<p class="studio-scope-badge">Workspace · all student and staff screens</p><p>Customize either appearance. Contrast is checked before saving.</p>' + colors(d.light.primary) + '<div class="studio-theme-modes">'; for (const mode of ['light', 'dark']) {
         html += '<details class="studio-theme-mode" ' + (mode === 'light' ? 'open' : '') + '><summary>' + mode[0].toUpperCase() + mode.slice(1) + ' appearance</summary>';
         for (const role of SfSchoolDesign.roles)
-            html += '<div class="studio-theme-row"><label for="sd-' + mode + '-' + role + '">' + role[0].toUpperCase() + role.slice(1) + '</label><input class="workspace-input" id="sd-' + mode + '-' + role + '" aria-label="' + mode + ' ' + role + ' color" type="color" data-theme-mode="' + mode + '" data-theme-role="' + role + '" value="' + (d[mode][role] || SfSchoolDesign.defaults(p.palette)[mode][role]) + '"><input aria-label="' + mode + ' ' + role + ' hex" class="workspace-input" type="text" data-theme-mode="' + mode + '" data-theme-role="' + role + '" value="' + (d[mode][role] || SfSchoolDesign.defaults(p.palette)[mode][role]) + '" maxlength="7" pattern="#[0-9a-fA-F]{6}" spellcheck="false"><button type="button" data-reset-color="' + mode + ':' + role + '" aria-label="Reset ' + mode + ' ' + role + '">↺</button></div>';
+            html += '<div class="studio-theme-row"><label for="sd-' + mode + '-' + role + '">' + role[0].toUpperCase() + role.slice(1) + '</label><input class="workspace-input" id="sd-' + mode + '-' + role + '" aria-label="' + mode + ' ' + role + ' color" type="color" data-theme-mode="' + mode + '" data-theme-role="' + role + '" value="' + (d[mode][role] || SfSchoolDesign.defaults(p.palette)[mode][role]) + '"><input aria-label="' + mode + ' ' + role + ' hex" class="workspace-input" type="text" data-theme-mode="' + mode + '" data-theme-role="' + role + '" value="' + (d[mode][role] || SfSchoolDesign.defaults(p.palette)[mode][role]) + '" maxlength="7" required pattern="#[0-9a-fA-F]{6}" spellcheck="false"><button type="button" data-reset-color="' + mode + ':' + role + '" aria-label="Reset ' + mode + ' ' + role + '">↺</button></div>';
         html += '</details>';
     } html += '</div><p id="studio-theme-issues" role="status">' + escape(SfSchoolDesign.issues(d).join(' ') || 'Text contrast meets 4.5:1 in both appearances.') + '</p><div class="studio-theme-sample" style="background:' + d.light.surface + ';color:' + d.light.text + ';border-color:' + d.light.border + '"><strong>Theme sample</strong><p style="color:' + d.light.muted + '">A readable school workspace.</p><span style="background:' + d.light.primary + ';color:' + (SfSchoolDesign.contrast(d.light.primary, '#000000') >= 4.5 ? '#000000' : '#ffffff') + '">Primary action</span><a href="#" tabindex="-1" style="color:' + d.light.link + '">School link</a></div>'; html += select('design-corners', 'Card corners', d.corners, [['square', 'Subtle · 4 px'], ['rounded', 'Rounded · 12 px'], ['soft', 'Soft · 20 px']]) + select('design-font', 'Workspace typeface', d.font, [['brand', 'SuggFeed brand'], ['inter', 'Inter'], ['system', 'System font']]) + '<button type="button" data-reset-design>Reset theme & page layouts</button><p>State colors, permission rules and SuggFeed branding keep their meaning.</p>'; return html; }
     function pageEditor(p, selected) {
@@ -45,13 +45,19 @@
         return html;
     }
     function mount(host, model, settings) {
-        let selected = 'school.identity';
+        let selected = 'school.identity', renderedSelection = '';
         const state = () => model.getState(), apply = (property, value) => model.applyChange(selected, property, value);
         const toolbar = (label, kind, id, index) => '<div class="studio-repeat-toolbar" draggable="true" data-drag-kind="' + kind + '" data-drag-id="' + id + '"><strong>' + escape(label) + '</strong><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="-1" aria-label="Move ' + escape(label) + ' up">↑</button><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="1" aria-label="Move ' + escape(label) + ' down">↓</button></div>';
         function render() {
             const p = state().configuration;
             selected = state().selection?.componentId || '';
             let html = '';
+            const focused = host.contains(document.activeElement) ? document.activeElement : null;
+            const source = focused?.classList.contains('studio-select-trigger') || focused?.classList.contains('studio-color-trigger') ? focused.previousElementSibling : focused;
+            const focusProperty = source?.dataset.property, focusMode = source?.dataset.themeMode, focusRole = source?.dataset.themeRole;
+            const caret = focused instanceof HTMLTextAreaElement || focused instanceof HTMLInputElement && ['text', 'url', 'search'].includes(focused.type) ? [focused.selectionStart, focused.selectionEnd] : null;
+            const panel = host.closest('.studio-panel'), scroll = panel?.scrollTop || 0, openDetails = renderedSelection === selected ? new Map(Array.from(host.querySelectorAll('details')).map(d => [d.querySelector('summary')?.textContent, d.open])) : null;
+            settings.controls?.close();
             const row = selected.startsWith('category:') ? p.categories.find((c) => c.id === selected.slice(9)) : selected.startsWith('question:') ? p.form.questions.find((q) => q.id === selected.slice(9)) : null;
             if (!selected)
                 html = '<div class="studio-selection-empty"><h3>Select something to customize</h3><p>Click an outlined component in the preview, or choose from this screen’s component list. Workspace theme controls apply to every school screen.</p><button type="button" data-select="school.theme">Open workspace theme</button></div>';
@@ -62,7 +68,7 @@
             else if (selected === 'school.identity') {
                 html = input('displayName', 'Short school name', p.displayName || settings.schoolName, 60);
                 for (const kind of ['logo', 'cover'])
-                    html += '<div class="studio-asset"><h3>' + escape(kind === 'logo' ? 'School logo' : 'Landing-page cover') + '</h3>' + (p[kind] ? '<img src="' + escape(settings.base + '/assets/' + p[kind]) + '" alt="Current ' + kind + '"><button type="button" data-clear-asset="' + kind + '">Remove ' + kind + '</button>' : '<p>No ' + kind + ' selected.</p>') + '<label>Choose image<input type="file" data-upload="' + kind + '" accept="image/png,image/jpeg,image/webp" ' + (!settings.uploadsReady ? 'disabled' : '') + '></label><p>PNG, JPEG or WebP · ' + (kind === 'logo' ? '2' : '5') + ' MB maximum.</p></div>';
+                    html += '<div class="studio-asset"><h3>' + escape(kind === 'logo' ? 'School logo' : 'Landing-page cover') + '</h3>' + (p[kind] ? '<img src="' + escape(settings.base + '/assets/' + p[kind]) + '" alt="Current ' + kind + '"><button type="button" data-clear-asset="' + kind + '">Remove ' + kind + '</button>' : '<p>No ' + kind + ' selected.</p>') + '<p data-upload-feedback role="status" hidden></p><label>Choose image<input type="file" data-upload="' + kind + '" accept="image/png,image/jpeg,image/webp" ' + (!settings.uploadsReady ? 'disabled' : '') + '></label><p>PNG, JPEG or WebP · ' + (kind === 'logo' ? '2' : '5') + ' MB maximum.</p></div>';
                 if (!settings.uploadsReady)
                     html += '<p>Image uploads need service setup. Ask the platform operator to enable file cleanup.</p>';
             }
@@ -107,9 +113,90 @@
             else
                 html = '<p>SuggFeed branding, shared navigation, security state colors and account permissions are managed by the platform. Select a school component to edit its supported properties.</p>';
             host.innerHTML = '<section class="studio-inspector-section">' + html + '</section>';
+            const section = host.firstElementChild, groups = new Map();
+            let current = 'Content';
+            function group(name) { let target = groups.get(name); if (!target) {
+                const fieldset = document.createElement('fieldset'), legend = document.createElement('legend');
+                fieldset.className = 'studio-property-group';
+                legend.textContent = name;
+                fieldset.append(legend);
+                groups.set(name, fieldset);
+                target = fieldset;
+            } return target; }
+            for (const child of Array.from(section.children)) {
+                if (child.classList.contains('studio-scope-badge') || child.classList.contains('studio-selection-empty'))
+                    continue;
+                const property = (child.matches('[data-property]') ? child : child.querySelector('[data-property]'))?.dataset.property;
+                if (child.matches('button[data-reset-design],button[data-reset-page],button[data-reset-section]'))
+                    current = 'Advanced';
+                else if (child.matches('.studio-colors,.studio-theme-modes,.studio-theme-sample,.studio-asset,#studio-theme-issues') || property === 'icon' || property === 'section-surface')
+                    current = 'Appearance';
+                else if (property && ['layout', 'spacing', 'cards', 'view', 'section-spacing', 'section-alignment', 'design-corners', 'design-font'].includes(property))
+                    current = 'Layout';
+                else if (child.querySelector('input[type="checkbox"]') || property === 'attachments' || property === 'digest' || child.matches('h3') && child.textContent === 'Optional sections')
+                    current = 'Behavior';
+                else if (property || child.classList.contains('studio-repeat'))
+                    current = 'Content';
+                else if (!groups.size && child.tagName === 'P')
+                    continue;
+                if (child.tagName === 'H3' && child.textContent === 'Optional sections')
+                    child.remove();
+                else
+                    group(current).append(child);
+            }
+            if (selected && !section.querySelector('.studio-scope-badge')) {
+                const scope = document.createElement('p');
+                scope.className = 'studio-scope-badge';
+                scope.textContent = selected.startsWith('home.') ? 'This page · Home' : selected.startsWith('category:') ? 'School category' : selected.startsWith('question:') ? 'School submission form' : 'School workspace';
+                section.prepend(scope);
+            }
+            for (const name of ['Content', 'Appearance', 'Layout', 'Behavior', 'Advanced']) {
+                const content = groups.get(name);
+                if (!content)
+                    continue;
+                if (name === 'Advanced') {
+                    const details = document.createElement('details'), summary = document.createElement('summary'), body = document.createElement('div');
+                    details.className = 'studio-advanced';
+                    summary.textContent = 'Advanced';
+                    content.querySelector('legend')?.remove();
+                    body.append(...Array.from(content.children));
+                    details.append(summary, body);
+                    section.append(details);
+                }
+                else
+                    section.append(content);
+            }
+            if (openDetails)
+                for (const details of host.querySelectorAll('details'))
+                    if (openDetails.has(details.querySelector('summary')?.textContent))
+                        details.open = !!openDetails.get(details.querySelector('summary')?.textContent);
+            renderedSelection = selected;
+            settings.controls?.refresh();
+            window.sfFileUpload?.refresh(host);
+            if (focused) {
+                let next = null;
+                if (focusProperty)
+                    next = host.querySelector('[data-property="' + CSS.escape(focusProperty) + '"]');
+                else if (focusMode && focusRole)
+                    next = host.querySelector('input[type="text"][data-theme-mode="' + focusMode + '"][data-theme-role="' + focusRole + '"]');
+                if (next) {
+                    next.focus();
+                    if (caret && (next instanceof HTMLInputElement || next instanceof HTMLTextAreaElement))
+                        try {
+                            next.setSelectionRange(caret[0], caret[1]);
+                        }
+                        catch { }
+                }
+            }
+            if (panel)
+                panel.scrollTop = scroll;
         }
         host.addEventListener('focusout', () => model.endGroup());
         host.addEventListener('input', event => {
+            const changed = event.target;
+            const count = changed.closest('label')?.querySelector('.studio-field-count');
+            if (count)
+                count.textContent = changed.value.length + ' / ' + changed.maxLength;
             const element = event.target;
             const property = element.dataset.property;
             const config = state().configuration;
@@ -189,7 +276,7 @@
                     render();
             }
         });
-        host.addEventListener('click', event => {
+        host.addEventListener('click', async (event) => {
             const button = event.target.closest('button');
             if (!button)
                 return;
@@ -207,6 +294,8 @@
                 return;
             }
             if (button.hasAttribute('data-reset-design')) {
+                if (settings.confirm && !await settings.confirm('Reset the school theme and every page layout? School content, members and the published version are preserved until you save and publish.', 'Reset theme & layouts'))
+                    return;
                 model.applyChange('school.theme', 'design', SfSchoolDesign.defaults(p.palette));
                 render();
                 return;
@@ -290,12 +379,17 @@
         });
         host.addEventListener('dragstart', event => { const row = event.target.closest('[data-drag-kind]'); if (!row || !event.dataTransfer)
             return; event.dataTransfer.setData('application/x-suggfeed-studio', JSON.stringify({ kind: row.dataset.dragKind, id: row.dataset.dragId })); event.dataTransfer.effectAllowed = 'move'; });
-        host.addEventListener('dragover', event => { if (event.target.closest('[data-drag-kind]')) {
+        host.addEventListener('dragover', event => { const target = event.target.closest('[data-drag-kind]'); for (const row of host.querySelectorAll('[data-drop-target]'))
+            row.removeAttribute('data-drop-target'); if (target) {
+            target.setAttribute('data-drop-target', '');
             event.preventDefault();
             if (event.dataTransfer)
                 event.dataTransfer.dropEffect = 'move';
         } });
-        host.addEventListener('drop', event => { const target = event.target.closest('[data-drag-kind]'); if (!target || !event.dataTransfer)
+        host.addEventListener('dragend', () => { for (const row of host.querySelectorAll('[data-drop-target]'))
+            row.removeAttribute('data-drop-target'); });
+        host.addEventListener('drop', event => { for (const row of host.querySelectorAll('[data-drop-target]'))
+            row.removeAttribute('data-drop-target'); const target = event.target.closest('[data-drag-kind]'); if (!target || !event.dataTransfer)
             return; event.preventDefault(); try {
             const source = JSON.parse(event.dataTransfer.getData('application/x-suggfeed-studio'));
             const kind = target.dataset.dragKind;
@@ -315,8 +409,13 @@
         } });
         host.addEventListener('change', async (event) => { const input = event.target; if (!input.dataset.upload)
             return; const file = input.files?.[0], kind = input.dataset.upload; if (!file)
-            return; if (file.size > (kind === 'logo' ? 2 : 5) * 1024 * 1024 || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type))
-            return settings.say('Choose a supported image within its size limit.', true); input.disabled = true; settings.uploading(true); try {
+            return; const feedback = input.closest('.studio-asset')?.querySelector('[data-upload-feedback]'); const uploadStatus = (message) => { if (feedback) {
+            feedback.hidden = false;
+            feedback.textContent = message;
+        } }; if (file.size > (kind === 'logo' ? 2 : 5) * 1024 * 1024 || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+            uploadStatus('Choose PNG, JPEG or WebP within the displayed size limit.');
+            return settings.say('Choose a supported image within its size limit.', true);
+        } uploadStatus('Uploading and processing…'); input.disabled = true; settings.uploading(true); try {
             settings.say('Uploading and processing image…');
             const intent = await settings.request('assets/intent', { kind, size: file.size });
             const response = await fetch(intent.url, { method: 'PUT', headers: { 'Content-Type': file.type, 'x-upsert': 'false' }, body: file });
@@ -328,6 +427,7 @@
             settings.say('Image ready. Save the draft to keep this change.');
         }
         catch (error) {
+            uploadStatus(error instanceof Error ? error.message : 'Image upload failed.');
             settings.say(error instanceof Error ? error.message : 'Image upload failed.', true);
         }
         finally {

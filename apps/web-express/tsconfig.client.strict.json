@@ -21,6 +21,7 @@
     "src/client/theme.ts",
     "src/client/toast.ts",
     "src/client/scroll-reveal.ts",
-    "src/client/animations/**/*.ts"
+    "src/client/animations/**/*.ts",
+    "src/client/school-studio-controls.ts"
   ]
 }
