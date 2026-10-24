@@ -32,6 +32,10 @@ The FAQ works without these values. Missing HMAC/database controls prevents prov
 
 The direct dependency is `@google/genai` **2.31.0**. There is no second AI SDK, retrieval service or embedding system. Native mobile/private-record tools remain disabled; changing a flag alone does not enable them. `tools.ts` deliberately exposes an empty registry.
 
+### Request routing
+
+Use `POST /help/ask` and `POST /help/feedback` (automatically school-scoped inside a school). The `/api/assistant/*` aliases remain for compatible hosts, but Vercel reserves the global `/api/*` namespace for filesystem functions in this project. The canonical Help paths avoid that collision without changing unrelated deployment routing.
+
 ## Edit knowledge
 
 Source of truth:

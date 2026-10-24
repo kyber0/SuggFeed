@@ -92,6 +92,6 @@
 <% if (/(?:school-settings|settings|student-access)$/.test(it.currentPath || '')) { %><script defer src="/js/student-access.js?v=20261021-student-joining"></script><% } %>
 <script defer src="/js/comment-edit.js?v=20261024-comment-bubbles"></script>
 <script defer src="/js/submission-safety.js?v=20261024-safety"></script>
-<% if(it.currentPath==='/help'||it.assistantKnowledge) { %><script defer src="/js/assistant.js?v=20261024-sugi"></script><% } %><% if(/assistant/.test(it.currentPath||'')||it.platformDashboard) { %><script defer src="/js/assistant-admin.js?v=20261024-sugi"></script><% } %>
+<% if(it.currentPath==='/help'||it.assistantKnowledge) { %><script defer src="/js/assistant.js?v=20261024-sugi-routing"></script><% } %><% if(/assistant/.test(it.currentPath||'')||it.platformDashboard) { %><script defer src="/js/assistant-admin.js?v=20261024-sugi"></script><% } %>
 </body>
 </html>

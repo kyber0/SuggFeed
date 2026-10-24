@@ -29,6 +29,7 @@
         return;
     }
     const form = root.querySelector('[data-sugi-form]'), input = form.querySelector('textarea'), send = form.querySelector('button[type=submit]'), messages = root.querySelector('[data-sugi-messages]'), status = root.querySelector('[data-sugi-status]'), counter = root.querySelector('[data-sugi-counter]');
+    send.disabled = false;
     let controller = null;
     let generation = 0;
     const fetchHelp = (path, options) => typeof sfSchoolFetch === 'function' ? sfSchoolFetch(path, options) : fetch(path, options);
@@ -49,7 +50,7 @@
         message(question, true);
         status.textContent = 'Sugi is checking reviewed FAQs…';
         try {
-            const response = await fetchHelp('/api/assistant/ask', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ question }), signal: controller.signal });
+            const response = await fetchHelp('/help/ask', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ question }), signal: controller.signal });
             const data = await response.json();
             if (run !== generation)
                 return;
@@ -67,7 +68,7 @@
                     button.type = 'button';
                     button.textContent = label;
                     button.addEventListener('click', async () => { group.querySelectorAll('button').forEach(b => b.disabled = true); try {
-                        const feedback = await fetchHelp('/api/assistant/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ requestId: data.requestId, token: data.feedbackToken, rating }), signal: AbortSignal.timeout(10000) });
+                        const feedback = await fetchHelp('/help/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ requestId: data.requestId, token: data.feedbackToken, rating }), signal: AbortSignal.timeout(10000) });
                         if (!feedback.ok)
                             throw new Error();
                         group.replaceChildren(document.createTextNode('Thank you. Feedback goes to human review.'));

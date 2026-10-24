@@ -131,7 +131,7 @@ Provide documented rollback SQL outside the forward migration directory. First d
 
 Routes:
 
-- Global help: `GET /help`, `POST /api/assistant/ask`, `POST /api/assistant/feedback`.
+- Global help: `GET /help`, `POST /help/ask`, `POST /help/feedback`.
 - School help: `GET /s/:schoolSlug/help`, corresponding scoped APIs after school resolution.
 - Admin tab: `/s/:schoolSlug/admin/assistant`; operator tab `/platform/assistant`.
 
@@ -232,3 +232,5 @@ Pilot with fictional demo knowledge first. Apply validated additive migrations b
 - Original free-form questions never enter Gemini, cache or logs. The model can select only approved candidate IDs. No private-record tools were added.
 - Provider and safe-topic logging flags stay off by default pending free-project and retention confirmation. No live Gemini quota has been used by development tests.
 - Added a generated navy/orange Sugi mark, optimized WebP renditions, an accessible native-dialog home panel, and a no-JavaScript link to the full Help page.
+
+- Deployment ruling: Vercel intercepts the global `/api/*` namespace in this project. Canonical Sugi requests use `/help/ask` and `/help/feedback`; existing deployment rewrites remain untouched.
