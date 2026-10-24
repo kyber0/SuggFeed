@@ -32,6 +32,7 @@
     send.disabled = false;
     let controller = null;
     let generation = 0;
+    const previousQuestions = [];
     const fetchHelp = (path, options) => typeof sfSchoolFetch === 'function' ? sfSchoolFetch(path, options) : fetch(path, options);
     input.addEventListener('input', () => { counter.textContent = Array.from(input.value).length + ' / 300'; });
     const message = (text, question = false) => { const item = document.createElement('li'); item.className = 'sugi-message' + (question ? ' sugi-message--question' : ''); item.textContent = text; messages.append(item); return item; };
@@ -50,7 +51,7 @@
         message(question, true);
         status.textContent = 'Sugi is checking reviewed FAQs…';
         try {
-            const response = await fetchHelp('/help/ask', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ question }), signal: controller.signal });
+            const response = await fetchHelp('/help/ask', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ question, previousQuestions }), signal: controller.signal });
             const data = await response.json();
             if (run !== generation)
                 return;
@@ -58,8 +59,24 @@
                 throw new Error(data.error || 'Help is unavailable. Use the reviewed FAQs below.');
             const item = message(data.answer);
             const source = document.createElement('small');
-            source.textContent = data.answered ? data.scope === 'school' ? 'Reviewed school FAQ' : 'Reviewed SuggFeed FAQ' : 'Reviewed FAQ and contact options are available below.';
+            source.textContent = data.generated ? 'AI answer · check the sources' : data.answered ? data.scope === 'school' ? 'Reviewed school FAQ' : 'Reviewed SuggFeed FAQ' : 'Reviewed FAQ and contact options are available below.';
             item.append(source);
+            if (Array.isArray(data.sources)) {
+                const citations = document.createElement('div');
+                citations.className = 'sugi-citations';
+                for (const citation of data.sources.slice(0, 4)) {
+                    if (typeof citation.title !== 'string' || typeof citation.url !== 'string' || !/^\/help#[a-z0-9-]+$/.test(citation.url))
+                        continue;
+                    const link = document.createElement('a');
+                    link.textContent = citation.title;
+                    link.href = typeof sfSchoolPath === 'function' ? sfSchoolPath(citation.url) : citation.url;
+                    citations.append(link);
+                }
+                item.append(citations);
+            }
+            previousQuestions.push(question);
+            if (previousQuestions.length > 2)
+                previousQuestions.shift();
             if (typeof data.requestId === 'string' && typeof data.feedbackToken === 'string') {
                 const group = document.createElement('div');
                 group.className = 'sugi-feedback';
@@ -101,12 +118,17 @@
         }
     });
     root.querySelectorAll('[data-sugi-question]').forEach(button => button.addEventListener('click', () => { input.value = button.dataset.sugiQuestion || ''; input.dispatchEvent(new Event('input')); form.requestSubmit(); }));
-    document.querySelector('[data-sugi-reset]')?.addEventListener('click', () => { generation++; controller?.abort(); controller = null; send.disabled = false; messages.replaceChildren(); delete root.dataset.conversation; input.value = ''; counter.textContent = '0 / 300'; status.textContent = 'Conversation cleared from this page.'; input.focus(); });
+    document.querySelector('[data-sugi-reset]')?.addEventListener('click', () => { generation++; controller?.abort(); controller = null; send.disabled = false; messages.replaceChildren(); previousQuestions.length = 0; delete root.dataset.conversation; input.value = ''; counter.textContent = '0 / 300'; status.textContent = 'Conversation cleared from this page.'; input.focus(); });
     document.querySelector('[data-sugi-category]')?.addEventListener('change', event => { const category = event.target.value; document.querySelectorAll('[data-sugi-faq]').forEach(el => { el.hidden = !!category && entries.find(e => e.id === el.dataset.sugiFaq)?.category !== category; }); });
     document.querySelector('[data-sugi-language]')?.addEventListener('change', event => { const language = event.target.value; document.querySelectorAll('[data-sugi-faq]').forEach(detail => { const entry = entries.find(e => e.id === detail.dataset.sugiFaq); if (entry) {
         detail.querySelector('[data-sugi-faq-question]').textContent = entry.questions[language] || entry.questions.en;
         detail.querySelector('p').textContent = entry.answers[language] || entry.answers.en;
     } }); });
+    const openSource = () => { const id = location.hash.slice(1); if (!/^[a-z0-9-]+$/.test(id))
+        return; const target = document.getElementById(id); if (target instanceof HTMLDetailsElement)
+        target.open = true; };
+    openSource();
+    window.addEventListener('hashchange', openSource);
     window.addEventListener('offline', () => { status.textContent = 'You are offline. Reviewed FAQs on this page remain available.'; });
     window.addEventListener('pagehide', () => { generation++; controller?.abort(); controller = null; send.disabled = false; });
 })();

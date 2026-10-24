@@ -13,3 +13,5 @@ const workerPath=path.join(__dirname,'../src/sw.ts'),worker=fs.readFileSync(work
 const updated=worker.replace(/const CACHE_VERSION = "cv-v(?:16|17)-sugi[^"\n]*";/,'const CACHE_VERSION = '+JSON.stringify('cv-v17-sugi-'+knowledge.version)+';');
 if(updated===worker&&!worker.includes('cv-v17-sugi-'+knowledge.version))throw Error('Worker cache version marker missing');
 if(updated!==worker)fs.writeFileSync(workerPath,updated);
+
+const guide=fs.readFileSync(path.join(root,'guide.md'),'utf8').split(/^# /m).filter(Boolean).map((section,index)=>{const [title,...lines]=section.trim().split('\n');return {id:'app-guide-'+index,title,text:lines.join('\n').trim()};});if(!guide.length||guide.some(d=>!d.title||!d.text||d.text.length>12000))throw Error('Invalid app guide');fs.writeFileSync(path.join(__dirname,'../src/lib/assistant/guide.generated.json'),JSON.stringify(guide,null,2)+'\n');

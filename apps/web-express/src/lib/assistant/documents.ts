@@ -1,0 +1,30 @@
+import {Worker} from 'node:worker_threads';
+import {createHash} from 'node:crypto';
+import {normalize} from './normalize';
+import type {Entry} from './types';
+export interface SchoolDocument {id:string;title:string;text:string;}
+export interface Source extends SchoolDocument {scope:'app'|'school';url:string;}
+export interface GroundedAnswer {answer:string;sources:{id:string;title:string;url:string;scope:'app'|'school'}[];}
+export function validateDocuments(value:unknown,publishing=false):SchoolDocument[]{
+ if(!Array.isArray(value)||value.length>12||Buffer.byteLength(JSON.stringify(value))>240000)throw new Error('Use up to 12 documents and 240 KB of text in total.');const ids=new Set<string>();
+ return value.map((item,index)=>{if(!item||typeof item!=='object'||Object.keys(item).some(k=>!['id','title','text'].includes(k))||typeof item.id!=='string'||!/^school-doc-[a-z0-9-]{1,48}$/.test(item.id)||ids.has(item.id)||typeof item.title!=='string'||!item.title.trim()||item.title.length>120||typeof item.text!=='string'||item.text.length>60000||publishing&&!item.text.trim()||/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(item.text))throw new Error('Check document '+(index+1)+': add a title and up to 60,000 characters of readable text.');ids.add(item.id);return {id:item.id,title:item.title.trim(),text:item.text.trim()};});
+}
+export function faqSources(entries:Entry[]):Source[]{return entries.map(e=>({id:'faq-'+e.id,title:e.questions.en,text:['en','fil','taglish'].map(l=>e.questions[l as 'en']+'\n'+e.answers[l as 'en']).join('\n'),scope:e.scope||'app',url:'/help#faq-'+e.id}));}
+export function chunkSources(sources:Source[]):Source[]{return sources.flatMap(source=>{const chunks:Source[]=[];for(let offset=0;offset<source.text.length;offset+=1300)chunks.push({...source,id:source.id+'-part'+chunks.length,text:source.text.slice(offset,offset+1600)});return chunks;});}
+const stop=new Set('the a an is are i me my our this that what how where when why can do does to of for in on and at it about school app ang ng mga sa ay ano paano saan ba ko po'.split(' '));
+function terms(q:string){const words=normalize(q).split(' ').filter(w=>w.length>1&&!stop.has(w));const synonyms:Record<string,string[]>={apply:['admission','enrollment','join'],enroll:['enrollment','admission'],bayad:['fees','tuition'],aklatan:['library'],oras:['hours','schedule'],saan:['location'],where:['location'],safety:['report','moderation'],pwede:['allowed'],login:['signin'],sign:['signin']};return [...new Set([...words,...normalize(q).split(' ').flatMap(w=>synonyms[w]||[])])];}
+export function retrieveSources(question:string,sources:Source[]):Source[]{const words=terms(question);return sources.map((source,index)=>{const title=normalize(source.title),text=normalize(source.text);return {source,index,score:words.reduce((score,word)=>score+(title.includes(word)?3:0)+(text.includes(word)?1:0),0)};}).sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,8).map(item=>item.source);}
+export function validateAnswer(value:unknown,sources:Source[]):GroundedAnswer|null{
+ if(!value||typeof value!=='object')return null;const v=value as Record<string,unknown>;if(v.unknown!==false||typeof v.answer!=='string'||!v.answer.trim()||v.answer.length>1600||/[\x00-\x08\x0b\x0c\x0e-\x1f]|<\/?script/i.test(v.answer)||!Array.isArray(v.sourceIds)||!v.sourceIds.length||v.sourceIds.length>4||v.sourceIds.some(id=>typeof id!=='string'||!sources.some(source=>source.id===id)))return null;
+ const ids=v.sourceIds as string[];const cited=sources.filter(s=>ids.includes(s.id));return {answer:v.answer.trim(),sources:cited.map(({id,title,url,scope})=>({id,title,url,scope})).filter((s,index,all)=>all.findIndex(item=>item.url===s.url)===index)};
+}
+export const sourceVersion=(sources:Source[])=>createHash('sha256').update(JSON.stringify(sources)).digest('hex').slice(0,16);
+let extracting=0;
+export async function extractDocument(bytes:Buffer,type:string):Promise<string>{
+ if(!bytes.length||bytes.length>2*1024*1024)throw new Error('Choose a file no larger than 2 MB.');let text:string;
+ if(type==='application/pdf'){
+  if(bytes.subarray(0,5).toString()!=='%PDF-')throw new Error('This file is not a valid PDF.');if(extracting>=2)throw new Error('Other documents are being read. Please try again shortly.');extracting++;
+  try{text=await new Promise<string>((resolve,reject)=>{const worker=new Worker(`const {parentPort,workerData}=require('node:worker_threads');(async()=>{const {getDocumentProxy,extractText}=await import(workerData.modulePath);const pdf=await getDocumentProxy(new Uint8Array(workerData.bytes));try{if(pdf.numPages>100)throw Error('Too many pages');const result=await extractText(pdf,{mergePages:true});parentPort.postMessage(result.text);}finally{await pdf.destroy();}})().catch(()=>parentPort.postMessage(null));`,{eval:true,execArgv:[],workerData:{bytes,modulePath:require.resolve('unpdf')},resourceLimits:{maxOldGenerationSizeMb:128}});const timer=setTimeout(()=>{void worker.terminate();reject(new Error('PDF reading timed out. Upload a shorter text version.'));},8000);worker.once('message',value=>{clearTimeout(timer);void worker.terminate();if(typeof value==='string')resolve(value);else reject(new Error('Could not read this PDF. Use a readable PDF with up to 100 pages, or paste its text.'));});worker.once('error',()=>{clearTimeout(timer);reject(new Error('Could not read this document. Try a text version.'));});worker.once('exit',()=>{clearTimeout(timer);reject(new Error('Document reading stopped. Try a shorter text version.'));});});}finally{extracting--;}
+ }else if(['text/plain','text/markdown'].includes(type)){try{text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch{throw new Error('Use a UTF-8 text or Markdown file.');}}else throw new Error('Choose PDF, Markdown or plain text.');
+ text=text.replace(/\r\n?/g,'\n').trim();if(!text||text.length>60000||/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text))throw new Error('Use readable text up to 60,000 characters. Scanned PDFs need a text version.');return text;
+}

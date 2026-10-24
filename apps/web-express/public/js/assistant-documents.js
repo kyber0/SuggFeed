@@ -1,0 +1,107 @@
+"use strict";
+(() => {
+    const root = document.querySelector('[data-sugi-documents]');
+    if (!root)
+        return;
+    const rows = root.querySelector('[data-doc-rows]'), status = root.querySelector('[data-doc-status]'), history = root.querySelector('[data-doc-history]'), file = root.querySelector('[data-doc-file]'), add = root.querySelector('[data-doc-add]'), save = root.querySelector('[data-doc-save]'), publish = root.querySelector('[data-doc-publish]'), review = root.querySelector('[data-doc-reviewed]'), reload = root.querySelector('[data-doc-reload]'), endpoint = root.dataset.endpoint;
+    let revision = 0, version = null, dirty = false, busy = false, loaded = false, saved = false;
+    const request = async (path, data, upload) => { const type = upload?.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : upload?.name.toLowerCase().endsWith('.md') ? 'text/markdown' : 'text/plain'; const response = await sfSchoolFetch(path, { headers: { Accept: 'application/json', ...(upload ? { 'Content-Type': type } : data ? { 'Content-Type': 'application/json' } : {}) }, ...(data || upload ? { method: 'POST', body: upload || JSON.stringify(data) } : {}), signal: AbortSignal.timeout(20000) }); let body; try {
+        body = await response.json();
+    }
+    catch {
+        throw new Error('School knowledge could not be saved. Your text is preserved.');
+    } if (!response.ok || !body.success)
+        throw new Error(body.error || 'School knowledge is unavailable. Your text is preserved.'); return body; };
+    const sync = () => { add.disabled = file.disabled = busy || !loaded || rows.children.length >= 12; save.disabled = busy || !loaded || !dirty; publish.disabled = busy || !saved || dirty || !review.checked; review.disabled = busy || !saved || dirty; reload.disabled = busy; rows.querySelectorAll('input,textarea,button').forEach(control => { control.disabled = busy; }); };
+    const changed = () => { dirty = true; review.checked = false; status.textContent = 'Unsaved changes. Students still use ' + (version ? 'published version ' + version : 'the currently approved sources') + '.'; sync(); };
+    const collect = () => Array.from(rows.querySelectorAll('[data-doc-id]')).map(row => ({ id: row.dataset.docId, title: row.querySelector('[data-doc-title]').value.trim(), text: row.querySelector('[data-doc-text]').value.trim() }));
+    function row(doc) { const card = document.createElement('details'); card.className = 'sugi-editor-row'; card.dataset.docId = doc.id; const summary = document.createElement('summary'), caption = document.createElement('strong'), count = document.createElement('span'); caption.textContent = doc.title || 'New school information'; count.textContent = doc.text.length.toLocaleString() + ' characters'; summary.append(caption, count); const fields = document.createElement('div'); fields.className = 'sugi-editor-fields'; const titleLabel = document.createElement('label'); titleLabel.textContent = 'Document title'; const title = document.createElement('input'); title.className = 'workspace-input'; title.maxLength = 120; title.dataset.docTitle = ''; title.value = doc.title; titleLabel.append(title); const textLabel = document.createElement('label'); textLabel.textContent = 'School information — review before publishing'; const text = document.createElement('textarea'); text.className = 'workspace-input'; text.rows = 9; text.maxLength = 60000; text.dataset.docText = ''; text.value = doc.text; textLabel.append(text); const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'workspace-button'; remove.textContent = 'Remove from draft'; remove.addEventListener('click', () => { card.remove(); changed(); }); fields.append(titleLabel, textLabel, remove); card.append(summary, fields); card.addEventListener('input', () => { caption.textContent = title.value || 'New school information'; count.textContent = text.value.length.toLocaleString() + ' characters'; changed(); }); rows.append(card); return card; }
+    async function load() { if (busy || dirty && !await window.sfConfirm('Discard unsaved school information and load the latest draft?'))
+        return; busy = true; sync(); status.textContent = 'Loading school knowledge…'; try {
+        const body = await request(endpoint), state = body.state;
+        revision = state.revision;
+        version = state.publishedVersion;
+        saved = state.exists;
+        rows.replaceChildren();
+        for (const doc of state.draft || [])
+            row(doc);
+        history.replaceChildren();
+        for (const item of state.history || []) {
+            const li = document.createElement('li');
+            li.textContent = 'Version ' + item.version + ' · ' + new Date(item.created_at).toLocaleString();
+            history.append(li);
+        }
+        if (!history.children.length)
+            history.textContent = 'No school document version published yet.';
+        dirty = false;
+        loaded = true;
+        review.checked = false;
+        status.textContent = version ? 'Published version ' + version + '. Draft edits stay private until you publish.' : 'Add general school information or upload a handbook. Review, save and publish when ready.';
+    }
+    catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'School knowledge could not load.';
+    }
+    finally {
+        busy = false;
+        sync();
+    } }
+    add.addEventListener('click', () => { const card = row({ id: 'school-doc-' + crypto.randomUUID().replace(/-/g, '').slice(0, 16), title: 'General school information', text: '' }); card.open = true; changed(); card.querySelector('textarea')?.focus(); });
+    file.addEventListener('change', async () => { const selected = file.files?.[0]; if (!selected || busy)
+        return; if (selected.size > 2 * 1024 * 1024 || !(/\.(pdf|txt|md)$/i.test(selected.name))) {
+        status.textContent = 'Choose a PDF, Markdown or text file up to 2 MB.';
+        return;
+    } busy = true; sync(); status.textContent = 'Reading the document. It will remain a draft…'; try {
+        const body = await request(endpoint + '/extract', undefined, selected), card = row({ id: 'school-doc-' + crypto.randomUUID().replace(/-/g, '').slice(0, 16), title: selected.name.replace(/\.[^.]+$/, '').slice(0, 120), text: body.text });
+        card.open = true;
+        changed();
+        status.textContent = 'Document read. Review the extracted text, save the draft, then publish. Scanned content may be missing.';
+    }
+    catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'Document could not be read.';
+    }
+    finally {
+        file.value = '';
+        file.dispatchEvent(new Event('change', { bubbles: true }));
+        busy = false;
+        sync();
+    } });
+    save.addEventListener('click', async () => { if (busy)
+        return; busy = true; sync(); status.textContent = 'Saving school knowledge draft…'; try {
+        const body = await request(endpoint + '/save', { revision, entries: collect() });
+        revision = body.result.revision;
+        saved = true;
+        dirty = false;
+        review.checked = false;
+        status.textContent = 'Draft saved. Review the text, then publish to make it available to Sugi.';
+    }
+    catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'Draft could not save. Your text is preserved.';
+    }
+    finally {
+        busy = false;
+        sync();
+    } });
+    publish.addEventListener('click', async () => { if (busy || dirty || !saved || !review.checked)
+        return; busy = true; sync(); status.textContent = 'Publishing reviewed school knowledge…'; try {
+        const body = await request(endpoint + '/publish', { revision, reviewed: true });
+        revision = body.result.revision;
+        version = body.result.version;
+        review.checked = false;
+        status.textContent = 'Published version ' + version + '. Sugi can use this information for new questions.';
+        if (!history.children.length)
+            history.replaceChildren();
+        const li = document.createElement('li');
+        li.textContent = 'Version ' + version + ' · just published';
+        history.prepend(li);
+    }
+    catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'Publication could not be confirmed. Your draft is preserved.';
+    }
+    finally {
+        busy = false;
+        sync();
+    } });
+    review.addEventListener('change', sync);
+    reload.addEventListener('click', () => void load());
+    void load();
+})();

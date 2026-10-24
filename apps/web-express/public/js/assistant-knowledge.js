@@ -135,5 +135,11 @@
     } });
     reviewed.addEventListener('change', sync);
     root.querySelector('[data-faq-reload]')?.addEventListener('click', () => void load());
-    void load();
+    const optional = root.closest('.sugi-optional-faqs');
+    if (optional && !optional.open) {
+        optional.addEventListener('toggle', () => { if (optional.open && !loaded)
+            void load(); });
+    }
+    else
+        void load();
 })();

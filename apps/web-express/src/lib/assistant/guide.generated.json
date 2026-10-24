@@ -1,0 +1,37 @@
+[
+  {
+    "id": "app-guide-0",
+    "title": "Using SuggFeed",
+    "text": "SuggFeed is a school feedback workspace for students to share ideas, support existing suggestions, discuss improvements and follow staff progress. Your account can belong to more than one school. Workspaces are separate: first open Your schools and choose the school you want to use. Platform operators manage the service; school administrators manage their school. Moderators perform ordinary submission work, while administrator-only safety and settings tools require school-admin permission. Staff and platform operators must complete authenticator verification when requested."
+  },
+  {
+    "id": "app-guide-1",
+    "title": "Joining a school",
+    "text": "Sign in and confirm your email first. School access can come from an invitation, an approved email list, an approved access request, or an enabled verified school email domain. A domain match uses the exact part after @; subdomains are not included automatically. A personal Gmail address does not prove school enrollment. Schools may use approved student lists or request approval for personal addresses. An inactive or pending school may remain unavailable until its policies, contacts and activation checks are complete. Creating a SuggFeed account does not automatically make you a member or staff administrator."
+  },
+  {
+    "id": "app-guide-2",
+    "title": "Sharing and editing ideas",
+    "text": "From your school's Home page, choose Share an idea and follow the submission form. Enter a clear title, explain the problem and proposed improvement, choose an active school category, and complete any required school questions. The form may show similar ideas so you can support an existing suggestion. School settings determine anonymity and attachments. Keep personal records and sensitive details out of public ideas. Save the private tracking code if you submit anonymously: it is needed for private tracking and must not be shared. Owners can edit eligible ideas before staff review begins; later edits are restricted. Retrying a submission should retain its receipt and avoid a duplicate idea. If a form changes while writing, review the new requirements without discarding your text."
+  },
+  {
+    "id": "app-guide-3",
+    "title": "Voting, comments and moderation",
+    "text": "Support an idea to record one vote; choose the support control again to undo your vote. Your signed-in vote should remain after refreshing. A school can disable new voting or comments. Existing discussion remains readable when new comments are disabled. Reply to a comment to keep the discussion in its thread. Owners can edit their own comments. Comments and ideas can be held for safety review. A pending review is separate from the staff progress status. Report content using the report control; reports do not give the reporter moderation powers. School admins review flagged content. Constructive feedback is welcome; do not post private student information."
+  },
+  {
+    "id": "app-guide-4",
+    "title": "Tracking progress and staff work",
+    "text": "Students can browse school ideas, filter categories, and use the roadmap when the school enables it. Internal progress stages include approved/planned, in progress and resolved/completed. Schools may change the public wording without changing the underlying workflow or staff authority. Follow an idea for supported updates and use tracking access for your own submission details. Private clarifications and attachments require appropriate access. Roadmap dates and calendar items depend on staff-provided work information; a visual schedule is not a promise that an idea is completed. Moderators and admins use Manage work to review and move eligible ideas; moving a selected group still requires reviewing and saving each idea's work action."
+  },
+  {
+    "id": "app-guide-5",
+    "title": "Administration and customization",
+    "text": "School administrators manage categories, participation settings, membership, invitations, eligibility, reviewed school policies and school customization. Some capabilities, including the visual workspace editor, require the platform operator to enable them for the school. Cosmetic changes do not grant access or bypass policy review. Preview uses fictional sample content and cannot perform real actions. Save draft keeps the current published workspace unchanged; publish applies validated changes. Draft conflicts must be resolved rather than silently overwriting another administrator. Platform management is separate from student and school-staff workspaces."
+  },
+  {
+    "id": "app-guide-6",
+    "title": "School information and Sugi",
+    "text": "Sugi uses shared SuggFeed guides and the current school's published institutional documents, FAQs and reviewed settings. School admins add general information or upload readable PDF, Markdown or text files, review the extracted text, save a draft and publish it. They do not have to write every possible question or translation. Sugi can write natural answers from these sources when Gemini is enabled; source links show the supporting information. It does not search other schools, private student records or the public web. Unknown school facts, unpublished changes, specific case decisions and unavailable provider responses must not be guessed. Check the cited source or contact your school office for authoritative advice. FAQ answers remain usable when AI is unavailable."
+  }
+]
