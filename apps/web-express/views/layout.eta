@@ -76,7 +76,7 @@
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>
 <% if (!it.accountArea && !it.platformDashboard) { %>
 <script defer src="/js/engagement.js?v=20261021-toggle-votes"></script>
-<script defer src="/js/community.js?v=20261018-customization"></script>
+<script defer src="/js/community.js?v=20261024-moderation-20261018-customization"></script>
 
 <script defer src="/js/public-history.js?v=20261018-empty-states"></script>
 
@@ -88,5 +88,6 @@
 
 
 <% if (/(?:school-settings|settings|student-access)$/.test(it.currentPath || '')) { %><script defer src="/js/student-access.js?v=20261021-student-joining"></script><% } %>
+<script defer src="/js/comment-edit.js?v=20261024-moderation"></script>
 </body>
 </html>

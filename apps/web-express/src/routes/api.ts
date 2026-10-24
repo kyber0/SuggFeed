@@ -1,3 +1,5 @@
+import {saveComment} from '../lib/comments';
+import {CommunityError} from '../lib/community';
 import {schoolFeature,schoolCategories,schoolCategory} from '../lib/school-customization';
 import { schoolUser,currentSchool } from '../lib/school-scope';
 import crypto from "crypto";
@@ -287,24 +289,9 @@ router.post(
       });
     }
 
-    const displayName = user
-      ? (user.display_name ?? user.full_name ?? user.email?.split("@")[0] ?? "Student")
-      : "Anonymous Student";
-
-    const { data, error } = await supabaseService
-      .from("comments")
-      .insert({
-        submission_id: submissionId,
-        body: body.trim(),
-        display_name: displayName,
-        user_id: user?.id ?? null,
-        anon_token: anonToken,
-        parent_id: (typeof parentId === "string" && parentId) ? parentId : null,
-      })
-      .select("id, body, display_name, created_at, parent_id, user_id")
-      .single();
-
-    if (error) throw error;
+    let data;
+    try { data=await saveComment({submissionId,body,parentId,anonToken,displayName:user?(user.display_name??user.full_name??user.email?.split('@')[0]??'Student'):'Anonymous Student'}); }
+    catch(error){if(error instanceof CommunityError)return res.status(error.status).json({success:false,error:error.message});throw error;}
 
     invalidateCache(`comments_${submissionId}`);
     invalidateCache(`submission_${submissionId}`);

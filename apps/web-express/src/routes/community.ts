@@ -1,3 +1,5 @@
+import {supabaseService} from '../lib/supabase';
+import {commentAction,reportComment,commentReviewQueue,saveComment} from '../lib/comments';
 import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
@@ -18,8 +20,14 @@ communityRouter.post('/report', run(async (req,res) => {
   if (!schoolUser(req)) throw new CommunityError(401,'Sign in to report content.');
   const body = textField(req.body.body,10,500);
   const data = req.body.commentId ? {commentId:idField(req.body.commentId),body} : {submissionId:idField(req.body.submissionId),body};
+  if(req.body.commentId)return res.json({success:true,...await reportComment(req.body.commentId,body)});
   await communityAction(schoolUser(req)!.id,'report',data);
   return res.json({success:true});
+}));
+communityRouter.post('/comments/:id/edit',run(async(req,res)=>{
+ if(!schoolUser(req))throw new CommunityError(401,'Sign in to edit your own comment.');
+ const data=await saveComment({id:req.params.id,body:req.body.body,version:req.body.version});
+ return res.json({success:true,data});
 }));
 communityRouter.get('/report-history',run(async(req,res)=>{
   if(!schoolUser(req)) throw new CommunityError(401,'Sign in to see report decisions.');
@@ -33,6 +41,12 @@ communityRouter.post('/staff/:action',run(async(req,res)=>{
   if(!user || !staffRole(user.role)) throw new CommunityError(user ? 403 : 401,'Staff access required.');
   const action=req.params.action as string, input=req.body;
   let data: Record<string,unknown>;
+  if(action==='comment-review'){
+    if(user.role!=='admin')throw new CommunityError(403,'Administrator access required.');
+    if(!['approve','hide','delete'].includes(input.decision)||!Number.isSafeInteger(input.version))throw new CommunityError(400,'Choose a valid comment decision.');
+    await commentAction(input.decision,{id:idField(input.id),version:input.version,body:textField(input.body,10,500)});
+    return res.json({success:true});
+  }
   if(action==='request') data={submissionId:idField(input.submissionId),body:textField(input.body)};
   else if(action==='close') data={id:idField(input.id)};
   else if(action==='resolve') {
@@ -48,6 +62,7 @@ communityRouter.post('/staff/:action',run(async(req,res)=>{
       return {id:idField(x.id),updatedAt:x.updatedAt};
     })};
   } else throw new CommunityError(404,'Unknown action.');
+  if(action==='resolve'){const report=await supabaseService.from('reports').select('comment_id').eq('id',String(data.id)).maybeSingle();if(report.error)throw report.error;if(report.data?.comment_id)throw new CommunityError(403,'Use the administrator comment review list.');}
   await communityAction(user.id,action,data);
   invalidateCache('submission_');invalidateCache('feed_');invalidateCache('published_count_');invalidateCache('comments_');invalidateCache('roadmap');
   return res.json({success:true});
@@ -67,7 +82,7 @@ communityPages.get('/admin/community',run(async(req,res)=>{
   if(!user) return res.redirect('/admin');
   if(!staffRole(user.role)) return res.status(403).render('school-message',{title:'Access denied',message:'Staff access required.'});
   res.setHeader('Cache-Control','private, no-store');
-  res.render('staff-community',{title:'Follow-ups — SuggFeed',activeSection:'community',mergeSelected:req.query.task==='merge' && user.role==='admin',submissionId:typeof req.query.idea==='string' && /^[a-f0-9-]{36}$/i.test(req.query.idea) ? req.query.idea : '',...await staffCommunity(user,req.query),members:await loadStaffMembers()});
+  res.render('staff-community',{title:'Follow-ups — SuggFeed',activeSection:'community',mergeSelected:req.query.task==='merge' && user.role==='admin',submissionId:typeof req.query.idea==='string' && /^[a-f0-9-]{36}$/i.test(req.query.idea) ? req.query.idea : '',...await staffCommunity(user,req.query),commentQueue:user.role==='admin'?await commentReviewQueue(req.query.commentsPage):{items:[],page:1,count:0},members:await loadStaffMembers()});
 }));
 communityPages.get('/admin/board',run(async(req,res)=>{
   const user=schoolUser(req);

@@ -48,7 +48,7 @@
   reportDialog?.addEventListener('close',()=>reportFocus?.focus());
   reportForm?.addEventListener('submit',async e=>{
     e.preventDefault();const button=reportForm.querySelector<HTMLButtonElement>('[type=submit]')!;button.disabled=true;
-    try { await request('report',{...reportTarget,body:new FormData(reportForm).get('body')});reportDialog.close();notify('Report sent privately. See decisions in School messages.'); }
+    try { const result=await request('report',{...reportTarget,body:new FormData(reportForm).get('body')});if(result.hidden&&reportFocus){const card=reportFocus.closest('.comment-card');if(card)(window as any).sfHoldComment?.(card);}reportDialog.close();notify(result.already_reported?'You have already reported this comment.':'Report sent privately. See decisions in School messages.'); }
     catch(error) {document.getElementById('content-report-message')!.textContent=fail(error);}
     finally {button.disabled=false;}
   });
@@ -128,11 +128,12 @@
         body.updatedAt=source.idea.updated_at;body.targetUpdatedAt=target.idea.updated_at;
         confirmation=`Merge “${source.idea.title}” into “${target.idea.title}”? The source leaves public lists, followers move, and votes stay separate. This publishes your merge reason. This cannot be undone here.`;
       } else if(action==='resolve') confirmation=`${body.resolution==='removed' ? 'Remove content from public view' : 'Keep the reported content'}? Your reason is shown privately to the reporter.`;
+      if(action==='comment-review'){body.version=Number(body.version);confirmation=body.decision==='delete'?'Delete this comment text? Replies and the moderation record are preserved.':body.decision==='hide'?'Hide this comment from public discussion?':'Approve this comment for public discussion?';}
       if(!await window.sfConfirm(confirmation)) return;
       await request('staff/'+action,body);notify('Saved. Refresh this page to see the updated queue.');form.reset();
-      if(action==='close' || action==='resolve') {
+      if(action==='close' || action==='resolve' || action==='comment-review') {
         const card=form.closest('article'),section=card?.closest('section');card?.remove();
-        if(section && !section.querySelector('.care-row'))section.append(sfEmptyState({compact:true,icon:action==='resolve'?'shield':'message',heading:action==='resolve'?'No open reports':'No open private questions',description:'You’re all caught up. New follow-ups will appear here.'}));
+        if(section && !section.querySelector('.care-row'))section.append(sfEmptyState({compact:true,icon:action==='close'?'message':'shield',heading:action==='comment-review'?'No comments need review':action==='resolve'?'No open reports':'No open private questions',description:'You’re all caught up. New follow-ups will appear here.'}));
       }
     }catch(error){notify(fail(error));}
     finally{button.disabled=false;}

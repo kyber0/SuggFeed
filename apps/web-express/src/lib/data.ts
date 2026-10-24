@@ -226,12 +226,13 @@ export async function loadComments(submissionId: string): Promise<Comment[]> {
     async () => {
       const { data, error } = await supabase
         .from("comments")
-        .select("id,submission_id,user_id,body,display_name,created_at,parent_id,author:profiles!comments_user_id_fkey(id,display_name),submission:submissions!inner(status)")
+        .select("id,submission_id,user_id,body,display_name,created_at,parent_id,version,author:profiles!comments_user_id_fkey(id,display_name),submission:submissions!inner(status)")
         .eq("is_hidden",false).in("submission.status",["approved","in_progress","resolved"])
         .eq("submission_id", submissionId)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as unknown as Comment[];
+      const ids=new Set((data||[]).map(c=>c.id));
+      return (data||[]).map(c=>({...c,parent_id:c.parent_id&&ids.has(c.parent_id)?c.parent_id:null})) as unknown as Comment[];
     },
     60_000 // 1 min
   );

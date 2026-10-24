@@ -306,8 +306,9 @@ let sfCurrentIdea = null;
         ${isStaff ? '<span class="comment-staff-tag">STAFF</span>' : ''}
         <span class="comment-date">${sfRelTime(c.created_at)}</span>
       </div>
-      <div class="comment-body">${(c.body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+      <div class="comment-body">${sfEscapeAttribute(String(c.body || ''))}</div>
       <div class="comment-actions">
+        ${c.user_id && c.user_id===document.getElementById('sf-auth-config')?.dataset.user ? `<button type="button" class="care-report" data-edit-comment="${sfEscapeAttribute(String(c.id))}" data-comment-version="${Number(c.version)||1}">Edit</button>` : ''}
         <button type="button" class="care-report" data-report-comment="${String(c.id).replace(/[^a-f0-9-]/gi,'')}">Report</button>
         <button type="button" class="comment-reply-btn" data-sf-click="reply-drawer" data-reply-id="${sfEscapeAttribute(String(c.id))}" data-reply-author="${sfEscapeAttribute(author)}">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
@@ -460,6 +461,10 @@ let sfCurrentIdea = null;
       }
 
       if(context!==drawerRequest || sfCurrentIdea?.id!==ideaId)return;
+      if(data.data?.status && data.data.status!=='published'){
+        input.value='';sfCancelDrawerReply();sfDrawerCommentInputChanged(input);
+        window.sfToast?.('Your comment was saved privately for administrator review.','success');return;
+      }
       const empty = (document.getElementById('drawer-comment-empty') as HTMLElement);
       if (empty) empty.remove();
 

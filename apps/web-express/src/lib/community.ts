@@ -105,9 +105,9 @@ export async function staffCommunity(actor: { id: string; role?: string }, input
   if (!staffRole(actor.role)) throw new CommunityError(403, 'Staff access required.');
   const page=(key:string)=>typeof input[key]==='string' && /^\d+$/.test(input[key] as string)?Math.min(100000,Math.max(1,Number(input[key]))):1;
   const pages={reports:page('reportsPage'),clarifications:page('clarificationsPage'),attention:page('attentionPage')};
-  const section=['reports','clarifications','attention'].includes(String(input.section))?String(input.section):input.idea?'clarifications':'reports';
+  const section=['reports','clarifications','attention',...(actor.role==='admin'?['comments']:[])].includes(String(input.section))?String(input.section):input.idea?'clarifications':'reports';
   const [reports, requests, work] = await Promise.all([
-    supabaseService.from('reports').select('id,reason,submission_id,comment_id,created_at,submission:submissions(title),comment:comments(body,submission_id)',{count:'exact'}).is('resolved_at', null).order('created_at').order('id').range((pages.reports-1)*25,pages.reports*25-1),
+    supabaseService.from('reports').select('id,reason,submission_id,comment_id,created_at,submission:submissions(title),comment:comments(body,submission_id)',{count:'exact'}).is('resolved_at', null).is('comment_id',null).order('created_at').order('id').range((pages.reports-1)*25,pages.reports*25-1),
     supabaseService.from('idea_clarifications').select('id,submission_id,prompt,reply,created_at,replied_at,submission:submissions(title)',{count:'exact'}).is('closed_at', null).order('created_at').order('id').range((pages.clarifications-1)*25,pages.clarifications*25-1),
     supabaseService.from('staff_stale_work').select('id,title,is_blocked,last_public_update,blocked_since',{count:'exact'}).order('last_public_update').order('id').range((pages.attention-1)*25,pages.attention*25-1),
   ]);
@@ -116,7 +116,7 @@ export async function staffCommunity(actor: { id: string; role?: string }, input
   let retryRange=false;
   for(let index=0;index<results.length;index++)if(results[index].error?.code==='PGRST103'){
     const key=keys[index];let query=supabaseService.from(key==='reports'?'reports':key==='clarifications'?'idea_clarifications':'staff_stale_work').select('id',{count:'exact',head:true});
-    if(key!=='attention')query=query.is(key==='reports'?'resolved_at':'closed_at',null);
+    if(key!=='attention')query=query.is(key==='reports'?'resolved_at':'closed_at',null);if(key==='reports')query=query.is('comment_id',null);
     const counted=await query;if(counted.error)throw counted.error;
     results[index].count=counted.count;results[index].error=null;retryRange ||= !!counted.count;
   }

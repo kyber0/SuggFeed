@@ -44,6 +44,7 @@ export interface Submission {
 }
 
 export interface Comment {
+  version?: number;
   id: string;
   submission_id: string;
   body: string;

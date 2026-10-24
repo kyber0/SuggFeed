@@ -42,7 +42,7 @@ export function createAuthClient() {
 // Keep one immutable provider client; scope each operation to the async request/job.
 import { requireSchool } from './school-scope';
 const businessTables = new Set([
-  'categories','submissions','comments','votes','bookmarks','shared_posts','reports','status_history','attachments',
+  'comment_moderation_queue','categories','submissions','comments','votes','bookmarks','shared_posts','reports','status_history','attachments',
   'submission_workflow','staff_internal_notes','staff_workflow_history','staff_saved_views','staff_submission_queue','staff_stale_work',
   'idea_updates','idea_update_drafts','idea_update_uploads','idea_follows','idea_notifications','idea_notification_outbox',
   'idea_clarifications','idea_merges','notification_preferences','weekly_digest_jobs','student_saved_searches',
