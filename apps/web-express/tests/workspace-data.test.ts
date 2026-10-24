@@ -9,7 +9,7 @@ test('dashboard counts include every status, independent of the displayed page',
   supabaseService.from = (() => ({
     select(_columns, options) {
       assert.deepEqual(options, { count: 'exact', head: true });
-      return { eq: async (_column, status) => ({ count: counts[status], error: null }) };
+      return { eq(column, value) { assert.equal(column,'safety_state');assert.equal(value,'clear');return {eq:async (_column,status)=>({count:counts[status],error:null})};} };
     },
   })) as any;
   try {

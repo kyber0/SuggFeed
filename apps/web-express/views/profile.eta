@@ -269,7 +269,7 @@
                 const catLabel = item.category ?? (item.categories?.name ?? 'Other');
               %>
               <div class="prof-activity-card-wrap">
-                <a href="/idea/<%= item.id %>" class="prof-activity-card" aria-label="<%= item.title %>">
+                <a href="<%= item.status==='pending'?'/submission/'+item.id+'/edit':'/idea/'+item.id %>" class="prof-activity-card" aria-label="<%= item.title %>">
                   <div class="prof-activity-card-top">
                     <span class="prof-activity-cat"><%= catLabel %></span>
                     <span class="prof-activity-status <%= sc %>"><%= sl %></span>

@@ -42,7 +42,7 @@
     if (!button) return;
     if (!signedIn) { (window as any).openAuthModal?.(); notify('Sign in to send a private report.'); return; }
     reportTarget = button.dataset.reportComment ? {commentId:button.dataset.reportComment} : {submissionId:button.dataset.reportIdea};
-    reportFocus = button; reportForm.reset(); document.getElementById('content-report-message')!.textContent=''; reportDialog.showModal();
+    reportFocus = button; reportForm.reset();const reason=reportForm.querySelector<HTMLTextAreaElement>('textarea');if(reason){reason.required=!!reportTarget.commentId;reason.minLength=reportTarget.commentId?10:0;reason.placeholder=reportTarget.commentId?'Tell staff what needs review.':'Reason (optional)';} document.getElementById('content-report-message')!.textContent=''; reportDialog.showModal();
   });
   document.getElementById('content-report-cancel')?.addEventListener('click',()=>reportDialog.close());
   reportDialog?.addEventListener('close',()=>{const target=reportFocus?.getClientRects().length?reportFocus:reportFocus?.closest('details')?.querySelector<HTMLElement>('summary');target?.focus();});
@@ -148,13 +148,13 @@
     if(titleInput.value.trim().length<10) {similar?.replaceChildren();return;}
     searchTimer=window.setTimeout(async()=>{
       try {
-        const data=await request('similar?q='+encodeURIComponent(titleInput.value));
+        const data=await request('similar',{q:titleInput.value});
         if(version!==searchVersion || !similar) return;
         similar.replaceChildren();
         if(!data.ideas.length) return;
-        const heading=document.createElement('h4');heading.textContent='Related public ideas';
-        const help=document.createElement('p');help.textContent='These public titles share words with your idea. Support one if it describes the same change. Links open a new tab so your draft stays here.';similar.append(heading,help);
-        for(const idea of data.ideas) {const link=document.createElement('a');link.href=sfSchoolPath('/idea/'+encodeURIComponent(idea.id));link.target='_blank';link.rel='noopener';link.textContent=`${idea.title} · ${idea.vote_count} supporters ↗`;link.setAttribute('aria-label',`${idea.title}, related by title keywords, opens in a new tab`);similar.append(link);}
+        const heading=document.createElement('h4');heading.textContent='Similar suggestions already exist';
+        const help=document.createElement('p');help.textContent='These public suggestions may describe the same change. Support an existing idea instead, or keep writing your draft.';similar.append(heading,help);
+        for(const idea of data.ideas) {const link=document.createElement('a');link.href=sfSchoolPath('/idea/'+encodeURIComponent(idea.id));link.target='_blank';link.rel='noopener';link.textContent=`${idea.title} · ${idea.vote_count} supporters ↗`;link.setAttribute('aria-label',`${idea.title}, similar suggestion, opens in a new tab`);similar.append(link);const vote=document.createElement('button');vote.type='button';vote.className='workspace-button';vote.textContent='Support instead';vote.addEventListener('click',async()=>{vote.disabled=true;try{const response=await sfSchoolFetch('/api/vote/'+encodeURIComponent(idea.id),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'up'})});const result=await response.json();if(!response.ok||!result.success)throw Error();vote.textContent='Supported';notify('Your support was recorded. Your draft is still here.');}catch{vote.disabled=false;notify('Support could not be confirmed. Open the idea to check before retrying.');}});similar.append(vote);}
       }catch{if(version===searchVersion && similar) similar.textContent='Related ideas are temporarily unavailable. You can still submit.';}
     },450);
   });

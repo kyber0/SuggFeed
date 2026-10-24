@@ -65,9 +65,10 @@ function scopedFrom(client: typeof publicClient, table: string) {
           if (property === 'update' && args[0] && Object.prototype.hasOwnProperty.call(args[0], 'school_id')) throw new Error('School ownership cannot be changed.');
           if (table === 'profiles' && property !== 'select') throw new Error('Account changes require a verified owner operation.');
           let query = (target as any)[property](...args).eq('school_id', school.id);
-          if (publicRead && relation === 'submissions') query=query.in('status',['approved','in_progress','resolved']);
+          if (publicRead && relation === 'submissions') query=query.in('status',['approved','in_progress','resolved']).eq('safety_state','clear');
+          if (!publicRead && relation === 'submissions' && school.role==='moderator') query=query.eq('safety_state','clear');
           if (publicRead && relation === 'categories') query=query.eq('is_active',true);
-          if (publicRead && relation === 'comments') query=query.eq('is_hidden',false);
+          if (publicRead && relation === 'comments') query=query.eq('is_hidden',false).eq('submission.safety_state','clear');
           return query;
         };
       }

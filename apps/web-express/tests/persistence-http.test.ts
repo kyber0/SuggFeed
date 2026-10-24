@@ -21,7 +21,8 @@ test('real HTTP submit replays a lost response, recovers code, and rejects accou
   }) as any;
   supabaseService.rpc=(async(name:string,args:any)=>{
     try {
-      const query=name==='create_customized_submission'
+      if(name==='safe_submission_create')args=args.p_args;
+      const query=name==='safe_submission_create'
         ?await db.query<any>('SELECT create_submission_once($1,$2::uuid,$3,$4,$5,$6::uuid,$7::uuid,$8) AS result',[args.p_owner_hash,args.p_request_id,args.p_payload_hash,args.p_title,args.p_description,args.p_category_id,args.p_anonymous?null:user,args.p_tracking_hash])
         :await db.query<any>('SELECT read_submission_receipt($1,$2::uuid) AS result',[args.p_owner_hash,args.p_request_id]);
       return {data:query.rows[0].result,error:null};

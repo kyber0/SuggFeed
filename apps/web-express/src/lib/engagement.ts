@@ -24,7 +24,7 @@ function encodeNotificationCursor(row: { created_at: string; id: string }) {
 
 function visibleNotifications(userId: string, countOnly = false) {
   return supabaseService.from('idea_notifications').select(notificationColumns, countOnly ? { count: 'exact', head: true } : undefined)
-    .eq('user_id', userId).in('submission.status', PUBLIC_STATUSES)
+    .eq('user_id', userId).eq('submission.safety_state','clear').in('submission.status', PUBLIC_STATUSES)
     .eq('update.visibility', 'public').is('update.deleted_at', null);
 }
 
@@ -48,7 +48,7 @@ export async function loadNotifications(userId: string, cursor: ReturnType<typeo
 
 export async function loadFollowing(userId: string, submissionId: string) {
   const { data: idea, error: ideaError } = await supabaseService.from('submissions').select('id')
-    .eq('id', submissionId).in('status', PUBLIC_STATUSES).maybeSingle();
+    .eq('id', submissionId).eq('safety_state','clear').in('status', PUBLIC_STATUSES).maybeSingle();
   if (ideaError) throw ideaError;
   if (!idea) return null;
   const { data, error } = await supabaseService.from('idea_follows').select('submission_id')

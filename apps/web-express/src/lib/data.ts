@@ -156,7 +156,7 @@ export async function loadPublishedSubmissions(opts: {
     return categoryLookup;
   };
   const applyFilters=(query:any,catId:string | undefined)=>{
-    query=query.in('status',['approved','in_progress','resolved']);
+    query=query.eq('safety_state','clear').in('status',['approved','in_progress','resolved']);
     if(followingUserId)query=query.eq('idea_follows.user_id',followingUserId);
     if(filteredCategory)query=catId?query.eq('category_id',catId):query.eq('categories.name',category);
     if(term){const safe=sanitizeSearch(term);query=query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);}
@@ -283,7 +283,7 @@ export async function loadUserSubmissions(userId: string): Promise<Submission[]>
 export async function loadUserBookmarks(userId: string): Promise<Submission[]> {
   const { data, error } = await supabaseService
     .from("bookmarks")
-    .select(`submission_id, submission:submissions(${SUBMISSION_SELECT})`)
+    .select(`submission_id, submission:submissions!inner(${SUBMISSION_SELECT})`).eq('submission.safety_state','clear')
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -296,7 +296,7 @@ export const MODERATION_STATUSES = ["pending", "approved", "in_progress", "resol
 export async function loadModerationCounts(): Promise<Record<string, number>> {
   const entries = await Promise.all(MODERATION_STATUSES.map(async (status) => {
     const { count, error } = await supabaseService.from("submissions")
-      .select("id", { count: "exact", head: true }).eq("status", status);
+      .select("id", { count: "exact", head: true }).eq("safety_state","clear").eq("status", status);
     if (error) throw error;
     return [status, count ?? 0] as const;
   }));

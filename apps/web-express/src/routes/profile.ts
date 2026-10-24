@@ -88,7 +88,7 @@ router.post('/activity',sameOriginOnly,asyncHandler(async(req,res)=>{
     const recorded=new Set((result.data || []).map(row=>row.submission_id));remembered=remembered.filter(id=>!recorded.has(id));
    }
    if(!remembered.length)return [];
-   const result=await supabaseService.from('submissions').select(columns).in('id',remembered).in('status',publicStatuses);
+   const result=await supabaseService.from('submissions').select(columns).in('id',remembered).eq('safety_state','clear').in('status',publicStatuses);
    if(result.error)throw new Error('Public activity could not load.');
    const byId=new Map((result.data || []).map(row=>[row.id,row]));
    return remembered.map(id=>byId.get(id)).filter(Boolean);
@@ -100,7 +100,7 @@ router.post('/activity',sameOriginOnly,asyncHandler(async(req,res)=>{
    if(available.length>offset+size)next={offset:offset+size,local:true};
   }else{
    // Filter before pagination so hidden or deleted ideas cannot create empty pages.
-   const result=await supabaseService.from(tables[tab]).select(`submission_id,submission:submissions!inner(${columns})`).eq('user_id',schoolUser(req)!.id).in('submission.status',publicStatuses).order('created_at',{ascending:false}).order('submission_id').range(offset,offset+size);
+   const result=await supabaseService.from(tables[tab]).select(`submission_id,submission:submissions!inner(${columns})`).eq('user_id',schoolUser(req)!.id).eq('submission.safety_state','clear').in('submission.status',publicStatuses).order('created_at',{ascending:false}).order('submission_id').range(offset,offset+size);
    if(result.error)throw new Error('Activity could not load.');
    rows=(result.data || []).slice(0,size).map(row=>row.submission);
    if((result.data || []).length>size)next={offset:offset+size,local:false};
@@ -122,14 +122,14 @@ router.post('/activity',sameOriginOnly,asyncHandler(async(req,res)=>{
  const groups={bookmarks:schoolUser(req)?saved:local('saved'),voted:[...new Set([...supported,...local('supported')])].slice(0,200),shared:[...new Set([...shared,...local('shared')])].slice(0,200)};
  const ids=[...new Set(Object.values(groups).flat())];
  let rows:any[]=[];
- for(let offset=0;offset<ids.length;offset+=100){const result=await supabaseService.from('submissions').select('id,title,status,vote_count,created_at,categories(name)').in('id',ids.slice(offset,offset+100)).in('status',['approved','in_progress','resolved']);if(result.error)throw new Error('Public activity could not load.');rows.push(...(result.data || []));}
+ for(let offset=0;offset<ids.length;offset+=100){const result=await supabaseService.from('submissions').select('id,title,status,vote_count,created_at,categories(name)').in('id',ids.slice(offset,offset+100)).eq('safety_state','clear').in('status',['approved','in_progress','resolved']);if(result.error)throw new Error('Public activity could not load.');rows.push(...(result.data || []));}
  const byId=new Map(rows.map(row=>[row.id,row]));
  return res.json({success:true,...Object.fromEntries(Object.entries(groups).map(([key,list])=>[key,list.map(id=>byId.get(id)).filter(Boolean)]))});
 }));
 router.post('/shared/:id',sameOriginOnly,asyncHandler(async(req,res)=>{
  if(!schoolFeature('sharing'))return res.status(403).json({success:false,code:'FEATURE_DISABLED',error:'This school disabled new sharing actions.'});
  const id=req.params.id as string;if(!uuid.test(id))return res.status(400).json({success:false,error:'Invalid idea.'});
- const {data,error}=await supabaseService.from('submissions').select('id').eq('id',id).in('status',['approved','in_progress','resolved']).maybeSingle();
+ const {data,error}=await supabaseService.from('submissions').select('id').eq('id',id).eq('safety_state','clear').in('status',['approved','in_progress','resolved']).maybeSingle();
  if(error)throw new Error('Sharing could not be recorded.');if(!data)return res.status(404).json({success:false,error:'Public idea not found.'});
  if(schoolUser(req)){const write=await supabaseService.from('shared_posts').upsert({user_id:schoolUser(req)!.id,submission_id:id},{onConflict:'user_id,submission_id'});if(write.error)throw new Error('Sharing could not be recorded.');}
  return res.json({success:true});

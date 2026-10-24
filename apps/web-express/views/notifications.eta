@@ -7,6 +7,7 @@
  <% if (!it.signedIn) { %>
   <%~ include('partials/empty-state',{hero:true,icon:'bell',heading:'Keep up with ideas you care about',description:'Sign in and follow an idea to see your school’s progress updates here.',actions:[{label:'Sign in',event:'action-94'},{label:'Explore the roadmap',href:'/roadmap',secondary:true}],hint:'Following an idea enables in-app updates. Email preferences are managed separately.'}) %>
  <% } else { %>
+  <section class="care-card" data-safety-notices><h2>Your submission updates</h2><p data-safety-status role="status">Loading submission updates…</p><div data-safety-notice-list></div><button type="button" class="workspace-button" data-safety-retry hidden>Try again</button></section>
   <div class="notification-layout">
   <section class="notification-stream" aria-labelledby="notification-stream-title">
    <h2 id="notification-stream-title">Latest updates</h2>

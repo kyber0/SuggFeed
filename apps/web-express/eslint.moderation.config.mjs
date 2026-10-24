@@ -1,2 +1,2 @@
 import tseslint from 'typescript-eslint';
-export default tseslint.config({files:['src/lib/comment-moderation*.ts','src/lib/comments.ts','src/client/comment-edit.ts'],extends:[...tseslint.configs.recommended],rules:{'@typescript-eslint/no-explicit-any':'error'}});
+export default tseslint.config({files:['src/lib/comment-moderation*.ts','src/lib/comments.ts','src/lib/content-*.ts','src/lib/*-rules.ts','src/lib/submission-safety.ts','src/lib/safety-email.ts','src/client/submission-safety.ts','src/routes/submission-safety.ts','src/client/comment-edit.ts'],extends:[...tseslint.configs.recommended],rules:{'@typescript-eslint/no-explicit-any':'error'}});

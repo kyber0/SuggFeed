@@ -1,5 +1,3 @@
-/** Server-owned settings; never accept these values from request bodies. */
-export const commentModerationConfig: { mode: 'flag' | 'reject'; reportThreshold: number } = {
-  mode: 'flag',
-  reportThreshold: 3,
-};
+import {contentSafetyConfig} from './content-safety-config';
+/** Compatibility export for comment callers; all policy lives in one file. */
+export const commentModerationConfig = contentSafetyConfig.comments;

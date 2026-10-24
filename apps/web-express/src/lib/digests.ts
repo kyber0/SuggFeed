@@ -46,7 +46,7 @@ export async function deliverWeeklyDigests(transport:typeof fetch=fetch) {
       if(digestConsent(preference.data)) {
         const start=new Date(job.week_start+'T00:00:00+08:00'),end=new Date(start.getTime()+7*86400000);
         const notifications=await supabaseService.from('idea_notifications').select('title,kind,office_label,submission_id,submission:submissions!inner(status),update:idea_updates!inner(visibility,deleted_at)')
-          .eq('user_id',job.user_id).gte('created_at',start.toISOString()).lt('created_at',end.toISOString()).in('submission.status',['approved','in_progress','resolved'])
+          .eq('user_id',job.user_id).gte('created_at',start.toISOString()).lt('created_at',end.toISOString()).eq('submission.safety_state','clear').in('submission.status',['approved','in_progress','resolved'])
           .eq('update.visibility','public').is('update.deleted_at',null).order('created_at').limit(100);
         if(notifications.error) throw notifications.error;
         const follows=await supabaseService.from('idea_follows').select('submission_id').eq('user_id',job.user_id);

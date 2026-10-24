@@ -19,7 +19,7 @@ test('community routes enforce staff roles, ignore caller identity and reject cr
   assert.equal((await send('report',{submissionId:idea,body:'Cross-origin reports must not be accepted.'},'https://attacker.test')).status,403);
   assert.equal((await send('report',{submissionId:'bad',body:'A malformed idea ID must not reach the database.'})).status,400);
   assert.equal((await send('report',{submissionId:idea,body:'The report uses the session user rather than caller data.',userId:'fake'})).status,200);
-  assert.equal(calls.at(-1)[1].p_actor,id);
+  assert.equal(calls.at(-1)[0],'submission_safety_action');assert.equal(calls.at(-1)[1].p_action,'report');assert.equal(calls.at(-1)[1].p_data.userId,undefined);
   role='moderator';assert.equal((await send('staff/request',{submissionId:idea,body:'Please explain which part of campus is affected.',staffId:'fake'})).status,200);
   assert.equal(calls.at(-1)[1].p_actor,id);
   assert.equal((await send('staff/merge',{submissionId:idea,targetId:id,body:'These two ideas should be merged after reviewing.'})).status,400);

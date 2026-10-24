@@ -1,3 +1,4 @@
+import submissionSafetyRouter from './routes/submission-safety';
 import "dotenv/config";
 import { requireStaffAssurance } from './lib/auth-assurance';
 import { navigationContext } from './lib/navigation-context';
@@ -294,6 +295,7 @@ app.use('/idea', ideaRouter);
 app.use('/roadmap', roadmapRouter);
 app.use('/profile', profileRouter);
 app.use('/notifications', notificationsRouter);
+app.use('/',submissionSafetyRouter);
 app.use('/admin', adminRouter);
 app.use('/api/community', communityRouter);
 app.use('/', communityPages);

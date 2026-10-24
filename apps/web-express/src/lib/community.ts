@@ -1,3 +1,4 @@
+import {contentSafetyConfig} from './content-safety-config';
 import { createHash } from 'crypto';
 import { supabaseService, supabase } from './supabase';
 import { ENGAGEMENT_UUID } from './engagement';
@@ -90,25 +91,17 @@ export async function replyToClarification(actor: string | null, input: any) {
   return communityAction(actor, 'reply', { id, body, trackingHash });
 }
 export async function similarIdeas(input: unknown) {
-  const text = typeof input === 'string' ? input.trim().slice(0, 120) : '';
-  const words = text.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu)?.filter(x => !['the','and','for','with','add','our','more','that'].includes(x)).slice(0, 5) || [];
-  if (!words.length) return [];
-  // Bounded public-only keyword matches, not a fabricated similarity score.
-  const clauses = words.map(word => `title.ilike.%${word.replace(/[^a-z0-9]/g, '')}%`).filter(x => !x.endsWith('.%%'));
-  if (!clauses.length) return [];
-  const { data, error } = await supabase.from('submissions').select('id,title,status,vote_count').in('status', ['approved','in_progress','resolved']).or(clauses.join(','))
-    .order('vote_count', { ascending: false }).limit(5);
-  if (error) throw error;
-  return data || [];
+ const text=typeof input==='string'?input.trim().slice(0,2120):'';if(text.length<4)return [];
+ const {data,error}=await supabaseService.rpc('safety_similar',{p_text:text,p_threshold:contentSafetyConfig.similarity.threshold,p_limit:contentSafetyConfig.similarity.limit});if(error)throw new CommunityError(503,'Similar suggestions are temporarily unavailable.');return data||[];
 }
 export async function staffCommunity(actor: { id: string; role?: string }, input:Record<string,unknown>={},attempt=0):Promise<any> {
   if (!staffRole(actor.role)) throw new CommunityError(403, 'Staff access required.');
   const page=(key:string)=>typeof input[key]==='string' && /^\d+$/.test(input[key] as string)?Math.min(100000,Math.max(1,Number(input[key]))):1;
   const pages={reports:page('reportsPage'),clarifications:page('clarificationsPage'),attention:page('attentionPage')};
-  const section=['reports','clarifications','attention',...(actor.role==='admin'?['comments']:[])].includes(String(input.section))?String(input.section):input.idea?'clarifications':'reports';
+  const section=['clarifications','attention',...(actor.role==='admin'?['comments']:[])].includes(String(input.section))?String(input.section):'clarifications';
   const [reports, requests, work] = await Promise.all([
-    supabaseService.from('reports').select('id,reason,submission_id,comment_id,created_at,submission:submissions(title),comment:comments(body,submission_id)',{count:'exact'}).is('resolved_at', null).is('comment_id',null).order('created_at').order('id').range((pages.reports-1)*25,pages.reports*25-1),
-    supabaseService.from('idea_clarifications').select('id,submission_id,prompt,reply,created_at,replied_at,submission:submissions(title)',{count:'exact'}).is('closed_at', null).order('created_at').order('id').range((pages.clarifications-1)*25,pages.clarifications*25-1),
+    Promise.resolve({data:[],count:0,error:null} as {data:never[];count:number|null;error:{code:string}|null}),
+    supabaseService.from('idea_clarifications').select('id,submission_id,prompt,reply,created_at,replied_at,submission:submissions!inner(title,safety_state)',{count:'exact'}).eq('submission.safety_state','clear').is('closed_at', null).order('created_at').order('id').range((pages.clarifications-1)*25,pages.clarifications*25-1),
     supabaseService.from('staff_stale_work').select('id,title,is_blocked,last_public_update,blocked_since',{count:'exact'}).order('last_public_update').order('id').range((pages.attention-1)*25,pages.attention*25-1),
   ]);
   const results=[reports,requests,work], keys=['reports','clarifications','attention'] as const;

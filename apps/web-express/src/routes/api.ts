@@ -1,3 +1,6 @@
+import {deliverSafetyEmail} from '../lib/safety-email';
+import {assessSubmission,categorize} from '../lib/content-moderation';
+import {contentSafetyConfig} from '../lib/content-safety-config';
 import {saveComment} from '../lib/comments';
 import {CommunityError} from '../lib/community';
 import {schoolFeature,schoolCategories,schoolCategory} from '../lib/school-customization';
@@ -138,7 +141,7 @@ router.post(
     if (description.trim().length > 2000) {
       return res.status(400).json({ success: false, error: "Description must be 2000 characters or fewer." });
     }
-    if(typeof category!=='string'||category.length>80)return res.status(400).json({success:false,error:'Choose a current school category.'});
+    if(category!==undefined&&(typeof category!=='string'||category.length>80))return res.status(400).json({success:false,error:'Choose a current school category.'});
     const anonymous = isAnonymous === true || isAnonymous === "true";
     const user = schoolUser(req);
     if (!anonymous && !user?.id) {
@@ -154,20 +157,24 @@ router.post(
     const trackingCode=anonymous?receiptTrackingCode(context.device,context.actor,requestId):null;
     const canonical=customized?{title:title.trim(),description:description.trim(),category,isAnonymous:anonymous,schemaVersion:2,formVersion:req.body.formVersion||null,answers:req.body.answers||{},fileIds:req.body.fileIds||[]}:{title:title.trim(),description:description.trim(),category,isAnonymous:anonymous};
     const payloadHash=submissionHash(JSON.stringify(canonical));
-    const cat=schoolCategory(category);
+    const cat=typeof category==='string'&&category?schoolCategory(category):schoolCategories().find(c=>c.id===categorize(title+' '+description,schoolCategories()));
     if(req.body.formVersion!==undefined&&req.body.formVersion!==null&&(typeof req.body.formVersion!=='string'||!ENGAGEMENT_UUID.test(req.body.formVersion)))return res.status(400).json({success:false,error:'Reload the current school form.'});
-    const {data,error}=await supabaseService.rpc('create_customized_submission',{
+    const verdict=assessSubmission(title,description,req.body.answers);
+    if(verdict.state==='rejected')return res.status(422).json({success:false,error:'Please revise your submission to keep it respectful.'});
+    const {data,error}=await supabaseService.rpc('safe_submission_create',{p_verdict:verdict,p_policy:{...contentSafetyConfig.submissions,ipKey:sha256((process.env.SESSION_SECRET||'')+':'+req.ip)},p_args:{
       p_owner_hash:context.actor,p_request_id:requestId,p_payload_hash:payloadHash,
       p_title:title.trim(),p_description:description.trim(),p_category_id:cat?.id || null,
       p_anonymous:anonymous,p_tracking_hash:trackingCode?sha256(trackingCode):null,
       p_form_version:customized?req.body.formVersion||null:null,p_answers:customized?req.body.answers||{}:{},p_files:customized?req.body.fileIds||[]:[],
-    });
+    }});
+    if(error?.code==='PT429'){res.setHeader('Retry-After','30');return res.status(429).json({success:false,error:'Please wait before submitting again. You may have reached the hourly limit.'});}
     if(error?.code==='P0202'||error?.code==='22023'&&!cat?.active){const fresh=await supabasePlatform.rpc('school_published_configuration',{p_school:currentSchool()!.id});if(fresh.error)throw fresh.error;return res.status(409).json({success:false,code:'FORM_CHANGED',error:'The school changed this form. Your text is preserved; review the current questions before submitting.',schema:{form:fresh.data.form,formVersion:fresh.data.formVersion,features:fresh.data.features,categories:fresh.data.categories}});}
     if(error?.code==='P0201')return res.status(403).json({success:false,code:'FEATURE_DISABLED',error:'Your school disabled this type of submission. Sign in to submit with your account.'});
     if(error?.code==='22023'||error?.code==='42501')return res.status(400).json({success:false,error:'Check the current school questions, category and required images. Images must belong to this account and browser and must not have expired.'});
     if(error?.code==='23505')return res.status(409).json({success:false,error:'This receipt belongs to different content. Check the previous submission before starting another.'});
     if(error?.code==='P0004')return res.status(410).json({success:false,error:'This receipt expired or its submission was removed.'});
-    if(error)throw error;
+    if(error){console.error('submission_write_unavailable');return res.status(503).json({success:false,error:'Your submission could not be confirmed. Check your receipt before retrying.'});}
+    if(verdict.urgent)await deliverSafetyEmail().catch(()=>console.error('safety_email_unavailable'));
     invalidateCache('feed_');
     invalidateCache('published_count_');
     res.setHeader('Cache-Control','private, no-store');

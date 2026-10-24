@@ -42,6 +42,7 @@
   <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>
   <link rel="stylesheet" href="/css/modules/controls.css?v=20261024-controls"/>
   <script defer src="/js/controls.js?v=20261024-controls"></script>
+  <link rel="stylesheet" href="/css/submission-safety.css?v=20261024"/>
 </head>
 <body<% if(it.schoolCustomization?.design) { const pd=it.schoolCustomization.design.pages[it.schoolDesignPage]||{layout:"default",spacing:"comfortable",cards:"outlined"}; %> data-school-design data-school-page="<%= it.schoolDesignPage || '' %>" data-school-layout="<%= pd.layout %>" data-school-spacing="<%= pd.spacing %>" data-school-cards="<%= pd.cards %>"<% } %><% if(it.schoolCustomization) { %> data-school-colors style="<%= it.schoolColorStyle || '' %>"<% } %> class="<%= /^\/feed\/?$/.test(it.currentPath || '') ? 'sf-feed-workspace ' : '' %><%= it.schoolCustomization ? 'school-palette-'+it.schoolCustomization.palette : '' %> <%= it.schoolCustomization ? Object.entries(it.schoolCustomization.features).filter(([key,value])=>!value).map(([key])=>'school-'+key+'-off').join(' ') : '' %>">
 <% if(it.schoolCustomization) { %><script type="application/json" id="school-presentation-data"><%~ JSON.stringify(it.schoolCustomization).replace(/</g,'\\u003c') %></script><script defer src="/js/school-design.js?v=20261022-brand-cursor"></script><script defer src="/js/school-ui.js?v=20261021-design"></script><script defer src="/js/school-submission.js?v=20261021-category-icons"></script><% } %>
@@ -76,7 +77,7 @@
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>
 <% if (!it.accountArea && !it.platformDashboard) { %>
 <script defer src="/js/engagement.js?v=20261021-toggle-votes"></script>
-<script defer src="/js/community.js?v=20261024-comment-bubbles"></script>
+<script defer src="/js/community.js?v=20261024-submission-safety"></script>
 
 <script defer src="/js/public-history.js?v=20261018-empty-states"></script>
 
@@ -89,5 +90,6 @@
 
 <% if (/(?:school-settings|settings|student-access)$/.test(it.currentPath || '')) { %><script defer src="/js/student-access.js?v=20261021-student-joining"></script><% } %>
 <script defer src="/js/comment-edit.js?v=20261024-comment-bubbles"></script>
+<script defer src="/js/submission-safety.js?v=20261024-safety"></script>
 </body>
 </html>
