@@ -1,4 +1,4 @@
-const BUSINESS_PATH = /^\/(?:$|[?#]|feed(?:[/?#]|$)|roadmap(?:[/?#]|$)|idea(?:[/?#]|$)|submission-details(?:[/?#]|$)|api(?:[/?#]|$)|admin(?:[/?#]|$)|staff(?:[/?#]|$)|staff-login(?:[/?#]|$)|profile(?:[/?#]|$)|notifications(?:[/?#]|$)|inbox(?:[/?#]|$)|digest(?:[/?#]|$)|privacy(?:[/?#]|$)|terms(?:[/?#]|$))/;
+const BUSINESS_PATH = /^\/(?:$|[?#]|help(?:[/?#]|$)|feed(?:[/?#]|$)|roadmap(?:[/?#]|$)|idea(?:[/?#]|$)|submission-details(?:[/?#]|$)|api(?:[/?#]|$)|admin(?:[/?#]|$)|staff(?:[/?#]|$)|staff-login(?:[/?#]|$)|profile(?:[/?#]|$)|notifications(?:[/?#]|$)|inbox(?:[/?#]|$)|digest(?:[/?#]|$)|privacy(?:[/?#]|$)|terms(?:[/?#]|$))/;
 export function schoolPath(base: string, path: string): string {
   return /^\/s\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(base) && !path.startsWith('//') && !path.includes('\\') && BUSINESS_PATH.test(path) ? base + path : path;
 }

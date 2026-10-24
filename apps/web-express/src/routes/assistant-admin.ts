@@ -1,0 +1,14 @@
+import {Router,type Request,type Response} from 'express';
+import {currentSchool,schoolUser} from '../lib/school-scope';
+import {requireStrongAuth} from '../lib/auth-assurance';
+import {storeFor} from '../lib/assistant/store';
+import {assistantConfig as c} from '../lib/assistant/config';
+import {supabasePlatform} from '../lib/supabase';
+import {sameOriginOnly} from '../lib/security';
+const router=Router();
+async function access(req:Request,res:Response){try{if(currentSchool()){if(schoolUser(req)?.role!=='admin'){res.status(403).json({success:false,error:'School administrator access required.'});return false;}}else{const id=req.session.user?.id;if(!id){res.status(401).json({success:false,error:'Sign in required.'});return false;}const result=await supabasePlatform.rpc('platform_operator_active',{p_actor:id});if(result.error||result.data!==true){res.status(403).json({success:false,error:'Platform operator access required.'});return false;}Object.assign(res.locals,{platformDashboard:true,isPlatformOperator:true});}let allowed=false;requireStrongAuth(req,res,()=>{allowed=true;});return allowed;}catch{res.status(503).json({success:false,error:'Permissions could not be checked. Please try again.'});return false;}}
+const store=(req:Request)=>storeFor(currentSchool()?.id||null,currentSchool()?schoolUser(req)?.id||null:req.session.user?.id||null);
+router.get(['/admin/assistant','/platform/assistant'],async(req,res)=>{if(!await access(req,res))return;res.setHeader('Cache-Control','private, no-store');res.render('assistant-admin',{title:'Sugi review — SuggFeed',activeSection:'assistant',assistantEndpoint:currentSchool()?'/admin/assistant/data':'/platform/assistant/data',collecting:c.loggingEnabled});});
+router.get(['/admin/assistant/data','/platform/assistant/data'],async(req,res)=>{if(!await access(req,res))return;res.setHeader('Cache-Control','private, no-store');try{const page=typeof req.query.page==='string'&&/^\d{1,4}$/.test(req.query.page)?Number(req.query.page):1;res.json({success:true,data:await store(req)('admin',{page}),collecting:c.loggingEnabled});}catch{res.status(503).json({success:false,error:'Sugi review data could not load. Please try again.'});}});
+router.post(['/admin/assistant/review','/platform/assistant/review'],sameOriginOnly,async(req,res)=>{if(!await access(req,res))return;res.setHeader('Cache-Control','private, no-store');const id=req.body?.id,topic=req.body?.topic;if(!(typeof id==='string'&&/^[a-f0-9-]{36}$/i.test(id))&&!(typeof topic==='string'&&/^[a-z0-9 -]{1,300}$/.test(topic)))return res.status(400).json({success:false,error:'Choose an available review item.'});try{await store(req)('review',{id:typeof id==='string'?id:null,topic:typeof topic==='string'?topic:null});res.json({success:true});}catch{res.status(503).json({success:false,error:'Review could not be saved.'});}});
+export default router;

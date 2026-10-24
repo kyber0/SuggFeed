@@ -8,12 +8,14 @@
 (() => {
   const worker = self as unknown as ServiceWorkerGlobalScope;
 
-  const CACHE_VERSION = "cv-v15-shared-motion";
+  const CACHE_VERSION = "cv-v16-sugi-help";
   const STATIC_CACHE = `${CACHE_VERSION}-static`;
   const MAX_STATIC_ENTRIES = 200;
 
   const STATIC_ASSETS: string[] = [
     "/offline.html",
+    "/help-faq.html",
+    "/css/modules/assistant.css",
     "/manifest.json",
     "/branding/sf-monogram.png",
   ];
@@ -79,7 +81,7 @@
       event.respondWith(
         fetch(request).catch(() =>
           caches
-            .match("/offline.html")
+            .match(['/help','/help-faq.html'].includes(url.pathname)?'/help-faq.html':'/offline.html')
             .then(
               (r) =>
                 r ??

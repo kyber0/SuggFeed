@@ -1,3 +1,4 @@
+import {assistantConfig} from '../lib/assistant/config';
 import {Router} from 'express';
 import {cronAuthorized} from '../lib/read-budget';
 import {supabasePlatform} from '../lib/supabase';
@@ -16,7 +17,8 @@ router.get('/internal/security-maintenance',async(req,res,next)=>{
   // Counts contain no identity/token data. Alert if daily batches cannot clear the backlog.
   console.info(JSON.stringify({event:'security_maintenance',removed,more,batches,complete:!more}));
   if(more)res.setHeader('Retry-After','60');
-  res.status(more?503:200).json({success:!more,sessions:{removed,more,batches},schoolRetention:'No school content deleted; disposal approval required.'});
+  let assistantRemoved=0,assistantMore=true,assistantBatches=0;do{const assistant=await supabasePlatform.rpc('assistant_action',{p_school:null,p_actor:null,p_action:'cleanup',p_data:{days:assistantConfig.retentionDays}});if(assistant.error||!Number.isInteger(assistant.data?.removed)||assistant.data.removed<0||typeof assistant.data.more!=='boolean')throw new Error('Assistant cleanup unavailable');assistantRemoved+=assistant.data.removed;assistantMore=assistant.data.more;assistantBatches++;}while(assistantMore&&assistantBatches<10&&Date.now()<deadline);if(assistantMore)res.setHeader('Retry-After','60');
+  res.status(more||assistantMore?503:200).json({success:!more&&!assistantMore,sessions:{removed,more,batches},assistant:{removed:assistantRemoved,more:assistantMore,batches:assistantBatches},schoolRetention:'No school content deleted; disposal approval required.'});
  }catch(error){console.warn(JSON.stringify({event:'security_maintenance',removed,batches,complete:false}));next(Object.assign(new Error('Security cleanup unavailable.'),{status:503}));}
 });
 export default router;

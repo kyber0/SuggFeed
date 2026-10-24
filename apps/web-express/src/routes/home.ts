@@ -1,3 +1,5 @@
+import {knowledgeFor} from '../lib/assistant/knowledge';
+import {currentSchool} from '../lib/school-scope';
 import {supabaseService} from '../lib/supabase';
 import {schoolUser} from '../lib/school-scope';
 import {ENGAGEMENT_UUID} from '../lib/engagement';
@@ -41,6 +43,7 @@ router.get(
     res.render("home", {
       title: "SuggFeed — Share feedback, track progress",
       description: "Share campus feedback, choose whether to attach your account, and check submission progress with a private tracking code.",
+      assistantKnowledge:knowledgeFor(currentSchool()?.id),
       feed,
       votedIds,
       totalCount: count,

@@ -1,0 +1,349 @@
+<!-- version: app-1 -->
+# Reviewed Sugi knowledge
+
+## submit-idea
+```json
+{
+  "id": "submit-idea",
+  "status": "published",
+  "questions": {
+    "en": "How do I submit an idea?",
+    "fil": "Paano magpadala ng mungkahi?",
+    "taglish": "Paano mag submit ng idea?"
+  },
+  "answers": {
+    "en": "Open your school Home page and choose Share an idea. Enter a title, description and category, complete any school questions, then submit.",
+    "fil": "Buksan ang Home ng iyong paaralan at piliin ang Share an idea. Ilagay ang pamagat, paglalarawan at kategorya, sagutan ang mga tanong ng paaralan, at isumite.",
+    "taglish": "Sa school Home, piliin ang Share an idea. Lagyan ng title, description at category, sagutan ang school questions, tapos submit."
+  },
+  "keywords": [
+    "submit",
+    "submission",
+    "send",
+    "idea",
+    "suggestion",
+    "mungkahi",
+    "magpadala",
+    "isumite"
+  ],
+  "route": "/"
+}
+```
+
+## track-idea
+```json
+{
+  "id": "track-idea",
+  "status": "published",
+  "questions": {
+    "en": "How do I track an anonymous idea?",
+    "fil": "Paano subaybayan ang lihim na mungkahi?",
+    "taglish": "Paano i track ang anonymous idea?"
+  },
+  "answers": {
+    "en": "Keep your private tracking code and use Track on your school Home page. Never post the code publicly. Named submissions appear in My activity.",
+    "fil": "Itago ang pribadong tracking code at gamitin ang Track sa Home ng paaralan. Huwag itong ibahagi sa publiko. Makikita ang mga mungkahing may pangalan sa My activity.",
+    "taglish": "Keep your private tracking code, then gamitin ang Track sa school Home. Huwag i-post ang code. Named ideas are in My activity."
+  },
+  "keywords": [
+    "track",
+    "tracking",
+    "code",
+    "anonymous",
+    "subaybayan",
+    "status",
+    "receipt"
+  ],
+  "route": "/"
+}
+```
+
+## join-school
+```json
+{
+  "id": "join-school",
+  "status": "published",
+  "questions": {
+    "en": "How do I join my school?",
+    "fil": "Paano sumali sa aking paaralan?",
+    "taglish": "Paano mag join sa school?"
+  },
+  "answers": {
+    "en": "Sign in and open Your schools. Follow the school’s available joining option: verified school email, approved email list, access request or invitation. Availability depends on the school’s setup.",
+    "fil": "Mag-sign in at buksan ang Your schools. Sundin ang paraang pinapayagan ng paaralan: beripikadong email, aprubadong listahan, kahilingan o imbitasyon. Nakadepende ito sa pagsasaayos ng paaralan.",
+    "taglish": "Sign in, then open Your schools. Gamitin ang available option: verified school email, approved email list, request, or invitation. Depende ito sa school setup."
+  },
+  "keywords": [
+    "join",
+    "joining",
+    "school",
+    "schools",
+    "sumali",
+    "paaralan",
+    "membership",
+    "domain",
+    "roster"
+  ],
+  "route": "/schools"
+}
+```
+
+## invitation
+```json
+{
+  "id": "invitation",
+  "status": "published",
+  "questions": {
+    "en": "How do I accept an invitation?",
+    "fil": "Paano tanggapin ang imbitasyon?",
+    "taglish": "Paano mag accept ng invitation?"
+  },
+  "answers": {
+    "en": "Open the invitation link and sign in using the invited email address. Confirm the invitation. If it expired or the address does not match, ask the school administrator for help.",
+    "fil": "Buksan ang link ng imbitasyon at mag-sign in gamit ang inimbitahang email. Kumpirmahin ang imbitasyon. Kung paso na o iba ang email, humingi ng tulong sa administrador.",
+    "taglish": "Open the invitation link, then sign in gamit ang invited email. Confirm it. Kung expired o hindi tugma ang email, contact the school admin."
+  },
+  "keywords": [
+    "invitation",
+    "invite",
+    "accept",
+    "invited",
+    "imbitasyon",
+    "tanggapin"
+  ],
+  "route": "/schools"
+}
+```
+
+## account-help
+```json
+{
+  "id": "account-help",
+  "status": "published",
+  "questions": {
+    "en": "How do I get sign-in help?",
+    "fil": "Paano humingi ng tulong sa pag-sign in?",
+    "taglish": "Paano kung hindi maka sign in?"
+  },
+  "answers": {
+    "en": "Use Sign in and choose the method connected to your account. Never share passwords, authenticator codes or confirmation links. If access still fails, contact your school administrator.",
+    "fil": "Gamitin ang Sign in at ang paraang konektado sa iyong account. Huwag ibahagi ang password, authenticator code o confirmation link. Kung may problema pa, kontakin ang administrador.",
+    "taglish": "Use Sign in with your account method. Huwag i-share ang password, authenticator code or confirmation link. Kung ayaw pa rin, contact your school admin."
+  },
+  "keywords": [
+    "signin",
+    "login",
+    "account",
+    "google",
+    "password",
+    "confirmation",
+    "authenticator",
+    "security",
+    "access"
+  ],
+  "route": "/schools"
+}
+```
+
+## progress
+```json
+{
+  "id": "progress",
+  "status": "published",
+  "questions": {
+    "en": "What do the progress stages mean?",
+    "fil": "Ano ang mga yugto ng progreso?",
+    "taglish": "Ano meaning ng progress stages?"
+  },
+  "answers": {
+    "en": "School staff review submissions before publication. Public stages include Planned, In progress and Completed. Safety review is separate. The roadmap shows published progress; a school may disable that view.",
+    "fil": "Sinusuri muna ng kawani ang mga mungkahi bago ilathala. Kabilang sa mga yugto ang Planned, In progress at Completed. Hiwalay ang safety review. Makikita sa roadmap ang inilathalang progreso kung pinapayagan ng paaralan.",
+    "taglish": "Staff review muna bago publication. Public stages: Planned, In progress, Completed. Hiwalay ang safety review. Check the roadmap kung enabled sa school."
+  },
+  "keywords": [
+    "progress",
+    "stages",
+    "planned",
+    "completed",
+    "resolved",
+    "roadmap",
+    "progreso",
+    "yugto",
+    "status"
+  ],
+  "route": "/roadmap"
+}
+```
+
+## vote
+```json
+{
+  "id": "vote",
+  "status": "published",
+  "questions": {
+    "en": "How do I support or undo support for an idea?",
+    "fil": "Paano sumuporta o bawiin ang suporta?",
+    "taglish": "Paano mag vote at undo vote?"
+  },
+  "answers": {
+    "en": "Use Support this idea on a public idea. You can undo your support using the same control. One account cannot add multiple votes to the same idea. Voting must be enabled by the school.",
+    "fil": "Gamitin ang Support this idea sa pampublikong mungkahi. Gamitin muli ang kontrol upang bawiin ang suporta. Isang boto lamang bawat account sa bawat mungkahi, kung pinapayagan ng paaralan.",
+    "taglish": "Tap Support this idea. Tap the same control para i-undo. One vote per account per idea, at dapat enabled ang voting ng school."
+  },
+  "keywords": [
+    "vote",
+    "voting",
+    "support",
+    "undo",
+    "suporta",
+    "sumuporta",
+    "bawiin",
+    "upvote"
+  ],
+  "route": "/feed"
+}
+```
+
+## report
+```json
+{
+  "id": "report",
+  "status": "published",
+  "questions": {
+    "en": "How do I report a comment or idea?",
+    "fil": "Paano mag-ulat ng komento o mungkahi?",
+    "taglish": "Paano mag report ng comment or idea?"
+  },
+  "answers": {
+    "en": "Sign in and use Report on the comment or public idea. School administrators review safety reports. Sugi cannot file a report or make a moderation decision for you.",
+    "fil": "Mag-sign in at piliin ang Report sa komento o pampublikong mungkahi. Sinusuri ng administrador ang mga ulat. Hindi makapaghahain o makapagpapasya si Sugi para sa iyo.",
+    "taglish": "Sign in, then choose Report sa comment or public idea. School admins review it. Hindi puwedeng mag-file or mag-decide si Sugi para sa iyo."
+  },
+  "keywords": [
+    "report",
+    "reports",
+    "comment",
+    "comments",
+    "abuse",
+    "moderation",
+    "ulat",
+    "komento"
+  ],
+  "route": "/feed"
+}
+```
+
+## edit-idea
+```json
+{
+  "id": "edit-idea",
+  "status": "published",
+  "questions": {
+    "en": "Can I edit my submission?",
+    "fil": "Maaari bang baguhin ang aking mungkahi?",
+    "taglish": "Pwede bang i edit ang idea ko?"
+  },
+  "answers": {
+    "en": "You can edit a pending submission before staff review begins. Open it from My activity; anonymous owners need the original browser’s private submission details. Editing ends when staff review starts.",
+    "fil": "Maaaring baguhin ang nakabinbing mungkahi bago magsimula ang pagsusuri. Buksan ito sa My activity; kailangan ng anonymous na may-akda ang pribadong detalye sa orihinal na browser.",
+    "taglish": "Pwede i-edit ang pending idea bago staff review. Open My activity; for anonymous ideas, use private details sa original browser. Locked na kapag nagsimula ang review."
+  },
+  "keywords": [
+    "edit",
+    "editing",
+    "change",
+    "submission",
+    "baguhin",
+    "pending"
+  ],
+  "route": "/profile"
+}
+```
+
+## contact
+```json
+{
+  "id": "contact",
+  "status": "published",
+  "questions": {
+    "en": "How do I contact the school office?",
+    "fil": "Paano kontakin ang tanggapan ng paaralan?",
+    "taglish": "Paano mag contact sa school office?"
+  },
+  "answers": {
+    "en": "Use the school contact action on this Help page when an approved contact is available. Sugi cannot confirm office hours, response times or official decisions unless they are included in reviewed school FAQs.",
+    "fil": "Gamitin ang contact action dito kung may aprubadong contact. Hindi makukumpirma ni Sugi ang oras ng opisina, panahon ng tugon o opisyal na desisyon kung wala sa sinuring FAQ.",
+    "taglish": "Use the school contact action here kung configured. Hindi puwedeng manghula si Sugi ng office hours, response time or official decisions."
+  },
+  "keywords": [
+    "contact",
+    "office",
+    "help",
+    "tanggapan",
+    "kontakin",
+    "support",
+    "hours",
+    "oras"
+  ],
+  "route": ""
+}
+```
+
+## privacy
+```json
+{
+  "id": "privacy",
+  "status": "published",
+  "questions": {
+    "en": "Is this assistant connected to my private submissions?",
+    "fil": "Nababasa ba ng assistant ang pribadong mungkahi ko?",
+    "taglish": "Nakikita ba ni Sugi ang private ideas ko?"
+  },
+  "answers": {
+    "en": "No. Sugi answers reviewed help questions and cannot read your private submissions, account status or school messages. Do not enter personal information, tracking codes or passwords.",
+    "fil": "Hindi. Sumasagot si Sugi mula sa sinuring tulong at hindi binabasa ang pribadong mungkahi, account status o mensahe. Huwag maglagay ng personal na impormasyon, tracking code o password.",
+    "taglish": "Hindi. Reviewed FAQs lang ang sagot ni Sugi. Walang access sa private ideas, account status or messages. Huwag ilagay ang personal info, tracking code or password."
+  },
+  "keywords": [
+    "privacy",
+    "private",
+    "personal",
+    "data",
+    "assistant",
+    "sugi",
+    "read",
+    "pribado",
+    "nakikita",
+    "nababasa"
+  ],
+  "route": "/privacy"
+}
+```
+
+## notifications
+```json
+{
+  "id": "notifications",
+  "status": "published",
+  "questions": {
+    "en": "Where do I find school updates?",
+    "fil": "Saan makikita ang mga abiso?",
+    "taglish": "Saan makikita ang school updates?"
+  },
+  "answers": {
+    "en": "Open Your school updates to see eligible in-app notifications. Follow public ideas for progress updates. Email digests depend on school availability and your preferences.",
+    "fil": "Buksan ang Your school updates para sa mga abiso. Sundan ang pampublikong mungkahi para sa progreso. Nakadepende sa paaralan at iyong kagustuhan ang email digest.",
+    "taglish": "Open Your school updates. Follow public ideas para sa progress updates. Email digest depends sa school availability at preferences mo."
+  },
+  "keywords": [
+    "notifications",
+    "updates",
+    "notification",
+    "digest",
+    "email",
+    "abiso",
+    "saan"
+  ],
+  "route": "/notifications"
+}
+```

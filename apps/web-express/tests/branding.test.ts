@@ -17,7 +17,7 @@ test('worker compiler emits the classic-script logo cache change, rather than si
   const result = program.emit(undefined, (_file, content) => outputs.push(content));
   assert.equal(result.emitSkipped, false);
   assert.equal(outputs.length, 1);
-  assert.match(outputs[0], /cv-v15-shared-motion/);
+  assert.match(outputs[0], /cv-v16-sugi-help/);
   assert.match(outputs[0], /\/branding\/sf-monogram\.png/);
   assert.doesNotMatch(outputs[0], /^\s*(?:export\s*\{|Object\.defineProperty\(exports)/m);
 });

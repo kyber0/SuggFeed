@@ -404,5 +404,6 @@
     </div>
   </footer>
 </main>
+<%~ include('partials/assistant-widget',it) %>
 
 <script defer src="/js/home.js?v=20261022-student-journey"></script>

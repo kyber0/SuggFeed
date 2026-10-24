@@ -1,3 +1,5 @@
+import assistantRouter from './routes/assistant';
+import assistantAdminRouter from './routes/assistant-admin';
 import submissionSafetyRouter from './routes/submission-safety';
 import "dotenv/config";
 import { requireStaffAssurance } from './lib/auth-assurance';
@@ -264,6 +266,8 @@ app.use('/', schoolMembersRouter);
 app.use('/', digestRouter); // only global internal cron matches without a school
 app.get('/internal/progress-evidence-cleanup', cleanupHandler);
 app.use('/', legalRouter);
+app.use('/',(req,res,next)=>req.path==='/help'||req.path.startsWith('/api/assistant/')?generalApiLimiter(req,res,()=>assistantRouter(req,res,next)):next());
+app.use('/',(req,res,next)=>req.path.startsWith('/platform/assistant')?assistantAdminRouter(req,res,next):next());
 app.get('/', (_req,res) => res.redirect(302, '/account/home'));
 // Legacy entry points cannot silently choose a customer's school.
 app.use((req,res,next) => {
@@ -295,6 +299,8 @@ app.use('/idea', ideaRouter);
 app.use('/roadmap', roadmapRouter);
 app.use('/profile', profileRouter);
 app.use('/notifications', notificationsRouter);
+app.use('/',assistantRouter);
+app.use('/',assistantAdminRouter);
 app.use('/',submissionSafetyRouter);
 app.use('/admin', adminRouter);
 app.use('/api/community', communityRouter);
