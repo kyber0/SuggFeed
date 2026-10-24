@@ -10,7 +10,7 @@
   <meta name="school-base" content="<%= it.schoolBase || '' %>" />
   <meta name="school-id" content="<%= it.schoolId || '' %>" />
   <meta name="school-actor" content="<%= it.user?.id || '' %>" />
-  <script src="/js/school-context.js?v=20261022-student-journey"></script>
+  <script src="/js/school-context.js?v=20261025-help-scope"></script>
 
   <!-- PWA / Icons -->
   <link rel="icon" href="/branding/favicon.ico" sizes="any" />

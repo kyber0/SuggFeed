@@ -7,7 +7,7 @@ const sfSchoolBase = (() => {
 function sfSchoolPath(input) {
     if (!sfSchoolBase || !input.startsWith('/') || input.startsWith('//') || input.includes('\\'))
         return input;
-    if (!/^\/(?:$|[?#]|feed(?:[/?#]|$)|roadmap(?:[/?#]|$)|idea(?:[/?#]|$)|api(?:[/?#]|$)|admin(?:[/?#]|$)|staff(?:[/?#]|$)|staff-login(?:[/?#]|$)|profile(?:[/?#]|$)|notifications(?:[/?#]|$)|inbox(?:[/?#]|$)|digest(?:[/?#]|$)|privacy(?:[/?#]|$)|terms(?:[/?#]|$))/.test(input))
+    if (!/^\/(?:$|[?#]|help(?:[/?#]|$)|feed(?:[/?#]|$)|roadmap(?:[/?#]|$)|idea(?:[/?#]|$)|api(?:[/?#]|$)|admin(?:[/?#]|$)|staff(?:[/?#]|$)|staff-login(?:[/?#]|$)|profile(?:[/?#]|$)|notifications(?:[/?#]|$)|inbox(?:[/?#]|$)|digest(?:[/?#]|$)|privacy(?:[/?#]|$)|terms(?:[/?#]|$))/.test(input))
         return input;
     return sfSchoolBase + input;
 }
