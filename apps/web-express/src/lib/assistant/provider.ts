@@ -11,8 +11,8 @@ export function selectAvailableModel(models:Pick<Model,'name'|'supportedActions'
  if(!chosen)throw Object.assign(new Error('No supported stable Flash model is available'),{status:404});return chosen;
 }
 function errorText(error:unknown):string {return error&&typeof error==='object'&&'message' in error&&typeof error.message==='string'?error.message:'';}
-export function providerErrorCode(error:unknown):string {const text=errorText(error);return /api.key.*(?:invalid|not valid|expired|leaked|revoked|blocked|not found)|invalid.api.key|API_KEY_[A-Z_]+/i.test(text)?'api_key':/schema|response.mime|enum|generation.config/i.test(text)?'schema':/deadline|timeout/i.test(text)?'deadline':/thinking|token|budget/i.test(text)?'token_limit':/billing|payment/i.test(text)?'billing':/location|region|country/i.test(text)?'region':/not.supported|unsupported/i.test(text)?'unsupported':'unknown';}
-// Gemini requires a 10s server deadline; the shared abort signal keeps the 6s app limit.
+export function providerErrorCode(error:unknown):string {const text=errorText(error);return /api.key.*(?:invalid|not valid|expired|leaked|revoked|blocked|not found)|invalid.api.key|API_KEY_[A-Z_]+/i.test(text)?'api_key':/schema|response.mime|enum|generation.config/i.test(text)?'schema':/deadline|timeout/i.test(text)?'deadline':/JSON|unterminated|unexpected.*token/i.test(text)?'invalid_response':/thinking|token|budget/i.test(text)?'token_limit':/billing|payment/i.test(text)?'billing':/location|region|country/i.test(text)?'region':/not.supported|unsupported/i.test(text)?'unsupported':'unknown';}
+// Keep the provider deadline above its 10s minimum and within the shared app abort limit.
 let discovered:Promise<string>|null=null;
 async function availableModel(client:GoogleGenAI,signal:AbortSignal):Promise<string>{
  if(c.model!=='auto')return c.model;

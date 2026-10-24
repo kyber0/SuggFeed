@@ -4,7 +4,8 @@
   "buildCommand": "npm run build",
   "functions": {
     "src/server.ts": {
-      "includeFiles": "{views/**,dist/**,public/**}"
+      "includeFiles": "{views/**,dist/**,public/**}",
+      "maxDuration": 30
     }
   },
   "regions": [

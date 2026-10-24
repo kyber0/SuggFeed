@@ -45,7 +45,7 @@
             return;
         const run = ++generation;
         controller = new AbortController();
-        const timeout = setTimeout(() => controller?.abort(), 15000);
+        const timeout = setTimeout(() => controller?.abort(), 30000);
         send.disabled = true;
         root.dataset.conversation = 'true';
         message(question, true);
