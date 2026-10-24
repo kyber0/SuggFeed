@@ -1,0 +1,30 @@
+import {normalize} from './normalize';
+import type {Reply,AssistantActionId} from './types';
+export function replyActions(question:unknown,reply:Reply,context:{school:boolean;signedIn:boolean;member:boolean;role:string|null;roadmap:boolean}):AssistantActionId[]{
+ if(!reply.answered||typeof question!=='string')return [];
+ const q=normalize(question),sources=reply.sources||[];
+ if(reply.scope!=='app'&&!sources.some(source=>source.scope==='app')&&!/\b(suggfeed|sugi|app)\b/.test(q))return [];
+ const faq=(id:string)=>reply.faqId===id||sources.some(source=>source.id.startsWith('faq-'+id+'-')||source.id==='faq-'+id);
+ const school=(id:AssistantActionId):AssistantActionId=>context.school?id:'schools';
+ if(/\b(forgot|reset|recover|nakalimutan)\b.*\b(password|account)\b/.test(q))return [context.signedIn?'security':'forgot'];
+ if(/\b(signup|sign up|register|registration)\b|create.*account|gumawa.*account/.test(q))return context.signedIn?['schools']:['signup','signin'];
+ if(/\b(signin|login|log in|mag login)\b/.test(q))return context.signedIn?['schools']:['signin'];
+ if(context.school&&context.role==='admin'&&/\binvite\b.*\b(member|student|moderator|admin|staff)/.test(q))return ['invitations'];
+ if(/\b(join|sumali|makasali|invitation|imbitasyon)\b/.test(q)||faq('join-school')||faq('invitation'))return context.signedIn?['schools']:['signin','schools'];
+ if(/\b(track|tracking|subaybay|tracking code)\b/.test(q)||faq('track-idea'))return [school('track')];
+ if(/\b(roadmap|progress|stages|status|calendar)\b/.test(q)||faq('progress'))return [school(context.roadmap?'roadmap':'track')];
+ if(/\b(submit|share|post|magpasa|isumite)\b.*\b(idea|feedback|suggestion|mungkahi)\b/.test(q)||faq('submit-idea'))return context.school&&context.member?['share','ideas']:context.signedIn?['schools']:['signin','schools'];
+ if(context.school&&context.role==='admin'&&/\b(settings|customize|customization|branding)\b/.test(q))return ['settings'];
+ if(/\bedit\b.*\b(idea|submission|feedback|post|mungkahi)\b|\b(my ideas|own ideas)\b/.test(q)||faq('edit-idea'))return [context.member?'profile':'schools'];
+ if(/\b(notification|notifications|inbox|digest|updates)\b/.test(q)||faq('notifications'))return [context.member?'notifications':'schools'];
+ if(/\b(privacy|contact|contacts|office|policy|policies)\b/.test(q)||faq('privacy')||faq('contact'))return [school('privacy')];
+ if(/\b(vote|voting|support|comment|report|browse|ideas)\b/.test(q)||faq('vote')||faq('report'))return [school('ideas')];
+ const guide=(id:number)=>sources.some(source=>source.id.startsWith('app-guide-'+id+'-'));
+ if(faq('account-help')||guide(1))return context.signedIn?['schools']:['signin','schools'];
+ if(guide(2))return context.school&&context.member?['share','ideas']:['schools'];
+ if(guide(3))return [school('ideas')];
+ if(guide(4))return [school(context.roadmap?'roadmap':'track')];
+ if(guide(5)&&context.school&&context.role==='admin')return ['settings'];
+ if(faq('app-overview')||guide(0))return context.school?['ideas']:['schools'];
+ return [];
+}
