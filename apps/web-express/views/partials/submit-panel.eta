@@ -80,7 +80,7 @@
     <details class="submission-recovery care-card">
       <summary>Draft recovery and queued ideas</summary>
       <p>Your idea text may become public after review. Anonymous mode hides your identity, not the content. Avoid names and personal details.</p>
-      <label><input id="sip-remember-draft" type="checkbox"/> Remember idea text, school answers and image references on this device for seven days</label>
+      <label><input id="sip-remember-draft" data-sf-switch role="switch" type="checkbox"/> Remember idea text, school answers and image references on this device for seven days</label>
       <p>Anyone using this browser may see saved drafts and school answers. Only image references are saved here; unsubmitted images on the service expire after one day. Private replies and tracking codes are excluded. Queued ideas are sent only when you choose Send now.</p>
       <div class="workspace-actions"><button type="button" id="sip-restore-draft" class="workspace-button" hidden>Restore draft</button><button type="button" id="sip-discard-draft" class="workspace-button" hidden>Discard saved draft</button><button type="button" id="sip-check-receipt" class="workspace-button" disabled>Check previous submission</button></div>
       <p id="sip-recovery-status" role="status" aria-live="polite">Draft · device recovery is off.</p>
@@ -170,7 +170,7 @@
             </div>
           </div>
           <div class="sip-switch">
-            <input type="checkbox" id="sip-anon" checked class="sip-switch-input" data-sf-change="action-123" />
+            <input type="checkbox" id="sip-anon" data-sf-switch role="switch" checked class="sip-switch-input" data-sf-change="action-123" />
             <span class="sip-switch-slider"></span>
           </div>
         </label>

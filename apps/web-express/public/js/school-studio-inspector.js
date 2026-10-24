@@ -53,7 +53,7 @@
             selected = state().selection?.componentId || '';
             let html = '';
             const focused = host.contains(document.activeElement) ? document.activeElement : null;
-            const source = focused?.classList.contains('studio-select-trigger') || focused?.classList.contains('studio-color-trigger') ? focused.previousElementSibling : focused;
+            const source = focused?.classList.contains('sf-control-select-trigger') || focused?.classList.contains('sf-control-color-trigger') ? focused.previousElementSibling : focused;
             const focusProperty = source?.dataset.property, focusMode = source?.dataset.themeMode, focusRole = source?.dataset.themeRole;
             const caret = focused instanceof HTMLTextAreaElement || focused instanceof HTMLInputElement && ['text', 'url', 'search'].includes(focused.type) ? [focused.selectionStart, focused.selectionEnd] : null;
             const panel = host.closest('.studio-panel'), scroll = panel?.scrollTop || 0, openDetails = renderedSelection === selected ? new Map(Array.from(host.querySelectorAll('details')).map(d => [d.querySelector('summary')?.textContent, d.open])) : null;

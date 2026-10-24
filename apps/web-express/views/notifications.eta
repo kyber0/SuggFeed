@@ -19,8 +19,8 @@
    <summary>Notification preferences</summary>
    <form id="notification-preferences" class="care-form">
     <label>In-app updates<select name="update_mode" class="workspace-input"><option value="all">All school updates</option><option value="milestones">Milestones, starts, blockers, completion and corrections</option></select></label>
-    <label><span><input type="checkbox" name="weekly_digest" disabled/> Optional weekly email digest</span></label>
-    <label><span><input type="checkbox" name="digest_paused"/> Pause weekly email until I resume it</span></label>
+    <label><span><input type="checkbox" name="weekly_digest" data-sf-switch role="switch" disabled/> Optional weekly email digest</span></label>
+    <label><span><input type="checkbox" name="digest_paused" data-sf-switch role="switch"/> Pause weekly email until I resume it</span></label>
     <fieldset class="digest-kinds"><legend>Include these public notification types in weekly email</legend>
      <% for(const [kind,label] of [['started','Work started'],['update','Progress updates'],['milestone','Milestones'],['blocked','Blockers'],['completed','Completed work'],['correction','Corrections'],['resumed','Work resumed'],['reopened','Work reopened'],['withdrawn','Withdrawals']]) { %>
       <label><input type="checkbox" name="digest_kinds" value="<%= kind %>" checked/> <%= label %></label>

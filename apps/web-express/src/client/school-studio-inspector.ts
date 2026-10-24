@@ -13,7 +13,7 @@
   const toolbar=(label:string,kind:string,id:string,index:number)=>'<div class="studio-repeat-toolbar" draggable="true" data-drag-kind="'+kind+'" data-drag-id="'+id+'"><strong>'+escape(label)+'</strong><button type="button" data-reorder="'+kind+'" data-id="'+id+'" data-direction="-1" aria-label="Move '+escape(label)+' up">↑</button><button type="button" data-reorder="'+kind+'" data-id="'+id+'" data-direction="1" aria-label="Move '+escape(label)+' down">↓</button></div>';
   function render(){const p=state().configuration;selected=state().selection?.componentId||'';let html='';
    const focused=host.contains(document.activeElement)?document.activeElement as HTMLInputElement|HTMLTextAreaElement:null;
-   const source=focused?.classList.contains('studio-select-trigger')||focused?.classList.contains('studio-color-trigger')?focused.previousElementSibling as HTMLInputElement:focused;
+   const source=focused?.classList.contains('sf-control-select-trigger')||focused?.classList.contains('sf-control-color-trigger')?focused.previousElementSibling as HTMLInputElement:focused;
    const focusProperty=source?.dataset.property,focusMode=source?.dataset.themeMode,focusRole=source?.dataset.themeRole;
    const caret=focused instanceof HTMLTextAreaElement||focused instanceof HTMLInputElement&&['text','url','search'].includes(focused.type)?[focused.selectionStart,focused.selectionEnd]:null;
    const panel=host.closest<HTMLElement>('.studio-panel'),scroll=panel?.scrollTop||0,openDetails=renderedSelection===selected?new Map(Array.from(host.querySelectorAll<HTMLDetailsElement>('details')).map(d=>[d.querySelector('summary')?.textContent,d.open])):null;

@@ -20,11 +20,11 @@ No dependency or database migration is required.
 
 ## Progressive control API
 
-Load `school-studio-controls.js` after the model/colors/design helpers and before
+Load the shared `controls.js` after the model/colors/design helpers and before
 the inspector/controller. The existing controller calls:
 
 ```js
-const controls = window.sfSchoolStudioControls.mount(host, {
+const controls = window.sfControls.mount(host, {
   beginGroup: () => model.beginGroup(),
   endGroup: () => model.endGroup()
 });
@@ -91,3 +91,6 @@ fixtures; no hosted school, account, asset or publication was changed. Real iOS
 Safari, Android keyboards, screen-reader interaction and live asset delivery still
 need device/operational review. Existing browser support determines whether
 custom popovers or native fallback controls appear.
+
+The same controls now initialize from the main layout across student, staff,
+school-admin and platform pages. See `docs/operations/shared-controls.md`.

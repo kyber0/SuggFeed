@@ -1,5 +1,5 @@
 "use strict";
-/** Progressive SuggFeed controls. Native values remain the editor's source of truth. */
+/** Shared progressive SuggFeed controls. Native values remain the editor's source of truth. */
 (() => {
     const mounted = new WeakMap();
     function mount(root, options) {
@@ -10,7 +10,8 @@
         let sequence = 0, refreshFrame = 0, positionFrame = 0, active = null;
         const on = (target, name, listener, signal = lifetime.signal) => target.addEventListener(name, listener, { signal });
         const icon = (name) => { const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '1.6'); svg.setAttribute('aria-hidden', 'true'); const path = document.createElementNS(svg.namespaceURI, 'path'); path.setAttribute('d', name === 'chevron' ? 'm7 10 5 5 5-5' : 'm5 12 4 4L19 6'); svg.append(path); return svg; };
-        const label = (input) => input.getAttribute('aria-label') || Array.from(input.labels || []).map(l => Array.from(l.childNodes).filter(n => n.nodeType === Node.TEXT_NODE || n instanceof Element && n.classList.contains('studio-sr-only')).map(n => n.textContent).join('').trim()).join(' ') || 'Choose a value';
+        const label = (input) => { const named = input.getAttribute('aria-label') || input.getAttribute('aria-labelledby')?.split(/\s+/).map(id => document.getElementById(id)?.textContent || '').join(' '); if (named)
+            return named; return Array.from(input.labels || []).map(l => { const copy = l.cloneNode(true); copy.querySelectorAll('input,select,textarea,button,svg,small,.studio-field-count,.sf-control-field-error').forEach(n => n.remove()); return copy.textContent?.trim() || ''; }).join(' ') || 'Choose a value'; };
         function close(focus = false) { if (!active)
             return; const current = active; active = null; current.trigger.setAttribute('aria-expanded', 'false'); current.trigger.removeAttribute('aria-activedescendant'); current.trigger.removeAttribute('aria-controls'); if (current.panel.matches(':popover-open'))
             current.panel.hidePopover(); current.finish(); current.panel.remove(); options.endGroup(); if (focus && current.trigger.isConnected && !current.trigger.disabled)
@@ -22,12 +23,21 @@
         } const rect = trigger.getBoundingClientRect(), viewport = window.visualViewport; const left = viewport?.offsetLeft || 0, top = viewport?.offsetTop || 0, width = viewport?.width || innerWidth, height = viewport?.height || innerHeight; const scroller = trigger.closest('.studio-panel'), bounds = scroller?.getBoundingClientRect(); if (rect.bottom <= top || rect.top >= top + height || bounds && (rect.bottom <= bounds.top || rect.top >= bounds.bottom)) {
             close();
             return;
-        } const w = Math.min(panel.classList.contains('studio-color-popover') ? 288 : Math.max(rect.width, 224), width - 24); panel.style.width = w + 'px'; panel.style.maxHeight = Math.max(100, height - 24) + 'px'; const h = panel.getBoundingClientRect().height; const below = rect.bottom + 6, above = rect.top - h - 6; panel.style.left = Math.max(left + 12, Math.min(rect.left, left + width - w - 12)) + 'px'; panel.style.top = Math.max(top + 12, Math.min(below + h <= top + height - 12 ? below : above, top + height - h - 12)) + 'px'; }
+        } const w = Math.min(panel.classList.contains('sf-control-color-popover') ? 288 : Math.max(rect.width, 224), width - 24); panel.style.width = w + 'px'; panel.style.maxHeight = Math.max(100, height - 24) + 'px'; const h = panel.getBoundingClientRect().height; const below = rect.bottom + 6, above = rect.top - h - 6; panel.style.left = Math.max(left + 12, Math.min(rect.left, left + width - w - 12)) + 'px'; panel.style.top = Math.max(top + 12, Math.min(below + h <= top + height - 12 ? below : above, top + height - h - 12)) + 'px'; }
         const schedulePosition = () => { if (active && !positionFrame)
             positionFrame = requestAnimationFrame(position); };
-        function open(trigger, panel, finish) { hideTooltip(); close(); const parent = trigger.closest('dialog,[role=dialog]') || document.body; panel.classList.add('studio-popover'); panel.dataset.noFeedback = ''; panel.setAttribute('popover', 'auto'); parent.append(panel); active = { panel, trigger, finish }; trigger.setAttribute('aria-expanded', 'true'); panel.addEventListener('toggle', event => { if (event.newState === 'closed' && active?.panel === panel)
+        function open(trigger, panel, finish) { hideTooltip(); close(); const parent = trigger.closest('dialog,[role=dialog]') || document.body; panel.classList.add('sf-control-popover'); panel.dataset.noFeedback = ''; panel.setAttribute('popover', 'auto'); parent.append(panel); active = { panel, trigger, finish }; trigger.setAttribute('aria-expanded', 'true'); panel.addEventListener('toggle', event => { if (event.newState === 'closed' && active?.panel === panel)
             close(); }); panel.showPopover(); position(); }
-        function native(input) { const tab = input.getAttribute('tabindex'), hidden = input.getAttribute('aria-hidden'); input.classList.add('studio-native-control'); input.setAttribute('tabindex', '-1'); input.setAttribute('aria-hidden', 'true'); return () => { input.classList.remove('studio-native-control'); if (tab === null)
+        function native(input) { const tab = input.getAttribute('tabindex'), hidden = input.getAttribute('aria-hidden'), restoreProperties = []; for (const key of input instanceof HTMLSelectElement ? ['value', 'selectedIndex'] : ['value']) {
+            if (Object.getOwnPropertyDescriptor(input, key))
+                continue;
+            const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), key);
+            if (!descriptor?.get || !descriptor.set)
+                continue;
+            Object.defineProperty(input, key, { configurable: true, get() { return descriptor.get.call(this); }, set(value) { descriptor.set.call(this, value); schedule(); } });
+            restoreProperties.push(() => { delete input[key]; });
+        } input.classList.add('sf-control-native'); input.setAttribute('tabindex', '-1'); input.setAttribute('aria-hidden', 'true'); return () => { for (const restore of restoreProperties)
+            restore(); input.classList.remove('sf-control-native'); if (tab === null)
             input.removeAttribute('tabindex');
         else
             input.setAttribute('tabindex', tab); if (hidden === null)
@@ -38,7 +48,9 @@
         function select(input) {
             const life = new AbortController(), restore = native(input), trigger = document.createElement('button'), value = document.createElement('span');
             trigger.type = 'button';
-            trigger.className = 'studio-select-trigger';
+            trigger.className = 'sf-control-select-trigger';
+            if (input.id)
+                trigger.id = input.id + '-control';
             trigger.dataset.noFeedback = '';
             trigger.setAttribute('role', 'combobox');
             trigger.setAttribute('aria-haspopup', 'listbox');
@@ -47,7 +59,7 @@
             input.after(trigger);
             const segments = input.hasAttribute('data-studio-segmented') ? document.createElement('div') : null;
             if (segments) {
-                segments.className = 'studio-segmented';
+                segments.className = 'sf-control-segmented';
                 segments.setAttribute('role', 'group');
                 segments.setAttribute('aria-label', label(input));
                 for (const option of Array.from(input.options)) {
@@ -55,7 +67,7 @@
                     button.type = 'button';
                     button.textContent = option.text;
                     button.dataset.value = option.value;
-                    on(button, 'click', () => { if (input.disabled)
+                    on(button, 'click', () => { if (input.matches(':disabled'))
                         return; input.value = option.value; notify(input); sync(); }, life.signal);
                     on(button, 'keydown', ((event) => { const buttons = Array.from(segments.querySelectorAll('button')), index = buttons.indexOf(button), next = event.key === 'ArrowRight' ? (index + 1) % buttons.length : event.key === 'ArrowLeft' ? (index + buttons.length - 1) % buttons.length : event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : -1; if (next >= 0) {
                         event.preventDefault();
@@ -69,25 +81,32 @@
             let show = null;
             let typeahead = '', typeTimer = 0;
             const sync = () => { const text = input.selectedOptions[0]?.textContent || 'Choose…'; if (value.textContent !== text)
-                value.textContent = text; trigger.setAttribute('aria-label', label(input) + ': ' + text); if (trigger.disabled !== input.disabled)
-                trigger.disabled = input.disabled; if (active?.trigger === trigger && input.disabled)
+                value.textContent = text; trigger.setAttribute('aria-label', label(input) + ': ' + text); for (const attr of ['aria-describedby', 'aria-invalid', 'aria-required']) {
+                const v = input.getAttribute(attr) || (attr === 'aria-required' && input.required ? 'true' : null);
+                if (v)
+                    trigger.setAttribute(attr, v);
+                else
+                    trigger.removeAttribute(attr);
+            } if (trigger.disabled !== input.matches(':disabled'))
+                trigger.disabled = input.matches(':disabled'); if (active?.trigger === trigger && input.matches(':disabled'))
                 close(); if (segments)
                 for (const button of segments.querySelectorAll('button')) {
                     button.setAttribute('aria-pressed', String(button.dataset.value === input.value));
                     button.tabIndex = button.dataset.value === input.value ? 0 : -1;
-                    if (button.disabled !== input.disabled)
-                        button.disabled = input.disabled;
+                    if (button.disabled !== input.matches(':disabled'))
+                        button.disabled = input.matches(':disabled');
                 } };
             function expand() {
-                if (input.disabled)
+                sync();
+                if (input.matches(':disabled'))
                     return;
                 if (active?.trigger === trigger) {
                     close();
                     return;
                 }
                 const panel = document.createElement('div'), list = document.createElement('div'), search = input.options.length > 8 ? document.createElement('input') : null;
-                list.id = 'studio-options-' + (++sequence);
-                list.className = 'studio-options';
+                list.id = 'sf-control-options-' + (++sequence);
+                list.className = 'sf-control-options';
                 list.setAttribute('role', 'listbox');
                 list.setAttribute('aria-label', label(input));
                 trigger.setAttribute('aria-controls', list.id);
@@ -97,7 +116,7 @@
                     search?.removeAttribute('aria-activedescendant');
                     return;
                 } highlighted = Math.max(0, Math.min(index, buttons.length - 1)); buttons.forEach((button, i) => button.toggleAttribute('data-highlighted', i === highlighted)); const button = buttons[highlighted]; trigger.setAttribute('aria-activedescendant', button.id); search?.setAttribute('aria-activedescendant', button.id); button.scrollIntoView({ block: 'nearest' }); }
-                function choose(index) { const button = buttons[index]; if (!button || input.disabled)
+                function choose(index) { const button = buttons[index]; if (!button || input.matches(':disabled'))
                     return; const next = button.dataset.value; if (input.value !== next) {
                     input.value = next;
                     notify(input);
@@ -124,7 +143,7 @@
                     list.append(button);
                 } if (!buttons.length) {
                     const empty = document.createElement('p');
-                    empty.className = 'studio-options-empty';
+                    empty.className = 'sf-control-options-empty';
                     empty.textContent = 'No matching options';
                     list.append(empty);
                 } highlight(Math.max(0, buttons.findIndex(button => button.dataset.value === input.value))); }
@@ -196,30 +215,31 @@
         function color(input) {
             const life = new AbortController(), restore = native(input), trigger = document.createElement('button');
             trigger.type = 'button';
-            trigger.className = 'studio-color-trigger';
+            trigger.className = 'sf-control-color-trigger';
             trigger.dataset.noFeedback = '';
             trigger.setAttribute('aria-haspopup', 'dialog');
             trigger.setAttribute('aria-expanded', 'false');
             input.after(trigger);
             let paintExternal = null;
-            const sync = () => { trigger.style.setProperty('--swatch', input.value); trigger.setAttribute('aria-label', 'Choose ' + label(input) + ', ' + input.value); if (trigger.disabled !== input.disabled)
-                trigger.disabled = input.disabled; if (input.disabled && active?.trigger === trigger)
+            const sync = () => { trigger.style.setProperty('--swatch', input.value); trigger.setAttribute('aria-label', 'Choose ' + label(input) + ', ' + input.value); if (trigger.disabled !== input.matches(':disabled'))
+                trigger.disabled = input.matches(':disabled'); if (input.matches(':disabled') && active?.trigger === trigger)
                 close(); paintExternal?.(); };
             function expand() {
-                if (input.disabled)
+                sync();
+                if (input.matches(':disabled'))
                     return;
                 if (active?.trigger === trigger) {
                     close();
                     return;
                 }
                 const panel = document.createElement('div'), title = document.createElement('strong'), surface = document.createElement('div'), marker = document.createElement('span'), hexLabel = document.createElement('label'), hex = document.createElement('input'), error = document.createElement('p');
-                panel.className = 'studio-color-popover';
+                panel.className = 'sf-control-color-popover';
                 panel.id = 'studio-color-' + (++sequence);
                 trigger.setAttribute('aria-controls', panel.id);
                 panel.setAttribute('role', 'dialog');
                 panel.setAttribute('aria-label', label(input));
                 title.textContent = label(input);
-                surface.className = 'studio-color-surface';
+                surface.className = 'sf-control-color-surface';
                 surface.setAttribute('aria-hidden', 'true');
                 surface.append(marker);
                 hex.type = 'text';
@@ -229,7 +249,7 @@
                 hex.required = true;
                 hex.spellcheck = false;
                 hexLabel.append('Hex color', hex);
-                error.className = 'studio-control-hint';
+                error.className = 'sf-control-hint';
                 error.setAttribute('role', 'status');
                 error.textContent = 'Opaque colors · #RRGGBB';
                 panel.append(title, surface);
@@ -242,7 +262,7 @@
                     range.max = String(max);
                     range.step = '1';
                     range.setAttribute('aria-label', name);
-                    row.className = 'studio-color-slider';
+                    row.className = 'sf-control-color-slider';
                     row.append(name, range);
                     ranges.push(range);
                     range.addEventListener('pointerdown', () => options.beginGroup?.());
@@ -258,7 +278,7 @@
                 }
                 function paint() { surface.style.backgroundColor = hsvToHex(hsv.h, 1, 1); marker.style.left = (hsv.s * 100) + '%'; marker.style.top = ((1 - hsv.v) * 100) + '%'; ranges[0].value = String(Math.round(hsv.h)); ranges[1].value = String(Math.round(hsv.s * 100)); ranges[2].value = String(Math.round(hsv.v * 100)); if (document.activeElement !== hex)
                     hex.value = input.value; }
-                function update() { const next = hsvToHex(hsv.h, hsv.s, hsv.v); if (input.disabled) {
+                function update() { const next = hsvToHex(hsv.h, hsv.s, hsv.v); if (input.matches(':disabled')) {
                     close();
                     return;
                 } if (input.value !== next) {
@@ -291,7 +311,7 @@
                 surface.addEventListener('pointerup', finishPoint);
                 surface.addEventListener('pointercancel', finishPoint);
                 const presets = document.createElement('div');
-                presets.className = 'studio-picker-presets';
+                presets.className = 'sf-control-picker-presets';
                 for (const value of Object.values(SfSchoolColors.presets)) {
                     const button = document.createElement('button');
                     button.type = 'button';
@@ -302,7 +322,7 @@
                 }
                 const done = document.createElement('button');
                 done.type = 'button';
-                done.className = 'studio-picker-done';
+                done.className = 'sf-control-picker-done';
                 done.textContent = 'Done';
                 done.addEventListener('click', () => close(true));
                 panel.append(hexLabel, error, presets, done);
@@ -335,14 +355,18 @@
                     close(); life.abort(); restore(); trigger.remove(); } });
         }
         function refresh() { refreshFrame = 0; if (typeof HTMLElement.prototype.showPopover === 'function')
-            for (const element of root.querySelectorAll('button[title],a[title],summary[title],.studio-brand small[title]')) {
-                if (element.title) {
-                    element.dataset.studioTooltip = element.title;
-                    element.removeAttribute('title');
-                }
-            } for (const input of root.querySelectorAll('input[type=checkbox][data-property],input[type=checkbox][data-section-visible]'))
+            for (const element of root.querySelectorAll('button[title],a[title],summary[title],[role=button][title],[tabindex][title],.studio-brand small[title]')) {
+                if (element.title)
+                    element.dataset.sfControlTooltip = element.title;
+                else
+                    delete element.dataset.sfControlTooltip;
+                element.removeAttribute('title');
+            } for (const input of root.querySelectorAll('input[type=checkbox][data-property],input[type=checkbox][data-section-visible],input[type=checkbox][data-field],input[type=checkbox][data-sf-switch]')) {
             if (input.getAttribute('role') !== 'switch')
-                input.setAttribute('role', 'switch'); for (const [input, control] of records) {
+                input.setAttribute('role', 'switch');
+            if (!input.hasAttribute('data-sf-switch'))
+                input.dataset.sfSwitch = '';
+        } for (const [input, control] of records) {
             if (!input.isConnected) {
                 control.dispose();
                 records.delete(input);
@@ -350,8 +374,8 @@
             else
                 control.sync();
         } if (typeof HTMLElement.prototype.showPopover !== 'function')
-            return; for (const input of root.querySelectorAll('select,input[type="color"]'))
-            if (!records.has(input)) {
+            return; for (const input of root.querySelectorAll('select:not([multiple]):not([size]),select[size="1"],input[type="color"]'))
+            if (!records.has(input) && !input.closest('[data-native-control],[data-studio-frame]')) {
                 if (input instanceof HTMLSelectElement)
                     select(input);
                 else
@@ -360,21 +384,22 @@
         on(root, 'input', event => { const input = event.target; if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement || input instanceof HTMLSelectElement) {
             if (input.validity.valid) {
                 input.removeAttribute('aria-invalid');
-                if (input.nextElementSibling?.matches('.studio-select-trigger,.studio-color-trigger'))
+                if (input.nextElementSibling?.matches('.sf-control-select-trigger,.sf-control-color-trigger'))
                     input.nextElementSibling.removeAttribute('aria-invalid');
-                input.closest('label')?.querySelector('.studio-field-error')?.remove();
+                input.closest('label')?.querySelector('.sf-control-field-error')?.remove();
             }
         } });
         root.addEventListener('invalid', event => { const input = event.target; if (!(input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement || input instanceof HTMLSelectElement))
+            return; if (!root.matches('[data-studio]') && !records.has(input))
             return; event.preventDefault(); for (let ancestor = input.parentElement; ancestor && ancestor !== root; ancestor = ancestor.parentElement)
             if (ancestor instanceof HTMLDetailsElement)
-                ancestor.open = true; input.setAttribute('aria-invalid', 'true'); const parent = input.closest('label') || input.parentElement; let error = parent?.querySelector('.studio-field-error'); if (!error && parent) {
+                ancestor.open = true; input.setAttribute('aria-invalid', 'true'); const parent = input.closest('label') || input.parentElement; let error = parent?.querySelector('.sf-control-field-error'); if (!error && parent) {
             error = document.createElement('span');
-            error.className = 'studio-field-error';
+            error.className = 'sf-control-field-error';
             error.setAttribute('role', 'alert');
             parent.append(error);
         } if (error)
-            error.textContent = input.validationMessage; requestAnimationFrame(() => { const trigger = input.nextElementSibling; if (trigger instanceof HTMLButtonElement && trigger.matches('.studio-select-trigger,.studio-color-trigger')) {
+            error.textContent = input.validationMessage; requestAnimationFrame(() => { const trigger = input.nextElementSibling; if (trigger instanceof HTMLButtonElement && trigger.matches('.sf-control-select-trigger,.sf-control-color-trigger')) {
             trigger.setAttribute('aria-invalid', 'true');
             trigger.focus();
         }
@@ -387,14 +412,14 @@
         else
             trigger.removeAttribute('aria-describedby'); if (node.matches(':popover-open'))
             node.hidePopover(); node.remove(); tooltip = null; }
-        function showTooltip(trigger) { hideTooltip(); if (active || typeof HTMLElement.prototype.showPopover !== 'function' || !trigger.dataset.studioTooltip || !trigger.isConnected)
-            return; const node = document.createElement('div'); node.id = 'studio-tooltip-' + (++sequence); node.className = 'studio-tooltip'; node.setAttribute('role', 'tooltip'); node.setAttribute('popover', 'manual'); node.textContent = trigger.dataset.studioTooltip; (trigger.closest('dialog,[role=dialog]') || document.body).append(node); node.showPopover(); const box = trigger.getBoundingClientRect(), tip = node.getBoundingClientRect(); node.style.left = Math.max(8, Math.min(box.left + (box.width - tip.width) / 2, innerWidth - tip.width - 8)) + 'px'; node.style.top = (box.top - tip.height - 8 >= 8 ? box.top - tip.height - 8 : box.bottom + 8) + 'px'; trigger.setAttribute('aria-describedby', ((trigger.getAttribute('aria-describedby') || '') + ' ' + node.id).trim()); tooltip = { node, trigger }; }
+        function showTooltip(trigger) { hideTooltip(); if (active || typeof HTMLElement.prototype.showPopover !== 'function' || !trigger.dataset.sfControlTooltip || !trigger.isConnected)
+            return; const node = document.createElement('div'); node.id = 'sf-control-tooltip-' + (++sequence); node.className = 'sf-control-tooltip'; node.setAttribute('role', 'tooltip'); node.setAttribute('popover', 'manual'); node.textContent = trigger.dataset.sfControlTooltip; (trigger.closest('dialog,[role=dialog]') || document.body).append(node); node.showPopover(); const box = trigger.getBoundingClientRect(), tip = node.getBoundingClientRect(); node.style.left = Math.max(8, Math.min(box.left + (box.width - tip.width) / 2, innerWidth - tip.width - 8)) + 'px'; node.style.top = (box.top - tip.height - 8 >= 8 ? box.top - tip.height - 8 : box.bottom + 8) + 'px'; trigger.setAttribute('aria-describedby', ((trigger.getAttribute('aria-describedby') || '') + ' ' + node.id).trim()); tooltip = { node, trigger }; }
         on(root, 'pointerover', event => { if (event.pointerType !== 'mouse')
-            return; const target = event.target instanceof Element ? event.target.closest('[data-studio-tooltip]') : null; if (!target || target.contains(event.relatedTarget))
+            return; const target = event.target instanceof Element ? event.target.closest('[data-sf-control-tooltip]') : null; if (!target || target.contains(event.relatedTarget))
             return; hideTooltip(); tooltipTimer = window.setTimeout(() => showTooltip(target), 350); });
-        on(root, 'pointerout', event => { const target = event.target instanceof Element ? event.target.closest('[data-studio-tooltip]') : null; if (target && !target.contains(event.relatedTarget))
+        on(root, 'pointerout', event => { const target = event.target instanceof Element ? event.target.closest('[data-sf-control-tooltip]') : null; if (target && !target.contains(event.relatedTarget))
             hideTooltip(); });
-        on(root, 'focusin', event => { const target = event.target instanceof Element ? event.target.closest('[data-studio-tooltip]') : null; if (target)
+        on(root, 'focusin', event => { const target = event.target instanceof Element ? event.target.closest('[data-sf-control-tooltip]') : null; if (target)
             showTooltip(target); });
         on(root, 'focusout', hideTooltip);
         on(root, 'click', hideTooltip);
@@ -403,8 +428,9 @@
         document.addEventListener('scroll', hideTooltip, { capture: true, passive: true, signal: lifetime.signal });
         const schedule = () => { if (!refreshFrame)
             refreshFrame = requestAnimationFrame(refresh); };
-        const observer = new MutationObserver(schedule);
-        observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
+        const observer = new MutationObserver(changes => { if (changes.some(change => change.type === 'childList' || change.attributeName === 'title' || change.target instanceof Element && change.target.matches('input,select,option,optgroup,fieldset')))
+            schedule(); });
+        observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'selected', 'label', 'value', 'required', 'aria-invalid', 'aria-describedby', 'title'] });
         on(window, 'resize', schedulePosition);
         document.addEventListener('scroll', schedulePosition, { capture: true, passive: true, signal: lifetime.signal });
         if (window.visualViewport) {
@@ -423,9 +449,12 @@
         else
             destroy(); }));
         on(window, 'pageshow', schedule);
-        function destroy() { mounted.delete(root); hideTooltip(); close(); for (const element of root.querySelectorAll('[data-studio-tooltip]')) {
-            element.title = element.dataset.studioTooltip || '';
-            delete element.dataset.studioTooltip;
+        on(root, 'input', schedule);
+        on(root, 'change', schedule);
+        on(root, 'reset', () => setTimeout(schedule, 0));
+        function destroy() { mounted.delete(root); hideTooltip(); close(); for (const element of root.querySelectorAll('[data-sf-control-tooltip]')) {
+            element.title = element.dataset.sfControlTooltip || '';
+            delete element.dataset.sfControlTooltip;
         } observer.disconnect(); lifetime.abort(); cancelAnimationFrame(refreshFrame); cancelAnimationFrame(positionFrame); for (const record of records.values())
             record.dispose(); records.clear(); }
         refresh();
@@ -433,5 +462,7 @@
         mounted.set(root, api);
         return api;
     }
-    Object.assign(window, { sfSchoolStudioControls: { mount } });
+    Object.assign(window, { sfControls: { mount } });
+    if (!document.body.classList.contains('studio-host'))
+        mount(document.body, { endGroup() { } });
 })();
