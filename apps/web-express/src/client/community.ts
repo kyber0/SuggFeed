@@ -45,7 +45,7 @@
     reportFocus = button; reportForm.reset(); document.getElementById('content-report-message')!.textContent=''; reportDialog.showModal();
   });
   document.getElementById('content-report-cancel')?.addEventListener('click',()=>reportDialog.close());
-  reportDialog?.addEventListener('close',()=>reportFocus?.focus());
+  reportDialog?.addEventListener('close',()=>{const target=reportFocus?.getClientRects().length?reportFocus:reportFocus?.closest('details')?.querySelector<HTMLElement>('summary');target?.focus();});
   reportForm?.addEventListener('submit',async e=>{
     e.preventDefault();const button=reportForm.querySelector<HTMLButtonElement>('[type=submit]')!;button.disabled=true;
     try { const result=await request('report',{...reportTarget,body:new FormData(reportForm).get('body')});if(result.hidden&&reportFocus){const card=reportFocus.closest('.comment-card');if(card)(window as any).sfHoldComment?.(card);}reportDialog.close();notify(result.already_reported?'You have already reported this comment.':'Report sent privately. See decisions in School messages.'); }

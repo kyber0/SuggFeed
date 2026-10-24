@@ -9,6 +9,9 @@
             body.textContent = 'This comment is awaiting administrator review.';
         if (actions)
             actions.hidden = true;
+        const menu = card.querySelector('.comment-menu');
+        if (menu)
+            menu.hidden = true;
         const prefix = card.id.startsWith('drawer-') ? 'drawer-' : '';
         for (const id of ['comments-header-count', 'mob-comment-count', 'jump-comment-count']) {
             const counter = document.getElementById(prefix + id);
@@ -17,7 +20,48 @@
         }
     }
     Object.assign(window, { sfHoldComment: hold });
+    document.addEventListener('toggle', event => {
+        const menu = event.target;
+        if (!(menu instanceof HTMLDetailsElement) || !menu.classList.contains('comment-menu'))
+            return;
+        const panel = menu.querySelector('.comment-menu-items');
+        if (!panel || typeof panel.showPopover !== 'function')
+            return;
+        if (!menu.open) {
+            if (panel.matches(':popover-open'))
+                panel.hidePopover();
+            return;
+        }
+        for (const other of document.querySelectorAll('.comment-menu[open]'))
+            if (other !== menu)
+                other.open = false;
+        if (!panel.hasAttribute('popover')) {
+            panel.setAttribute('popover', 'auto');
+            panel.addEventListener('toggle', e => { if (e.newState === 'closed')
+                menu.open = false; });
+        }
+        panel.showPopover();
+        const rect = menu.getBoundingClientRect(), height = panel.offsetHeight;
+        panel.style.left = Math.max(8, Math.min(rect.right - panel.offsetWidth, innerWidth - panel.offsetWidth - 8)) + 'px';
+        panel.style.top = Math.max(8, rect.bottom + 4 + height <= innerHeight - 8 ? rect.bottom + 4 : rect.top - height - 4) + 'px';
+    }, true);
+    const closeMenus = () => { for (const menu of document.querySelectorAll('.comment-menu[open]'))
+        menu.open = false; };
+    window.addEventListener('resize', closeMenus);
+    document.addEventListener('scroll', closeMenus, { capture: true, passive: true });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') {
+        const menu = document.querySelector('.comment-menu[open]');
+        if (menu) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            menu.open = false;
+            menu.querySelector('summary')?.focus();
+        }
+    } }, true);
     document.addEventListener('click', event => {
+        for (const menu of document.querySelectorAll('.comment-menu[open]'))
+            if (!menu.contains(event.target) || event.target.closest('.comment-menu-items button'))
+                menu.open = false;
         const button = event.target.closest('[data-edit-comment]');
         if (!button)
             return;
@@ -25,11 +69,14 @@
         if (!card || !body || card.querySelector('[data-comment-editor]'))
             return;
         const form = document.createElement('form'), label = document.createElement('label'), input = document.createElement('textarea'), save = document.createElement('button'), cancel = document.createElement('button'), message = document.createElement('p');
-        form.className = 'care-form';
+        form.className = 'comment-editor';
+        card.dataset.editing = 'true';
         form.dataset.commentEditor = '';
-        label.textContent = 'Edit your comment';
+        label.className = 'comment-edit-label';
+        label.textContent = '';
         input.className = 'workspace-input';
-        input.rows = 3;
+        input.rows = 1;
+        input.setAttribute('aria-label', 'Edit your comment');
         input.minLength = 10;
         input.maxLength = 500;
         input.required = true;
@@ -37,20 +84,39 @@
         label.append(input);
         save.type = 'submit';
         save.className = cancel.className = 'workspace-button';
-        save.textContent = 'Save comment';
+        save.textContent = 'Save';
         cancel.type = 'button';
         cancel.textContent = 'Cancel';
+        message.className = 'comment-edit-message';
+        message.hidden = true;
         message.setAttribute('role', 'status');
-        form.append(label, save, cancel, message);
+        const actions = document.createElement('div');
+        actions.className = 'comment-edit-actions';
+        actions.append(save, cancel);
+        form.append(label, actions, message);
         body.hidden = true;
         body.after(form);
+        const resize = () => { input.style.height = 'auto'; input.style.height = Math.min(160, input.scrollHeight) + 'px'; };
+        input.addEventListener('input', resize);
+        resize();
         input.focus();
-        const finish = () => { body.hidden = false; form.remove(); button.focus(); };
+        input.setSelectionRange(input.value.length, input.value.length);
+        const finish = () => { body.hidden = false; form.remove(); delete card.dataset.editing; const focus = button.closest('details')?.querySelector('summary') || button; focus.focus(); };
         cancel.addEventListener('click', finish);
+        input.addEventListener('keydown', e => { if (e.key === 'Escape' && !save.disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            finish();
+        }
+        else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            form.requestSubmit();
+        } });
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             e.stopPropagation();
             save.disabled = cancel.disabled = true;
+            message.hidden = false;
             message.textContent = 'Saving…';
             try {
                 const response = await sfSchoolFetch('/api/community/comments/' + encodeURIComponent(button.dataset.editComment) + '/edit', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body: input.value, version: Number(button.dataset.commentVersion) }) });

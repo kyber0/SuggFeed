@@ -98,7 +98,7 @@
         reportDialog.showModal();
     });
     document.getElementById('content-report-cancel')?.addEventListener('click', () => reportDialog.close());
-    reportDialog?.addEventListener('close', () => reportFocus?.focus());
+    reportDialog?.addEventListener('close', () => { const target = reportFocus?.getClientRects().length ? reportFocus : reportFocus?.closest('details')?.querySelector('summary'); target?.focus(); });
     reportForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = reportForm.querySelector('[type=submit]');

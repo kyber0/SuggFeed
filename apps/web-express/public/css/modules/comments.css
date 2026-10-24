@@ -1,0 +1,50 @@
+/* One discussion layout for server-rendered and dynamically inserted comments. */
+.comment-thread-scroll .sf-comment {
+ position:relative;display:grid;grid-template-columns:32px minmax(0,1fr) 32px;gap:0 8px;align-items:start;
+ padding:4px 0;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0;
+}
+.comment-thread-scroll .sf-comment:hover {background:transparent;border:0;box-shadow:none;transform:none;}
+.sf-comment>.comment-avatar {grid-column:1;grid-row:1;width:32px;height:32px;font-size:12px;position:relative;z-index:1;margin-top:2px;}
+.sf-comment>.comment-content {grid-column:2;grid-row:1;min-width:0;max-width:100%;width:fit-content;padding:8px 12px;background:var(--bg-2);border-radius:16px;}
+.sf-comment .comment-card-header {display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin:0 0 2px;min-width:0;}
+.sf-comment .comment-author-name {font-size:13px;line-height:1.4;color:var(--ink);font-weight:700;overflow-wrap:anywhere;}
+.sf-comment .comment-staff-tag {padding:1px 5px;font-size:9px;line-height:1.4;}
+.sf-comment .comment-body {font-size:14px;line-height:1.5;padding:0;margin:0;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;}
+.sf-comment>.comment-actions {grid-column:2;grid-row:2;justify-self:start;display:flex;flex-wrap:nowrap;align-items:center;gap:4px;padding:0 4px;min-height:28px;}
+.sf-comment .comment-date {margin:0;font-size:11px;line-height:1.5;color:var(--muted);white-space:nowrap;}
+.sf-comment .comment-actions .comment-reply-btn {min-height:28px;min-width:44px;padding:0 4px;line-height:1.4;font-size:12px;font-weight:650;color:var(--muted);background:transparent;border:0;border-radius:6px;cursor:pointer;}
+.sf-comment .comment-reply-btn:hover {color:var(--text-link,var(--navy));text-decoration:underline;background:transparent;}
+.sf-comment>.comment-menu {grid-column:3;grid-row:1;position:relative;align-self:start;min-width:0;}
+.comment-menu>summary {display:grid;place-items:center;list-style:none;width:32px;height:36px;padding:0;border:0;border-radius:50%;color:var(--muted);cursor:pointer;background:transparent;}
+.comment-menu>summary::-webkit-details-marker {display:none;}.comment-menu>summary:hover,.comment-menu[open]>summary {background:var(--bg-2);color:var(--ink);}
+.comment-menu-items {position:absolute;right:0;top:38px;z-index:8;display:grid;gap:2px;width:176px;max-width:calc(100vw - 32px);padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:var(--shadow-md);}
+.comment-menu-items button {display:block;width:100%;min-height:44px;text-align:left;padding:8px 12px;border:0;border-radius:6px;background:transparent;font:500 13px/1.4 var(--font-sans);color:var(--ink);cursor:pointer;}
+.comment-menu-items button:hover {background:var(--bg-2);}.comment-menu :is(summary,button):focus-visible,.sf-comment .comment-reply-btn:focus-visible {outline:2px solid var(--navy-2);outline-offset:2px;}
+.comment-thread-scroll .sf-comment:has(+.comment-replies-thread:not(:empty))::before {left:15.25px;top:36px;bottom:0;width:1.5px;background:var(--line-2);}
+.comment-thread-scroll .comment-replies-thread {--reply-indent:20px;--reply-arrow-y:22px;--reply-color:var(--line-2);margin:0 0 4px 16px;padding-left:20px;gap:0;}
+.comment-thread-scroll .comment-replies-thread>.sf-comment::before {left:-20.75px;top:0;bottom:-1px;background:var(--line-2);}
+.comment-thread-scroll .comment-replies-thread>.sf-comment:last-child::before {bottom:calc(100% - 10px);}
+.comment-thread-scroll .comment-replies-thread>.sf-comment::after {left:-20.75px;top:10px;width:20px;height:24px;background:var(--line-2);}
+.sf-comment[data-editing=true]>.comment-content {width:100%;padding:8px 12px;}
+.sf-comment[data-editing=true]>.comment-actions,.sf-comment[data-editing=true]>.comment-menu {display:none;}
+.sf-comment[data-editing=true] {grid-template-columns:32px minmax(0,1fr);}
+.sf-comment .comment-editor {display:grid;gap:4px;padding:0;margin:0;border:0;background:transparent;box-shadow:none;min-width:0;}
+.sf-comment .comment-edit-label {display:block;padding:0;margin:0;min-width:0;}
+.sf-comment .comment-editor textarea.workspace-input {display:block;box-sizing:border-box;width:100%;min-height:24px;max-height:160px;resize:none;overflow-y:auto;border:0;border-radius:0;box-shadow:none;padding:0;margin:0;color:var(--ink);background:transparent;font:400 14px/1.5 var(--font-sans);}
+.sf-comment .comment-editor textarea:focus {outline:0;box-shadow:none;}.sf-comment .comment-content:has(textarea:focus-visible) {outline:2px solid var(--navy-2);outline-offset:2px;}
+.sf-comment .comment-edit-actions {display:flex;gap:8px;justify-content:flex-end;align-items:center;}
+.sf-comment .comment-edit-actions button.workspace-button {width:auto;min-width:44px;min-height:32px;border:0;border-radius:6px;box-shadow:none;padding:4px 8px;background:transparent;color:var(--muted);font-size:12px;line-height:1.4;}
+.sf-comment .comment-edit-actions button[type=submit] {font-weight:700;color:var(--text-link,var(--navy));}.sf-comment .comment-edit-actions button:hover:not(:disabled) {background:var(--surface);}
+.sf-comment .comment-edit-message {margin:0;font-size:12px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere;}
+.sf-comment [hidden] {display:none!important;}
+@media(max-width:540px) {.sf-comment .comment-editor textarea.workspace-input {font-size:16px;}.comment-thread-scroll {padding-left:12px;padding-right:12px;}}
+@media(pointer:coarse) {.sf-comment>.comment-menu>summary {width:44px;height:44px;}.comment-thread-scroll .sf-comment {grid-template-columns:32px minmax(0,1fr) 44px;}.comment-thread-scroll .sf-comment[data-editing=true] {grid-template-columns:32px minmax(0,1fr);}.sf-comment .comment-actions .comment-reply-btn,.sf-comment .comment-edit-actions button.workspace-button {min-height:44px;}.comment-menu-items {top:44px;}}
+
+.comment-menu-items[popover] {position:fixed;inset:auto;margin:0;max-height:calc(100dvh - 16px);overflow:auto;}
+.comment-menu-items[popover]:not(:popover-open) {display:none;}
+/* On phones, the menu shares the metadata row so text keeps the full bubble width. */
+@media(max-width:540px) {
+ .comment-thread-scroll .sf-comment {grid-template-columns:32px minmax(0,1fr);}
+ .sf-comment>.comment-menu {grid-column:2;grid-row:2;justify-self:end;}
+ .sf-comment>.comment-actions {max-width:calc(100% - 44px);}
+}

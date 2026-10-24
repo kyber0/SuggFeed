@@ -108,3 +108,20 @@ on 24 October 2026. Its presence was re-read after the transaction committed.
 The final focused run passed **31 tests**. Hosted user comments were not created,
 edited, reported or deleted for testing. Real-device testing and confirmation of
 the matching Vercel deployment remain outstanding.
+
+## Compact discussion interface
+
+The idea page and drawer share compact comment bubbles, avatar-connected reply
+rails, timestamps/Reply below the bubble and a three-dot options disclosure.
+Report and owner-only Edit stay in that disclosure. Inline editing uses one
+initial textarea row, grows to 160px, and keeps Save/Cancel inside the bubble.
+Escape cancels; Ctrl/Command+Enter saves. Network/validation failures preserve the
+entered text. Pending-review comments retain the existing private-review flow.
+On narrow phones, the options control moves to the metadata row to preserve text
+width. New drawer replies enter the same reply group used by loaded comments.
+
+Local Chromium inspection covered 320, 375, 768 and desktop widths, light/dark
+mode, menu visibility, save and Escape cancellation, with no page overflow or
+JavaScript errors in the fictional fixture. Typecheck, focused lint and build
+passed. No automated suite was run for this interface-only follow-up; the
+previously documented full-suite baseline and real-device limitations still apply.

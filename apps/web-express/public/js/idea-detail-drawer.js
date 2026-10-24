@@ -304,7 +304,7 @@
     }
     function sfCreateCommentCardEl(c, isReply = false) {
         const card = document.createElement('div');
-        card.className = `comment-card${isReply ? ' comment-reply-card' : ''}`;
+        card.className = `comment-card sf-comment${isReply ? ' comment-reply-card' : ''}`;
         card.id = `drawer-comment-${c.id}`;
         card.style.cssText = 'animation: commentSlideIn 200ms cubic-bezier(.22,.85,.4,1) both;';
         const author = c.display_name || (c.author && (c.author.display_name || c.author.full_name)) || 'Student';
@@ -313,21 +313,14 @@
             ? 'linear-gradient(135deg, #7c3aed 0%, #6026c0 100%)'
             : sfAvatarGrad(author);
         card.innerHTML = `
-      <div class="comment-card-header">
-        <div class="comment-avatar" style="background:${grad}">${sfEscapeAttribute(String(author[0].toUpperCase()))}</div>
-        <strong class="comment-author-name">${sfEscapeAttribute(String(author))}</strong>
-        ${isStaff ? '<span class="comment-staff-tag">STAFF</span>' : ''}
-        <span class="comment-date">${sfRelTime(c.created_at)}</span>
-      </div>
-      <div class="comment-body">${sfEscapeAttribute(String(c.body || ''))}</div>
-      <div class="comment-actions">
-        ${c.user_id && c.user_id === document.getElementById('sf-auth-config')?.dataset.user ? `<button type="button" class="care-report" data-edit-comment="${sfEscapeAttribute(String(c.id))}" data-comment-version="${Number(c.version) || 1}">Edit</button>` : ''}
-        <button type="button" class="care-report" data-report-comment="${String(c.id).replace(/[^a-f0-9-]/gi, '')}">Report</button>
-        <button type="button" class="comment-reply-btn" data-sf-click="reply-drawer" data-reply-id="${sfEscapeAttribute(String(c.id))}" data-reply-author="${sfEscapeAttribute(author)}">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
-          Reply
-        </button>
-      </div>
+      <div class="comment-avatar" style="background:${grad}" aria-hidden="true">${sfEscapeAttribute(String((author[0] || 'S').toUpperCase()))}</div>
+      <div class="comment-content"><div class="comment-card-header"><strong class="comment-author-name">${sfEscapeAttribute(String(author))}</strong>${isStaff ? '<span class="comment-staff-tag">STAFF</span>' : ''}</div>
+      <div class="comment-body">${sfEscapeAttribute(String(c.body || ''))}</div></div>
+      <details class="comment-menu"><summary aria-label="Comment options"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></summary><div class="comment-menu-items">
+        ${c.user_id && c.user_id === document.getElementById('sf-auth-config')?.dataset.user ? `<button type="button" data-edit-comment="${sfEscapeAttribute(String(c.id))}" data-comment-version="${Number(c.version) || 1}">Edit comment</button>` : ''}
+        <button type="button" data-report-comment="${sfEscapeAttribute(String(c.id))}">Report comment</button>
+      </div></details>
+      <div class="comment-actions"><span class="comment-date">${sfRelTime(c.created_at)}</span><button type="button" class="comment-reply-btn" data-sf-click="reply-drawer" data-reply-id="${sfEscapeAttribute(String(isReply ? c.parent_id || c.id : c.id))}" data-reply-author="${sfEscapeAttribute(author)}">Reply</button></div>
     `;
         return card;
     }
@@ -525,7 +518,22 @@
             };
             const card = sfCreateCommentCardEl(newComment, !!sfDrawerActiveReplyId);
             const list = document.getElementById('drawer-comments-list');
-            list.appendChild(card);
+            if (replyId) {
+                const parent = document.getElementById('drawer-comment-' + replyId);
+                if (parent) {
+                    let thread = parent.nextElementSibling;
+                    if (!thread?.classList.contains('comment-replies-thread')) {
+                        thread = document.createElement('div');
+                        thread.className = 'comment-replies-thread';
+                        parent.after(thread);
+                    }
+                    thread.appendChild(card);
+                }
+                else
+                    list.appendChild(card);
+            }
+            else
+                list.appendChild(card);
             input.value = '';
             sfCancelDrawerReply();
             sfDrawerCommentInputChanged(input);
