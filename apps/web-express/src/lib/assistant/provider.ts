@@ -10,6 +10,7 @@ export function selectAvailableModel(models:Pick<Model,'name'|'supportedActions'
  const chosen=names.includes('gemini-flash-lite-latest')?'gemini-flash-lite-latest':stable(true)||(names.includes('gemini-flash-latest')?'gemini-flash-latest':stable(false));
  if(!chosen)throw Object.assign(new Error('No supported stable Flash model is available'),{status:404});return chosen;
 }
+export function providerErrorCode(error:unknown):string {const text=error instanceof Error?error.message:'';return /api.key.*(?:invalid|not valid|expired)|API_KEY_INVALID/i.test(text)?'api_key':/schema|response.mime|enum|generation.config/i.test(text)?'schema':/thinking|token|budget/i.test(text)?'token_limit':/billing|payment/i.test(text)?'billing':/location|region|country/i.test(text)?'region':/not.supported|unsupported/i.test(text)?'unsupported':'unknown';}
 let discovered:Promise<string>|null=null;
 async function availableModel(client:GoogleGenAI,signal:AbortSignal):Promise<string>{
  if(c.model!=='auto')return c.model;
@@ -19,6 +20,6 @@ async function availableModel(client:GoogleGenAI,signal:AbortSignal):Promise<str
 export const geminiAnswer:Generator=async(sources,question,locale,schoolName,previousQuestions,signal)=>{
  const {GoogleGenAI}=await import('@google/genai');const client=new GoogleGenAI({apiKey:process.env.GEMINI_API_KEY});const prompt=promptFor(sources,question,locale,schoolName,previousQuestions);
  const model=await availableModel(client,signal);
- const result=await client.models.generateContent({model,contents:prompt.contents,config:{systemInstruction:prompt.systemInstruction,temperature:0,maxOutputTokens:c.maxOutputTokens,responseMimeType:'application/json',responseJsonSchema:{type:'object',properties:{answer:{type:'string'},sourceIds:{type:'array',items:{type:'string',enum:sources.map(s=>s.id)}},unknown:{type:'boolean'}},required:['answer','sourceIds','unknown'],additionalProperties:false},httpOptions:{timeout:c.deadlineMs,retryOptions:{attempts:1}},abortSignal:signal}});
+ const result=await client.models.generateContent({model,contents:prompt.contents,config:{systemInstruction:prompt.systemInstruction,temperature:0,maxOutputTokens:c.maxOutputTokens,responseMimeType:'application/json',responseSchema:{type:'OBJECT',properties:{answer:{type:'STRING'},sourceIds:{type:'ARRAY',items:{type:'STRING',enum:sources.map(s=>s.id)}},unknown:{type:'BOOLEAN'}},required:['answer','sourceIds','unknown']},httpOptions:{timeout:c.deadlineMs,retryOptions:{attempts:1}},abortSignal:signal}});
  return JSON.parse(result.text||'{}');
 };

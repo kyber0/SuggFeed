@@ -49,7 +49,7 @@
         send.disabled = true;
         root.dataset.conversation = 'true';
         message(question, true);
-        status.textContent = 'Sugi is checking reviewed FAQs…';
+        status.textContent = 'Sugi is checking approved sources…';
         try {
             const response = await fetchHelp('/help/ask', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ question, previousQuestions }), signal: controller.signal });
             const data = await response.json();
@@ -103,7 +103,7 @@
                 area.scrollTop += item.getBoundingClientRect().top - area.getBoundingClientRect().top;
             input.value = '';
             counter.textContent = '0 / 300';
-            status.textContent = data.answered ? 'Reviewed answer ready.' : 'I could not confidently match that question. Try a FAQ or contact your school.';
+            status.textContent = data.answered ? data.generated ? 'Answer ready. Check the supporting sources.' : 'Reviewed answer ready.' : data.fallbackReason && data.fallbackReason !== 'insufficient_sources' ? 'Natural answers are unavailable. You can still browse approved sources and FAQs.' : 'I do not have enough approved information. Try a source or contact your school.';
         }
         catch (error) {
             if (run === generation)
