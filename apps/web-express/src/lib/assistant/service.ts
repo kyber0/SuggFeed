@@ -5,7 +5,7 @@ import {candidates,localeOf,matchQuestion,projectQuestion,unsafeQuestion} from '
 import {fingerprint,budget} from './limits';
 import {cached,cacheAnswer} from './cache';
 import {record} from './log';
-import {geminiAnswer,providerErrorCode,type Generator} from './provider';
+import {geminiAnswer,providerErrorCode,providerHint,type Generator} from './provider';
 import {loadSources} from './sources';
 import {chunkSources,retrieveSources,validateAnswer,sourceVersion,type GroundedAnswer} from './documents';
 import {schoolQuestion} from './topics';
@@ -26,11 +26,11 @@ export async function ask(question:unknown,context:{school:string|null;actor:str
  const data=await loadSources(knowledge,context.school?context.documentStore||documentStoreFor(context.school,context.actor):undefined);
  const scoped=schoolQuestion(q)?data.sources.filter(s=>s.scope==='school'):data.sources;
  const sources=retrieveSources([...history,q].join(' '),chunkSources(scoped));if(!sources.length)return record(context.store,base,p.topic);
- let lease:string|undefined,failed=false,providerStatus=0,providerCause='',result:GroundedAnswer|null=null;
+ let lease:string|undefined,failed=false,providerStatus=0,providerCause='',hint='',result:GroundedAnswer|null=null;
  try{const claim=await context.store('claim',{key:fingerprint('provider-global'),limit:c.dailyCalls,concurrency:c.concurrency});if(claim&&typeof claim==='object'&&'id' in claim&&typeof claim.id==='string')lease=claim.id;
- if(lease){const signal=AbortSignal.timeout(c.deadlineMs);for(let attempt=0;attempt<=c.retries;attempt++){try{const output=await new Promise<unknown>((resolve,reject)=>{if(signal.aborted){reject(new Error('assistant_timeout'));return;}const abort=()=>reject(new Error('assistant_timeout'));signal.addEventListener('abort',abort,{once:true});(context.generate||geminiAnswer)(sources,q,locale,data.schoolName,history,signal).then(resolve,reject).finally(()=>signal.removeEventListener('abort',abort));});result=validateAnswer(output,sources);break;}catch(error){const status=typeof error==='object'&&error&&'status' in error?Number(error.status):0;providerStatus=status;providerCause=providerErrorCode(error);if(signal.aborted||attempt>=c.retries||status===429||status===401||status===403||status&&status<500)throw new Error('assistant_provider_unavailable');const retry=await context.store('retry',{key:fingerprint('provider-global'),limit:c.dailyCalls});if(!retry||typeof retry!=='object'||!('allowed' in retry)||retry.allowed!==true)throw new Error('assistant_budget_reached');await new Promise(r=>setTimeout(r,100+Math.floor(Math.random()*100)));}}}
+ if(lease){const signal=AbortSignal.timeout(c.deadlineMs);for(let attempt=0;attempt<=c.retries;attempt++){try{const output=await new Promise<unknown>((resolve,reject)=>{if(signal.aborted){reject(new Error('assistant_timeout'));return;}const abort=()=>reject(new Error('assistant_timeout'));signal.addEventListener('abort',abort,{once:true});(context.generate||geminiAnswer)(sources,q,locale,data.schoolName,history,signal).then(resolve,reject).finally(()=>signal.removeEventListener('abort',abort));});result=validateAnswer(output,sources);break;}catch(error){const status=typeof error==='object'&&error&&'status' in error?Number(error.status):0;providerStatus=status;providerCause=providerErrorCode(error);if(status===400&&!context.school)hint=providerHint(error);if(signal.aborted||attempt>=c.retries||status===429||status===401||status===403||status&&status<500)throw new Error('assistant_provider_unavailable');const retry=await context.store('retry',{key:fingerprint('provider-global'),limit:c.dailyCalls});if(!retry||typeof retry!=='object'||!('allowed' in retry)||retry.allowed!==true)throw new Error('assistant_budget_reached');await new Promise(r=>setTimeout(r,100+Math.floor(Math.random()*100)));}}}
  }catch{failed=true;console.warn('assistant_provider_unavailable');}finally{if(lease)await context.store('release',{id:lease,failed,pause:c.circuitSeconds}).catch(()=>undefined);}
  const reply:Reply=result?{...base,answered:true,source:'ai',generated:true,answer:result.answer,sources:result.sources,scope:result.sources.some(s=>s.scope==='school')?'school':'app',version:knowledge.version+':sources-'+sourceVersion(data.sources)}:local?answer(local,'fallback'):failed?unavailable('provider_unavailable'+(providerStatus?'_'+providerStatus+'_'+providerCause:'')):!lease?unavailable('provider_busy'):base;
  // Generated prose is never cached: sources and current access must be rechecked.
- return record(context.store,reply,p.topic);
+ return record(context.store,hint&&!reply.answered?{...reply,providerHint:hint}:reply,p.topic);
 }
