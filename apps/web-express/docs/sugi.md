@@ -7,7 +7,7 @@ Sugi answers from reviewed FAQs on the desktop/mobile website. It cannot read pr
 - Home screen: bottom-right **Ask Sugi** launcher with a custom navy/orange logo. It opens a compact keyboard-accessible help panel and stays above mobile navigation. No JavaScript falls back to the full Help page.
 - `/help`: public app help; available before school selection.
 - `/s/{school}/help`: app help plus that school's published FAQ, behind existing school/publication/access checks.
-- School administration → **Sugi review**: school-scoped gaps, negative ratings and aggregate usage.
+- School administration → **Sugi knowledge & review** (`/s/{school}/admin/assistant`): school FAQ drafts, reviewed publishing, history, gaps, negative ratings and aggregate usage.
 - Platform dashboard → **Sugi review** tab: app-wide help analytics only. Operators are not given school membership.
 - `/help-faq.html`: generated public, multilingual FAQ; pre-cached for offline help.
 
@@ -38,7 +38,7 @@ Use `POST /help/ask` and `POST /help/feedback` (automatically school-scoped insi
 
 ## Edit knowledge
 
-Source of truth:
+App knowledge and initial fictional demo seed:
 
 - `knowledge/assistant/app.md`
 - `knowledge/assistant/schools/*.md`
@@ -48,11 +48,21 @@ Each Markdown FAQ section has a JSON data block: stable ID, `published`/`placeho
 
 After review, change the Markdown version and run `npm run build:knowledge`. A content digest also prevents stale cache reuse if someone forgets to bump the version. The build generates `src/lib/assistant/knowledge.generated.json` and the public offline FAQ from the same input. The generated public knowledge version also refreshes the service-worker cache key, keeping offline FAQs in step with published content. Do not edit generated output directly. School contacts display from existing approved school settings outside the model; fictional demo contacts do not appear as monitored support channels.
 
-Feedback never edits knowledge automatically. Admins can review topics and copy a placeholder Markdown draft. School staff must approve facts/translations; source publication uses the normal reviewed commit/deployment process.
+### School-admin FAQ editor
+
+School admins with current MFA can add up to 30 FAQs in the Sugi dashboard. Select an institutional topic: school profile, admissions, academics, services, policies, schedules, contacts or student life. Enter an English, Filipino and Taglish question and reviewed answer; add alternate phrasings and simple topic keywords to improve matching. Keep official contact addresses in answers, not keywords. The editor loads the current draft; the initial fictional demo FAQ can seed its first draft.
+
+**Save draft** does not change live answers. Review all facts/translations, confirm the review checkbox and choose **Publish reviewed FAQs**. Publication retains an immutable snapshot, increases the school knowledge version and immediately changes subsequent questions. Existing open conversations keep their already displayed answers. A stale revision rejects the change and preserves entered text; explicitly load the latest draft before editing again. Remove an FAQ from a new draft and publish to withdraw it; publishing an empty collection withdraws all school answers. History shows previous version metadata; restoration is not included.
+
+After first publication, database versions are authoritative for that school, including an empty published collection. Source-file school FAQs are only an initial seed/fallback before a database publication. A failed knowledge lookup returns app-only help, never stale school facts. School drafts and history require an active school admin; students only receive published answers. Public school workspaces can expose their published institutional FAQs to guests under the existing publication policy. No private student records belong here.
+
+App FAQ changes continue through reviewed source commits/deployment. School facts publish directly from the school dashboard; a deployment is unnecessary. Global platform operators cannot edit school facts by pretending to be a school admin. Feedback never edits knowledge automatically. The review queue's copied Markdown placeholder is a starting point for human review, not published content.
+
+Questions such as “what’s this app?” now match the app overview locally. School scope comes from the verified current workspace, not a guessed school name or the student email. A school category organizes its reviewed entries; matching chooses one of those entries. Unknown facts remain unknown. Topic/language filters on Help let students browse exact reviewed answers.
 
 ## Privacy and selection
 
-Normalizing arbitrary prose is not anonymization. Original questions exist only in transient request memory and the current browser page. Only allowlisted FAQ terms, published candidate entries and controlled examples can reach Gemini. Obvious personal/secret/instruction-changing input is refused locally. Unknown logs store safe topic tokens or `unknown`, not original questions. Logs contain no user IDs, emails, names, IPs, conversations or submitted case details. This intentionally limits the detail of the unanswered-question queue.
+Normalizing arbitrary prose is not anonymization. Original questions exist only in transient request memory and the current browser page. Only allowlisted FAQ terms, published candidate questions/categories/keywords and controlled examples can reach Gemini. School answer bodies are not sent to the selector. Obvious personal/secret/instruction-changing input is refused locally. Unknown logs store safe topic tokens or `unknown`, not original questions. Logs contain no user IDs, emails, names, IPs, conversations or submitted case details. This intentionally limits the detail of the unanswered-question queue.
 
 Gemini returns an authorized FAQ ID or unknown. The server verifies it and displays the exact reviewed translation; arbitrary generated prose/HTML never becomes an answer. Cache entries are checked against current reviewed answers and keyed by school, knowledge digest, locale and policy. Misclassification remains possible; uncertain queries should use fallback rather than be presented as facts.
 
@@ -61,6 +71,8 @@ The capability for feedback is a random response token held only in the current 
 ## Schema and retention
 
 Apply `202610240004_information_assistant.sql` before deploying the new endpoints. It adds only assistant-owned cache, minimal logs, capability, budget, concurrency and circuit records; no accounts or existing submissions are reset. Existing security maintenance cron also cleans expired assistant records. Monitor its `more` status and repeat incomplete batches. Rollback SQL is in `docs/rollback/202610240004_information_assistant.sql`; deploy the previous code (including removal of the assistant cleanup hook) and export approved records before removing the schema. Rollback deletes assistant history and must not run automatically.
+
+Apply additive `202610240005_school_assistant_knowledge.sql` for the school editor. It creates school draft/revision state, immutable published snapshots and a service-only RPC. Save/publish validate scope and fresh admin membership; HTTP also enforces MFA and origin checks. Publishing locks the school state, rejects stale revisions, and changes the published pointer atomically. No accounts, policies, memberships or existing content are altered. Snapshot history is retained until an explicit data-retention/deletion process is introduced. Editing does not change school activation or policy approval.
 
 Usage statistics count recorded requests (not all FAQ page reads). Cache rate is cached answers / recorded requests. Fallback rate is unanswered requests / recorded requests; locally matched reviewed answers do not count as unanswered. Retention affects the observable window. A daily bin is a UTC date. Gaps and negative ratings are independently limited to 25 per page.
 
@@ -76,7 +88,7 @@ node -r ts-node/register/transpile-only --test tests/assistant-*.test.ts
 node -r ts-node/register/transpile-only scripts/eval-assistant.ts --mock
 ```
 
-The 44-case evaluation includes translated known questions, unknown organizational facts, off-topic text, prompt injection and sensitive input. Mocked evaluation makes no Gemini call. Live endpoint evaluation is manual, refuses CI, and requires `ASSISTANT_EVAL_ORIGIN` plus `--allow-endpoint`; it states its request count before authorization. Existing per-IP/account limits still apply, so run live cases in smaller selected batches or across quota windows rather than weakening production limits. No live model evaluation is claimed without that run.
+The 48-case evaluation includes translated known questions, unknown organizational facts, off-topic text, prompt injection and sensitive input. Mocked evaluation makes no Gemini call. Live endpoint evaluation is manual, refuses CI, and requires `ASSISTANT_EVAL_ORIGIN` plus `--allow-endpoint`; it states its request count before authorization. Existing per-IP/account limits still apply, so run live cases in smaller selected batches or across quota windows rather than weakening production limits. No live model evaluation is claimed without that run.
 
 Check at 320/360/375/390/430/768/1440px, landscape, light/dark, large text, keyboard, no JavaScript and offline. Use invented fixtures only. The repository had 29 known baseline test failures before this feature; compare names, not just totals, and do not report the full suite as green until those are resolved separately.
 
@@ -95,8 +107,9 @@ Custom generated source: `assets/sugi/logo-source.png` at repository root. Produ
 ## Release verification
 
 - Type checking, focused assistant lint and production build passed.
-- 44 mocked evaluation cases passed; no live Gemini call was made.
-- Focused tests cover reviewed selection/refusal, school cache/version isolation, own-request feedback, role restrictions, quota/circuit behavior, retention and strict migration ownership.
-- Full suite: 318 passed, 29 known failures; failure names match the recorded baseline with no new failures.
+- 48 mocked evaluation cases passed; no live Gemini call was made.
+- All 15 focused assistant tests passed, including school draft isolation, MFA/role/origin boundaries, stale revisions, immutable publication and runtime scoped answers. Focused tests cover reviewed selection/refusal, school cache/version isolation, own-request feedback, role restrictions, quota/circuit behavior, retention and strict migration ownership.
+- Full suite: 323 passed, 29 known failures; failure names match the recorded baseline with no new failures.
+- School-editor fixtures passed save/reload/publish/conflict retention and category filtering at 320/360/375/390/430/768/1440px with no page overflow or script errors.
 - Browser fixtures: Help/admin/public FAQ at seven widths (320–1440), home panel at eight viewport/landscape sizes, dark/reduced-motion/focus restoration, no-JavaScript FAQ, and actual service-worker offline navigation passed.
 - Real phone keyboards, assistive technology, Gemini project/free-tier eligibility and live model responses remain unverified.

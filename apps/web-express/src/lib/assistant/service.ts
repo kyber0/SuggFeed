@@ -1,5 +1,6 @@
+import {loadKnowledge} from './school-knowledge';
+import {knowledgeStoreFor} from './store';
 import {assistantConfig as c} from './config';
-import {knowledgeFor} from './knowledge';
 import {candidates,localeOf,matchQuestion,projectQuestion} from './normalize';
 import {fingerprint,budget} from './limits';
 import {cached,cacheAnswer} from './cache';
@@ -9,12 +10,12 @@ import type {Store} from './store';
 import type {Reply,Locale,Entry} from './types';
 const fallback:Record<Locale,string>={en:"I don't have that information. Check the reviewed FAQs below or contact the school office. Do not enter personal information here.",fil:'Wala akong sapat na impormasyon. Tingnan ang sinuring FAQ o kontakin ang paaralan. Huwag maglagay ng personal na impormasyon dito.',taglish:'Wala akong verified answer diyan. Check the reviewed FAQs below or contact your school office. Huwag maglagay ng personal info dito.'};
 export class HelpError extends Error {constructor(public status:number,message:string){super(message);}}
-export async function ask(question:unknown,context:{school:string|null;actor:string|null;rateActor?:string|null;ip:string;store:Store;selector?:Selector}):Promise<Reply>{
+export async function ask(question:unknown,context:{school:string|null;actor:string|null;rateActor?:string|null;ip:string;store:Store;knowledgeStore?:Store;selector?:Selector}):Promise<Reply>{
  if(typeof question!=='string'||!question.trim()||Array.from(question).length>c.maxInput||/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(question))throw new HelpError(400,'Enter a help question of 1–300 characters.');
- const q=question.trim(),knowledge=knowledgeFor(context.school||undefined),locale=localeOf(q,knowledge.entries);const p=projectQuestion(q,knowledge.entries);
+ const q=question.trim(),knowledge=await loadKnowledge(context.school,context.school?context.knowledgeStore||knowledgeStoreFor(context.school,context.actor):undefined),locale=localeOf(q,knowledge.entries);const p=projectQuestion(q,knowledge.entries);
  const base:Reply={success:true,name:'Sugi',answered:false,source:'fallback',answer:fallback[locale],version:knowledge.version,locale};
  if(!c.enabled)return base;
- const local=matchQuestion(q,knowledge.entries);const answer=(e:Entry,source:Reply['source']):Reply=>({...base,answered:true,source,answer:e.answers[locale],faqId:e.id});
+ const local=matchQuestion(q,knowledge.entries);const answer=(e:Entry,source:Reply['source']):Reply=>({...base,answered:true,source,answer:e.answers[locale],faqId:e.id,scope:e.scope||'app',category:e.category});
  let ready=false;let hash='';
  try{ready=await budget(context.store,context.ip,context.rateActor??context.actor);if(!ready)return base;hash=fingerprint(JSON.stringify([c.policyVersion,local?.id||null,p.tokens,locale,knowledge.version,context.school]));const hit=!p.blocked?await cached(context.store,hash,knowledge.version,locale,knowledge.entries):null;if(hit&&(!local||hit.id===local.id))return record(context.store,answer(hit,'cache'),p.topic);}catch{return local?answer(local,'fallback'):base;}
  if(p.blocked&&!local)return record(context.store,base,'unknown');

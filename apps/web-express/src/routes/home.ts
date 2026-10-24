@@ -1,4 +1,5 @@
-import {knowledgeFor} from '../lib/assistant/knowledge';
+import {loadKnowledge} from '../lib/assistant/school-knowledge';
+import {knowledgeStoreFor} from '../lib/assistant/store';
 import {currentSchool} from '../lib/school-scope';
 import {supabaseService} from '../lib/supabase';
 import {schoolUser} from '../lib/school-scope';
@@ -20,6 +21,7 @@ function asyncHandler(
 router.get(
   "/",
   asyncHandler(async (req: Request, res: Response) => {
+    const school=currentSchool();const help=loadKnowledge(school?.id||null,school?knowledgeStoreFor(school.id,schoolUser(req)?.id||null):undefined);
     const dataStarted=performance.now();
     const { data: feed, count } = await loadPublishedSubmissions({
       page: 1,
@@ -43,7 +45,7 @@ router.get(
     res.render("home", {
       title: "SuggFeed — Share feedback, track progress",
       description: "Share campus feedback, choose whether to attach your account, and check submission progress with a private tracking code.",
-      assistantKnowledge:knowledgeFor(currentSchool()?.id),
+      assistantKnowledge:await help,
       feed,
       votedIds,
       totalCount: count,

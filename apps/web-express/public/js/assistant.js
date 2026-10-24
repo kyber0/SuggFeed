@@ -58,7 +58,7 @@
                 throw new Error(data.error || 'Help is unavailable. Use the reviewed FAQs below.');
             const item = message(data.answer);
             const source = document.createElement('small');
-            source.textContent = data.answered ? 'Reviewed FAQ' : 'Reviewed FAQ and contact options are available below.';
+            source.textContent = data.answered ? data.scope === 'school' ? 'Reviewed school FAQ' : 'Reviewed SuggFeed FAQ' : 'Reviewed FAQ and contact options are available below.';
             item.append(source);
             if (typeof data.requestId === 'string' && typeof data.feedbackToken === 'string') {
                 const group = document.createElement('div');
@@ -102,8 +102,9 @@
     });
     root.querySelectorAll('[data-sugi-question]').forEach(button => button.addEventListener('click', () => { input.value = button.dataset.sugiQuestion || ''; input.dispatchEvent(new Event('input')); form.requestSubmit(); }));
     document.querySelector('[data-sugi-reset]')?.addEventListener('click', () => { generation++; controller?.abort(); controller = null; send.disabled = false; messages.replaceChildren(); delete root.dataset.conversation; input.value = ''; counter.textContent = '0 / 300'; status.textContent = 'Conversation cleared from this page.'; input.focus(); });
+    document.querySelector('[data-sugi-category]')?.addEventListener('change', event => { const category = event.target.value; document.querySelectorAll('[data-sugi-faq]').forEach(el => { el.hidden = !!category && entries.find(e => e.id === el.dataset.sugiFaq)?.category !== category; }); });
     document.querySelector('[data-sugi-language]')?.addEventListener('change', event => { const language = event.target.value; document.querySelectorAll('[data-sugi-faq]').forEach(detail => { const entry = entries.find(e => e.id === detail.dataset.sugiFaq); if (entry) {
-        detail.querySelector('summary').textContent = entry.questions[language] || entry.questions.en;
+        detail.querySelector('[data-sugi-faq-question]').textContent = entry.questions[language] || entry.questions.en;
         detail.querySelector('p').textContent = entry.answers[language] || entry.answers.en;
     } }); });
     window.addEventListener('offline', () => { status.textContent = 'You are offline. Reviewed FAQs on this page remain available.'; });

@@ -1,0 +1,23 @@
+import type {Entry,Knowledge,Locale} from './types';
+import {knowledgeFor,entries as appEntries} from './knowledge';
+import {knowledgeStoreFor,type Store} from './store';
+import {normalize} from './normalize';
+export const schoolTopics=['school_profile','admissions','academics','services','policies','schedules','contacts','student_life'];
+export interface SchoolFaq {id:string;category:string;questions:Record<Locale,string>;answers:Record<Locale,string>;keywords:string[];aliases:Record<Locale,string[]>;}
+const languages=['en','fil','taglish'] as const;
+function object(value:unknown):Record<string,unknown>{if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('Use a valid FAQ collection.');return value as Record<string,unknown>;}
+export function validateFaqs(input:unknown,publishing=false):SchoolFaq[]{
+ if(!Array.isArray(input)||input.length>30||Buffer.byteLength(JSON.stringify(input),'utf8')>200000)throw new Error('Keep the collection to 30 concise FAQs.');const ids=new Set<string>(),seenPhrases=new Set<string>();const appPhrases=new Set(appEntries.flatMap(e=>[...Object.values(e.questions),...Object.values(e.aliases||{}).flat()]).map(normalize));
+ return input.map((value,index)=>{const row=object(value);if(Object.keys(row).some(k=>!['id','category','questions','answers','keywords','aliases'].includes(k))||typeof row.id!=='string'||!/^school-[a-z0-9-]{1,48}$/.test(row.id)||ids.has(row.id)||typeof row.category!=='string'||!schoolTopics.includes(row.category))throw new Error('Check FAQ '+(index+1)+' identity and category.');ids.add(row.id);
+ const q=object(row.questions),a=object(row.answers),aliases=object(row.aliases);if([q,a,aliases].some(v=>Object.keys(v).some(k=>!languages.includes(k as Locale))))throw new Error('Use English, Filipino and Taglish fields.');const questions={} as Record<Locale,string>,answers={} as Record<Locale,string>,phrases={} as Record<Locale,string[]>;
+ for(const language of languages){for(const [source,target,max] of [[q,questions,300],[a,answers,1600]] as const){const text=source[language];if(typeof text!=='string'||text.length>max||publishing&&(!text.trim()||/\[placeholder|\[todo/i.test(text)))throw new Error('Complete the reviewed '+({en:'English',fil:'Filipino',taglish:'Taglish'}[language])+' question and answer for FAQ '+(index+1)+'.');target[language]=text.trim();}const list=aliases[language];if(!Array.isArray(list)||list.length>12||list.some(v=>typeof v!=='string'||v.length>300))throw new Error('Use up to 12 short aliases per language.');phrases[language]=list.map(v=>String(v).trim()).filter(Boolean);}
+ if(!Array.isArray(row.keywords)||row.keywords.length>24||publishing&&!row.keywords.length||row.keywords.some(v=>typeof v!=='string'||!/^[-a-z0-9]{1,40}$/.test(v)))throw new Error('Add up to 24 simple topic keywords for FAQ '+(index+1)+'.');
+ if(publishing){const allPhrases=new Set([...Object.values(questions),...Object.values(phrases).flat()].map(normalize));for(const phrase of allPhrases){if(appPhrases.has(phrase))throw new Error('SuggFeed already answers that app question. Use a school-specific question.');if(seenPhrases.has(phrase))throw new Error('Use distinct questions and aliases for each school FAQ.');seenPhrases.add(phrase);}}
+ return {id:row.id,category:row.category,questions,answers,keywords:[...new Set(row.keywords as string[])],aliases:phrases};});
+}
+export function fileSchoolDraft(school:string):SchoolFaq[]{return knowledgeFor(school).entries.filter(e=>e.scope==='school').map(e=>({id:e.id.startsWith('school-')?e.id:'school-'+e.id,category:e.category||'school_profile',questions:e.questions,answers:e.answers,keywords:e.keywords,aliases:{en:e.aliases?.en||[],fil:e.aliases?.fil||[],taglish:e.aliases?.taglish||[]}}));}
+export async function loadKnowledge(school:string|null,store?:Store):Promise<Knowledge>{
+ if(!school)return knowledgeFor();const app=knowledgeFor();
+ try{const result=await (store||knowledgeStoreFor(school,null))('published');if(!result||typeof result!=='object'||!('version' in result)||typeof result.version!=='number')throw new Error('Knowledge unavailable');if(result.version===0){const fallback=knowledgeFor(school);return {...fallback,schoolStatus:fallback.entries.some(e=>e.scope==='school')?'available':'empty'};}if(!('entries' in result))throw new Error('Knowledge unavailable');const faqs=validateFaqs(result.entries,true);return {version:app.version+':school-'+result.version,schoolStatus:faqs.length?'available':'empty',entries:[...app.entries,...faqs.map((e):Entry=>({...e,status:'published',route:'',scope:'school'}))]};}
+ catch{console.warn('school_knowledge_unavailable');return {...app,schoolStatus:'unavailable'};}
+}

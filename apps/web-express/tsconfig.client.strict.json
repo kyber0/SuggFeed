@@ -11,6 +11,7 @@
     "src/client/file-upload.ts",
     "src/client/assistant.ts",
     "src/client/assistant-admin.ts",
+    "src/client/assistant-knowledge.ts",
     "src/client/submission-safety.ts",
     "src/client/student-access.ts",
     "src/client/admin-overview.ts",

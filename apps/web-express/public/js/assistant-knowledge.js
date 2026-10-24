@@ -1,0 +1,139 @@
+"use strict";
+(() => {
+    const root = document.querySelector('[data-sugi-knowledge-editor]');
+    if (!root)
+        return;
+    const languages = ['en', 'fil', 'taglish'], names = { en: 'English', fil: 'Filipino', taglish: 'Taglish' }, endpoint = root.dataset.endpoint, rows = root.querySelector('[data-faq-entries]'), status = root.querySelector('[data-faq-status]'), history = root.querySelector('[data-faq-history]'), add = root.querySelector('[data-faq-add]'), save = root.querySelector('[data-faq-save]'), publish = root.querySelector('[data-faq-publish]'), reviewed = root.querySelector('[data-faq-reviewed]');
+    const categories = ['school_profile', 'admissions', 'academics', 'services', 'policies', 'schedules', 'contacts', 'student_life'];
+    let topics = {}, revision = 0, version = null, dirty = false, busy = false, loaded = false, saved = false;
+    const request = async (path, data) => { const response = await sfSchoolFetch(path, { headers: { Accept: 'application/json', ...(data ? { 'Content-Type': 'application/json' } : {}) }, ...(data ? { method: 'POST', body: JSON.stringify(data) } : {}), signal: AbortSignal.timeout(15000) }); const body = await response.json(); if (!response.ok || !body.success)
+        throw new Error(body.error || 'School FAQs could not load. Your text is preserved.'); return body; };
+    const sync = () => { root.querySelectorAll('[data-faq-field]').forEach(field => { field.disabled = busy; }); root.querySelectorAll('[data-faq-remove], [data-faq-reload]').forEach(button => { button.disabled = busy; }); add.disabled = busy || !loaded || rows.children.length >= 30; save.disabled = busy || !loaded || !dirty; publish.disabled = busy || !loaded || !saved || dirty || !reviewed.checked; reviewed.disabled = busy || !loaded || !saved || dirty; };
+    const changed = () => { dirty = true; reviewed.checked = false; status.textContent = 'Unsaved draft changes. Students still see ' + (version ? 'published version ' + version : 'no school FAQs') + '.'; sync(); };
+    const input = (label, value, field, max, long = false) => { const group = document.createElement('label'); group.textContent = label; const control = long ? document.createElement('textarea') : document.createElement('input'); control.className = 'workspace-input'; control.value = value; control.dataset.faqField = field; control.maxLength = max; if (control instanceof HTMLTextAreaElement)
+        control.rows = long && field.startsWith('answers') ? 3 : 2; group.append(control); return group; };
+    const row = (faq) => {
+        const card = document.createElement('details');
+        card.className = 'sugi-editor-row';
+        card.dataset.faqId = faq.id;
+        const title = document.createElement('summary'), caption = document.createElement('strong'), tag = document.createElement('span');
+        caption.textContent = faq.questions.en || 'New school FAQ';
+        tag.textContent = topics[faq.category] || 'School information';
+        title.append(caption, tag);
+        card.append(title);
+        const body = document.createElement('div');
+        body.className = 'sugi-editor-fields';
+        const categoryLabel = document.createElement('label');
+        categoryLabel.textContent = 'Topic';
+        const select = document.createElement('select');
+        select.className = 'workspace-input';
+        select.dataset.faqField = 'category';
+        for (const value of categories) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = topics[value] || value;
+            option.selected = value === faq.category;
+            select.append(option);
+        }
+        categoryLabel.append(select);
+        body.append(categoryLabel);
+        for (const language of languages) {
+            const panel = document.createElement('details');
+            panel.className = 'sugi-editor-language';
+            panel.open = language === 'en';
+            const heading = document.createElement('summary');
+            heading.textContent = names[language];
+            panel.append(heading, input('Question', faq.questions[language], 'questions.' + language, 300), input('Reviewed answer', faq.answers[language], 'answers.' + language, 1600, true), input('Other ways students ask — one per line', faq.aliases[language].join('\n'), 'aliases.' + language, 3600, true));
+            body.append(panel);
+        }
+        body.append(input('Topic keywords — comma separated', faq.keywords.join(', '), 'keywords', 1000));
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.dataset.faqRemove = '';
+        remove.className = 'workspace-button';
+        remove.textContent = 'Remove from draft';
+        remove.addEventListener('click', () => { card.remove(); changed(); });
+        body.append(remove);
+        card.append(body);
+        card.addEventListener('input', () => { caption.textContent = card.querySelector('[data-faq-field="questions.en"]')?.value || 'New school FAQ'; changed(); });
+        select.addEventListener('change', () => { tag.textContent = topics[select.value] || select.value; changed(); });
+        rows.append(card);
+        return card;
+    };
+    const collect = () => Array.from(rows.querySelectorAll('.sugi-editor-row')).map(card => { const value = (field) => (card.querySelector('[data-faq-field="' + field + '"]')?.value || '').trim(); const questions = {}, answers = {}, aliases = {}; for (const language of languages) {
+        questions[language] = value('questions.' + language);
+        answers[language] = value('answers.' + language);
+        aliases[language] = value('aliases.' + language).split('\n').map(s => s.trim()).filter(Boolean);
+    } return { id: card.dataset.faqId, category: value('category'), questions, answers, aliases, keywords: [...new Set(value('keywords').toLowerCase().split(/[,\s]+/).filter(Boolean))] }; });
+    const load = async () => { if (busy)
+        return; if (dirty && !await window.sfConfirm('Discard your unsaved FAQ edits and load the latest draft?'))
+        return; busy = true; sync(); status.textContent = 'Loading the current school FAQ draft…'; try {
+        const body = await request(endpoint), state = body.state;
+        topics = body.topics;
+        revision = state.revision;
+        version = state.publishedVersion;
+        rows.replaceChildren();
+        for (const faq of state.draft || [])
+            row(faq);
+        history.replaceChildren();
+        for (const item of state.history || []) {
+            const line = document.createElement('li');
+            line.textContent = 'Version ' + item.version + ' · ' + new Date(item.created_at).toLocaleString();
+            history.append(line);
+        }
+        if (!history.children.length)
+            history.textContent = 'No school FAQ version has been published yet.';
+        loaded = true;
+        saved = state.exists;
+        dirty = !saved && rows.children.length > 0;
+        reviewed.checked = false;
+        status.textContent = version ? 'Published version ' + version + '. You are editing a separate draft.' : 'No school FAQs published yet. Add approved information, save, then review and publish.';
+    }
+    catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'Could not load school FAQs.';
+    }
+    finally {
+        busy = false;
+        sync();
+    } };
+    add.addEventListener('click', () => { const card = row({ id: 'school-' + crypto.randomUUID().replace(/-/g, '').slice(0, 16), category: 'school_profile', questions: { en: '', fil: '', taglish: '' }, answers: { en: '', fil: '', taglish: '' }, aliases: { en: [], fil: [], taglish: [] }, keywords: [] }); card.open = true; changed(); card.querySelector('input[data-faq-field="questions.en"]')?.focus(); });
+    save.addEventListener('click', async () => { if (busy)
+        return; busy = true; sync(); status.textContent = 'Saving your draft…'; try {
+        const body = await request(endpoint + '/save', { revision, entries: collect() });
+        revision = body.result.revision;
+        saved = true;
+        dirty = false;
+        reviewed.checked = false;
+        status.textContent = 'Draft saved. Students still see ' + (version ? 'version ' + version : 'no school FAQs') + '. Review all facts and translations before publishing.';
+    }
+    catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'Could not save. Your text is preserved.';
+    }
+    finally {
+        busy = false;
+        sync();
+    } });
+    publish.addEventListener('click', async () => { if (busy || dirty || !reviewed.checked)
+        return; busy = true; sync(); status.textContent = 'Publishing the reviewed FAQ version…'; try {
+        const body = await request(endpoint + '/publish', { revision, reviewed: true });
+        revision = body.result.revision;
+        version = body.result.version;
+        reviewed.checked = false;
+        status.textContent = 'Published version ' + version + '. New student questions now use these reviewed school FAQs.';
+        const line = document.createElement('li');
+        line.textContent = 'Version ' + version + ' · just published';
+        if (!history.children.length)
+            history.replaceChildren();
+        history.prepend(line);
+    }
+    catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'Publication could not be confirmed. Your draft is preserved.';
+    }
+    finally {
+        busy = false;
+        sync();
+    } });
+    reviewed.addEventListener('change', sync);
+    root.querySelector('[data-faq-reload]')?.addEventListener('click', () => void load());
+    void load();
+})();

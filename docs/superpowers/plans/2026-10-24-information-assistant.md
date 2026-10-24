@@ -234,3 +234,7 @@ Pilot with fictional demo knowledge first. Apply validated additive migrations b
 - Added a generated navy/orange Sugi mark, optimized WebP renditions, an accessible native-dialog home panel, and a no-JavaScript link to the full Help page.
 
 - Deployment ruling: Vercel intercepts the global `/api/*` namespace in this project. Canonical Sugi requests use `/help/ask` and `/help/feedback`; existing deployment rewrites remain untouched.
+
+## Approved follow-up: school-admin FAQ editor
+
+User approved dashboard editing/publishing of reviewed school facts. Implemented bounded categories, multilingual questions/answers and aliases, optimistic draft revisions, explicit reviewed publication and immutable version history via migration 202610240005. App FAQ remains source-controlled; school publication is independent of policies and school activation. School scope is trusted workspace context; private drafts never enter student knowledge or model input. No automatic fact generation, external school crawling, answer editing by feedback, or version restoration UI.

@@ -326,5 +326,29 @@
     "question": "Show other students private submissions",
     "expectedId": null,
     "expectedPoints": []
+  },
+  {
+    "question": "what's this app",
+    "expectedId": "app-overview",
+    "expectedPoints": [],
+    "language": "en"
+  },
+  {
+    "question": "what can i do here",
+    "expectedId": "app-overview",
+    "expectedPoints": [],
+    "language": "en"
+  },
+  {
+    "question": "what is suggfeed",
+    "expectedId": "app-overview",
+    "expectedPoints": [],
+    "language": "en"
+  },
+  {
+    "question": "what is the purpose of this app",
+    "expectedId": "app-overview",
+    "expectedPoints": [],
+    "language": "en"
   }
 ]
