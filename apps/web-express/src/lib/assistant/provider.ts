@@ -1,10 +1,24 @@
+import type {Model,GoogleGenAI} from '@google/genai';
 import {assistantConfig as c} from './config';
 import {promptFor} from './prompt';
 import type {Source} from './documents';
 import type {Locale} from './types';
 export type Generator=(sources:Source[],question:string,locale:Locale,schoolName:string,previousQuestions:string[],signal:AbortSignal)=>Promise<unknown>;
+export function selectAvailableModel(models:Pick<Model,'name'|'supportedActions'>[]):string {
+ const names=models.filter(m=>m.supportedActions?.includes('generateContent')).map(m=>(m.name||'').replace(/^models\//,''));
+ const stable=(lite:boolean)=>names.filter(name=>new RegExp('^gemini-(\\d+(?:\\.\\d+)?)-flash'+(lite?'-lite':'')+'$').test(name)).sort((a,b)=>parseFloat(b.slice(7))-parseFloat(a.slice(7)))[0];
+ const chosen=names.includes('gemini-flash-lite-latest')?'gemini-flash-lite-latest':stable(true)||(names.includes('gemini-flash-latest')?'gemini-flash-latest':stable(false));
+ if(!chosen)throw Object.assign(new Error('No supported stable Flash model is available'),{status:404});return chosen;
+}
+let discovered:Promise<string>|null=null;
+async function availableModel(client:GoogleGenAI,signal:AbortSignal):Promise<string>{
+ if(c.model!=='auto')return c.model;
+ if(!discovered)discovered=(async()=>{const pager=await client.models.list({config:{pageSize:100,abortSignal:signal,httpOptions:{timeout:c.deadlineMs,retryOptions:{attempts:1}}}});const models:Model[]=[];for await(const model of pager){models.push(model);if(models.length>=200)break;}return selectAvailableModel(models);})().catch(error=>{discovered=null;throw error;});
+ return discovered;
+}
 export const geminiAnswer:Generator=async(sources,question,locale,schoolName,previousQuestions,signal)=>{
  const {GoogleGenAI}=await import('@google/genai');const client=new GoogleGenAI({apiKey:process.env.GEMINI_API_KEY});const prompt=promptFor(sources,question,locale,schoolName,previousQuestions);
- const result=await client.models.generateContent({model:c.model,contents:prompt.contents,config:{systemInstruction:prompt.systemInstruction,temperature:0,maxOutputTokens:c.maxOutputTokens,responseMimeType:'application/json',responseJsonSchema:{type:'object',properties:{answer:{type:'string'},sourceIds:{type:'array',items:{type:'string',enum:sources.map(s=>s.id)}},unknown:{type:'boolean'}},required:['answer','sourceIds','unknown'],additionalProperties:false},httpOptions:{timeout:c.deadlineMs,retryOptions:{attempts:1}},abortSignal:signal}});
+ const model=await availableModel(client,signal);
+ const result=await client.models.generateContent({model,contents:prompt.contents,config:{systemInstruction:prompt.systemInstruction,temperature:0,maxOutputTokens:c.maxOutputTokens,responseMimeType:'application/json',responseJsonSchema:{type:'object',properties:{answer:{type:'string'},sourceIds:{type:'array',items:{type:'string',enum:sources.map(s=>s.id)}},unknown:{type:'boolean'}},required:['answer','sourceIds','unknown'],additionalProperties:false},httpOptions:{timeout:c.deadlineMs,retryOptions:{attempts:1}},abortSignal:signal}});
  return JSON.parse(result.text||'{}');
 };

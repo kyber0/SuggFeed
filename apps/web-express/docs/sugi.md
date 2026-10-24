@@ -28,7 +28,7 @@ Do not commit values, use public prefixes, or paste keys into support conversati
 
 Exact FAQs work without these values; flexible answers require them. Missing HMAC/database controls prevents provider calls and new feedback/logging, while high-confidence local FAQ answers still work. After verifying the actual Gemini project, supported free-tier model, region and provider data-handling terms, set `ASSISTANT_AI_ENABLED=true` and redeploy. Enable `ASSISTANT_LOGGING_ENABLED=true` only after approving retention with school staff. Neither flag activates paid billing or a paid fallback, and the app cannot inspect your billing settings automatically.
 
-`src/lib/assistant/config.ts` owns model (`gemini-2.5-flash-lite`, must be verified before activation), 300-character input, 600 output tokens, provider/storage timeouts, one retry, 24-hour cache/capability expiry, 14-day logs, quotas, 100 provider calls/day and two concurrent calls. These are application ceilings, not statements about the provider's current allowance. The SDK's default retries are disabled; only the controlled retry can spend another daily budget unit. Quota/circuit/provider failures return FAQ/contact fallback.
+`src/lib/assistant/config.ts` owns model (`GEMINI_MODEL`, default auto-discovery of available stable Flash Lite/Flash), 300-character input, 600 output tokens, provider/storage timeouts, one retry, 24-hour cache/capability expiry, 14-day logs, quotas, 100 provider calls/day and two concurrent calls. These are application ceilings, not statements about the provider's current allowance. The SDK's default retries are disabled; only the controlled retry can spend another daily budget unit. Quota/circuit/provider failures return FAQ/contact fallback.
 
 Direct dependencies are `@google/genai` **2.31.0** and free local PDF extractor `unpdf` **1.9.1** (Node 22+). There is no second AI SDK, retrieval service or embedding system. Native mobile/private-record tools remain disabled; changing a flag alone does not enable them. `tools.ts` deliberately exposes an empty registry.
 
@@ -112,8 +112,8 @@ Custom generated source: `assets/sugi/logo-source.png` at repository root. Produ
 
 - Type checking, focused assistant lint and production build passed.
 - 48 mocked evaluation cases passed; no live Gemini call was made.
-- All 22 focused assistant tests passed, including school draft isolation, MFA/role/origin boundaries, stale revisions, immutable publication and runtime scoped answers. Focused tests cover reviewed selection/refusal, school cache/version isolation, own-request feedback, role restrictions, quota/circuit behavior, retention and strict migration ownership.
-- Full suite: 330 passed, 29 known failures; failure names match the recorded baseline with no new failures.
+- All 23 focused assistant tests passed, including school draft isolation, MFA/role/origin boundaries, stale revisions, immutable publication and runtime scoped answers. Focused tests cover reviewed selection/refusal, school cache/version isolation, own-request feedback, role restrictions, quota/circuit behavior, retention and strict migration ownership.
+- Full suite: 331 passed, 29 known failures; failure names match the recorded baseline with no new failures.
 - School-editor fixtures passed save/reload/publish/conflict retention and category filtering at 320/360/375/390/430/768/1440px with no page overflow or script errors.
 - Browser fixtures: Help/admin/public FAQ at seven widths (320–1440), home panel at eight viewport/landscape sizes, dark/reduced-motion/focus restoration, no-JavaScript FAQ, and actual service-worker offline navigation passed.
 - Real phone keyboards, assistive technology, Gemini project/free-tier eligibility and live model responses remain unverified.
@@ -121,3 +121,5 @@ Custom generated source: `assets/sugi/logo-source.png` at repository root. Produ
 ### Grounded-answer verification
 
 Checks include school isolation, private drafts, revisions, withdrawal, immutable history, role/MFA/origin boundaries, extraction quotas, actual PDF extraction, binary/size rejection, invented citations, provider failure and no generated-prose cache. Browser fixtures cover editing, upload preview, save/reload/publish/conflict retention, source navigation and citations at 320/360/375/390/430/768/1440px plus landscape. Live model validation is recorded separately; mocks do not establish model accuracy.
+
+Model availability: the former fixed `gemini-2.5-flash-lite` returned 404 in production. `GEMINI_MODEL=auto` (default) lists available generation models once per server instance and selects only stable Flash Lite/Flash variants, never Pro, image, audio or preview models. An operator can pin `GEMINI_MODEL` explicitly. Availability is not proof of free-tier eligibility: project billing/quota remains the operator's responsibility. Listing sends no help questions or school content. Existing generation budgets remain unchanged. Service failures now return a safe fallback reason code and a service-unavailable message, rather than claiming that approved information is missing.
