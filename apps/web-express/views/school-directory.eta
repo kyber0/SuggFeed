@@ -18,4 +18,4 @@
       <% } %>
     </section></div></details>
   <% } %>
-</main>
+<p class="school-directory-help"><a class="workspace-button" href="/profile/help">Help &amp; support →</a></p></main>

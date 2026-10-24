@@ -1010,3 +1010,8 @@
 [data-theme="dark"] .prof-auth-callout {
   background: var(--bg-2);
 }
+
+/* Help belongs to the profile's existing shortcuts. */
+.prof-page .prof-shortcuts{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.prof-page .prof-shortcuts a{border-radius:14px;min-height:76px;text-decoration:none}.prof-page .prof-help-link{border-color:color-mix(in srgb,var(--navy) 25%,var(--line));background:var(--sky)}
+@media(max-width:900px){.prof-page .prof-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.prof-page .prof-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.prof-page .prof-shortcuts a{min-height:88px}}

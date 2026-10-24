@@ -129,7 +129,7 @@
             waiting.remove();
             const item = message(data.answer);
             const source = document.createElement('small');
-            source.textContent = data.generated ? 'AI answer · check the sources' : data.answered ? data.scope === 'school' ? 'Reviewed school FAQ' : 'Reviewed SuggFeed FAQ' : 'Reviewed FAQ and contact options are available below.';
+            source.textContent = data.generated ? 'AI answer · check the sources' : data.answered ? data.scope === 'school' ? 'Reviewed school FAQ' : 'Reviewed SuggFeed FAQ' : 'More help is available in the Help center.';
             item.append(source);
             if (Array.isArray(data.sources)) {
                 const citations = document.createElement('div');
@@ -196,16 +196,79 @@
     });
     root.querySelectorAll('[data-sugi-question]').forEach(button => button.addEventListener('click', () => { input.value = button.dataset.sugiQuestion || ''; input.dispatchEvent(new Event('input')); form.requestSubmit(); }));
     document.querySelector('[data-sugi-reset]')?.addEventListener('click', () => { generation++; controller?.abort(); controller = null; delete root.dataset.sending; messages.replaceChildren(); previousQuestions.length = 0; delete root.dataset.conversation; delete root.dataset.notice; input.value = ''; compose(); status.textContent = 'Conversation cleared from this page.'; input.focus(); });
-    document.querySelector('[data-sugi-category]')?.addEventListener('change', event => { const category = event.target.value; document.querySelectorAll('[data-sugi-faq]').forEach(el => { el.hidden = !!category && entries.find(e => e.id === el.dataset.sugiFaq)?.category !== category; }); });
+    const helpHub = document.querySelector('[data-help-hub]');
+    let activateHelpTab;
+    let filterHelp = () => { };
+    let helpSearchTimer = 0;
+    if (helpHub) {
+        const tabs = Array.from(helpHub.querySelectorAll('[data-help-tab]')), panels = Array.from(helpHub.querySelectorAll('[data-help-panel]')), search = helpHub.querySelector('[data-help-search]'), category = helpHub.querySelector('[data-sugi-category]'), tools = helpHub.querySelector('[data-help-search-tools]'), filters = helpHub.querySelector('[data-help-faq-filters]'), results = helpHub.querySelector('[data-help-results]'), contact = helpHub.querySelector('[data-help-contact]'), items = Array.from(helpHub.querySelectorAll('[data-help-item]'));
+        let view = 'faq';
+        const clean = (text) => text.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+        const sourceText = new Map(items.filter(item => item.dataset.helpItem === 'sources').map(item => [item, clean(item.textContent || '')]));
+        const stop = new Set(['how', 'do', 'the', 'to', 'my', 'can', 'is', 'what', 'ang', 'sa', 'ko', 'paano']);
+        filterHelp = () => { const terms = clean(search.value).split(' ').filter(word => word.length > 1 && !stop.has(word)); const counts = { faq: 0, sources: 0 }; for (const item of items) {
+            const kind = item.dataset.helpItem;
+            const text = sourceText.get(item) || clean(item.textContent || '');
+            const matches = terms.every(term => text.includes(term)) && (kind !== 'faq' || !category.value || entries.find(entry => entry.id === item.dataset.sugiFaq)?.category === category.value);
+            item.hidden = !matches;
+            if (matches)
+                counts[kind]++;
+        } for (const kind of ['faq', 'sources']) {
+            const empty = helpHub.querySelector('[data-help-empty="' + kind + '"]');
+            if (empty)
+                empty.hidden = counts[kind] > 0;
+        } results.textContent = view === 'chat' ? '' : counts[view] + ' ' + (view === 'faq' ? 'answers' : 'sources') + (search.value.trim() ? ' match your search.' : ' available.'); };
+        activateHelpTab = (next, focus = false) => { if (!tabs.some(tab => tab.dataset.helpTab === next))
+            return; view = next; for (const tab of tabs) {
+            const selected = tab.dataset.helpTab === view;
+            tab.setAttribute('aria-selected', String(selected));
+            tab.tabIndex = selected ? 0 : -1;
+            if (selected && focus)
+                tab.focus();
+        } for (const panel of panels)
+            panel.hidden = panel.dataset.helpPanel !== view; tools.hidden = results.hidden = contact.hidden = view === 'chat'; filters.hidden = view !== 'faq'; filterHelp(); if (view === 'chat')
+            requestAnimationFrame(() => { compose(); if (root.dataset.conversation === 'true')
+                bottom(); }); };
+        for (const tab of tabs)
+            tab.addEventListener('click', () => activateHelpTab(tab.dataset.helpTab));
+        helpHub.querySelector('[role="tablist"]')?.addEventListener('keydown', (event) => { const target = event.target instanceof Element ? event.target.closest('[data-help-tab]') : null; if (!target)
+            return; const index = tabs.indexOf(target); const next = event.key === 'ArrowRight' ? (index + 1) % tabs.length : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1; if (next >= 0) {
+            event.preventDefault();
+            activateHelpTab(tabs[next].dataset.helpTab, true);
+        } });
+        search.addEventListener('input', () => { clearTimeout(helpSearchTimer); helpSearchTimer = window.setTimeout(filterHelp, 100); });
+        category.addEventListener('change', filterHelp);
+        helpHub.querySelectorAll('[data-help-clear]').forEach(button => button.addEventListener('click', () => { search.value = ''; category.value = ''; category.dispatchEvent(new Event('change', { bubbles: true })); filterHelp(); search.focus(); }));
+        helpHub.querySelectorAll('[data-help-topic]').forEach(button => button.addEventListener('click', () => { search.value = ''; category.value = button.dataset.helpTopic || ''; category.dispatchEvent(new Event('change', { bubbles: true })); activateHelpTab('faq'); helpHub.querySelector('#sugi-faq-title')?.scrollIntoView({ block: 'start' }); }));
+        helpHub.querySelector('[data-help-ask-query]')?.addEventListener('click', () => { activateHelpTab('chat'); if (!input.value.trim())
+            input.value = search.value.slice(0, 300); input.dispatchEvent(new Event('input')); input.focus(); });
+        const requested = new URLSearchParams(location.search).get('view') || 'faq';
+        activateHelpTab(tabs.some(tab => tab.dataset.helpTab === requested) ? requested : 'faq');
+    }
     document.querySelector('[data-sugi-language]')?.addEventListener('change', event => { const language = event.target.value; document.querySelectorAll('[data-sugi-faq]').forEach(detail => { const entry = entries.find(e => e.id === detail.dataset.sugiFaq); if (entry) {
         detail.querySelector('[data-sugi-faq-question]').textContent = entry.questions[language] || entry.questions.en;
         detail.querySelector('p').textContent = entry.answers[language] || entry.answers.en;
-    } }); });
+    } }); filterHelp(); });
     const openSource = () => { const id = location.hash.slice(1); if (!/^[a-z0-9-]+$/.test(id))
-        return; const target = document.getElementById(id); if (target instanceof HTMLDetailsElement)
-        target.open = true; };
+        return; const target = document.getElementById(id); if (target instanceof HTMLDetailsElement) {
+        const panel = target.closest('[data-help-panel]');
+        if (panel && activateHelpTab) {
+            const search = helpHub?.querySelector('[data-help-search]');
+            if (search)
+                search.value = '';
+            const category = helpHub?.querySelector('[data-sugi-category]');
+            if (category) {
+                category.value = '';
+                category.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            activateHelpTab(panel.dataset.helpPanel);
+            filterHelp();
+        }
+        target.open = true;
+        requestAnimationFrame(() => target.scrollIntoView({ block: 'start' }));
+    } };
     openSource();
     window.addEventListener('hashchange', openSource);
     window.addEventListener('offline', () => { notice('You are offline. Reviewed FAQs on the full Help page remain available.'); });
-    window.addEventListener('pagehide', () => { generation++; controller?.abort(); controller = null; delete root.dataset.sending; messages.querySelector('.sugi-typing')?.remove(); compose(); });
+    window.addEventListener('pagehide', () => { clearTimeout(helpSearchTimer); generation++; controller?.abort(); controller = null; delete root.dataset.sending; messages.querySelector('.sugi-typing')?.remove(); compose(); });
 })();

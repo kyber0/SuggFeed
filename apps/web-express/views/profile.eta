@@ -95,6 +95,7 @@
     <a href="/notifications"><strong>School updates</strong><span>Followed ideas &amp; preferences →</span></a>
     <a href="/inbox"><strong>Private messages</strong><span>Questions &amp; school replies →</span></a>
     <a href="/feed?scope=following"><strong>Following</strong><span>Ideas you’re keeping up with →</span></a>
+    <a class="prof-help-link" href="/profile/help"><strong>Help &amp; support</strong><span>Ask Sugi, browse FAQs &amp; school info →</span></a>
   </nav>
   <div class="prof-feedback-row"><p id="profile-feedback" role="status" aria-live="polite"></p><button type="button" class="workspace-button" id="profile-activity-retry" hidden>Retry activity</button></div>
   <!-- ── Content Area ── -->

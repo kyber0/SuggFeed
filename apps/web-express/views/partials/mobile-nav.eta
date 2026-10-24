@@ -10,9 +10,9 @@
     <span>Ideas</span>
   </a>
 
-  <a href="/profile" class="mobile-tab<%= ['/profile','/notifications','/inbox'].includes(it.currentPath) ? ' mobile-tab--active' : '' %>" aria-current="<%= ['/profile','/notifications','/inbox'].includes(it.currentPath) ? 'page' : 'false' %>">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= ['/profile','/notifications','/inbox'].includes(it.currentPath) ? '2.5' : '1.8' %>"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>My activity</span>
+  <a href="/profile" class="mobile-tab<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath)) ? ' mobile-tab--active' : '' %>" aria-current="<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath)) ? 'page' : 'false' %>">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath)) ? '2.5' : '1.8' %>"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profile</span>
   </a>
 
 </nav>

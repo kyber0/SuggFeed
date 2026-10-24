@@ -3,7 +3,6 @@
   <a class="brand" href="<%= it.schoolBase && !accountArea ? '/' : '/account/home' %>" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>
   <% if(it.schoolBase && !it.platformDashboard) { %><span class="header-school-identity school-context-identity"><strong><%= it.schoolCustomization?.displayName || it.schoolName || 'Your school' %></strong><% if(it.demoWorkspace) { %><small title="Fictional demo · use invented content only. Sample contacts are not monitored.">Demo</small><% } %></span><% } %>
   <nav aria-label="Primary navigation">
-    <a href="/help" class="btn-ghost header-profile-link nav-link-hide-mobile" aria-label="Sugi help" title="Sugi · Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4m0 3h.01"/></svg><span class="profile-label">Help</span></a>
     <% if (it.platformDashboard) { %>
       <a href="/platform/schools" class="nav-link-hide-mobile">Platform dashboard</a>
     <% } else if (accountArea) { %>
@@ -13,7 +12,7 @@
     <% } else { %>
       <a href="/" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>" aria-current="<%= it.currentPath === '/' ? 'page' : 'false' %>">Home</a>
       <a href="/feed" class="nav-link-hide-mobile<%= ['/feed','/roadmap'].includes(it.currentPath) ? ' active' : '' %>" aria-current="<%= ['/feed','/roadmap'].includes(it.currentPath) ? 'page' : 'false' %>">Ideas</a>
-      <a href="/profile" class="nav-link-hide-mobile<%= ['/profile','/notifications','/inbox'].includes(it.currentPath) ? ' active' : '' %>">My activity</a>
+      <a href="/profile" class="nav-link-hide-mobile<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath)) ? ' active' : '' %>">Profile</a>
       <% if (isStaff) { %><a href="/admin" class="nav-link-hide-mobile">School administration</a><% } %>
     <% } %>
 
@@ -37,14 +36,14 @@
           </div>
           <div class="divider"></div>
           <% if (!accountArea && !staffArea) { %>
-          <a href="/profile" class="dropdown-link"><%~ menuIcon('user') %> My activity</a>
+          <a href="/profile" class="dropdown-link"><%~ menuIcon('user') %> Profile</a>
           <a href="/notifications" class="dropdown-link"><%~ menuIcon('bell') %> School updates</a>
           <a href="/feed?scope=following" class="dropdown-link"><%~ menuIcon('bookmark') %> Following</a>
           <a href="/inbox" class="dropdown-link"><%~ menuIcon('message') %> Private school messages</a>
           <% } %>
           <% if (!accountArea && isStaff) { %><a href="/admin" class="dropdown-link dropdown-link--staff"><%~ menuIcon('shield') %> School administration</a><% } %>
           <% if (staffArea) { %><a href="/" class="dropdown-link"><%~ menuIcon('users') %> View school community</a><% } %>
-          <a href="/help" class="dropdown-link"><%~ menuIcon('care') %> Sugi · Help</a><% if (it.isPlatformOperator) { %><a href="/platform/schools" class="dropdown-link"><%~ menuIcon('shield') %> Platform dashboard</a><% } else if (accountArea || it.schoolSwitchAvailable) { %><a href="/schools" class="dropdown-link"><%~ menuIcon('users') %> Switch school</a><% } %>
+          <a href="/profile/help" class="dropdown-link"><%~ menuIcon('care') %> Help &amp; support</a><% if (it.isPlatformOperator) { %><a href="/platform/schools" class="dropdown-link"><%~ menuIcon('shield') %> Platform dashboard</a><% } else if (accountArea || it.schoolSwitchAvailable) { %><a href="/schools" class="dropdown-link"><%~ menuIcon('users') %> Switch school</a><% } %>
           <a href="/account/security" class="dropdown-link"><%~ menuIcon('shield') %> Account security</a>
           <div class="divider"></div>
           <form action="/auth/signout" method="POST" class="dropdown-form">
