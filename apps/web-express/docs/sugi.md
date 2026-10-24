@@ -46,7 +46,7 @@ Source of truth:
 
 Each Markdown FAQ section has a JSON data block: stable ID, `published`/`placeholder`, English/Filipino/Taglish questions and answers, approved keywords and an internal route. Keep all three translations accurate. Mark unknown office hours/contact details as placeholders, never invent them. Placeholder entries are excluded from runtime data. Only approved general instructions are included initially; demo knowledge is explicitly fictional.
 
-After review, change the Markdown version and run `npm run build:knowledge`. A content digest also prevents stale cache reuse if someone forgets to bump the version. The build generates `src/lib/assistant/knowledge.generated.json` and the public offline FAQ from the same input. Do not edit generated output directly. School contacts display from existing approved school settings outside the model; fictional demo contacts do not appear as monitored support channels.
+After review, change the Markdown version and run `npm run build:knowledge`. A content digest also prevents stale cache reuse if someone forgets to bump the version. The build generates `src/lib/assistant/knowledge.generated.json` and the public offline FAQ from the same input. The generated public knowledge version also refreshes the service-worker cache key, keeping offline FAQs in step with published content. Do not edit generated output directly. School contacts display from existing approved school settings outside the model; fictional demo contacts do not appear as monitored support channels.
 
 Feedback never edits knowledge automatically. Admins can review topics and copy a placeholder Markdown draft. School staff must approve facts/translations; source publication uses the normal reviewed commit/deployment process.
 

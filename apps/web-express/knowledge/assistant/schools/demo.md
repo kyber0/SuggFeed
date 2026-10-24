@@ -22,7 +22,13 @@
     "sample",
     "real"
   ],
-  "route": "/"
+  "route": "/",
+  "category": "school_profile",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -45,6 +51,12 @@
     "hours",
     "office"
   ],
-  "route": ""
+  "route": "",
+  "category": "schedules",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```

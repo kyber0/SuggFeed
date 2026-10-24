@@ -16,9 +16,9 @@ export async function ask(question:unknown,context:{school:string|null;actor:str
  if(!c.enabled)return base;
  const local=matchQuestion(q,knowledge.entries);const answer=(e:Entry,source:Reply['source']):Reply=>({...base,answered:true,source,answer:e.answers[locale],faqId:e.id});
  let ready=false;let hash='';
- try{ready=await budget(context.store,context.ip,context.rateActor??context.actor);if(!ready)return base;hash=fingerprint(JSON.stringify([c.policyVersion,p.tokens,locale,knowledge.version,context.school]));const hit=!p.blocked?await cached(context.store,hash,knowledge.version,locale,knowledge.entries):null;if(hit&&(!local||hit.id===local.id))return record(context.store,answer(hit,'cache'),p.topic);}catch{return local?answer(local,'fallback'):base;}
+ try{ready=await budget(context.store,context.ip,context.rateActor??context.actor);if(!ready)return base;hash=fingerprint(JSON.stringify([c.policyVersion,local?.id||null,p.tokens,locale,knowledge.version,context.school]));const hit=!p.blocked?await cached(context.store,hash,knowledge.version,locale,knowledge.entries):null;if(hit&&(!local||hit.id===local.id))return record(context.store,answer(hit,'cache'),p.topic);}catch{return local?answer(local,'fallback'):base;}
  if(p.blocked&&!local)return record(context.store,base,'unknown');
- if(!local&&/\b(hours|oras|tuition|fees|schedule|address)\b/i.test(q))return record(context.store,base,p.topic);
+
  let chosen=local,source:Reply['source']='fallback';
  const list=candidates(q,knowledge.entries);
  if(!chosen&&list.length>1&&list[0].score===list[1].score)return record(context.store,base,p.topic);

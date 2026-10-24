@@ -1,7 +1,60 @@
 {
   "app": {
-    "version": "app-1-22e982c64b54f90e",
+    "version": "app-2-a125bd0460e49470",
     "entries": [
+      {
+        "id": "app-overview",
+        "status": "published",
+        "category": "app_basics",
+        "questions": {
+          "en": "What is SuggFeed?",
+          "fil": "Ano ang SuggFeed?",
+          "taglish": "Ano itong app?"
+        },
+        "answers": {
+          "en": "SuggFeed is a school feedback app. Students can share ideas, support and discuss them, and follow school progress where those features are enabled. Sugi explains the app using reviewed FAQs; it cannot read your private records or take actions for you.",
+          "fil": "Ang SuggFeed ay app para sa mga mungkahi at puna sa paaralan. Maaaring magbahagi ng ideya, sumuporta, makipagtalakayan at subaybayan ang progreso kung pinapayagan ng paaralan. Nagpapaliwanag si Sugi gamit ang sinuring FAQ; hindi nito binabasa ang pribadong rekord o kumikilos para sa iyo.",
+          "taglish": "Ang SuggFeed ay school feedback app. Puwede kang mag-share ng ideas, mag-support at discuss, at mag-track ng school progress kung enabled ang features. Si Sugi ang help assistant gamit ang reviewed FAQs; wala itong access sa private records at hindi ito kumikilos para sa iyo."
+        },
+        "keywords": [
+          "app",
+          "application",
+          "platform",
+          "website",
+          "system",
+          "suggfeed",
+          "sugi",
+          "purpose",
+          "feedback"
+        ],
+        "aliases": {
+          "en": [
+            "what is this app",
+            "whats this app",
+            "what is this application",
+            "what does this app do",
+            "what is this app for",
+            "tell me about this app",
+            "what is the purpose of suggfeed",
+            "what is sugi",
+            "explain suggfeed",
+            "what can i do here"
+          ],
+          "fil": [
+            "ano ang app na ito",
+            "para saan ang app na ito",
+            "ano ito",
+            "ano ang gamit nito"
+          ],
+          "taglish": [
+            "ano itong app",
+            "para saan tong app",
+            "anong app ito",
+            "what does suggfeed do"
+          ]
+        },
+        "route": "/"
+      },
       {
         "id": "submit-idea",
         "status": "published",
@@ -25,7 +78,13 @@
           "magpadala",
           "isumite"
         ],
-        "route": "/"
+        "route": "/",
+        "category": "submissions",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "track-idea",
@@ -49,7 +108,13 @@
           "status",
           "receipt"
         ],
-        "route": "/"
+        "route": "/",
+        "category": "tracking",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "join-school",
@@ -75,7 +140,13 @@
           "domain",
           "roster"
         ],
-        "route": "/schools"
+        "route": "/schools",
+        "category": "accounts",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "invitation",
@@ -98,7 +169,13 @@
           "imbitasyon",
           "tanggapin"
         ],
-        "route": "/schools"
+        "route": "/schools",
+        "category": "accounts",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "account-help",
@@ -124,7 +201,13 @@
           "security",
           "access"
         ],
-        "route": "/schools"
+        "route": "/schools",
+        "category": "accounts",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "progress",
@@ -150,7 +233,13 @@
           "yugto",
           "status"
         ],
-        "route": "/roadmap"
+        "route": "/roadmap",
+        "category": "tracking",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "vote",
@@ -175,7 +264,13 @@
           "bawiin",
           "upvote"
         ],
-        "route": "/feed"
+        "route": "/feed",
+        "category": "participation",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "report",
@@ -200,7 +295,13 @@
           "ulat",
           "komento"
         ],
-        "route": "/feed"
+        "route": "/feed",
+        "category": "participation",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "edit-idea",
@@ -223,7 +324,13 @@
           "baguhin",
           "pending"
         ],
-        "route": "/profile"
+        "route": "/profile",
+        "category": "submissions",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "contact",
@@ -248,7 +355,13 @@
           "hours",
           "oras"
         ],
-        "route": ""
+        "route": "",
+        "category": "contacts",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "privacy",
@@ -275,7 +388,13 @@
           "nakikita",
           "nababasa"
         ],
-        "route": "/privacy"
+        "route": "/privacy",
+        "category": "privacy",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       },
       {
         "id": "notifications",
@@ -299,13 +418,19 @@
           "abiso",
           "saan"
         ],
-        "route": "/notifications"
+        "route": "/notifications",
+        "category": "tracking",
+        "aliases": {
+          "en": [],
+          "fil": [],
+          "taglish": []
+        }
       }
     ]
   },
   "schools": {
     "00000000-0000-4000-8000-000000000001": {
-      "version": "demo-1-5f112d00a0a63812",
+      "version": "demo-1-dee5dcf1a0e4636e",
       "entries": [
         {
           "id": "fictional-demo",
@@ -326,7 +451,13 @@
             "sample",
             "real"
           ],
-          "route": "/"
+          "route": "/",
+          "category": "school_profile",
+          "aliases": {
+            "en": [],
+            "fil": [],
+            "taglish": []
+          }
         }
       ]
     }

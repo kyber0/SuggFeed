@@ -7,7 +7,7 @@
 //   - Navigation (HTML): Network-first, fallback to offline shell
 (() => {
     const worker = self;
-    const CACHE_VERSION = "cv-v16-sugi-help";
+    const CACHE_VERSION = "cv-v17-sugi-app-2-a125bd0460e49470";
     const STATIC_CACHE = `${CACHE_VERSION}-static`;
     const MAX_STATIC_ENTRIES = 200;
     const STATIC_ASSETS = [

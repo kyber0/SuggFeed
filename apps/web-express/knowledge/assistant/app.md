@@ -1,5 +1,62 @@
-<!-- version: app-1 -->
+<!-- version: app-2 -->
 # Reviewed Sugi knowledge
+
+## app-overview
+```json
+{
+  "id": "app-overview",
+  "status": "published",
+  "category": "app_basics",
+  "questions": {
+    "en": "What is SuggFeed?",
+    "fil": "Ano ang SuggFeed?",
+    "taglish": "Ano itong app?"
+  },
+  "answers": {
+    "en": "SuggFeed is a school feedback app. Students can share ideas, support and discuss them, and follow school progress where those features are enabled. Sugi explains the app using reviewed FAQs; it cannot read your private records or take actions for you.",
+    "fil": "Ang SuggFeed ay app para sa mga mungkahi at puna sa paaralan. Maaaring magbahagi ng ideya, sumuporta, makipagtalakayan at subaybayan ang progreso kung pinapayagan ng paaralan. Nagpapaliwanag si Sugi gamit ang sinuring FAQ; hindi nito binabasa ang pribadong rekord o kumikilos para sa iyo.",
+    "taglish": "Ang SuggFeed ay school feedback app. Puwede kang mag-share ng ideas, mag-support at discuss, at mag-track ng school progress kung enabled ang features. Si Sugi ang help assistant gamit ang reviewed FAQs; wala itong access sa private records at hindi ito kumikilos para sa iyo."
+  },
+  "keywords": [
+    "app",
+    "application",
+    "platform",
+    "website",
+    "system",
+    "suggfeed",
+    "sugi",
+    "purpose",
+    "feedback"
+  ],
+  "aliases": {
+    "en": [
+      "what is this app",
+      "whats this app",
+      "what is this application",
+      "what does this app do",
+      "what is this app for",
+      "tell me about this app",
+      "what is the purpose of suggfeed",
+      "what is sugi",
+      "explain suggfeed",
+      "what can i do here"
+    ],
+    "fil": [
+      "ano ang app na ito",
+      "para saan ang app na ito",
+      "ano ito",
+      "ano ang gamit nito"
+    ],
+    "taglish": [
+      "ano itong app",
+      "para saan tong app",
+      "anong app ito",
+      "what does suggfeed do"
+    ]
+  },
+  "route": "/"
+}
+```
 
 ## submit-idea
 ```json
@@ -26,7 +83,13 @@
     "magpadala",
     "isumite"
   ],
-  "route": "/"
+  "route": "/",
+  "category": "submissions",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -54,7 +117,13 @@
     "status",
     "receipt"
   ],
-  "route": "/"
+  "route": "/",
+  "category": "tracking",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -84,7 +153,13 @@
     "domain",
     "roster"
   ],
-  "route": "/schools"
+  "route": "/schools",
+  "category": "accounts",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -111,7 +186,13 @@
     "imbitasyon",
     "tanggapin"
   ],
-  "route": "/schools"
+  "route": "/schools",
+  "category": "accounts",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -141,7 +222,13 @@
     "security",
     "access"
   ],
-  "route": "/schools"
+  "route": "/schools",
+  "category": "accounts",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -171,7 +258,13 @@
     "yugto",
     "status"
   ],
-  "route": "/roadmap"
+  "route": "/roadmap",
+  "category": "tracking",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -200,7 +293,13 @@
     "bawiin",
     "upvote"
   ],
-  "route": "/feed"
+  "route": "/feed",
+  "category": "participation",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -229,7 +328,13 @@
     "ulat",
     "komento"
   ],
-  "route": "/feed"
+  "route": "/feed",
+  "category": "participation",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -256,7 +361,13 @@
     "baguhin",
     "pending"
   ],
-  "route": "/profile"
+  "route": "/profile",
+  "category": "submissions",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -285,7 +396,13 @@
     "hours",
     "oras"
   ],
-  "route": ""
+  "route": "",
+  "category": "contacts",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -316,7 +433,13 @@
     "nakikita",
     "nababasa"
   ],
-  "route": "/privacy"
+  "route": "/privacy",
+  "category": "privacy",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
 
@@ -344,6 +467,12 @@
     "abiso",
     "saan"
   ],
-  "route": "/notifications"
+  "route": "/notifications",
+  "category": "tracking",
+  "aliases": {
+    "en": [],
+    "fil": [],
+    "taglish": []
+  }
 }
 ```
