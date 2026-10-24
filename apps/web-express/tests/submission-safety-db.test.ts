@@ -104,3 +104,7 @@ test('safety migration runs without superuser and returns schema creation privil
 test('administrators can browse clean items for manual category overrides without exposing the queue',async()=>{
  const db=await safetyDb();try{const {ADMIN_A,IDEA_A}=await import('./support/tenant-db');const result=await tenantRpc(db,SCHOOL_A,ADMIN_A,'submission_safety_action',{p_action:'queue',p_data:{all:true}});assert.ok(result.items.some((r:{id:string})=>r.id===IDEA_A));const definition=(await db.query<{body:string}>("SELECT pg_get_functiondef('public.read_authorized_progress_file(uuid,uuid)'::regprocedure) AS body")).rows[0].body;assert.ok(definition.includes('s.id IS NOT NULL'));}finally{await db.close();}
 });
+
+test('legacy report RPC delegates to the protected safety service during web rollout',async()=>{
+ const db=await safetyDb();try{const {IDEA_A}=await import('./support/tenant-db');const input={p_actor:STUDENT,p_action:'report',p_data:{submissionId:IDEA_A,body:'A legacy client requests private school review.'}};await tenantRpc(db,SCHOOL_A,STUDENT,'community_action',input);const replay=await tenantRpc(db,SCHOOL_A,STUDENT,'community_action',input);assert.equal(replay.already_reported,true);assert.equal((await db.query<{count:number}>('SELECT count(*)::int AS count FROM reports WHERE submission_id=$1',[IDEA_A])).rows[0].count,1);await assert.rejects(tenantRpc(db,SCHOOL_A,STUDENT,'community_action',{...input,p_action:'resolve'}),/safety review service/);}finally{await db.close();}
+});

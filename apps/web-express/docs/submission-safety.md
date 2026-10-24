@@ -23,7 +23,7 @@ Detection failures log a constant error code and hold the submission privately. 
 
 ## Storage and enforcement
 
-Apply `supabase/migrations/202610240002_submission_safety.sql` after `202610240001` **before deploying code**. It is additive: existing submissions start clear, accounts and memberships are preserved. New unchecked legacy inserts are held privately. It adds:
+Apply `supabase/migrations/202610240002_submission_safety.sql` after `202610240001`, then `202610240003_safety_report_compatibility.sql`, **before deploying code**. The compatibility migration delegates older report calls to the new service using conservative defaults (20 reports/hour, hide threshold 3); new code always supplies the central configuration. It is additive: existing submissions start clear, accounts and memberships are preserved. New unchecked legacy inserts are held privately. It adds:
 
 - Separate submission safety fields, optimistic version, and staff-review cutoff.
 - School-scoped account/IP budget records and restricted creation/review/similarity RPCs.
@@ -54,7 +54,7 @@ Run app `npm run typecheck`, `npm run lint:moderation`, `npm run build`, and the
 ### Release evidence (2026-10-24)
 
 - Type checking, scoped moderation lint, and production build: passed.
-- Focused safety/HTTP/database checks: 35 passed; affected dashboard/profile regression checks: 4 passed.
+- Focused safety/HTTP/database checks: 35 passed, plus the rollout compatibility check; affected dashboard/profile regression checks: 4 passed.
 - Full suite: 307 passed, 29 failed. Failure names match the prior 29-failure baseline; no new failures.
 - Browser fixture matrix: 32 screen/width combinations passed with no page overflow or script errors; review conflict preserves its reason and owner save succeeds.
 - No live user-content fixtures, mail, or push were generated during verification.
