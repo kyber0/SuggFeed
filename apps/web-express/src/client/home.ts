@@ -264,7 +264,10 @@ let activeCategory = 'All';
       const statusEl = (document.getElementById('tr-status') as HTMLElement);
       statusEl.textContent = (item.status || 'pending').replace('_', ' ');
       statusEl.className = `status-badge ${(item.status || 'pending').replace('_', '-')}`;
-      (document.getElementById('tr-date') as HTMLElement).textContent = new Date(item.created_at).toLocaleDateString();
+      const submittedAt = typeof item.createdAt === 'string' ? item.createdAt : item.created_at;
+      const submittedDate = typeof submittedAt === 'string' ? new Date(submittedAt) : null;
+      (document.getElementById('tr-date') as HTMLElement).textContent = submittedDate && Number.isFinite(submittedDate.getTime())
+        ? submittedDate.toLocaleDateString() : 'Date unavailable';
       (document.getElementById('tr-title') as HTMLElement).textContent = item.title;
       (document.getElementById('tr-desc') as HTMLElement).textContent = item.description || '';
 

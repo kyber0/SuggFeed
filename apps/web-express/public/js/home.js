@@ -271,7 +271,10 @@
             const statusEl = document.getElementById('tr-status');
             statusEl.textContent = (item.status || 'pending').replace('_', ' ');
             statusEl.className = `status-badge ${(item.status || 'pending').replace('_', '-')}`;
-            document.getElementById('tr-date').textContent = new Date(item.created_at).toLocaleDateString();
+            const submittedAt = typeof item.createdAt === 'string' ? item.createdAt : item.created_at;
+            const submittedDate = typeof submittedAt === 'string' ? new Date(submittedAt) : null;
+            document.getElementById('tr-date').textContent = submittedDate && Number.isFinite(submittedDate.getTime())
+                ? submittedDate.toLocaleDateString() : 'Date unavailable';
             document.getElementById('tr-title').textContent = item.title;
             document.getElementById('tr-desc').textContent = item.description || '';
             if (item.staff_note) {
