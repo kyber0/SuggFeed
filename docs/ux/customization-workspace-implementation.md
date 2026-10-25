@@ -52,3 +52,13 @@ No migration, dependency or environment-variable change. Existing per-school edi
 ## Sidebar refinement
 
 The follow-up redesign replaces the earlier Pages/Components/task-card arrangement. Desktop uses compact rows and a 256px sidebar; mobile retains the existing modal sheet with larger touch controls. Local Chromium inspection covered page changes, Assets-to-form navigation, collapse/search and 320/375px sheets without page errors or document overflow. The production build and TypeScript checks were repeated. No automated tests or live database checks were run for this refinement.
+
+## Canvas content editing
+
+- Click existing school-owned text in the preview to type in place. Bindings cover the school display name, welcome headline/introduction/message/help, official-link labels, category names/descriptions, question wording/help, form instructions/examples and public roadmap stage labels where rendered.
+- Press Enter for a short field, Ctrl/Command+Enter for multiline text, or use the unscaled canvas Done action. Escape/Cancel restores the original configuration value, including inherited defaults. Selecting and leaving an inherited field does not create an override.
+- Structured settings (links, categories, questions, images, email content and participation switches) use a floating content editor on the canvas. The right inspector maps selection to its page/section design controls; colors, spacing, alignment, surfaces and layouts stay there.
+- Inline edits share the current model, expected revisions, undo grouping, draft autosave, review and publication gates. Autosave/publication pause during a typing session; preview fragments are deferred so an update cannot remove the caret. Plain-text paste, field-length limits and an explicit property allowlist prevent arbitrary JSON/HTML or user-content mutations.
+- The real submission panel's centering transform is preserved in Edit mode; the old broad hover reset moved the panel away from clicks.
+- These controls edit the existing school-owned schema, not every application's fixed word or a student's proposal/comment. Other selectable sections retain their supported design controls. No new copy-override schema, arbitrary CSS/HTML, database migration, dependency or permission change was introduced.
+- Local browser inspection covered inline editing, autosave, cancel, Published read-only behavior, floating content, physical category clicks and 320/375px document bounds. Full production build and TypeScript checks were run; automated test suites, production database writes and real-device keyboards were not exercised.

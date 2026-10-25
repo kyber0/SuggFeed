@@ -1,7 +1,7 @@
 "use strict";
 (() => {
     const escape = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const input = (field, label, value, max = 200, kind = 'text') => '<label>' + escape(label) + (kind === 'textarea' ? '<textarea rows="3" maxlength="' + max + '" data-property="' + field + '">' + escape(value) + '</textarea><span class="studio-field-count" aria-hidden="true">' + String(value ?? '').length + ' / ' + max + '</span>' : '<input ' + (['link-label', 'link-url', 'name', 'slug', 'label'].includes(field) ? 'required ' : '') + 'type="' + kind + '" maxlength="' + max + '" data-property="' + field + '" value="' + escape(value) + '">') + '</label>';
+    const input = (field, label, value, max = 200, kind = 'text') => '<label>' + escape(label) + (kind === 'textarea' ? '<textarea rows="3" maxlength="' + max + '" data-property="' + field + '">' + escape(value) + '</textarea><span class="studio-field-count" aria-hidden="true">' + String(value ?? '').length + ' / ' + max + '</span>' : '<input class="workspace-input" ' + (['link-label', 'link-url', 'name', 'slug', 'label'].includes(field) ? 'required ' : '') + 'type="' + kind + '" maxlength="' + max + '" data-property="' + field + '" value="' + escape(value) + '">') + '</label>';
     function colors(value) { return '<fieldset class="studio-colors"><legend>Brand color presets</legend><div class="studio-color-presets">' + Object.entries(SfSchoolColors.presets).map(([name, color]) => '<button type="button" data-palette="' + name + '" aria-pressed="' + (value === name || value === color) + '" title="' + name + '" aria-label="Use ' + name + ' primary"><span style="background:' + color + '"></span></button>').join('') + '</div><p>Choose a preset or fine-tune the colors below.</p></fieldset>'; }
     const select = (field, label, value, options, disabled = false) => '<label>' + escape(label) + '<select data-property="' + field + '" ' + (disabled ? 'disabled' : '') + '>' + options.map(option => { const [key, text] = Array.isArray(option) ? option : [option, option]; return '<option value="' + escape(key) + '" ' + (key === value ? 'selected' : '') + '>' + escape(text) + '</option>'; }).join('') + '</select></label>';
     const check = (field, label, value, hint = '') => '<label class="studio-check"><input type="checkbox" data-property="' + field + '" ' + (value ? 'checked' : '') + '><span>' + escape(label) + (hint ? '<small style="display:block;font-weight:400">' + escape(hint) + '</small>' : '') + '</span></label>';
@@ -17,7 +17,7 @@
         let html = '<p class="studio-scope-badge">This screen · ' + escape(definition.label) + '</p>';
         if (sectionId) {
             const section = definition.sections[sectionId];
-            html += '<p>' + escape(section.label) + ' uses the workspace theme. Its real content remains owned by its author.</p>';
+            html += '<p>' + escape(section.label) + ' uses the workspace theme. Edit school-owned text on the canvas; submitted content keeps its author.</p>';
             const styling = settings.sections?.[sectionId] || { spacing: 'inherit', surface: 'inherit', alignment: 'inherit' };
             html += select('section-spacing', 'Component spacing', styling.spacing, [['inherit', 'Use page spacing · ' + settings.spacing], ['compact', 'Compact'], ['comfortable', 'Comfortable'], ['airy', 'Airy']]) + select('section-surface', 'Component surface', styling.surface, [['inherit', 'Use existing surface'], ['card', 'Card surface'], ['raised', 'Raised surface'], ['transparent', 'Transparent']]) + select('section-alignment', 'Text alignment', styling.alignment, [['inherit', 'Use existing alignment'], ['start', 'Start'], ['center', 'Center']]) + '<button type="button" data-reset-section="' + sectionId + '">Reset this component style</button>';
             if (section.optional)
@@ -53,7 +53,7 @@
         const toolbar = (label, kind, id, index) => '<div class="studio-repeat-toolbar" draggable="true" data-drag-kind="' + kind + '" data-drag-id="' + id + '"><strong>' + escape(label) + '</strong><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="-1" aria-label="Move ' + escape(label) + ' up">↑</button><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="1" aria-label="Move ' + escape(label) + ' down">↓</button></div>';
         function render() {
             const p = state().configuration;
-            selected = state().selection?.componentId || '';
+            selected = settings.componentId?.() || state().selection?.componentId || '';
             let html = '';
             const focused = host.contains(document.activeElement) ? document.activeElement : null;
             const source = focused?.classList.contains('sf-control-select-trigger') || focused?.classList.contains('sf-control-color-trigger') ? focused.previousElementSibling : focused;
@@ -65,7 +65,7 @@
             if (!selected)
                 html = '<div class="studio-selection-empty"><h3>Select something to customize</h3><p>Click an outlined component in the preview, or choose from this screen’s component list. Workspace theme controls apply to every school screen.</p><button type="button" data-select="school.theme">Open workspace theme</button></div>';
             else if (selected === 'school.theme')
-                html = themeEditor(p);
+                html = settings.pane === 'content' ? '<p>Use the Design panel for school colors and typography.</p>' : themeEditor(p);
             else if (selected.startsWith('page.') || selected.startsWith('section.'))
                 html = pageEditor(p, selected);
             else if (selected === 'school.identity') {

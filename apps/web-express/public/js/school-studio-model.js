@@ -31,7 +31,7 @@
         let configuration = clean(initial.configuration), saved = copy(configuration), selection = { componentId: 'school.theme' }, page = 'home';
         let revision = initial.serverRevision || 0;
         const past = [], future = [], listeners = new Set();
-        let lastKey = '', lastAt = 0, bytes = 0, grouped = false, batching = false;
+        let lastKey = '', lastAt = 0, bytes = 0, grouped = false, batching = false, groupStart = null, groupPast = [], groupFuture = [], groupBytes = 0;
         const getState = () => ({ configuration, savedConfiguration: saved, serverRevision: revision, selection, page, dirty: JSON.stringify(configuration) !== JSON.stringify(saved), canUndo: past.length > 0, canRedo: future.length > 0 });
         const emit = () => { for (const listener of listeners)
             listener(getState()); };
@@ -107,10 +107,19 @@
                 return; past.push(previous); bytes += JSON.stringify(previous).length; while (past.length > 50 || bytes > 2 * 1024 * 1024) {
                 const removed = past.shift();
                 bytes -= JSON.stringify(removed).length;
-            } future.length = 0; lastKey = ''; emit(); }, select(value) { selection = value; lastKey = ''; emit(); }, setPage(value) { page = value; selection = null; lastKey = ''; emit(); }, beginGroup() { grouped = true; }, endGroup() { grouped = false; lastKey = ''; }, undo() { if (!past.length)
+            } future.length = 0; lastKey = ''; emit(); }, select(value) { selection = value; lastKey = ''; emit(); }, setPage(value) { page = value; selection = null; lastKey = ''; emit(); }, beginGroup() { if (!grouped) {
+                groupStart = copy(configuration);
+                groupPast = [...past];
+                groupFuture = [...future];
+                groupBytes = bytes;
+            } grouped = true; }, endGroup() { if (groupStart && JSON.stringify(groupStart) === JSON.stringify(configuration)) {
+                past.splice(0, past.length, ...groupPast);
+                future.splice(0, future.length, ...groupFuture);
+                bytes = groupBytes;
+            } groupStart = null; groupPast = []; groupFuture = []; grouped = false; lastKey = ''; }, undo() { if (!past.length)
                 return; future.push(copy(configuration)); const entry = past.pop(); bytes -= JSON.stringify(entry).length; configuration = entry; lastKey = ''; emit(); }, redo() { if (!future.length)
                 return; past.push(copy(configuration)); bytes += JSON.stringify(configuration).length; configuration = future.pop(); lastKey = ''; emit(); }, markSaved(value, nextRevision, sent) { const canonical = clean(value); if (JSON.stringify(configuration) === JSON.stringify(clean(sent)))
-                configuration = copy(canonical); saved = canonical; revision = nextRevision; emit(); }, replaceDraft(value, nextRevision) { configuration = clean(value); saved = copy(configuration); revision = nextRevision; past.length = 0; future.length = 0; bytes = 0; lastKey = ''; emit(); }, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); } };
+                configuration = copy(canonical); saved = canonical; revision = nextRevision; emit(); }, replaceDraft(value, nextRevision) { configuration = clean(value); saved = copy(configuration); revision = nextRevision; past.length = 0; future.length = 0; bytes = 0; groupStart = null; groupPast = []; groupFuture = []; grouped = false; lastKey = ''; emit(); }, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); } };
     }
     Object.assign(window, { sfSchoolStudioModel: { create, registry } });
 })();

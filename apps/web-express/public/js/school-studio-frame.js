@@ -11,6 +11,123 @@
     let resize;
     const send = (type, payload = {}) => parent.postMessage({ protocol: 1, instanceId: instance, sequence: ++outgoing, type, payload }, origin);
     const visible = (el) => !!el.getClientRects().length;
+    const bindings = new Map();
+    let editing = null, inlineTools = null, deferredFragment = null;
+    function bind(selector, componentId, property) { const field = SfStudioContent.field(configuration, initial.schoolName, componentId, property); if (!field)
+        return; for (const element of document.querySelectorAll(selector)) {
+        bindings.set(element, { element, componentId, property, field });
+        element.dataset.studioInline = '';
+        element.dataset.studioComponent = componentId;
+        element.tabIndex = mode === 'edit' ? 0 : -1;
+        element.removeAttribute('title');
+        delete element.dataset.sfControlTooltip;
+    } }
+    function bindContent() {
+        bindings.clear();
+        for (const el of document.querySelectorAll('[data-studio-inline]')) {
+            delete el.dataset.studioInline;
+            el.removeAttribute('tabindex');
+        }
+        bind('.school-welcome-identity strong,.school-context-identity strong', 'school.identity', 'displayName');
+        bind('.sf-hero-title,#school-welcome-title', 'home.hero', 'headline');
+        bind('.sf-hero-subtitle,.school-welcome-intro', 'home.hero', 'intro');
+        bind('.school-welcome-message', 'home.hero', 'message');
+        bind('.school-welcome-help', 'home.links', 'help');
+        bind('.school-custom-questions > .school-form-text', 'submission.instructions', 'instructions');
+        bind('.school-custom-questions details .school-form-text', 'submission.instructions', 'example');
+        for (const [index] of configuration.welcome.links.entries())
+            bind('.school-welcome-links > :nth-child(' + (index + 1) + ')', 'home.links', 'link-label:' + index);
+        for (const c of configuration.categories) {
+            const key = CSS.escape(c.id);
+            bind('#cat-card-' + key + ' .sip-cat-card-title', 'category:' + c.id, 'name');
+            bind('#cat-card-' + key + ' .sip-cat-card-sub', 'category:' + c.id, 'description');
+            for (const root of document.querySelectorAll('[data-feed-category="' + key + '"],[data-school-submit-category="' + key + '"]')) {
+                let label = root.querySelector('[data-studio-category-text]');
+                if (!label) {
+                    label = document.createElement('span');
+                    label.dataset.studioCategoryText = '';
+                    const nodes = Array.from(root.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
+                    for (const node of nodes)
+                        label.append(node);
+                    root.append(label);
+                }
+                bind('[data-feed-category="' + key + '"] [data-studio-category-text],[data-school-submit-category="' + key + '"] [data-studio-category-text]', 'category:' + c.id, 'name');
+            }
+        }
+        for (const q of configuration.form.questions) {
+            const input = document.querySelector('[data-school-question="' + CSS.escape(q.id) + '"]'), root = input?.closest('label');
+            if (root) {
+                root.dataset.studioQuestion = q.id;
+                bind('[data-studio-question="' + q.id + '"] > span', 'question:' + q.id, 'label');
+                bind('[data-studio-question="' + q.id + '"] > small', 'question:' + q.id, 'help');
+            }
+        }
+        for (const status of ['approved', 'in_progress', 'resolved'])
+            bind('.roadmap-pill[data-status="' + status + '"] .roadmap-pill-label', 'progress.labels', 'label:' + status);
+    }
+    function inlinePosition() { if (!editing || !inlineTools)
+        return; const r = editing.element.getBoundingClientRect(); inlineTools.style.left = Math.max(8, Math.min(r.left, innerWidth - inlineTools.offsetWidth - 8)) + 'px'; inlineTools.style.top = Math.max(8, Math.min(r.bottom + 8, innerHeight - inlineTools.offsetHeight - 8)) + 'px'; }
+    function finishInline(cancel = false) { if (!editing)
+        return; const current = editing, value = current.element.textContent || '', valid = !current.field.required || !!value.trim(); editing = null; current.element.removeAttribute('contenteditable'); current.element.removeAttribute('role'); current.element.removeAttribute('aria-multiline'); current.element.classList.remove('studio-inline-active'); inlineTools?.remove(); inlineTools = null; const final = cancel || !valid || value === (current.raw || current.field.fallback) ? current.raw : value.trim(); current.element.replaceChildren(...current.original); if (current.componentId === 'home.hero' && current.property === 'headline')
+        headline(final);
+    else
+        current.element.textContent = (final || current.field.fallback) + (current.componentId === 'home.links' && current.property.startsWith('link-label:') ? ' ↗' : current.componentId.startsWith('question:') && current.property === 'label' && configuration.form.questions.find((q) => q.id === current.componentId.slice(9))?.required ? ' *' : ''); send('inline-edit', { componentId: current.componentId, property: current.property, value: final }); send('inline-state', { active: false }); if (!valid)
+        send('inline-notice', { message: 'This label needs text. Its previous value was restored.' }); schedule(); if (deferredFragment) {
+        const deferred = deferredFragment;
+        deferredFragment = null;
+        void replaceFragment(deferred.payload, deferred.sequence);
+    } }
+    function startInline(binding) {
+        if (mode !== 'edit')
+            return;
+        if (editing?.element === binding.element)
+            return;
+        finishInline();
+        const current = SfStudioContent.field(configuration, initial.schoolName, binding.componentId, binding.property);
+        if (!current)
+            return;
+        editing = { ...binding, field: current, raw: current.value, original: Array.from(binding.element.childNodes).map(n => n.cloneNode(true)) };
+        selected = binding.componentId;
+        send('select', { componentId: selected, inline: true });
+        send('inline-state', { active: true });
+        binding.element.textContent = current.value || current.fallback;
+        binding.element.setAttribute('contenteditable', 'true');
+        binding.element.setAttribute('role', 'textbox');
+        binding.element.setAttribute('aria-multiline', String(current.multiline));
+        binding.element.classList.add('studio-inline-active');
+        inlineTools = document.createElement('div');
+        inlineTools.className = 'studio-inline-tools';
+        inlineTools.setAttribute('role', 'group');
+        inlineTools.setAttribute('aria-label', 'Inline text editing');
+        const hint = document.createElement('span');
+        hint.textContent = current.multiline ? 'Ctrl/⌘ Enter to finish' : 'Enter to finish';
+        inlineTools.prepend(hint);
+        document.body.append(inlineTools);
+        binding.element.focus();
+        const range = document.createRange();
+        range.selectNodeContents(binding.element);
+        const selection = getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        inlinePosition();
+        schedule();
+    }
+    document.addEventListener('input', () => { if (!editing)
+        return; const value = editing.element.textContent || ''; if (value.length > editing.field.max) {
+        editing.element.textContent = value.slice(0, editing.field.max);
+        const range = document.createRange();
+        range.selectNodeContents(editing.element);
+        range.collapse(false);
+        getSelection()?.removeAllRanges();
+        getSelection()?.addRange(range);
+    } const next = editing.element.textContent || ''; if (!editing.field.required || next.trim())
+        send('inline-edit', { componentId: editing.componentId, property: editing.property, value: next }); inlinePosition(); schedule(); });
+    document.addEventListener('paste', event => { if (!editing || !editing.element.contains(event.target))
+        return; event.preventDefault(); const text = event.clipboardData?.getData('text/plain') || ''; document.execCommand('insertText', false, text.slice(0, editing.field.max)); });
+    document.addEventListener('drop', event => { if (editing)
+        event.preventDefault(); });
+    document.addEventListener('focusout', event => { if (editing && event.target === editing.element)
+        finishInline(); });
     function mark(selector, id) { for (const element of document.querySelectorAll(selector))
         element.dataset.studioComponent = id; }
     function annotate() {
@@ -41,6 +158,7 @@
             if (configuration.categories.some((c) => c.id === id))
                 (button.closest('.sip-cat-card') || button).dataset.studioComponent = 'category:' + id;
         }
+        bindContent();
         send('components', { ids: Array.from(new Set(Array.from(document.querySelectorAll('[data-studio-component]')).filter(visible).map(el => el.dataset.studioComponent))) });
     }
     function makeOverlay() {
@@ -73,24 +191,31 @@
     } const r = element.getBoundingClientRect(); node.hidden = false; Object.assign(node.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' }); }
     let queued = false;
     function schedule() { if (queued)
-        return; queued = true; requestAnimationFrame(() => { queued = false; const element = target(selected); box(outline, element); box(hover, target(hovered)); label.hidden = mode !== 'edit' || !element; if (element) {
+        return; queued = true; requestAnimationFrame(() => { queued = false; inlinePosition(); const element = target(selected); box(outline, element); box(hover, target(hovered)); label.hidden = mode !== 'edit' || !element; if (element) {
         const r = element.getBoundingClientRect();
         label.textContent = selected.startsWith('question:') ? 'School question' : selected.startsWith('category:') ? 'Feedback category' : selected.replace(/\./g, ' › ');
         label.style.left = Math.max(4, r.left) + 'px';
         label.style.top = Math.max(4, r.top - 26) + 'px';
     } }); }
     function text(selector, value) { for (const el of document.querySelectorAll(selector)) {
+        if (editing && (el === editing.element || el.contains(editing.element)))
+            continue;
         el.textContent = value;
         if (el.matches('.school-welcome-message,.school-welcome-help'))
             el.hidden = !value;
     } }
-    function headline(value) { for (const el of document.querySelectorAll('.sf-hero-title')) {
+    function headline(value) { if (editing?.property === 'headline')
+        return; for (const el of document.querySelectorAll('.sf-hero-title')) {
         const accent = document.createElement('span');
         accent.className = 'sf-hero-title-accent';
         accent.textContent = value || 'shape your campus.';
         el.replaceChildren(...(value ? [] : [document.createTextNode('Your ideas can ')]), accent);
     } }
     async function replaceFragment(payload, sequence) {
+        if (editing) {
+            deferredFragment = { payload, sequence };
+            return;
+        }
         fragmentSequence = sequence;
         const parsed = new DOMParser().parseFromString(payload.html, 'text/html');
         parsed.querySelectorAll('script').forEach(el => el.remove());
@@ -120,6 +245,10 @@
         }
         if (sequence !== fragmentSequence)
             return;
+        if (editing) {
+            deferredFragment = { payload, sequence };
+            return;
+        }
         window.sfMotion?.destroy();
         const y = scrollY, wasOpen = document.getElementById('submit-panel')?.hasAttribute('hidden') === false;
         for (const link of document.querySelectorAll('head link[rel="stylesheet"]'))
@@ -150,7 +279,7 @@
                 const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
                 let current;
                 while (current = walker.nextNode()) {
-                    if (current.parentElement?.closest('script,style,textarea,.studio-frame-label'))
+                    if (current.parentElement?.closest('script,style,textarea,[contenteditable],.studio-frame-label,.studio-inline-tools'))
                         continue;
                     if (current.textContent?.trim() === previous.name)
                         current.textContent = current.textContent.replace(previous.name, category.name);
@@ -173,8 +302,8 @@
             text('.school-custom-questions details .school-form-text', next.form.example);
         const links = Array.from(document.querySelectorAll('.school-welcome-links a,.school-welcome-links span'));
         for (const [index, link] of next.welcome.links.entries())
-            if (links[index])
-                links[index].textContent = link.label;
+            if (links[index] && links[index] !== editing?.element)
+                links[index].textContent = link.label + ' ↗';
         for (const [key, value] of Object.entries(next.features))
             document.body.classList.toggle('school-' + key + '-off', !value || initial.scenario === 'disabled');
         SfSchoolColors.apply(document.body, next.palette);
@@ -188,15 +317,17 @@
             const input = Array.from(document.querySelectorAll('[data-school-question]')).find(el => el.dataset.schoolQuestion === q.id);
             const root = input?.closest('label');
             const span = root?.querySelector('span');
-            if (span)
+            if (span && span !== editing?.element)
                 span.textContent = q.label + (q.required ? ' *' : '');
             const small = root?.querySelector('small');
-            if (small)
+            if (small && small !== editing?.element)
                 small.textContent = q.help;
         }
         for (const [status, value] of Object.entries(next.labels))
             if (value !== old.labels[status])
                 for (const element of document.querySelectorAll('.workspace-status[data-status="' + status + '"],.roadmap-pill[data-status="' + status + '"] .roadmap-pill-label,.post-badge-status.status-' + status)) {
+                    if (element === editing?.element)
+                        continue;
                     const dot = element.querySelector('.badge-dot');
                     if (dot) {
                         for (const child of Array.from(element.childNodes))
@@ -297,10 +428,12 @@
         const data = event.data;
         if (event.origin !== origin || event.source !== parent || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || typeof data.type !== 'string')
             return;
-        if (!['initialize', 'patch', 'select', 'set-mode', 'replace-fragment', 'set-theme'].includes(data.type) || JSON.stringify(data).length > 600000)
+        if (!['initialize', 'patch', 'select', 'set-mode', 'replace-fragment', 'set-theme', 'finish-inline'].includes(data.type) || JSON.stringify(data).length > 600000)
             return;
         incoming = data.sequence;
         const payload = data.payload || {};
+        if (data.type === 'finish-inline')
+            finishInline(payload.cancel === true);
         if (data.type === 'set-theme' && ['light', 'dark'].includes(payload.theme)) {
             document.documentElement.dataset.theme = payload.theme;
             schedule();
@@ -325,7 +458,9 @@
             schedule();
         }
         if (data.type === 'set-mode' && ['edit', 'preview'].includes(payload.mode)) {
+            finishInline();
             mode = payload.mode;
+            bindContent();
             document.body.classList.toggle('studio-frame-edit', mode === 'edit');
             syncMotion();
             schedule();
@@ -340,7 +475,17 @@
         const element = event.target;
         const selectable = element.closest('[data-studio-component]');
         const action = element.closest('[data-sf-click]')?.dataset.sfClick;
+        if (element.closest('.studio-inline-tools') || editing?.element.contains(element))
+            return;
         if (mode === 'edit') {
+            const inline = element.closest('[data-studio-inline]');
+            if (inline && bindings.has(inline)) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                startInline(bindings.get(inline));
+                return;
+            }
+            finishInline();
             event.preventDefault();
             event.stopImmediatePropagation();
             if (selectable) {
@@ -467,9 +612,38 @@
             }
         }
     }, true);
-    document.addEventListener('beforeinput', event => { if (mode === 'edit')
+    document.addEventListener('beforeinput', event => { if (mode === 'edit' && !editing?.element.contains(event.target))
         event.preventDefault(); });
-    document.addEventListener('keydown', event => { const typing = event.target.matches('input,textarea,select,[contenteditable=true]'); if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+    document.addEventListener('keydown', event => { if (editing) {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            finishInline(true);
+            return;
+        }
+        if (event.key === 'Enter' && (!editing.field.multiline || event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            finishInline();
+            return;
+        }
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+            event.preventDefault();
+            finishInline();
+            send('shortcut', { command: 'save' });
+            return;
+        }
+        if (event.key === 'Tab') {
+            finishInline();
+            return;
+        }
+    }
+    else if (mode === 'edit' && event.key === 'Enter') {
+        const binding = bindings.get(event.target);
+        if (binding) {
+            event.preventDefault();
+            startInline(binding);
+            return;
+        }
+    } const typing = event.target.matches('input,textarea,select,[contenteditable=true]'); if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
         event.preventDefault();
         send('shortcut', { command: 'save' });
     }

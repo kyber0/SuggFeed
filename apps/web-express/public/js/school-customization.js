@@ -20,15 +20,15 @@
         theme.value = preferences.get('theme');
     const search = document.getElementById('studio-search'), tree = document.getElementById('studio-tree'), status = document.getElementById('studio-status');
     let presentComponents = null;
-    let uploading = false;
+    let uploading = false, inlineEditing = false;
     let instance = '', sequence = 0, incoming = 0, ready = false, busy = false, allowed = true, mode = new URLSearchParams(location.search).get('mode') === 'preview' ? 'preview' : 'edit', view = '', renderTimer, renderController = null, renderVersion = 0, renderedKey = '', lastConfiguration = JSON.stringify(model.getState().configuration), lastSelection = '', changes = initial.changes || [], latest = null, returnFocus = null;
     const controls = window.sfControls.mount(host, { endGroup: () => model.endGroup(), beginGroup: () => model.beginGroup() });
     const pill = document.getElementById('studio-save-state');
     function validation() { const errors = inspector?.validation?.() || []; const issues = SfSchoolDesign.issues(model.getState().configuration.design || SfSchoolDesign.defaults(model.getState().configuration.palette)); const node = document.getElementById('studio-validation'); node.hidden = !errors.length && !issues.length; node.textContent = [...errors, ...issues].join(' '); return !errors.length && !issues.length; }
-    function queueSave() { clearTimeout(autosaveTimer); if (!allowed || conflict || saveFailed || uploading || !navigator.onLine || !model.getState().dirty)
+    function queueSave() { clearTimeout(autosaveTimer); if (!allowed || conflict || saveFailed || uploading || inlineEditing || !navigator.onLine || !model.getState().dirty)
         return; autosaveTimer = setTimeout(() => void save(true), 1000); }
     const say = (text, error = false) => { status.textContent = text; status.parentElement.dataset.error = String(error); pill.dataset.state = error ? 'error' : model.getState().dirty ? 'dirty' : 'saved'; pill.textContent = text.startsWith('Offline') ? 'Offline' : conflict ? 'Conflict' : saveFailed ? 'Save failed' : error ? 'Needs attention' : text.startsWith('Saving') ? 'Saving…' : text.startsWith('Uploading') ? 'Uploading…' : text.startsWith('Published') ? 'Published' : model.getState().dirty ? 'Unsaved changes' : 'Draft saved'; };
-    function syncActions() { const state = model.getState(), blocked = busy || !allowed || uploading, valid = validation(); const saveButton = document.getElementById('studio-save'), reviewButton = document.getElementById('studio-review'), publishButton = document.getElementById('studio-publish'); document.getElementById('studio-undo').disabled = blocked || (!state.canUndo && !inspector.hasPending?.()); saveButton.disabled = blocked || !state.dirty || !valid || conflict; reviewButton.disabled = blocked || !valid || conflict; const reason = !allowed ? 'Editor access is unavailable.' : uploading ? 'Wait for image processing.' : conflict ? 'Compare the newer draft before saving.' : !valid ? 'Correct the highlighted properties before saving.' : busy ? 'Processing your change…' : state.dirty ? 'Review will save your draft first.' : 'Draft autosaves privately. Publication is always explicit.'; reviewButton.title = reason; document.getElementById('studio-review-help').textContent = reason; saveButton.title = 'Save privately · Ctrl/⌘ S'; publishButton.disabled = blocked || state.dirty || !valid || reviewRevision !== state.serverRevision || !document.getElementById('studio-publish-confirm').checked; document.getElementById('studio-request-review').disabled = blocked || state.dirty || !valid; controls.schedule(); }
+    function syncActions() { const state = model.getState(), blocked = busy || !allowed || uploading || inlineEditing, valid = validation(); const saveButton = document.getElementById('studio-save'), reviewButton = document.getElementById('studio-review'), publishButton = document.getElementById('studio-publish'); document.getElementById('studio-undo').disabled = blocked || (!state.canUndo && !inspector.hasPending?.()); saveButton.disabled = blocked || !state.dirty || !valid || conflict; reviewButton.disabled = blocked || !valid || conflict; const reason = inlineEditing ? 'Finish typing on the canvas before saving.' : !allowed ? 'Editor access is unavailable.' : uploading ? 'Wait for image processing.' : conflict ? 'Compare the newer draft before saving.' : !valid ? 'Correct the highlighted properties before saving.' : busy ? 'Processing your change…' : state.dirty ? 'Review will save your draft first.' : 'Draft autosaves privately. Publication is always explicit.'; reviewButton.title = reason; document.getElementById('studio-review-help').textContent = reason; saveButton.title = 'Save privately · Ctrl/⌘ S'; publishButton.disabled = blocked || state.dirty || !valid || reviewRevision !== state.serverRevision || !document.getElementById('studio-publish-confirm').checked; document.getElementById('studio-request-review').disabled = blocked || state.dirty || !valid; controls.schedule(); }
     async function confirmChange(message, label) { controls.close(); const dialog = document.createElement('dialog'); dialog.className = 'studio-dialog'; const title = document.createElement('h2'), heading = document.createElement('header'), body = document.createElement('p'), actions = document.createElement('div'), cancel = document.createElement('button'), confirm = document.createElement('button'); title.id = 'studio-confirm-title'; title.textContent = label + '?'; heading.append(title); dialog.setAttribute('aria-labelledby', title.id); body.textContent = message; actions.className = 'studio-dialog-actions'; cancel.type = confirm.type = 'button'; cancel.textContent = 'Cancel'; confirm.textContent = label; confirm.className = 'studio-primary'; actions.append(cancel, confirm); dialog.append(heading, body, actions); document.body.append(dialog); return new Promise(resolve => { cancel.addEventListener('click', () => dialog.close('cancel')); confirm.addEventListener('click', () => dialog.close('confirm')); dialog.addEventListener('close', () => { resolve(dialog.returnValue === 'confirm'); dialog.remove(); }, { once: true }); dialog.showModal(); cancel.focus(); }); }
     function revoked(message) { allowed = false; ready = false; instance = crypto.randomUUID(); frame.src = 'about:blank'; clearTimeout(autosaveTimer); controls.close(); renderController?.abort(); clearTimeout(renderTimer); for (const control of host.querySelectorAll('input,select,textarea,button'))
         control.disabled = true; document.getElementById('studio-copy')?.removeAttribute('disabled'); say(message + ' Your unsaved changes remain in memory. Copy them before leaving.', true); const dialog = document.getElementById('studio-conflict-dialog'); document.getElementById('studio-conflict-sections').textContent = 'Workspace access changed. Further saves and previews are blocked.'; const load = document.getElementById('studio-load-latest'); load.disabled = true; if (!dialog.open)
@@ -48,8 +48,20 @@
         Object.assign(error, { status: response.status, code: result.code });
         throw error;
     } return result; }
-    const inspector = window.sfSchoolStudioInspector.mount(document.getElementById('studio-inspector'), model, { ...initial, base, controls, getConfiguration: () => source === 'published' ? published : model.getState().configuration, readOnly: () => source === 'published', onValidation: () => syncActions(), confirm: confirmChange, select: (id) => select(id), say, request, uploading: (value) => { uploading = value; syncActions(); if (!value)
-            queueSave(); } });
+    function designSelection() { const id = model.getState().selection?.componentId || ''; if (id.startsWith('page.') || id.startsWith('section.') || id === 'school.theme' || id === 'locked.brand')
+        return id; if (id === 'school.identity')
+        return 'school.theme'; const part = id === 'home.hero' ? 'hero' : id.startsWith('question:') || id === 'submission.instructions' ? 'questions' : id.startsWith('category:') || id === 'community.categories' ? page.value === 'submit' ? 'categories' : page.value === 'feed' ? 'topics' : 'hero' : id === 'progress.labels' ? 'progress' : ''; return part && SfSchoolDesign.pages[page.value]?.sections[part] ? 'section.' + page.value + '.' + part : 'page.' + page.value; }
+    const inspectorSettings = { ...initial, base, controls, getConfiguration: () => source === 'published' ? published : model.getState().configuration, readOnly: () => source === 'published', onValidation: () => syncActions(), confirm: confirmChange, select: (id) => select(id), say, request, uploading: (value) => { uploading = value; syncActions(); if (!value)
+            queueSave(); } };
+    const designInspector = window.sfSchoolStudioInspector.mount(document.getElementById('studio-inspector'), model, { ...inspectorSettings, componentId: designSelection });
+    const contentInspector = window.sfSchoolStudioInspector.mount(document.getElementById('studio-content-inspector'), model, { ...inspectorSettings, pane: 'content' });
+    const inspector = { render() { designInspector.render(); contentInspector.render(); }, validation() { return [...designInspector.validation(), ...contentInspector.validation()]; }, issueComponent() { return designInspector.validation().length ? designInspector.issueComponent() : contentInspector.issueComponent(); }, hasPending: () => designInspector.hasPending() || contentInspector.hasPending(), discardPending() { const design = designInspector.discardPending(), content = contentInspector.discardPending(); return design || content; } };
+    function contentTarget(id) { if (['school.identity', 'home.hero', 'home.links', 'community.categories', 'submission.instructions', 'progress.labels', 'school.email', 'community.features'].includes(id) || id.startsWith('category:') || id.startsWith('question:'))
+        return id; if (id === 'section.home.hero' || id === 'page.home')
+        return 'home.hero'; if (id === 'section.feed.topics' || id === 'section.submit.categories')
+        return 'community.categories'; if (id === 'section.submit.questions' || id === 'page.submit')
+        return 'submission.instructions'; if (id === 'section.idea.progress' || id === 'section.roadmap.summary')
+        return 'progress.labels'; return ''; }
     const registry = () => api.registry(model.getState().configuration, page.value);
     function find(id) { return registry().find((n) => n.id === id) || Object.keys(SfSchoolDesign.pages).flatMap(p => api.registry(model.getState().configuration, p)).find((n) => n.id === id); }
     function send(type, payload = {}) { if (ready && frame.contentWindow)
@@ -216,11 +228,12 @@
     } if (Array.from(variant.options).some(option => option.value === chosen))
         variant.value = chosen; controls.schedule(); }
     function selectParent() { const id = model.getState().selection?.componentId || ''; select(id.startsWith('section.') ? 'page.' + id.split('.')[1] : id.startsWith('category:') ? 'community.categories' : id.startsWith('question:') ? 'submission.instructions' : id.startsWith('home.') ? 'page.home' : 'school.theme'); }
-    function select(id, fromFrame = false) {
+    function select(id, fromFrame = false, inline = false) {
         if (!allowed)
             return;
         if (!id && fromFrame) {
             model.select(null);
+            document.getElementById('studio-content-panel').hidden = true;
             inspector.render();
             document.getElementById('studio-selection-title').textContent = 'Select a component';
             document.getElementById('studio-property-scope').textContent = 'Choose a component in this page.';
@@ -256,8 +269,17 @@
         document.getElementById('studio-mobile-selection').textContent = component.label;
         inspector.render();
         document.getElementById('studio-properties-form').inert = source === 'published';
+        document.getElementById('studio-content-form').inert = source === 'published';
         document.getElementById('studio-property-scope').textContent = source === 'published' ? 'Published comparison · switch to Draft to edit' : component.group === 'workspace' ? 'All student and staff screens in this school' : component.group === 'category' ? 'School-wide category' : component.group === 'question' ? 'School submission form' : 'This page · ' + page.selectedOptions[0].text;
-        if (innerWidth >= 1024)
+        const target = contentTarget(id), contentButton = document.getElementById('studio-edit-content');
+        contentButton.hidden = !target;
+        document.getElementById('studio-content-context').textContent = component.label + (source === 'published' ? ' · published' : '');
+        document.getElementById('studio-content-title').textContent = component.label;
+        document.getElementById('studio-selection-title').textContent = 'Design';
+        document.getElementById('studio-content-panel').hidden = inline || !target || id !== target;
+        const designId = designSelection();
+        document.getElementById('studio-breadcrumb').textContent = (find(designId)?.label || page.selectedOptions[0].text) + ' / appearance';
+        if (innerWidth >= 1024 && !inline)
             openPanel('properties');
         controls.refresh();
         send('select', { componentId: id, scroll: !fromFrame });
@@ -300,7 +322,7 @@
         }
     }
     function navigate(resetSelection = true) { if (!allowed)
-        return; controls.close(); controls.schedule(); presentComponents = null; ready = false; incoming = 0; sequence = 0; instance = crypto.randomUUID(); renderVersion++; renderController?.abort(); clearTimeout(renderTimer); loading.hidden = false; frame.src = base + '/preview/content?' + new URLSearchParams({ page: page.value, scenario: scenario.value, theme: theme.value, source, variant: variant.value, view: view || model.getState().configuration.design?.pages.roadmap?.view || 'board', instance }); if (resetSelection) {
+        return; inlineEditing = false; document.getElementById('studio-inline-done').hidden = true; document.getElementById('studio-inline-cancel').hidden = true; model.endGroup(); controls.close(); controls.schedule(); presentComponents = null; ready = false; incoming = 0; sequence = 0; instance = crypto.randomUUID(); renderVersion++; renderController?.abort(); clearTimeout(renderTimer); loading.hidden = false; frame.src = base + '/preview/content?' + new URLSearchParams({ page: page.value, scenario: scenario.value, theme: theme.value, source, variant: variant.value, view: view || model.getState().configuration.design?.pages.roadmap?.view || 'board', instance }); if (resetSelection) {
         model.setPage(page.value);
         document.getElementById('studio-selection-title').textContent = 'Select a component';
         document.getElementById('studio-breadcrumb').textContent = page.selectedOptions[0].text;
@@ -322,7 +344,7 @@
                     send('patch', { configuration: model.getState().configuration }); });
             }
             clearTimeout(renderTimer);
-            if (source === 'draft' && 'draft:' + structure(state.configuration) !== renderedKey)
+            if (!inlineEditing && source === 'draft' && 'draft:' + structure(state.configuration) !== renderedKey)
                 renderTimer = setTimeout(() => void render(), 350);
             if (state.dirty) {
                 reviewRevision = -1;
@@ -369,7 +391,7 @@
     } host.setAttribute('aria-busy', String(value)); syncActions(); }
     async function save(automatic = false) {
         clearTimeout(autosaveTimer);
-        if (busy || !allowed || conflict)
+        if (busy || !allowed || conflict || inlineEditing)
             return false;
         if (!validation()) {
             if (!automatic) {
@@ -461,12 +483,38 @@
     } }
     window.addEventListener('message', event => {
         const data = event.data;
-        if (event.origin !== location.origin || event.source !== frame.contentWindow || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || JSON.stringify(data).length > (data.type === 'components' ? 16000 : 2000))
+        if (event.origin !== location.origin || event.source !== frame.contentWindow || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || JSON.stringify(data).length > (data.type === 'components' ? 16000 : data.type === 'inline-edit' ? 10000 : 2000))
             return;
-        if (!['ready', 'select', 'navigate', 'render-complete', 'render-error', 'shortcut', 'components'].includes(data.type))
+        if (!['ready', 'select', 'navigate', 'render-complete', 'render-error', 'shortcut', 'components', 'inline-state', 'inline-edit', 'inline-notice'].includes(data.type))
             return;
         incoming = data.sequence;
         const payload = data.payload || {};
+        if (data.type === 'inline-state' && allowed && source === 'draft') {
+            inlineEditing = payload.active === true;
+            document.getElementById('studio-inline-done').hidden = !inlineEditing;
+            document.getElementById('studio-inline-cancel').hidden = !inlineEditing;
+            document.getElementById('studio-edit-content').hidden = inlineEditing || !contentTarget(model.getState().selection?.componentId || '');
+            if (inlineEditing) {
+                model.beginGroup();
+                clearTimeout(autosaveTimer);
+                clearTimeout(renderTimer);
+            }
+            else {
+                model.endGroup();
+                inspector.render();
+                queueSave();
+                if ('draft:' + structure(model.getState().configuration) !== renderedKey)
+                    renderTimer = setTimeout(() => void render(), 350);
+            }
+            syncActions();
+        }
+        if (data.type === 'inline-edit' && allowed && source === 'draft' && mode === 'edit' && typeof payload.componentId === 'string' && typeof payload.property === 'string') {
+            const change = SfStudioContent.change(model.getState().configuration, initial.schoolName, payload.componentId || '', payload.property || '', payload.value);
+            if (change && find(change.componentId))
+                model.applyChange(change.componentId, change.property, change.value);
+        }
+        if (data.type === 'inline-notice' && typeof payload.message === 'string')
+            say(payload.message.slice(0, 160), true);
         if (data.type === 'components' && Array.isArray(payload.ids) && payload.ids.length <= 150) {
             presentComponents = new Set(payload.ids.filter((id) => typeof id === 'string' && id.length < 120));
             const selected = model.getState().selection?.componentId;
@@ -493,7 +541,7 @@
             say('Preview styles could not load. Your edits are safe; use Reload preview to retry.', true);
         }
         if (data.type === 'select' && typeof payload.componentId === 'string')
-            select(payload.componentId, true);
+            select(payload.componentId, true, payload.inline === true);
         if (data.type === 'navigate' && Object.keys(SfSchoolDesign.pages).includes(payload.page)) {
             navTab = 'layers';
             search.value = '';
@@ -543,7 +591,8 @@
     function setMode(value) { if (source === 'published' && value === 'edit') {
         say('Switch to Draft to edit. Published comparison cannot change the live workspace.');
         return;
-    } mode = value; modeButton.setAttribute('aria-pressed', String(mode === 'preview')); editButton.setAttribute('aria-pressed', String(mode === 'edit')); modeButton.tabIndex = mode === 'preview' ? 0 : -1; editButton.tabIndex = mode === 'edit' ? 0 : -1; send('set-mode', { mode }); document.getElementById('studio-canvas-hint').textContent = mode === 'edit' ? 'Select a component in the preview or choose it from the list.' : 'Preview · fictional content only. Real actions stay disabled.'; }
+    } mode = value; host.dataset.interaction = value; if (value === 'preview')
+        document.getElementById('studio-content-panel').hidden = true; modeButton.setAttribute('aria-pressed', String(mode === 'preview')); editButton.setAttribute('aria-pressed', String(mode === 'edit')); modeButton.tabIndex = mode === 'preview' ? 0 : -1; editButton.tabIndex = mode === 'edit' ? 0 : -1; send('set-mode', { mode }); document.getElementById('studio-canvas-hint').textContent = mode === 'edit' ? 'Click school text to type in place. Select other components to edit their design.' : 'Preview · fictional content only. Real actions stay disabled.'; }
     modeButton.addEventListener('click', () => setMode('preview'));
     editButton.addEventListener('click', () => setMode('edit'));
     modeButton.parentElement.addEventListener('keydown', event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key))
@@ -626,7 +675,7 @@
         }
         return;
     } const button = event.target.closest('[data-studio-restore]'); if (!button)
-        return; if (model.getState().dirty || inspector.hasPending?.())
+        return; if (model.getState().dirty || inlineEditing || inspector.hasPending?.())
         return say('Save or undo your changes before restoring a version.', true); if (await confirmChange('Restore version ' + button.dataset.studioRestore + ' into a new draft? The saved draft is replaced; members, ideas and the live version stay intact.', 'Restore to draft'))
         void perform('restore', { version: Number(button.dataset.studioRestore) }); });
     document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => button.closest('dialog')?.close()));
@@ -643,7 +692,7 @@
     } });
     document.getElementById('studio-load-latest').addEventListener('click', async () => { if (!latest || !await confirmChange('Load the saved draft and discard the local differences shown above? Copy anything you still need first.', 'Load saved draft'))
         return; conflict = false; saveFailed = false; inspector.discardPending?.(); model.replaceDraft(latest.draft, latest.revision); inspector.render(); navigate(false); document.getElementById('studio-conflict-dialog').close(); say('Latest saved draft loaded. Your copied changes can be compared manually.'); });
-    window.addEventListener('beforeunload', event => { if (model.getState().dirty || inspector.hasPending?.()) {
+    window.addEventListener('beforeunload', event => { if (model.getState().dirty || inlineEditing || inspector.hasPending?.()) {
         event.preventDefault();
         event.returnValue = '';
     } });
@@ -658,7 +707,12 @@
     } if (event.key === 'Escape') {
         if (controls.isOpen())
             return;
-        closePanel();
+        if (!document.getElementById('studio-content-panel').hidden) {
+            document.getElementById('studio-content-panel').hidden = true;
+            document.getElementById('studio-edit-content').focus();
+        }
+        else
+            closePanel();
     } if (event.key === 'Tab' && host.dataset.sheet) {
         const panel = document.getElementById('studio-' + host.dataset.sheet);
         const controls = Array.from(panel.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href]')).filter(el => el.getAttribute('aria-hidden') !== 'true' && !!el.getClientRects().length);
@@ -730,9 +784,20 @@
             say(error.message, true);
             return;
         }
-    } source = next; host.dataset.source = source; inspector.render(); document.querySelectorAll('[data-studio-source]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.studioSource === source))); document.getElementById('studio-properties-form').inert = source === 'published'; document.getElementById('studio-property-scope').textContent = source === 'published' ? 'Published comparison · switch to Draft to edit' : 'Select a component to see where its settings apply.'; renderedKey = ''; navigate(false); }
+    } source = next; host.dataset.source = source; document.getElementById('studio-content-source').textContent = source === 'published' ? 'Content · published comparison' : 'Content · private draft'; inspector.render(); document.querySelectorAll('[data-studio-source]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.studioSource === source))); document.getElementById('studio-properties-form').inert = source === 'published'; document.getElementById('studio-content-form').inert = source === 'published'; document.getElementById('studio-property-scope').textContent = source === 'published' ? 'Published comparison · switch to Draft to edit' : 'Select a component to see where its settings apply.'; renderedKey = ''; navigate(false); }
     document.querySelectorAll('[data-studio-source]').forEach(button => button.addEventListener('click', () => void setSource(button.dataset.studioSource)));
     document.getElementById('studio-validation').addEventListener('click', () => { select(inspector.issueComponent?.() || 'school.theme'); openPanel('properties'); document.getElementById('studio-properties-form').reportValidity(); });
+    document.getElementById('studio-edit-content').addEventListener('click', () => { const id = contentTarget(model.getState().selection?.componentId || ''); if (id) {
+        select(id);
+        document.getElementById('studio-content-panel').hidden = false;
+        document.getElementById('studio-content-inspector').querySelector('input:not([type=file]):not([type=hidden]),textarea,button')?.focus();
+    } });
+    for (const id of ['studio-inline-done', 'studio-inline-cancel']) {
+        const button = document.getElementById(id);
+        button.addEventListener('pointerdown', event => event.preventDefault());
+        button.addEventListener('click', () => send('finish-inline', { cancel: id === 'studio-inline-cancel' }));
+    }
+    document.getElementById('studio-close-content').addEventListener('click', () => { document.getElementById('studio-content-panel').hidden = true; document.getElementById('studio-edit-content').focus(); });
     document.getElementById('studio-select-parent').addEventListener('click', selectParent);
     document.querySelectorAll('[data-studio-tab]').forEach(button => button.addEventListener('click', () => { navTab = button.dataset.studioTab; search.value = ''; document.querySelectorAll('[data-studio-tab]').forEach(item => item.setAttribute('aria-pressed', String(item === button))); drawTree(); }));
     document.querySelectorAll('[data-studio-page]').forEach(button => button.addEventListener('click', () => { if (!allowed)
