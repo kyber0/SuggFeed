@@ -1,3 +1,4 @@
+import {platformChrome,platformRecovery,platformReturn,platformSaved} from '../lib/platform-dashboard';
 import {schoolColors} from '../lib/school-colors';
 import {schoolDesign} from '../lib/school-design';
 import {schoolRosterEmails} from '../lib/school-enrollment';
@@ -53,7 +54,7 @@ export async function schoolAdmin(req: Request, res: Response) {
   if(!platformSettings && req.method==='GET' && !req.path.includes('/customization')){const presentation=await supabasePlatform.rpc('school_published_configuration',{p_school:school.id});if(presentation.data&&!presentation.error){const configuration=presentation.data;Object.assign(res.locals,{schoolCustomization:configuration,schoolDesignPage:'staff',schoolColorStyle:schoolColors.style(configuration.palette)+(configuration.design?schoolDesign.style(configuration.design):schoolDesign.cursorStyle())});}}
   return { user, school };
 }
-function failed(res: Response, title: string, message: string, status = 400) { return res.status(status).render('school-message', { title, message }); }
+function failed(res: Response, title: string, message: string, status = 400) { return res.status(status).render('school-message', { title, message,...(res.locals.isPlatformOperator?{nextHref:'/platform/schools?section=schools',nextLabel:'School directory'}:{}) }); }
 router.use((req, res, next) => {
   if (/^\/(?:schools|platform\/schools)(?:\/|$)/.test(req.path) || /^\/s\/[^/]+\/(?:privacy|terms|admin\/(?:school-settings|invitations|domains|enrollment))(?:\/|$)/.test(req.path)) res.setHeader('Cache-Control', 'no-store');
   next();
@@ -135,42 +136,6 @@ router.get('/platform/security/retention',run(async(req,res)=>{
  res.setHeader('Cache-Control','private, no-store');res.json({success:true,mode:'dry-run',schools:result.data});
 }));
 router.get('/platform/schools/:id/activate', (_req, res) => res.redirect(303, '/platform/schools#schools'));
-router.get('/platform/schools', run(async (req, res) => {
-  const user = await operator(req, res); if (!user) return;
-  const page = req.query.page === undefined ? 0 : Number(req.query.page);
-  const applicationPage = req.query.applicationPage === undefined ? 0 : Number(req.query.applicationPage);
-  const editorPage = req.query.editorPage === undefined ? 0 : Number(req.query.editorPage);
-  if ([page, applicationPage, editorPage].some(value => !Number.isSafeInteger(value) || value < 0 || value > 10000)) return failed(res, 'Invalid review page', 'Choose a valid school review page.');
-  const search = typeof req.query.q === 'string' ? req.query.q.trim() : '';
-  const status = typeof req.query.status === 'string' ? req.query.status : '';
-  if ((req.query.q !== undefined && typeof req.query.q !== 'string') || search.length > 100 || (req.query.status !== undefined && typeof req.query.status !== 'string') || !['', 'pending', 'active', 'suspended', 'closed'].includes(status)) return failed(res, 'Invalid school filter', 'Use a school name of up to 100 characters and a listed status.');
-  let schoolQuery = supabasePlatform.from('schools').select('id,slug,name,status');
-  if (search) schoolQuery = schoolQuery.ilike('name', '%' + search.replace(/[\\%_]/g, character => '\\' + character) + '%');
-  if (status) schoolQuery = schoolQuery.eq('status', status);
-  const overviewDays=[7,30,90].includes(Number(req.query.overviewDays))?Number(req.query.overviewDays):30;
-  const [applications, schools, release, editor, overview] = await Promise.all([
-    supabasePlatform.from('school_applications').select('id,name,slug,contact_name,contact_email,authority_statement,created_at').eq('status', 'pending').order('created_at').order('id').range(applicationPage * 12, applicationPage * 12 + 12),
-    schoolQuery.order('created_at', { ascending: false }).order('id').range(page * 24, page * 24 + 24),
-    supabasePlatform.rpc('school_release_status', { p_actor: user.id }),
-    supabasePlatform.from('school_customization_state').select('school_id,revision,draft,review_requested_at,editing_enabled,schools(name,slug)').order('school_id').range(editorPage*20,editorPage*20+20),
-    // Insights failures leave school management available.
-    supabasePlatform.rpc('platform_overview_analytics',{p_actor:user.id,p_days:overviewDays}),
-  ]);
-  if (applications.error || schools.error || release.error || editor.error) throw Object.assign(new Error('School review unavailable.'), {status:503});
-  const editorRows=(editor.data||[]).slice(0,20);
-  const editorEvents=editorRows.length ? await supabasePlatform.from('school_registry_events').select('school_id,created_at,profiles!school_registry_events_actor_id_fkey(display_name)').eq('action','customization_rollout').in('school_id',editorRows.map(row=>row.school_id)).order('created_at',{ascending:false}).limit(1000) : {data:[],error:null};
-  if(editorEvents.error)throw Object.assign(new Error('Editor access history unavailable.'),{status:503});
-  const visibleSchools = (schools.data || []).slice(0, 24);
-  const ids = visibleSchools.map(school => school.id);
-  const [settings, memberships,policyDrafts,customizationStates] = visibleSchools.length ? await Promise.all([
-    supabasePlatform.from('school_settings').select('school_id,version,privacy_notice,terms_notice,privacy_contact,school_contact,age_policy,publication_policy,retention_days,approved_at').in('school_id', ids),
-    supabasePlatform.from('school_memberships').select('school_id').eq('user_id', user.id).eq('role', 'admin').eq('status', 'active').in('school_id', ids),
-    supabasePlatform.from('school_policy_drafts').select('school_id,version,settings').in('school_id',ids),
-    supabasePlatform.from('school_customization_state').select('school_id,editing_enabled').in('school_id',ids),
-  ]) : [{ data: [], error: null }, { data: [], error: null },{data:[],error:null},{data:[],error:null}];
-  if (settings.error || memberships.error || policyDrafts.error || customizationStates.error) throw Object.assign(new Error('School policy review unavailable.'), {status:503});
-  return res.render('platform-schools', { title: 'Super admin dashboard — SuggFeed', overview:overview.error?null:overview.data,overviewDays, editorRows:editorRows.map(row=>({...row,grantEvent:editorEvents.data?.find(event=>event.school_id===row.school_id)})),editorPage,nextEditorPage:(editor.data?.length||0)>20, customizationStates: customizationStates.data || [], release: release.data, demoSchoolId: DEMO_SCHOOL_ID, applications: (applications.data || []).slice(0, 12), schools: visibleSchools, settings:(settings.data || []).map(s=>{const draft=policyDrafts.data?.find(d=>d.school_id===s.school_id);return draft?{...s,...draft.settings,version:draft.version,approved_at:null,live_approved_at:s.approved_at}:s;}), adminSchoolIds: (memberships.data || []).map(membership => membership.school_id), businessReady: schoolApplicationsConfigured(), legal: legalDetails(), search, status, page, applicationPage, nextPage: (schools.data?.length || 0) > 24, nextApplicationPage: (applications.data?.length || 0) > 12, saved: req.query.saved === '1', statusSaved:req.query.statusSaved==='1' });
-}));
 router.post('/platform/schools/:id/review', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;
   const { decision, reference } = req.body || {};
@@ -203,8 +168,9 @@ router.get('/platform/schools/:id/status', run(async (req,res) => {
   const {data:school,error}=await supabasePlatform.from('schools').select('id,name,slug,status').eq('id',req.params.id).maybeSingle();
   if(error)throw Object.assign(new Error('School status unavailable.'),{status:503});
   if(!school)return failed(res,'School not found','Return to the platform directory and select an existing school.',404);
-  if(!validStatusTransition(school.status,target))return failed(res,'School action unavailable','The school’s status changed or this action is not available. Return to the directory to review its current status.',409);
-  return res.render('school-status',{title:schoolStatusActions[target].title+' — '+school.name,school,target,action:schoolStatusActions[target],submitted:{},errorMessage:''});
+  const recovery=platformRecovery(req,user.id,'/platform/schools/'+school.id+'/status?to='+target);
+  if(!validStatusTransition(school.status,target)&&!recovery)return failed(res,'School action unavailable','The school’s status changed or this action is not available. Return to the directory to review its current status.',409);
+  return res.render('school-status',{...await platformChrome(user.id),section:'schools',currentUrl:req.originalUrl,saved:false,title:schoolStatusActions[target].title+' — '+school.name,school,target,statusReturn:platformReturn(req.query.returnTo,'/platform/schools/'+school.id+'?tab=access'),action:schoolStatusActions[target],submitted:recovery||{},errorMessage:recovery?'Your reason was restored after verification. Review the current school status before submitting again.':''});
 }));
 router.post('/platform/schools/:id/status', run(async (req,res) => {
   const user=await operator(req,res);if(!user)return;
@@ -212,17 +178,17 @@ router.post('/platform/schools/:id/status', run(async (req,res) => {
   if(!validSchoolId(req.params.id) || typeof target!=='string' || !Object.prototype.hasOwnProperty.call(schoolStatusActions,target))return failed(res,'Invalid school action','Choose a school action from the platform directory.');
   const status=target as SchoolStatusAction;
   const {data:school,error}=await supabasePlatform.from('schools').select('id,name,slug,status').eq('id',req.params.id).maybeSingle();
-  if(error)throw Object.assign(new Error('School status unavailable.'),{status:503});
+  if(error)return res.status(503).render('school-message',{title:'School status unavailable',message:'No change was saved. Your reason is kept briefly in this session; return to the confirmation form to retry.',nextHref:'/platform/schools/'+req.params.id+'/status?to='+target,nextLabel:'Return to confirmation'});
   if(!school)return failed(res,'School not found','Return to the platform directory and select an existing school.',404);
   const submitted={confirmation:typeof confirmation==='string'?confirmation.slice(0,63):'',reason:typeof reason==='string'?reason.slice(0,2000):''};
-  const reject=(message:string,code=400)=>res.status(code).render('school-status',{title:schoolStatusActions[status].title+' — '+school.name,school,target:status,action:schoolStatusActions[status],submitted,errorMessage:message});
-  if(!validStatusTransition(school.status,status))return failed(res,'School action unavailable','This action is no longer available for the current school status. Return to the directory to review the school.',409);
+  const reject=async(message:string,code=400)=>res.status(code).render('school-status',{...await platformChrome(user.id),section:'schools',currentUrl:req.originalUrl,saved:false,title:schoolStatusActions[status].title+' — '+school.name,school,target:status,statusReturn:platformReturn(req.body?.platformReturnTo,'/platform/schools/'+school.id+'?tab=access'),action:schoolStatusActions[status],submitted,errorMessage:message});
+  if(!validStatusTransition(school.status,status))return reject('This action is no longer available for the current school status. Your reason is preserved; return to the school record.',409);
   if(expected_status!==school.status)return reject('The school status changed. Review the current status above and confirm again, or return to the directory.',409);
   if(typeof confirmation!=='string' || confirmation!==school.slug || typeof reason!=='string' || reason.trim().length<10 || reason.length>2000 || acknowledged!=='yes')return reject('Enter the exact school address slug, a reason of 10–2,000 characters, and confirm the effect of this change.');
   if(status==='active' && !schoolApplicationsConfigured() && school.id!==DEMO_SCHOOL_ID)return reject('Complete service setup before reactivating a real school.',409);
   const result=await supabasePlatform.rpc('manage_school_status',{p_school:school.id,p_actor:user.id,p_status:status,p_expected_status:expected_status,p_confirmation:confirmation,p_reason:reason.trim()});
   if(result.error)return reject('The change was not saved. Check current school status, reviewed policies, administrator access and isolation verification, then try again. If it persists, ask the service operator to check the status-management migration.',409);
-  return res.redirect(303,'/platform/schools?statusSaved=1&q='+encodeURIComponent(school.name.slice(0,100))+'#school-'+school.id);
+  delete req.session.platformFormRecovery;return res.redirect(303,platformSaved(platformReturn(req.body?.platformReturnTo,'/platform/schools/'+school.id+'?tab=access')));
 }));
 router.post('/platform/schools/:id/activate', run(async (req, res) => {
   const user = await operator(req, res); if (!user) return;
@@ -237,7 +203,7 @@ router.post('/platform/schools/:id/activate', run(async (req, res) => {
   if ((!schoolApplicationsConfigured() && school.id !== DEMO_SCHOOL_ID) || !policyResult.data?.approved_at) return failed(res, 'Activation unavailable', 'Reviewed policies are required. Real schools also need completed service business configuration.');
   const { error } = await supabasePlatform.rpc('manage_school_status', { p_school:school.id,p_actor:user.id,p_status:'active',p_expected_status:'pending',p_confirmation:school.slug,p_reason:'Initial workspace activation requested from the platform dashboard.' });
   if (error) return failed(res, 'Activation locked', 'The isolation release gate, school status and administrator requirements must all pass before activation.', 409);
-  return res.redirect(303, '/platform/schools?statusSaved=1');
+  return res.redirect(303,platformSaved(platformReturn(req.body?.platformReturnTo,'/platform/schools/'+school.id)));
 }));
 async function renderSettings(req: Request, res: Response, context: NonNullable<Awaited<ReturnType<typeof schoolAdmin>>>, submitted?: Record<string, string | number>, errorMessage?: string, enrollmentDraft?:{version:number;mode:string;text:string}) {
   const [{data,error},domains,enrollment,pendingPolicy,customization]=await Promise.all([supabasePlatform.from('school_settings').select('*').eq('school_id',context.school.id).maybeSingle(),supabasePlatform.from('school_email_domains').select('id,domain,verification_token,verified_at,join_enabled').eq('school_id',context.school.id).order('created_at'),supabasePlatform.rpc('get_school_enrollment',{p_school:context.school.id,p_actor:context.user.id}),supabasePlatform.from('school_policy_drafts').select('version,settings,updated_at').eq('school_id',context.school.id).maybeSingle(),supabasePlatform.from('school_customization_state').select('editing_enabled').eq('school_id',context.school.id).maybeSingle()]);

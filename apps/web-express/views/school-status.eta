@@ -1,18 +1,18 @@
-<% layout('layout'); const directory='/platform/schools?q='+encodeURIComponent(it.school.name.slice(0,100))+'#school-'+it.school.id; %>
-<main class="school-status-page sf-page-container">
-  <a class="platform-text-link" href="<%= directory %>">← Back to school directory</a>
+<% layout('layout'); const directory=it.statusReturn||'/platform/schools/'+it.school.id+'?tab=access';const available=it.target==='active'?it.school.status==='suspended':it.target==='suspended'?it.school.status==='active':it.school.status!=='closed'; %>
+<%~ include('partials/platform-shell-start',it) %><section class="school-status-page">
+  <a class="platform-text-link" href="<%= directory %>">← Back to school access</a>
   <header class="school-status-heading"><p class="platform-eyebrow">Platform administration · School access</p><h1><%= it.action.title %></h1><p><%= it.school.name %></p></header>
   <section class="school-status-card" aria-labelledby="status-effect-title">
     <div class="school-status-context"><strong>/s/<%= it.school.slug %></strong><span class="platform-badge platform-badge--<%= it.school.status %>"><%= {pending:'Pending setup',active:'Active',suspended:'Suspended',closed:'Closed'}[it.school.status] %></span></div>
     <h2 id="status-effect-title">What will change</h2><p><%= it.action.description %></p>
     <% if(it.errorMessage) { %><div class="school-status-error" role="alert"><%= it.errorMessage %></div><% } %>
     <form method="post" action="/platform/schools/<%= it.school.id %>/status" class="school-status-form">
-      <input type="hidden" name="target" value="<%= it.target %>"/>
+      <input type="hidden" name="platformReturnTo" value="<%= directory %>"/><input type="hidden" name="target" value="<%= it.target %>"/>
       <input type="hidden" name="expected_status" value="<%= it.school.status %>"/>
       <div><label for="status-reason">Reason for this change</label><p id="status-reason-help">Record the actual reason or review reference. It will be saved in the platform audit history.</p><textarea id="status-reason" name="reason" rows="4" minlength="10" maxlength="2000" required aria-describedby="status-reason-help"><%= it.submitted.reason || '' %></textarea></div>
       <div><label for="status-confirmation">Type <strong><%= it.school.slug %></strong> to confirm</label><input id="status-confirmation" name="confirmation" type="text" maxlength="63" required autocomplete="off" autocapitalize="none" spellcheck="false" value="<%= it.submitted.confirmation || '' %>"/></div>
       <label class="school-status-acknowledgement"><input type="checkbox" name="acknowledged" value="yes" required/><span><%= it.target==='closed' ? 'I understand this closes the school and it cannot be reopened through these controls.' : it.target==='suspended' ? 'I understand this pauses access for this school’s members.' : 'I understand this restores access for eligible members after all activation checks pass.' %></span></label>
-      <div class="school-status-actions"><a class="platform-button" href="<%= directory %>">Cancel</a><button type="submit" class="platform-button <%= it.target==='active' ? 'platform-button--primary' : 'platform-button--danger' %>"><%= it.action.title %></button></div>
+      <div class="school-status-actions"><a class="platform-button" href="<%= directory %>">Cancel</a><button type="submit" <%= available?'':'disabled' %> class="platform-button <%= it.target==='active' ? 'platform-button--primary' : 'platform-button--danger' %>"><%= it.action.title %></button></div>
     </form>
   </section>
-</main>
+</section><%~ include('partials/platform-shell-end',it) %>

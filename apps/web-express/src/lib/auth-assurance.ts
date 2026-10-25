@@ -15,6 +15,7 @@ export function safeSecurityReturnTo(value: unknown): string {
   try {
     const url = new URL(value, 'https://suggfeed.invalid');
     if (!value.startsWith('/') || url.origin !== 'https://suggfeed.invalid' || url.pathname !== value.split(/[?#]/)[0]) return '/schools';
+    if (/^\/platform\/schools\/[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(url.pathname)) return value;
     if (url.pathname === '/schools' || /^\/platform\/schools(?:\/[^/]+\/(?:settings|invitations|student-access|members(?:\/[^/]+)?|status|customization(?:\/preview(?:\/content)?)?))?$/.test(url.pathname) || url.pathname === '/account/home' || url.pathname === '/platform/customization') return value;
     const school = /^\/s\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/|$)/.exec(url.pathname);
     return school && school[1].length >= 3 && school[1].length <= 63 ? value : '/schools';
@@ -24,8 +25,9 @@ export function safeSecurityReturnTo(value: unknown): string {
 /** Identity middleware supplies assurance only after provider token verification. */
 export function requireStrongAuth(req: Request, res: Response, next: NextFunction) {
   if (res.locals.authAssurance === 'aal2') return next();
-  const returnTo = safeSecurityReturnTo(req.originalUrl);
+  const returnTo = safeSecurityReturnTo(res.locals.platformAuthReturn || req.originalUrl);
   const securityUrl = `/account/security?returnTo=${encodeURIComponent(returnTo)}`;
+  if (res.locals.platformHtmlForm) return res.status(403).render('school-message', {title:'Verify your authenticator',message:'No action was saved. Verify your authenticator, then review the current saved state before trying again.',nextHref:securityUrl,nextLabel:'Verify and return'});
   if (['GET', 'HEAD'].includes(req.method) && !req.path.toLowerCase().startsWith('/api/') && !req.path.toLowerCase().includes('/api/') && !req.is('application/json') && !req.get('accept')?.includes('application/json')) {
     return res.redirect(303, securityUrl);
   }
