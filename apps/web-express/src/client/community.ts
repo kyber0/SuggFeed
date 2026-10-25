@@ -130,7 +130,7 @@
       } else if(action==='resolve') confirmation=`${body.resolution==='removed' ? 'Remove content from public view' : 'Keep the reported content'}? Your reason is shown privately to the reporter.`;
       if(action==='comment-review'){body.version=Number(body.version);body.textRevision=Number(body.textRevision);confirmation=body.decision==='delete'?'Delete this comment text? Replies and the moderation record are preserved.':body.decision==='hide'?'Hide this comment from public discussion?':'Approve this comment for public discussion?';}
       if(!await window.sfConfirm(confirmation)) return;
-      await request('staff/'+action,body);notify(action==='comment-review'?'Decision saved. The author can see your reason in School updates.':'Saved. Refresh this page to see the updated queue.');form.reset();
+      await request('staff/'+action,body);if(action==='request'){location.assign(sfSchoolPath('/admin/community?section=clarifications&followup=waiting'));return;}notify(action==='comment-review'?'Decision saved. The author can see your reason in School updates.':'Saved. Refresh this page to see the updated queue.');form.reset();
       if(action==='close' || action==='resolve' || action==='comment-review') {
         if(action==='comment-review'){location.reload();return;}
         const card=form.closest('article'),section=card?.closest('section');card?.remove();

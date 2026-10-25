@@ -614,3 +614,106 @@ html:has(.staff-review-dialog[open]) { overflow:hidden; }
 .comment-review-decision>summary {font-weight:600;font-size:13px;color:var(--navy);}
 .comment-review-decision .care-form {margin-top:12px;}
 @media(max-width:600px){.comment-review-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.comment-review-tabs a{justify-content:center;flex-direction:column;gap:4px;padding:10px 6px;font-size:12px}.comment-review-decision .workspace-button{width:100%}.comment-review-item>header{align-items:start}.comment-review-updates button{margin:8px 0;display:block}}
+
+/* One portal shell for daily work and school management. */
+.staff-workspace {--portal-gap:20px;}
+.staff-main {min-width:0;}
+.staff-main>*,.portal-management-main>div {min-width:0;max-width:100%;}
+.staff-sidebar .staff-nav-item {min-height:44px;gap:10px;line-height:1.4;}
+.staff-sidebar .staff-nav-item>span:not(.staff-nav-count) {min-width:0;}
+.staff-sidebar .workspace-kicker {font-size:10px;letter-spacing:.12em;margin:24px 12px 10px;}
+.portal-section-tabs {display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 24px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+.portal-section-tabs>a {display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;border:1px solid transparent;border-radius:10px;font-size:13px;text-decoration:none;color:var(--ink-2);line-height:1.5;}
+.portal-section-tabs>a[aria-current=page] {background:var(--surface);color:var(--navy);border-color:var(--line);font-weight:650;}
+.portal-section-tabs>a:hover {background:var(--sky);}
+.portal-management .school-settings-page,.portal-management .invites-page,.portal-management .student-access-page,.portal-management .sf-main {padding:0;margin:0;max-width:none;width:100%;}
+.portal-management .school-settings-header,.portal-management .student-access-header,.portal-management .invites-header {margin-top:0;}
+.portal-management .school-settings-back,.portal-management .platform-text-link {font-size:12px;}
+.portal-management .school-settings-layout {grid-template-columns:190px minmax(0,1fr);gap:24px;}
+.portal-management .school-settings-sidebar {position:static;}
+.portal-management .school-settings-summary {font-size:12px;line-height:1.7;}
+.portal-management .school-settings-content {min-width:0;}
+.portal-task-summary {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0 12px;}
+.portal-task-summary>:is(a,div) {display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-decoration:none;color:var(--ink);}
+.portal-task-summary strong {font-size:25px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--navy);}
+.portal-task-summary span {font-size:13px;line-height:1.5;}
+.portal-work-group {margin:28px 0;scroll-margin-top:90px;}
+.portal-work-group>header {display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.portal-work-group h2 {font-size:16px;margin:0;}
+.portal-work-group>header>span {font-size:12px;color:var(--ink-2);}
+.portal-work-item.assignment-card {padding:18px;border-radius:14px;margin:0;}
+.portal-work-summary {display:flex;gap:20px;align-items:center;justify-content:space-between;}
+.portal-work-summary>div:first-child {min-width:0;}
+.portal-work-summary h3 {font-size:16px;margin:6px 0;line-height:1.5;overflow-wrap:anywhere;}
+.portal-work-summary h3>a {color:var(--ink);text-decoration:none;}
+.portal-work-summary h3>a:hover {text-decoration:underline;}
+.portal-work-summary p:not(.workspace-kicker) {font-size:12px;color:var(--ink-2);margin:6px 0;line-height:1.6;}
+.portal-work-summary .workspace-kicker {font-size:10px;margin:0;}
+.portal-work-primary {flex:none;}
+.portal-work-primary .workspace-button {min-height:44px;}
+.portal-work-details {margin-top:12px;border-top:1px solid var(--line);padding-top:4px;font-size:12px;}
+.portal-work-details>summary {cursor:pointer;min-height:40px;padding:10px 0;color:var(--ink-2);line-height:1.6;}
+.portal-work-details>summary>span {margin-left:14px;color:var(--ink);}
+.portal-work-details .assignment-facts {margin:12px 0;font-size:12px;}
+.portal-quiet-state {padding:16px;border:1px dashed var(--line);border-radius:12px;font-size:13px;color:var(--ink-2);}
+.portal-next-steps {display:flex;flex-wrap:wrap;gap:12px 24px;margin:4px 0 28px;font-size:13px;}
+.portal-next-steps>a {min-height:44px;display:flex;align-items:center;}
+.staff-overview-page .staff-attention-grid {grid-template-columns:repeat(4,minmax(0,1fr));}
+.staff-overview-page .staff-attention-grid>a {align-items:start;padding:18px;gap:12px;}
+.staff-overview-page .staff-attention-grid h3 {font-size:13px;}
+.staff-overview-page .staff-attention-grid p {font-size:12px;line-height:1.6;}
+.staff-overview-page .staff-attention-grid strong {font-size:28px;}
+.portal-compose {margin:20px 0;padding:0 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg);}
+.portal-compose>summary {min-height:48px;padding:14px 0;cursor:pointer;font-size:13px;font-weight:600;}
+.portal-compose[open] {padding-bottom:16px;}
+.portal-more-tools {position:relative;font-size:13px;}
+.portal-more-tools>summary {min-height:44px;display:flex;align-items:center;padding:10px 14px;cursor:pointer;}
+.portal-more-tools>div {position:absolute;z-index:20;right:0;min-width:190px;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-sm);}
+.portal-more-tools a {display:flex;align-items:center;min-height:44px;padding:10px;font-size:13px;}
+.portal-table-scroll {max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:12px;}
+.portal-table-scroll>table {width:100%;min-width:620px;margin:0;}
+.staff-main :is(input,select,textarea) {max-width:100%;min-width:0;}
+.staff-main :is(h1,h2,h3,p,dd,blockquote) {overflow-wrap:anywhere;}
+@media(min-width:801px){.portal-management-main{padding:28px;}.portal-management .school-settings-page{min-height:0;}}
+@media(max-width:1200px){.staff-overview-page .staff-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-management .school-settings-layout{grid-template-columns:minmax(0,1fr)}.portal-management .school-settings-sidebar nav{display:flex;flex-wrap:wrap;gap:6px}.portal-management .school-settings-summary{display:none}}
+@media(max-width:800px){.staff-workspace>.staff-sidebar{padding:12px 16px}.staff-sidebar .staff-brand{display:none}.staff-navigation-disclosure>summary{min-height:44px}.staff-navigation-body{max-height:65dvh;overflow:auto;padding-bottom:12px}.portal-section-tabs{gap:4px;margin-bottom:18px}.portal-section-tabs>a{font-size:12px;padding:10px 12px}.portal-management-main{padding:18px 16px}.portal-task-summary{gap:8px}.portal-task-summary>:is(a,div){flex-direction:column;align-items:start;gap:5px;padding:12px}.portal-task-summary span{font-size:12px}.portal-work-summary{align-items:start;flex-direction:column;gap:12px}.portal-work-primary,.portal-work-primary form,.portal-work-primary .workspace-button{width:100%}.portal-work-details>summary>span{display:block;margin-left:0}.portal-work-item.assignment-card{padding:16px}.portal-work-group>header{align-items:start}.portal-more-tools>div{right:auto;left:0}.staff-main :is(input,select,textarea){font-size:16px}}
+@media(max-width:480px){.staff-overview-page .staff-attention-grid{grid-template-columns:minmax(0,1fr)}.portal-work-group>header{flex-direction:column;gap:5px}.portal-section-tabs>a{flex:1;min-width:90px}.portal-task-summary strong{font-size:22px}.portal-management .school-settings-header h1{font-size:clamp(25px,7vw,34px)}}
+@media(prefers-reduced-motion:no-preference){.portal-task-summary>a,.portal-section-tabs>a{transition:transform .2s ease,opacity .2s ease}.portal-task-summary>a:hover{transform:translateY(-2px)}}
+/* Board and list share the same records, selection and action controls. */
+#staff-flow-board[data-presentation=list] {display:grid;grid-template-columns:minmax(0,1fr);gap:24px;overflow:visible;}
+#staff-flow-board[data-presentation=list] .staff-flow-lane {display:flex;flex-direction:column;width:100%;min-width:0;max-height:none;}
+#staff-flow-board[data-presentation=list] .staff-lane-cards {display:grid;grid-template-columns:minmax(0,1fr);max-height:none;overflow:visible;gap:8px;}
+#staff-flow-board[data-presentation=list] .staff-flow-card {padding:14px 16px;min-height:0;}
+#staff-flow-board[data-presentation=list] .staff-flow-card h3 {font-size:15px;margin:9px 0;}
+.portal-calendar {background:var(--surface);padding:20px;border:1px solid var(--line);border-radius:16px;}
+.portal-calendar>header {display:flex;align-items:start;justify-content:space-between;gap:20px;margin-bottom:20px;}
+.portal-calendar>header h2 {font-size:21px;margin:0 0 8px;}
+.portal-calendar>header p {font-size:12px;line-height:1.7;color:var(--ink-2);max-width:65ch;}
+.portal-calendar>header nav {display:flex;gap:8px;flex:none;}
+.portal-calendar-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;}
+.portal-calendar-weekday {font-size:11px;color:var(--ink-2);padding:8px;text-align:center;}
+.portal-calendar-day {min-width:0;min-height:100px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--bg);}
+.portal-calendar-day h3 {font-size:12px;margin:0 0 10px;color:var(--ink-2);}
+.portal-calendar-day>a {display:grid;gap:5px;padding:10px;margin-bottom:6px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);text-decoration:none;overflow-wrap:anywhere;}
+.portal-calendar-day>a>span {font-size:10px;color:var(--navy);}
+.portal-calendar-day>a>strong {font-size:12px;line-height:1.6;}
+.portal-calendar-day>a>small {font-size:10px;color:var(--ink-2);}
+@media(max-width:1100px){.portal-calendar-grid{grid-template-columns:minmax(0,1fr)}.portal-calendar-weekday,.portal-calendar-spacer,.portal-calendar-day[data-empty]{display:none}.portal-calendar-day{min-height:0;display:grid;gap:8px;grid-template-columns:40px minmax(0,1fr)}.portal-calendar-day h3{grid-row:1/100;padding:10px 0}.portal-calendar-day>a{margin:0}.portal-calendar-day>a>strong{font-size:14px}}
+@media(max-width:600px){.portal-calendar{padding:16px}.portal-calendar>header{flex-direction:column;gap:12px}.portal-calendar>header nav{width:100%}.portal-calendar>header nav>a{flex:1}.portal-calendar-day{grid-template-columns:24px minmax(0,1fr);padding:8px}.portal-calendar>header h2{font-size:20px}}
+.staff-sidebar .staff-navigation-disclosure>summary {display:flex;align-items:center;min-height:44px;cursor:pointer;}
+@media(min-width:801px){html[data-staff-sidebar] .staff-sidebar .staff-navigation-disclosure>summary{display:none}}
+.staff-sidebar .staff-nav-item>span:not(.staff-nav-count) {margin-left:0;flex:1;text-align:left;}
+#staff-flow-board[data-presentation=list] .staff-flow-lane {min-height:0;height:auto;}
+#staff-flow-board[data-presentation=list] .staff-lane-cards {min-height:0;flex:none;}
+.portal-management .school-settings-back {display:none;}
+.assignment-page>details.assignment-card {padding:12px 18px;margin:16px 0;}
+.assignment-page>details.assignment-card>summary {min-height:44px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+@media(max-width:600px){.staff-main .portal-section-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}.staff-main .portal-section-tabs>a{white-space:normal;overflow-wrap:normal;word-break:normal;text-align:center}.staff-board-main>.portal-section-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.portal-task-summary{grid-template-columns:minmax(0,1fr)}.portal-task-summary>:is(a,div){flex-direction:row;align-items:center;gap:12px}.portal-task-summary strong{min-width:24px}.portal-task-summary span{font-size:13px}}
+.assignment-page>details.assignment-card>summary::after,.portal-more-tools>summary::after {content:'⌄';margin-left:auto;padding-left:10px;}
+.portal-calendar-month {display:flex;align-items:end;gap:10px;margin:0 0 18px;}
+.portal-calendar-month label {display:grid;gap:6px;font-size:12px;}
+.portal-calendar-month .workspace-input {min-height:44px;}
+.portal-work-summary .portal-work-deadline {font-size:12px;margin-top:8px;}
+.portal-work-summary .portal-work-deadline[data-overdue=true] {color:var(--error);font-weight:600;}
+
+.portal-task-summary>.portal-task-empty {opacity:.65;}

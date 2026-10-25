@@ -18,7 +18,7 @@
       <div class="workspace-actions">
         <a class="workspace-button" href="/admin/members">Members & access</a><button class="workspace-button" id="staff-refresh-btn" type="button"><%~ icon('refresh') %> Refresh</button>
       </div>
-    </header>
+    </header><%~ include('partials/staff-section-tabs',it) %>
 
     <!-- Top KPI Metrics -->
     <section class="staff-metrics" aria-label="Staff metrics">

@@ -24,7 +24,7 @@
   <!-- Styles -->
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />
   <% if ((it.currentPath || '').startsWith('/profile')&&!it.supportPage) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261025-support" /><% } %>
-  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261025-comment-review" /><% } %>
+  <% if (/^(?:\/s\/[^/]+)?\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261025-portal" /><% } %>
   <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-comment-review" />
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261021-platform-insights" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261021-mobile-audit"/><% } %>
@@ -78,14 +78,15 @@
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>
 <% if (!it.accountArea && !it.platformDashboard) { %>
 <script defer src="/js/engagement.js?v=20261021-toggle-votes"></script>
-<script defer src="/js/community.js?v=20261025-comment-review"></script>
+<script defer src="/js/community.js?v=20261025-portal"></script>
 
 <script defer src="/js/public-history.js?v=20261018-empty-states"></script>
 
 
 <% } %>
 <script defer src="/js/file-upload.js?v=20261021-upload"></script>
-<script defer src="/js/responsive.js?v=20261021-mobile-audit"></script>
+<script defer src="/js/responsive.js?v=20261025-portal"></script>
+<% if(/^(?:\/s\/[^/]+)?\/(admin|staff)/.test(it.currentPath||'')) { %><script defer src="/js/staff-portal.js?v=20261025-portal"></script><% } %>
 <script defer src="/js/animations.js?v=20261022-home-polish"></script>
 
 

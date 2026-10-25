@@ -26,7 +26,7 @@
         <button class="workspace-button" id="analytics-refresh-btn" type="submit" form="analytics-filters"><%~ icon('refresh') %> Refresh snapshot</button>
         <button class="workspace-button" id="analytics-export-csv" type="button"><%~ icon('export') %> Export CSV</button>
       </div>
-    </header>
+    </header><%~ include('partials/staff-section-tabs',it) %>
 
     <!-- Filter & Time Range Bar -->
     <form class="analytics-filter-bar" id="analytics-filters" method="get" action="/admin/analytics">

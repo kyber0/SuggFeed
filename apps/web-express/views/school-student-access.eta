@@ -1,6 +1,6 @@
 <% layout('layout'); const choices=it.submitted || it.data; %>
-<main class="student-access-page sf-page-container">
- <header class="student-access-header"><div><a class="platform-text-link" href="<%= it.settingsUrl %>">← School settings</a><p class="platform-eyebrow">People & access</p><h1>Student joining</h1><p>Choose how students join <strong><%= it.school.name %></strong>, including those using Gmail or another personal email.</p></div><a class="platform-button" href="<%= it.settingsUrl %>#school-enrollment">Manage approved email list</a></header>
+<% const portalShell=!it.platformDashboard; %><% if(portalShell) { %><main class="staff-workspace portal-management"><%~ include('partials/staff-sidebar',it) %><div class="staff-main portal-management-main"><% } else { %><main><% } %><div class="student-access-page sf-page-container">
+ <header class="student-access-header"><div><a class="platform-text-link" href="<%= it.settingsUrl %>">← School settings</a><p class="platform-eyebrow">People & access</p><h1>Student joining</h1><p>Choose how students join <strong><%= it.school.name %></strong>, including those using Gmail or another personal email.</p></div><a class="platform-button" href="<%= it.settingsUrl %>#school-enrollment">Manage approved email list</a></header><% if(portalShell) { %><%~ include('partials/staff-section-tabs',it) %><% } %>
  <% if(it.message) { %><div class="invites-feedback invites-feedback--error" role="alert"><p><%= it.message %></p></div><% } %>
  <% if(it.saved) { %><p class="school-settings-feedback" role="status"><%= it.saved==='review'?'The selected requests were reviewed. Approved applicants receive student access.':'Student joining settings saved.' %></p><% } %>
  <% if(it.school.status!=='active') { %><p class="school-settings-notice">Joining and approvals become available after school activation. You can prepare these settings now.</p><% } %>
@@ -24,4 +24,4 @@
  <% } %>
  <% if(it.page>0 || it.data.pending_count>(it.page+1)*50) { %><nav class="platform-pagination student-request-pagination" aria-label="Access request pages"><% if(it.page>0) { %><a class="platform-button" href="<%= it.base %>?page=<%= it.page-1 %>#student-access-requests">Previous</a><% } %><span>Page <%= it.page+1 %></span><% if(it.data.pending_count>(it.page+1)*50) { %><a class="platform-button" href="<%= it.base %>?page=<%= it.page+1 %>#student-access-requests">Next</a><% } %></nav><% } %>
  </section>
-</main>
+</div><% if(portalShell) { %></div><% } %></main>

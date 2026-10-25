@@ -56,10 +56,9 @@ export function boardFilters(query: Record<string, unknown>): BoardFilters {
   };
 }
 
-function stageQuery(status: BoardStage, filters: BoardFilters, head = false) {
+function boardQuery(filters: BoardFilters, head = false) {
   let query = supabaseService.from('staff_submission_queue')
-    .select('*', { count: 'exact', head })
-    .eq('status', status);
+    .select('*', { count: 'exact', head });
   if(filters.assignment==='mine')query=query.eq('assignee_id',requireSchool().actorId);
   if(filters.assignment==='unassigned')query=query.is('assignee_id',null);
   if(filters.priority&&filters.priority!=='all')query=query.eq('priority',filters.priority);
@@ -71,6 +70,8 @@ function stageQuery(status: BoardStage, filters: BoardFilters, head = false) {
   }
   return query;
 }
+
+function stageQuery(status:BoardStage,filters:BoardFilters,head=false){return boardQuery(filters,head).eq('status',status);}
 
 async function loadLane(stage: typeof BOARD_STAGES[number], filters: BoardFilters): Promise<BoardLane> {
   let page = filters.pages[stage.status];
@@ -122,4 +123,21 @@ export async function loadStaffBoard(filters: BoardFilters, stages: ReadonlyArra
     filters: { ...filters, pages },
     totalCount: lanes.reduce((total, lane) => total + lane.count, 0),
   };
+}
+
+/** Calendar dates are school target dates; actual work dates remain in progress history. */
+export async function loadStaffCalendar(filters:BoardFilters,input:Record<string,unknown>){
+ const fallback=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit'}).format(new Date()).slice(0,7);
+ const month=typeof input.month==='string'&&/^(20\d{2}|2100)-(0[1-9]|1[0-2])$/.test(input.month)?input.month:fallback;
+ const [year,number]=month.split('-').map(Number),start=month+'-01',next=new Date(Date.UTC(year,number,1)).toISOString().slice(0,10);
+ let page=pageNumber(input.calendarPage);page=Math.min(page,100000);
+ for(let attempt=0;attempt<3;attempt++){
+  const result=await boardQuery(filters).in('status',WORK_STAGES.map(stage=>stage.status)).gte('target_date',start).lt('target_date',next).order('target_date').order('id').range((page-1)*100,page*100-1);
+  if(result.error&&result.error.code!=='PGRST103')throw result.error;
+  let total=result.count;
+  if(result.error){const count=await boardQuery(filters,true).in('status',WORK_STAGES.map(stage=>stage.status)).gte('target_date',start).lt('target_date',next);if(count.error)throw count.error;total=count.count;}
+  const pages=Math.max(1,Math.ceil((total||0)/100));if(page>pages){page=pages;continue;}
+  return {month,items:result.data||[],total:total||0,page,pages,year,monthNumber:number};
+ }
+ throw new Error('Scheduled work changed while loading. Please refresh the calendar.');
 }

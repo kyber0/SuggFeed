@@ -217,3 +217,11 @@ used invented content. Automated tests were not added or run in this turn;
 concurrent write behavior, physical devices and the final hosted deployment
 remain unverified. Detection remains heuristic, with human review required for
 context, quotation, slang and false positives.
+
+## Staff portal navigation
+
+The canonical review screen is now `/s/{school}/admin/safety?section=comments`.
+Needs review, Reported and Resolved retain their existing service and database
+workflow. Old `/admin/community?section=comments` links redirect while preserving
+comment view and page. The portal reorganization introduces no moderation schema
+or permission changes.

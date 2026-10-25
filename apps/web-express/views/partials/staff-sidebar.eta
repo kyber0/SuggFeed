@@ -1,7 +1,7 @@
 <%
   const icon = name => '<svg class="workspace-svg" aria-hidden="true"><use href="#ws-'+name+'"></use></svg>';
-  const activeSection = it.activeSection || 'queue';
-  const counts = it.counts || { pending: 0 };
+  const activeSection = it.activeSection || ((it.currentPath||'').endsWith('/admin/reviews')?'queue':'');
+  const counts = it.counts || {};
   const filters = it.filters || { status: 'pending', search: '', assignment: 'all', priority: 'all', overdue: 'false' };
   const delivery=f=>['approved','in_progress','resolved'].includes(f.status)||f.overdue==='true';
   const viewUrl=f=>{if(!delivery(f))return '/admin/reviews?'+new URLSearchParams(f).toString();const values=new URLSearchParams(f);values.delete('status');values.delete('page');return '/admin/board?'+values.toString()+(['approved','in_progress','resolved'].includes(f.status)?'#board-lane-'+f.status:'');};
@@ -13,28 +13,19 @@
 </button>
  <div class="staff-sidebar-content" id="staff-sidebar-content">
   <a class="staff-brand" href="/admin"><img class="sf-brand-logo" src="/branding/sf-monogram.png" width="54" height="36" alt="" /><span>SuggFeed<small>STAFF WORKSPACE</small></span></a>
-  <details class="staff-navigation-disclosure" open>
+  <details class="staff-navigation-disclosure">
   <summary>Workspace menu</summary>
   <div class="staff-navigation-body">
-  <p class="workspace-kicker">WORKSPACE</p>
-  <nav aria-label="Staff navigation">
-  <% if(it.user?.role==='admin') { %><a class="staff-nav-item<%= activeSection==='overview'?' is-current':'' %>" href="/admin" aria-current="<%= activeSection==='overview'?'page':'false' %>"><%~ icon('chart') %> Overview</a><% } %>
-  <a class="staff-nav-item<%= activeSection==='queue'?' is-current':'' %>" href="/admin/reviews" aria-current="<%= activeSection==='queue'?'page':'false' %>"><%~ icon('inbox') %> Review ideas <% if(typeof counts.pending==='number') { %><span class="staff-nav-count" id="staff-pending-count"><%= counts.pending %></span><% } %></a>
-  <a class="staff-nav-item<%= activeSection==='board'?' is-current':'' %>" href="/admin/board" aria-current="<%= activeSection==='board'?'page':'false' %>"><%~ icon('board') %> Work board</a>
-  <a class="staff-nav-item<%= activeSection==='community'?' is-current':'' %>" href="/admin/community" aria-current="<%= activeSection==='community'?'page':'false' %>"><%~ icon('care') %> Community</a>
-  <% if(it.user?.role==='admin') { %><a class="staff-nav-item" href="/admin/safety"><%~ icon('shield') %> Safety review</a><% } %>
-  </nav>
-  <a class="staff-nav-item<%= activeSection==='assignments'?' is-current':'' %>" href="/admin/assignments"><%~ icon('users') %> <%= it.user?.role==='admin'?'Assignment routing':'My assigned items' %></a>
-  <p class="workspace-kicker">MANAGEMENT</p><nav aria-label="School management">
-  <a class="staff-nav-item<%= activeSection==='analytics'?' is-current':'' %>" href="/admin/analytics"><%~ icon('chart') %> Analytics</a>
-  <% if(it.user?.role==='admin') { %>
-  <details class="staff-management-group" <%= activeSection==='staff'?'open':'' %>><summary><%~ icon('users') %> People &amp; access</summary><div><a class="staff-nav-item" href="/admin/members">Members</a><a class="staff-nav-item" href="/admin/staff">Staff roles</a><a class="staff-nav-item" href="/admin/student-access">Student joining</a><a class="staff-nav-item" href="/admin/invitations">Invitations</a></div></details>
-  <details class="staff-management-group"><summary><%~ icon('shield') %> School settings</summary><div><a class="staff-nav-item" href="/admin/school-settings">Policies &amp; settings</a><a class="staff-nav-item" href="/admin/customization">Workspace appearance</a><a class="staff-nav-item" href="/admin/assistant">Sugi knowledge</a></div></details>
-  <% } %><a class="staff-nav-item" href="/admin/form-responses"><%~ icon('list') %> Form responses</a></nav>
+  <p class="workspace-kicker">DAILY WORK</p>
+  <% const path=(it.currentPath||'').replace(/^\/s\/[^/]+/,'');const isAdmin=it.user?.role==='admin';const daily=[...(isAdmin?[['/admin','Overview','chart',path==='/admin']]:[]),['/admin/my-work','My work','inbox',path==='/admin/my-work'],['/admin/reviews','Review ideas','list',path==='/admin/reviews'],['/admin/board','Work board','board',path==='/admin/board'],['/admin/community','Community','care',path==='/admin/community'],...(isAdmin?[['/admin/safety','Safety review','shield',path==='/admin/safety']]:[])]; %>
+  <nav aria-label="Daily staff work"><% for(const [href,label,glyph,current] of daily) { %><a class="staff-nav-item<%= current?' is-current':'' %>" href="<%= href %>" aria-current="<%= current?'page':'false' %>"><%~ icon(glyph) %><span><%= label %></span><% if(href==='/admin/reviews'&&typeof counts.pending==='number') { %><span class="staff-nav-count" id="staff-pending-count"><%= counts.pending %></span><% } %></a><% } %></nav>
+  <% if(isAdmin) { %><p class="workspace-kicker">SCHOOL MANAGEMENT</p><nav aria-label="School management">
+  <% for(const [href,label,glyph,current] of [['/admin/members','People & access','users',/\/(members|staff|student-access|invitations)$/.test(path)],['/admin/routing','Routing & teams','users',path==='/admin/routing'],['/admin/school-settings','School settings','shield',path==='/admin/school-settings'||path.endsWith('/domains')],['/admin/customization','Workspace editor','board',/\/customization/.test(path)],['/admin/assistant','Sugi knowledge','care',/\/assistant/.test(path)],['/admin/analytics','Insights','chart',path==='/admin/analytics'||/\/form-responses/.test(path)]]) { %><a class="staff-nav-item<%= current?' is-current':'' %>" href="<%= href %>" aria-current="<%= current?'page':'false' %>"><%~ icon(glyph) %><span><%= label %></span></a><% } %>
+  </nav><% } else { %><nav aria-label="Authorized tools"><a class="staff-nav-item" href="/admin/form-responses"><%~ icon('list') %> Form responses</a></nav><% } %>
   <% if (activeSection === 'queue') { %>
   <p class="workspace-kicker">YOUR QUEUES</p>
   <nav aria-label="Personal queues">
-    <% for(const [name,f] of [['Assigned to me',{status:'pending',assignment:'mine'}],['Unassigned review',{status:'pending',assignment:'unassigned'}]]) { %>
+    <% for(const [name,f] of [['Assigned to me',{status:'pending',assignment:'mine'}],...(isAdmin?[['Unassigned review',{status:'pending',assignment:'unassigned'}]]:[])]) { %>
       <a class="staff-nav-item<%= sameView(f) ? ' is-current' : '' %>" href="<%= viewUrl(f) %>" <%= sameView(f) ? 'aria-current="page"' : '' %>><%= name %></a>
     <% } %>
   </nav>

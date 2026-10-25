@@ -531,6 +531,12 @@
     dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
     dialog.addEventListener('click', event => { if (event.target === dialog && event.clientX < dialog.getBoundingClientRect().left)
         close(); });
+    const sourceWork = new URL(location.href).searchParams;
+    const sourceWorkView = sourceWork.get('workView'), sourceWorkPage = sourceWork.get('workPage');
+    if (sourceWorkView && ['mine', 'triage', 'all', 'overdue'].includes(sourceWorkView)) {
+        dialog.querySelectorAll('[data-close-review]').forEach(button => button.setAttribute('aria-label', 'Close detail and return to My work'));
+        dialog.addEventListener('close', () => { const query = new URLSearchParams({ view: sourceWorkView, page: sourceWorkPage && /^\d{1,6}$/.test(sourceWorkPage) ? sourceWorkPage : '1' }); location.replace(sfSchoolPath('/admin/my-work?' + query.toString())); });
+    }
     dialog.addEventListener('close', () => { if (isQueue || mode === 'work') {
         const url = new URL(location.href);
         url.searchParams.delete('idea');

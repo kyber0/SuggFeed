@@ -12,10 +12,10 @@
  }
  if(boardData) {
   interface BoardItem {id:string;title:string;status:string;updated_at:string;staff_note?:string;assignee_id?:string;priority?:string;target_date?:string;}
-  interface BoardMeta {filters:{assignment?:string;priority?:string;overdue?:boolean;search:string;sort:string;pageSize:number;pages:Record<string,number>};totalCount:number;lanes:Array<{status:string;label:string;count:number;page:number;pageCount:number;from:number;to:number}>;}
+  interface BoardMeta {filters:{presentation?:string;month?:string;calendarPage?:number;assignment?:string;priority?:string;overdue?:boolean;search:string;sort:string;pageSize:number;pages:Record<string,number>};totalCount:number;lanes:Array<{status:string;label:string;count:number;page:number;pageCount:number;from:number;to:number}>;}
   const board=document.getElementById('staff-flow-board')!;
   const stageSelect=document.getElementById('staff-mobile-stage') as HTMLSelectElement|null;
-  const syncStage=(hash:string)=>{if(!stageSelect)return;const stage=hash.replace('#board-lane-','');if(Array.from(stageSelect.options).some(option=>option.value===stage))stageSelect.value=stage;board.dataset.mobileStage=stageSelect.value;const form=document.getElementById('staff-board-filters') as HTMLFormElement;form.action=sfSchoolPath('/admin/board#board-lane-'+stageSelect.value);};
+  const syncStage=(hash:string)=>{if(!stageSelect)return;const stage=hash.replace('#board-lane-','');if(Array.from(stageSelect.options).some(option=>option.value===stage))stageSelect.value=stage;board.dataset.mobileStage=stageSelect.value;const form=document.getElementById('staff-board-filters') as HTMLFormElement;form.action=sfSchoolPath('/admin/board'+(board.dataset.presentation==='board'?'#board-lane-'+stageSelect.value:''));};
   syncStage(location.hash);
   stageSelect?.addEventListener('change',()=>{syncStage('#board-lane-'+stageSelect.value);const url=new URL(location.href);url.hash='board-lane-'+stageSelect.value;history.replaceState(history.state,'',url);});
   const metaData=document.getElementById('staff-board-meta')!;
@@ -27,6 +27,7 @@
   let loading=false, failedPage:{stage:string|null;url:string;push:boolean}|null=null;
   const urlFor=(stage:string|null,page?:number)=>{
    const url=new URL(sfSchoolPath('/admin/board'),window.location.origin);url.searchParams.set('sort',meta.filters.sort);url.searchParams.set('pageSize',String(meta.filters.pageSize));if(meta.filters.assignment&&meta.filters.assignment!=='all')url.searchParams.set('assignment',meta.filters.assignment);if(meta.filters.priority&&meta.filters.priority!=='all')url.searchParams.set('priority',meta.filters.priority);if(meta.filters.overdue)url.searchParams.set('overdue','true');
+   if(meta.filters.presentation)url.searchParams.set('presentation',meta.filters.presentation);if(meta.filters.month)url.searchParams.set('month',meta.filters.month);if(meta.filters.calendarPage)url.searchParams.set('calendarPage',String(meta.filters.calendarPage));
    if(meta.filters.search)url.searchParams.set('search',meta.filters.search);
    for(const [key,number] of Object.entries(meta.filters.pages)){const value=key===stage?page:number;if(value && value>1)url.searchParams.set(key+'Page',String(value));}
    if(stage)url.hash='board-lane-'+stage;return url;
@@ -57,12 +58,14 @@
     const fresh=new DOMParser().parseFromString(await response.text(),'text/html');
     const freshData=fresh.getElementById('staff-board-data'),freshMeta=fresh.getElementById('staff-board-meta');
     if(!freshData || !freshMeta)throw new Error('Your staff session may have expired. Sign in again; your current board has not been replaced.');
+    const freshCalendar=fresh.getElementById('staff-calendar'),calendar=document.getElementById('staff-calendar');if(calendar&&!freshCalendar)throw new Error('The calendar response was incomplete. Refresh to retry.');
     const snapshot:BoardMeta=JSON.parse(freshMeta.textContent || '{}');
     const nextItems:BoardItem[]=JSON.parse(freshData.textContent || '[]');
     const replacementStages=Object.keys(labels).filter(key=>!stage || key===stage || snapshot.filters.pages[key]!==meta.filters.pages[key]);
     // Validate every replacement before touching the existing board. A failed
     // response cannot partially erase cards or silently discard bulk selection.
     for(const key of Object.keys(labels))if(!fresh.querySelector(`[data-drop-stage="${key}"]`))throw new Error('The page was incomplete. Retry loading; your current cards are still here.');
+    if(calendar&&freshCalendar)calendar.replaceChildren(...Array.from(freshCalendar.childNodes));
     for(const key of Object.keys(labels)){
      const oldLane=board.querySelector<HTMLElement>(`[data-drop-stage="${key}"]`),newLane=fresh.querySelector<HTMLElement>(`[data-drop-stage="${key}"]`)!;
      if(replacementStages.includes(key)){
@@ -74,7 +77,7 @@
     const changedStages=new Set(replacementStages);
     items=new Map([...Array.from(items.values()).filter(item=>!changedStages.has(item.status)),...nextItems.filter(item=>changedStages.has(item.status))].map(item=>[item.id,item]));
     meta=snapshot;boardData.textContent=JSON.stringify(Array.from(items.values()));metaData.textContent=JSON.stringify(meta);
-    document.getElementById('staff-board-summary')!.textContent=`${items.size} shown · ${meta.totalCount.toLocaleString()} matching submissions`;
+    document.getElementById('staff-board-summary')!.textContent=meta.filters.presentation==='calendar'?fresh.getElementById('staff-board-summary')?.textContent||'Calendar refreshed.':`${items.size} shown · ${meta.totalCount.toLocaleString()} matching submissions`;
     selectionState();
     const canonical=urlFor(stage,stage?meta.filters.pages[stage]:undefined);
     if(!stage&&/^#board-lane-(approved|in_progress|resolved)$/.test(target.hash))canonical.hash=target.hash;syncStage(canonical.hash);
@@ -274,6 +277,7 @@
    try{if(await window.sfConfirm('Reset filters and clear your selection?') && !busy && !loading)window.location.assign(href);}
    finally{confirmingFilter=false;}
   });
+  document.querySelectorAll<HTMLAnchorElement>('[data-board-presentation]').forEach(link=>link.addEventListener('click',async event=>{if(!selected.size)return;event.preventDefault();if(await window.sfConfirm('Changing work views clears this selection. Continue?')&&!busy&&!loading)location.assign(link.href);}));
   window.addEventListener('popstate',()=>{if(busy || loading){window.history.pushState(null,'',urlFor(null).href);tell('Wait for the current request before changing pages.');return;}void navigate(null,window.location.href,false);});
   selectionState();
   window.sfStaffBoardRefresh=()=>navigate(null,urlFor(null).href,false);

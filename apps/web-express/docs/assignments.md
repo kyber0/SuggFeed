@@ -52,3 +52,11 @@ Open setup items: real teams and active members; category mappings; capacities; 
 - 28 focused assignment/API/staff/workflow/safety regressions passed. The final six assignment/API/staff cases passed again after the final refinements. A separate real PostgreSQL test passed for ten concurrent inserts and simultaneous jobs. Migration and archiving rollback passed with both normal and non-superuser migration owners.
 - Browser fixtures checked nine views at 320, 375, 768 and 1440 px, including history loading and preservation of a failed reassignment reason: no page overflow or JavaScript errors. Actual iPhone/Android hardware and native Expo were not exercised; Expo is retired.
 - Full test run: 363 tests, 325 passed, 37 failed, one explicit local-Postgres-fixture skip. An untouched checkout of the prior commit had the same 37 failing test names; no new full-suite failures were introduced. This is not a claim that the repository-wide suite is green.
+
+### Portal navigation update
+
+Daily assignment lists are now under `/admin/my-work`; routing configuration is
+under `/admin/routing`. The old `/admin/assignments` address redirects according
+to its view, preserving history identifiers and pagination. Existing POST routes,
+assignment permissions, acknowledgements and escalation jobs are unchanged.
+See `staff-portal.md` for screen behavior and release limitations.

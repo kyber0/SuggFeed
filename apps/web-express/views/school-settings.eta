@@ -1,5 +1,5 @@
 <% layout('layout'); const active=it.school.status==='active'; const persisted=it.savedSettings !== undefined ? it.savedSettings : it.settings; %>
-<main class="school-settings-page" data-workspace-sections data-default-section="<%= it.settingsSection || 'school-overview' %>">
+<% const portalShell=!it.platformDashboard; %><% if(portalShell) { %><main class="staff-workspace portal-management"><%~ include('partials/staff-sidebar',it) %><div class="staff-main portal-management-main"><%~ include('partials/staff-section-tabs',it) %><% } else { %><main><% } %><div class="school-settings-page" data-workspace-sections data-default-section="<%= it.settingsSection || 'school-overview' %>">
   <header class="school-settings-header"><div><a class="school-settings-back" href="<%= it.platformDashboard ? "/platform/schools" : it.settingsAction.replace(/school-settings$/,'') %>">← <%= it.platformDashboard ? "Platform dashboard" : "School dashboard" %></a><p class="school-settings-eyebrow">School administration</p><h1>School settings</h1><p>Manage policies, access, and contacts for <strong><%= it.school.name %></strong>.</p></div><span class="platform-badge platform-badge--<%= it.school.status %>"><%= it.school.status %></span></header>
   <% if(it.errorMessage) { %><div class="school-settings-feedback" role="alert"><%= it.errorMessage %></div><% } %>
   <% if(it.school.slug==='demo') { %><p class="school-settings-notice"><strong>Demo workspace</strong> — use fictional information only. Example contact addresses do not receive messages. Replace sample policies and contacts before real use.</p><% } %>
@@ -33,4 +33,4 @@
       <section class="school-settings-card" id="school-invitations" data-workspace-panel aria-labelledby="invitations-heading"><header><span class="school-settings-step" aria-hidden="true">04</span><div><h2 id="invitations-heading">People & invitations</h2><p>Invite students and staff from one place.</p></div></header><div class="school-settings-card-body"><p>Choose a role, send a branded email or share a private link, and track recent invitations.</p><a class="school-settings-primary invitation-cta" href="<%= it.invitationAction %>">Manage invitations →</a></div></section>
     </div>
   </div>
-</main>
+</div><% if(portalShell) { %></div><% } %></main>

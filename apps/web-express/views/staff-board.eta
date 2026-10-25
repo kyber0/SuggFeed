@@ -1,7 +1,8 @@
 <% layout('layout');
- const filters=it.filters;
+ const filters=it.filters;const presentation=it.presentation||'board';
  const urlFor=(stage,page)=>{
   const values=new URLSearchParams({sort:filters.sort,pageSize:String(filters.pageSize)});
+  if(presentation!=='board')values.set('presentation',presentation);if(it.calendar){values.set('month',it.calendar.month);values.set('calendarPage',String(it.calendar.page));}
   if(filters.search) values.set('search',filters.search);
   if(filters.assignment&&filters.assignment!=='all')values.set('assignment',filters.assignment);
   if(filters.priority&&filters.priority!=='all')values.set('priority',filters.priority);
@@ -10,19 +11,20 @@
   return '/admin/board?'+values.toString()+(stage?'#board-lane-'+stage:'');
  };
  const pageFields=stage=>Array.from(new URLSearchParams(urlFor('',1).split('?')[1]).entries()).filter(([key])=>key!==stage+'Page');
- const meta={filters,totalCount:it.totalCount,lanes:it.lanes.map(({items,...lane})=>lane)};
+ const meta={filters:{...filters,presentation,month:it.calendar?.month,calendarPage:it.calendar?.page},totalCount:it.totalCount,lanes:it.lanes.map(({items,...lane})=>lane)};
 %>
 <main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main staff-board-main">
- <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / DELIVERY</p><h1>Work board</h1><p>Approved ideas only. Assign an owner, publish progress and complete work with evidence.</p></div><a class="workspace-button" href="/admin/reviews">Review ideas</a></header>
+ <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / DELIVERY</p><h1>Work board</h1><p>Approved ideas only. Assign an owner, publish progress and complete work with evidence.</p></div></header>
+ <nav class="portal-section-tabs" aria-label="Work views"><% for(const [value,label] of [['board','Board'],['list','List'],['calendar','Calendar']]) { const query=new URLSearchParams(urlFor('',1).split('?')[1]);query.set('presentation',value);query.delete('calendarPage'); %><a href="/admin/board?<%= query.toString() %>" data-board-presentation aria-current="<%= presentation===value?'page':'false' %>"><%= label %></a><% } %></nav>
  <form class="staff-board-toolbar" action="/admin/board" method="get" role="search" id="staff-board-filters">
-  <label class="staff-board-search"><span>Search work</span><input class="workspace-input" type="search" name="search" value="<%= filters.search %>" maxlength="120" placeholder="Search suggestions…" aria-label="Search the work board"/></label>
-  <label>Order<select class="workspace-input" name="sort"><option value="oldest" <%= filters.sort==='oldest'?'selected':'' %>>Oldest first</option><option value="newest" <%= filters.sort==='newest'?'selected':'' %>>Newest first</option></select></label>
-  <label>Cards per stage<select class="workspace-input" name="pageSize"><% for(const size of [6,12,24]) { %><option value="<%= size %>" <%= filters.pageSize===size?'selected':'' %>><%= size %></option><% } %></select></label>
+  <input type="hidden" name="presentation" value="<%= presentation %>"><% if(it.calendar) { %><input type="hidden" name="month" value="<%= it.calendar.month %>"><% } %><label class="staff-board-search"><span>Search work</span><input class="workspace-input" type="search" name="search" value="<%= filters.search %>" maxlength="120" placeholder="Search suggestions…" aria-label="Search the work board"/></label>
+  <label <%= presentation==='calendar'?'hidden':'' %>>Order<select class="workspace-input" name="sort"><option value="oldest" <%= filters.sort==='oldest'?'selected':'' %>>Oldest first</option><option value="newest" <%= filters.sort==='newest'?'selected':'' %>>Newest first</option></select></label>
+  <label <%= presentation==='calendar'?'hidden':'' %>>Cards per stage<select class="workspace-input" name="pageSize"><% for(const size of [6,12,24]) { %><option value="<%= size %>" <%= filters.pageSize===size?'selected':'' %>><%= size %></option><% } %></select></label>
   <details class="staff-board-more-filters"><summary>Filters<%= filters.assignment!=='all'||filters.priority!=='all'||filters.overdue?' · active':'' %></summary><div><label>Assignment<select class="workspace-input" name="assignment"><% for(const [value,label] of [['all','Anyone'],['mine','Assigned to me'],['unassigned','Unassigned']]) { %><option value="<%= value %>" <%= filters.assignment===value?'selected':'' %>><%= label %></option><% } %></select></label><label>Priority<select class="workspace-input" name="priority"><% for(const value of ['all','low','normal','high','urgent']) { %><option value="<%= value %>" <%= filters.priority===value?'selected':'' %>><%= value==='all'?'Any priority':value %></option><% } %></select></label><label class="staff-overdue-filter"><input type="checkbox" name="overdue" value="true" <%= filters.overdue?'checked':'' %>/> Past target date</label></div></details>
  <button class="workspace-button" type="submit">Apply</button>
   <% if(filters.search || filters.sort!=='oldest' || filters.pageSize!==6||filters.assignment!=='all'||filters.priority!=='all'||filters.overdue) { %><a class="workspace-text-link" href="/admin/board" data-board-reset>Reset</a><% } %>
  </form>
- <div class="staff-board-caption"><p id="staff-board-summary"><%= it.items.length %> shown · <%= it.totalCount.toLocaleString() %> matching submissions</p><p>Scroll down to see this page · stages page independently</p></div>
+ <div class="staff-board-caption"><p id="staff-board-summary"><%= it.calendar?it.calendar.items.length:it.items.length %> shown · <%= (it.calendar?it.calendar.total:it.totalCount).toLocaleString() %> matching <%= it.calendar?'scheduled ideas':'submissions' %></p><p><%= presentation==='calendar'?'Calendar uses school target dates. Unscheduled ideas remain in Board and List.':'Each stage pages independently. Filters apply to every work view.' %></p></div>
  <div class="staff-board-feedback"><p id="staff-tools-message" role="status" aria-live="polite"></p><button type="button" class="workspace-text-link" id="staff-board-retry" hidden>Retry loading</button></div>
  <div class="staff-bulk-controls staff-board-selection" id="staff-selection-tools" hidden>
   <strong id="staff-selection-count" role="status">0 selected · maximum 25</strong>
@@ -30,18 +32,19 @@
   <button class="workspace-button" id="staff-bulk-assign" type="button" hidden>Assign selected</button><a class="workspace-button" href="/admin/assignments">Assignment routing →</a><button class="workspace-text-link" id="staff-clear-selection" type="button">Clear selection</button>
  </div>
  <p class="visually-hidden" id="staff-drag-status" role="status" aria-live="polite"></p>
- <label class="staff-mobile-stage">Stage<select class="workspace-input" id="staff-mobile-stage"><% for(const lane of it.lanes) { %><option value="<%= lane.status %>"><%= lane.label %></option><% } %></select></label>
- <section class="staff-flow-board" id="staff-flow-board" aria-label="Submission stages">
+ <label class="staff-mobile-stage" <%= presentation!=='board'?'hidden':'' %>>Stage<select class="workspace-input" id="staff-mobile-stage"><% for(const lane of it.lanes) { %><option value="<%= lane.status %>"><%= lane.label %></option><% } %></select></label>
+ <section class="staff-flow-board" id="staff-flow-board" data-presentation="<%= presentation %>" <%= presentation==='calendar'?'hidden':'' %> aria-label="Submission stages">
   <% for(const lane of it.lanes) { %><%~ include('partials/staff-board-lane',{lane,urlFor,pageFields}) %><% } %>
  </section>
+ <div id="staff-calendar"><% if(it.calendar) { %><%~ include('partials/staff-calendar',{...it,urlFor}) %><% } %></div>
  <p class="staff-board-safety">Move or drag opens an action form; nothing changes until you save. Needs review and Declined submissions are now in <a href="/admin/reviews">Review ideas</a>. Existing links and idea IDs still work.</p>
  <details class="staff-board-help"><summary>Board controls and recovery</summary><p>Use Move on a selected card to review the selected group with a keyboard, or drag a selected card with a pointer. Scroll down to see all cards on this page. Each stage pages independently. Selection can include other pages and is kept only during this visit. Drag a selected card to review moves for the selected group, one idea at a time. A destination must support every selected idea. Dragging an unselected card moves only that idea.</p><p>Assignments save together: if any selected version changed, none are saved. After a timeout, refresh to confirm before retrying. Published history is corrected with a new update; merges require an operator to review the audit for recovery.</p></details>
  <script id="staff-board-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script>
  <script id="staff-board-meta" type="application/json"><%~ JSON.stringify(meta).replace(/</g,'\\u003c') %></script>
- <script defer src="/js/staff-tools.js?v=20261025-staff-flow"></script>
+ <script defer src="/js/staff-tools.js?v=20261025-portal"></script>
 </div>
 <%~ include('partials/staff-work-detail',{...it,staffMembers:it.members}) %>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
 <script defer src="/js/staff-progress.js?v=20261025-detail-polish"></script>
-<script defer src="/js/staff-review.js?v=20261025-detail-polish"></script>
+<script defer src="/js/staff-review.js?v=20261025-portal"></script>
 </main>

@@ -1,0 +1,4 @@
+<% const path=(it.currentPath||'').replace(/^\/s\/[^/]+/,'');let links=[];let label='Workspace sections';
+if(/\/(members|staff|student-access|invitations)$/.test(path)){label='People and access';links=[['/admin/members','Members'],['/admin/staff','Staff roles'],['/admin/invitations','Invitations'],['/admin/student-access','Joining & rosters']];}
+else if(path==='/admin/analytics'||/\/form-responses/.test(path)){label='Insights';links=[...(it.user?.role==='admin'?[['/admin/analytics','Analytics']]:[]),['/admin/form-responses','Form responses']];}
+%><% if(links.length) { %><nav class="portal-section-tabs" aria-label="<%= label %>"><% for(const [href,name] of links) { %><a href="<%= href %>" aria-current="<%= path===href||href.endsWith('form-responses')&&path.startsWith(href)?'page':'false' %>"><%= name %></a><% } %></nav><% } %>

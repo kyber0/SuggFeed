@@ -250,6 +250,12 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   document.getElementById('review-discard-confirm')!.addEventListener('click',()=>close(true));
   dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
   dialog.addEventListener('click',event=>{if(event.target===dialog && event.clientX<dialog.getBoundingClientRect().left)close();});
+  const sourceWork=new URL(location.href).searchParams;
+  const sourceWorkView=sourceWork.get('workView'),sourceWorkPage=sourceWork.get('workPage');
+  if(sourceWorkView&&['mine','triage','all','overdue'].includes(sourceWorkView)){
+    dialog.querySelectorAll<HTMLElement>('[data-close-review]').forEach(button=>button.setAttribute('aria-label','Close detail and return to My work'));
+    dialog.addEventListener('close',()=>{const query=new URLSearchParams({view:sourceWorkView,page:sourceWorkPage&&/^\d{1,6}$/.test(sourceWorkPage)?sourceWorkPage:'1'});location.replace(sfSchoolPath('/admin/my-work?'+query.toString()));});
+  }
   dialog.addEventListener('close',()=>{if(isQueue||mode==='work'){const url=new URL(location.href);url.searchParams.delete('idea');history.replaceState(history.state,'',url);}if(group){const counts={saved:0,skipped:0,already:0,pending:0};for(const item of group.entries)counts[item.result]++;pageMessage.textContent=`Group review ended: ${counts.saved} moves saved, ${counts.skipped} skipped, ${counts.already} already in target stage, ${counts.pending} not moved. Saved changes remain; other selections are retained.`;group=null;paintGroup();}detailRequest?.abort();activityRequest?.abort();window.sfStaffProgress?.close();if(returnFocus?.isConnected)returnFocus.focus();else document.querySelector<HTMLElement>('#staff-queue-title,.workspace-heading h1')?.focus();});
   window.addEventListener('beforeunload',event=>{if(dialog.open && (busy || noteBusy || window.sfStaffProgress?.isBusy() || hasUnsavedChanges())){event.preventDefault();event.returnValue='';}});
   status.addEventListener('change',()=>{updateHint();updateDraft();});note.addEventListener('input',updateCount);

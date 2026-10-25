@@ -2,7 +2,7 @@ import { supabaseService } from '../lib/supabase';
 import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from "express";
 import { loadModerationCounts, PER_PAGE } from "../lib/data";
-import { queueFilters, loadStaffQueue, loadStaffMembers, loadSavedViews, loadAnalyticsData, searchStudentProfiles, UUID } from '../lib/staff-workspace';
+import {staffWorkReturn, queueFilters, loadStaffQueue, loadStaffMembers, loadSavedViews, loadAnalyticsData, searchStudentProfiles, UUID } from '../lib/staff-workspace';
 
 const router = Router();
 
@@ -36,11 +36,11 @@ router.get('/', requireStaff, asyncHandler(async (req, res) => {
     for (const key of ['status','search','assignment','priority','overdue','page','idea']) if (typeof req.query[key] === 'string') query.set(key, String(req.query[key]));
     return res.redirect('/admin/reviews?' + query.toString());
   }
-  if (schoolUser(req)!.role !== 'admin') return res.redirect('/admin/reviews');
+  if (schoolUser(req)!.role !== 'admin') return res.redirect('/admin/my-work');
   const overviewRange = ['7d','30d','90d'].includes(String(req.query.overviewRange)) ? String(req.query.overviewRange) : '30d';
-  const [counts, overviewAnalytics] = await Promise.all([loadModerationCounts(), loadAnalyticsData({range:overviewRange}).catch(() => { console.warn('School overview analytics unavailable'); return null; })]);
+  const [counts, overviewAnalytics, overdueWork, openReports] = await Promise.all([loadModerationCounts(), loadAnalyticsData({range:overviewRange}).catch(() => { console.warn('School overview analytics unavailable'); return null; }),supabaseService.from('staff_submission_queue').select('id',{count:'exact',head:true}).in('status',['approved','in_progress']).lt('target_date',new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())),supabaseService.from('reports').select('id',{count:'exact',head:true}).is('resolved_at',null)]);
   res.setHeader('Cache-Control','private, no-store');
-  res.render('admin-overview', {title:'School overview — SuggFeed', activeSection:'overview', counts, overviewAnalytics, overviewRange});
+  res.render('admin-overview', {title:'School overview — SuggFeed', activeSection:'overview', counts, overviewAnalytics, overviewRange,portalFocus:{overdue:overdueWork.error?null:overdueWork.count,reports:openReports.error?null:openReports.count}});
 }));
 router.get('/reviews', requireStaff, asyncHandler(async (req, res) => {
   res.setHeader('Cache-Control','private, no-store');
@@ -50,7 +50,7 @@ router.get('/reviews', requireStaff, asyncHandler(async (req, res) => {
   if (idea) {
     const result = await supabaseService.from('submissions').select('status').eq('id',idea).maybeSingle();
     if (result.error) throw result.error;
-    if (result.data && ['approved','in_progress','resolved'].includes(result.data.status)) return res.redirect('/admin/board?idea='+encodeURIComponent(idea));
+    if (result.data && ['approved','in_progress','resolved'].includes(result.data.status)) return res.redirect('/admin/board?idea='+encodeURIComponent(idea)+staffWorkReturn(req.query));
   }
   if (filters.overdue==='true'||['approved','in_progress','resolved'].includes(filters.status)) {
     const query = new URLSearchParams();
@@ -73,7 +73,7 @@ router.get('/reviews', requireStaff, asyncHandler(async (req, res) => {
 router.get(
   "/analytics",
   requireStaff,
-  (req,res,next)=>schoolUser(req)?.role==='admin'?next():res.redirect('/admin/assignments'),
+  (req,res,next)=>schoolUser(req)?.role==='admin'?next():res.redirect('/admin/my-work'),
   asyncHandler(async (req: Request, res: Response) => {
     const [counts, analytics] = await Promise.all([
       loadModerationCounts(),

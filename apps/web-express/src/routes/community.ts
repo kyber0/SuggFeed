@@ -1,13 +1,13 @@
 import {reportSubmission} from '../lib/submission-safety';
-import {commentAction,reportComment,commentReviewQueue,saveComment,ownCommentUpdates} from '../lib/comments';
+import {commentAction,reportComment,saveComment,ownCommentUpdates} from '../lib/comments';
 import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import { CommunityError, textField, idField, communityAction, privateInbox, replyToClarification, similarIdeas, staffCommunity, loadReportDecisions, loadPublicMergeHistory, loadCommunityStaffIdea } from '../lib/community';
-import { staffRole, loadStaffMembers, loadSavedViews, UUID } from '../lib/staff-workspace';
+import { staffWorkReturn, staffRole, loadStaffMembers, loadSavedViews, UUID } from '../lib/staff-workspace';
 import { supabaseService } from '../lib/supabase';
 import { invalidateCache, loadModerationCounts } from '../lib/data';
-import { boardFilters, loadStaffBoard, WORK_STAGES } from '../lib/staff-board';
+import { boardFilters, loadStaffBoard, loadStaffCalendar, WORK_STAGES } from '../lib/staff-board';
 
 export const communityRouter = Router();
 export const communityPages = Router();
@@ -91,8 +91,10 @@ communityPages.get('/admin/community',run(async(req,res)=>{
   const user=schoolUser(req);
   if(!user) return res.redirect('/admin');
   if(!staffRole(user.role)) return res.status(403).render('school-message',{title:'Access denied',message:'Staff access required.'});
+  if(user.role==='admin'&&req.query.section==='reports')return res.redirect(302,'/admin/safety');
+  if(user.role==='admin'&&req.query.section==='comments'){const query=new URLSearchParams({section:'comments'});for(const key of ['commentView','commentsPage'])if(typeof req.query[key]==='string')query.set(key,String(req.query[key]));return res.redirect(302,'/admin/safety?'+query.toString());}
   res.setHeader('Cache-Control','private, no-store');
-  res.render('staff-community',{title:'Follow-ups — SuggFeed',activeSection:'community',mergeSelected:req.query.task==='merge' && user.role==='admin',submissionId:typeof req.query.idea==='string' && /^[a-f0-9-]{36}$/i.test(req.query.idea) ? req.query.idea : '',...await staffCommunity(user,req.query),commentQueue:user.role==='admin'?await commentReviewQueue(req.query.commentsPage,req.query.commentView):{items:[],page:1,count:0},members:await loadStaffMembers()});
+  res.render('staff-community',{title:'Follow-ups — SuggFeed',activeSection:'community',mergeSelected:req.query.task==='merge' && user.role==='admin',submissionId:typeof req.query.idea==='string' && /^[a-f0-9-]{36}$/i.test(req.query.idea) ? req.query.idea : '',...await staffCommunity(user,{...req.query,section:req.query.task==='merge'&&user.role==='admin'?'duplicates':req.query.section}),members:await loadStaffMembers()});
 }));
 communityPages.get('/admin/board',run(async(req,res)=>{
   const user=schoolUser(req);
@@ -102,8 +104,9 @@ communityPages.get('/admin/board',run(async(req,res)=>{
   if(typeof req.query.idea==='string'&&UUID.test(req.query.idea)){
     const result=await supabaseService.from('submissions').select('status').eq('id',req.query.idea).maybeSingle();
     if(result.error)throw result.error;
-    if(result.data&&['pending','rejected'].includes(result.data.status))return res.redirect('/admin/reviews?idea='+encodeURIComponent(req.query.idea));
+    if(result.data&&['pending','rejected'].includes(result.data.status))return res.redirect('/admin/reviews?idea='+encodeURIComponent(req.query.idea)+staffWorkReturn(req.query));
   }
-  const [board,members,counts,savedViews]=await Promise.all([loadStaffBoard(boardFilters(req.query), WORK_STAGES),loadStaffMembers(),loadModerationCounts(),loadSavedViews(user.id)]);
-  res.render('staff-board',{title:'Work board — SuggFeed',activeSection:'board',...board,members,counts,savedViews});
+  const presentation=['board','list','calendar'].includes(String(req.query.presentation))?String(req.query.presentation):'board';
+  const [board,members,counts,savedViews,calendar]=await Promise.all([loadStaffBoard(boardFilters(req.query), WORK_STAGES),loadStaffMembers(),loadModerationCounts(),loadSavedViews(user.id),presentation==='calendar'?loadStaffCalendar(boardFilters(req.query),req.query):Promise.resolve(null)]);
+  res.render('staff-board',{title:'Work board — SuggFeed',activeSection:'board',...board,members,counts,savedViews,presentation,calendar});
 }));

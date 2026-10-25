@@ -93,3 +93,10 @@ export async function loadAnalyticsData(filters:Record<string,unknown>={}) {
   if(error)throw error;
   return summarizeAnalytics(data || [],filters);
 }
+
+/** Preserve only known My work context when a stale idea link changes workspace. */
+export function staffWorkReturn(input:Record<string,unknown>):string {
+ if(!['mine','triage','all','overdue'].includes(String(input.workView)))return '';
+ const page=typeof input.workPage==='string'&&/^\d{1,6}$/.test(input.workPage)?input.workPage:'1';
+ return '&'+new URLSearchParams({workView:String(input.workView),workPage:page}).toString();
+}

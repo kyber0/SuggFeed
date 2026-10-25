@@ -26,7 +26,7 @@
         const stageSelect = document.getElementById('staff-mobile-stage');
         const syncStage = (hash) => { if (!stageSelect)
             return; const stage = hash.replace('#board-lane-', ''); if (Array.from(stageSelect.options).some(option => option.value === stage))
-            stageSelect.value = stage; board.dataset.mobileStage = stageSelect.value; const form = document.getElementById('staff-board-filters'); form.action = sfSchoolPath('/admin/board#board-lane-' + stageSelect.value); };
+            stageSelect.value = stage; board.dataset.mobileStage = stageSelect.value; const form = document.getElementById('staff-board-filters'); form.action = sfSchoolPath('/admin/board' + (board.dataset.presentation === 'board' ? '#board-lane-' + stageSelect.value : '')); };
         syncStage(location.hash);
         stageSelect?.addEventListener('change', () => { syncStage('#board-lane-' + stageSelect.value); const url = new URL(location.href); url.hash = 'board-lane-' + stageSelect.value; history.replaceState(history.state, '', url); });
         const metaData = document.getElementById('staff-board-meta');
@@ -46,6 +46,12 @@
                 url.searchParams.set('priority', meta.filters.priority);
             if (meta.filters.overdue)
                 url.searchParams.set('overdue', 'true');
+            if (meta.filters.presentation)
+                url.searchParams.set('presentation', meta.filters.presentation);
+            if (meta.filters.month)
+                url.searchParams.set('month', meta.filters.month);
+            if (meta.filters.calendarPage)
+                url.searchParams.set('calendarPage', String(meta.filters.calendarPage));
             if (meta.filters.search)
                 url.searchParams.set('search', meta.filters.search);
             for (const [key, number] of Object.entries(meta.filters.pages)) {
@@ -92,6 +98,9 @@
                 const freshData = fresh.getElementById('staff-board-data'), freshMeta = fresh.getElementById('staff-board-meta');
                 if (!freshData || !freshMeta)
                     throw new Error('Your staff session may have expired. Sign in again; your current board has not been replaced.');
+                const freshCalendar = fresh.getElementById('staff-calendar'), calendar = document.getElementById('staff-calendar');
+                if (calendar && !freshCalendar)
+                    throw new Error('The calendar response was incomplete. Refresh to retry.');
                 const snapshot = JSON.parse(freshMeta.textContent || '{}');
                 const nextItems = JSON.parse(freshData.textContent || '[]');
                 const replacementStages = Object.keys(labels).filter(key => !stage || key === stage || snapshot.filters.pages[key] !== meta.filters.pages[key]);
@@ -100,6 +109,8 @@
                 for (const key of Object.keys(labels))
                     if (!fresh.querySelector(`[data-drop-stage="${key}"]`))
                         throw new Error('The page was incomplete. Retry loading; your current cards are still here.');
+                if (calendar && freshCalendar)
+                    calendar.replaceChildren(...Array.from(freshCalendar.childNodes));
                 for (const key of Object.keys(labels)) {
                     const oldLane = board.querySelector(`[data-drop-stage="${key}"]`), newLane = fresh.querySelector(`[data-drop-stage="${key}"]`);
                     if (replacementStages.includes(key)) {
@@ -118,7 +129,7 @@
                 meta = snapshot;
                 boardData.textContent = JSON.stringify(Array.from(items.values()));
                 metaData.textContent = JSON.stringify(meta);
-                document.getElementById('staff-board-summary').textContent = `${items.size} shown · ${meta.totalCount.toLocaleString()} matching submissions`;
+                document.getElementById('staff-board-summary').textContent = meta.filters.presentation === 'calendar' ? fresh.getElementById('staff-board-summary')?.textContent || 'Calendar refreshed.' : `${items.size} shown · ${meta.totalCount.toLocaleString()} matching submissions`;
                 selectionState();
                 const canonical = urlFor(stage, stage ? meta.filters.pages[stage] : undefined);
                 if (!stage && /^#board-lane-(approved|in_progress|resolved)$/.test(target.hash))
@@ -579,6 +590,9 @@
                 confirmingFilter = false;
             }
         });
+        document.querySelectorAll('[data-board-presentation]').forEach(link => link.addEventListener('click', async (event) => { if (!selected.size)
+            return; event.preventDefault(); if (await window.sfConfirm('Changing work views clears this selection. Continue?') && !busy && !loading)
+            location.assign(link.href); }));
         window.addEventListener('popstate', () => { if (busy || loading) {
             window.history.pushState(null, '', urlFor(null).href);
             tell('Wait for the current request before changing pages.');

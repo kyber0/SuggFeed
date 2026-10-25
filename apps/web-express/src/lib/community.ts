@@ -98,18 +98,20 @@ export async function staffCommunity(actor: { id: string; role?: string }, input
   if (!staffRole(actor.role)) throw new CommunityError(403, 'Staff access required.');
   const page=(key:string)=>typeof input[key]==='string' && /^\d+$/.test(input[key] as string)?Math.min(100000,Math.max(1,Number(input[key]))):1;
   const pages={reports:page('reportsPage'),clarifications:page('clarificationsPage'),attention:page('attentionPage')};
-  const section=['clarifications','attention',...(actor.role==='admin'?['comments']:[])].includes(String(input.section))?String(input.section):'clarifications';
+  const section=['clarifications','attention',...(actor.role==='admin'?['duplicates']:[])].includes(String(input.section))?String(input.section):'clarifications';
+  const followup=['needs-reply','waiting','resolved'].includes(String(input.followup))?String(input.followup):'needs-reply';
+  const followupQuery=(query: any)=>followup==='resolved'?query.not('closed_at','is',null):followup==='waiting'?query.is('closed_at',null).is('reply',null):query.is('closed_at',null).not('reply','is',null);
   const [reports, requests, work] = await Promise.all([
     Promise.resolve({data:[],count:0,error:null} as {data:never[];count:number|null;error:{code:string}|null}),
-    supabaseService.from('idea_clarifications').select('id,submission_id,prompt,reply,created_at,replied_at,submission:submissions!inner(title,safety_state)',{count:'exact'}).eq('submission.safety_state','clear').is('closed_at', null).order('created_at').order('id').range((pages.clarifications-1)*25,pages.clarifications*25-1),
-    supabaseService.from('staff_stale_work').select('id,title,is_blocked,last_public_update,blocked_since',{count:'exact'}).order('last_public_update').order('id').range((pages.attention-1)*25,pages.attention*25-1),
+    followupQuery(supabaseService.from('idea_clarifications').select('id,submission_id,prompt,reply,created_at,replied_at,closed_at,submission:submissions!inner(title,safety_state)',{count:'exact',head:section!=='clarifications'}).eq('submission.safety_state','clear')).order(followup==='resolved'?'closed_at':'created_at',{ascending:followup!=='resolved'}).order('id').range((pages.clarifications-1)*25,pages.clarifications*25-1),
+    supabaseService.from('staff_stale_work').select('id,title,is_blocked,last_public_update,blocked_since',{count:'exact',head:section!=='attention'}).order('last_public_update').order('id').range((pages.attention-1)*25,pages.attention*25-1),
   ]);
   const results=[reports,requests,work], keys=['reports','clarifications','attention'] as const;
   // Recount an invalid PostgREST range before clamping. Never label page 99 of 1.
   let retryRange=false;
   for(let index=0;index<results.length;index++)if(results[index].error?.code==='PGRST103'){
     const key=keys[index];let query=supabaseService.from(key==='reports'?'reports':key==='clarifications'?'idea_clarifications':'staff_stale_work').select('id',{count:'exact',head:true});
-    if(key!=='attention')query=query.is(key==='reports'?'resolved_at':'closed_at',null);if(key==='reports')query=query.is('comment_id',null);
+    if(key==='clarifications')query=followupQuery(supabaseService.from('idea_clarifications').select('id,submission:submissions!inner(safety_state)',{count:'exact',head:true}).eq('submission.safety_state','clear'));else if(key==='reports')query=query.is('resolved_at',null);if(key==='reports')query=query.is('comment_id',null);
     const counted=await query;if(counted.error)throw counted.error;
     results[index].count=counted.count;results[index].error=null;retryRange ||= !!counted.count;
   }
@@ -120,6 +122,6 @@ export async function staffCommunity(actor: { id: string; role?: string }, input
   }
   for (const result of [reports, requests, work]) if (result.error) throw result.error;
   return { reports: reports.data || [], requests: requests.data || [], alerts: (work.data || []).map(s => ({ id: s.id, title: s.title, reason: s.is_blocked && s.blocked_since && Date.parse(s.blocked_since)<Date.now()-14*86400000 ? 'Continuously blocked for more than 14 days' : 'No public update for 30 days' })),
-    section,pages,counts:{reports:reports.count || 0,clarifications:requests.count || 0,attention:work.count || 0},
+    section,followup,pages,counts:{reports:reports.count || 0,clarifications:requests.count || 0,attention:work.count || 0},
     coverage: 'Counts cover all matching records. Each view shows up to 25 records per page; reminders use public updates, not private edits.' };
 }

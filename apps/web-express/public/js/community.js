@@ -309,6 +309,10 @@
             if (!await window.sfConfirm(confirmation))
                 return;
             await request('staff/' + action, body);
+            if (action === 'request') {
+                location.assign(sfSchoolPath('/admin/community?section=clarifications&followup=waiting'));
+                return;
+            }
             notify(action === 'comment-review' ? 'Decision saved. The author can see your reason in School updates.' : 'Saved. Refresh this page to see the updated queue.');
             form.reset();
             if (action === 'close' || action === 'resolve' || action === 'comment-review') {
