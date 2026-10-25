@@ -1,5 +1,9 @@
 "use strict";
 (() => {
+    if (location.hash === '#review-workspace') {
+        location.replace(sfSchoolPath('/admin/reviews'));
+        return;
+    }
     const panel = document.querySelector('[data-overview-root]');
     if (!panel)
         return;

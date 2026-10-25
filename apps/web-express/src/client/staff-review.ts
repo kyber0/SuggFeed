@@ -6,6 +6,10 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   let items:QueueItem[] = JSON.parse(queueData?.textContent || '[]');
   const currentUser = JSON.parse(document.getElementById('staff-current-user')!.textContent || '{}').id;
   const dialog = document.getElementById('staff-review-dialog') as HTMLDialogElement;
+  const mode=dialog.dataset.detailMode||'community';
+  const resultPanel=document.getElementById('review-decision-result')!;
+  const openWork=document.getElementById('review-open-work') as HTMLAnchorElement;
+  let decisionSaved=false;
   const form = document.getElementById('staff-review-form') as HTMLFormElement;
   const fields = document.getElementById('staff-review-fields') as HTMLFieldSetElement;
   const status = document.getElementById('review-status') as HTMLSelectElement;
@@ -82,13 +86,21 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   function paintWorkflow(context?:StaffWorkflowContext){
     if(!context || !active)return;active.workflow=context;
     const state=document.getElementById('workflow-state'),actions=document.getElementById('workflow-actions');if(!state || !actions)return;
-    state.textContent=context.paused?'Work changes are temporarily paused.':context.issues.length?'Work changes require verified historical dates. Reading, assignment and private follow-ups remain available.':context.mode==='preview'?'Guided actions are available. Operator rollout enforcement has not been enabled yet.':'Choose the next action. Saving assignment does not publish an update.';
+    state.textContent=context.paused?'Work changes are temporarily paused.':context.issues.length?'Work changes require verified historical dates. Reading, assignment and private follow-ups remain available.':context.mode==='preview'?'Choose an action. Nothing changes until you save.':'Choose the next action. Saving assignment does not publish an update.';
+    if(mode==='review'&&!context.paused&&!context.issues.length)state.textContent=active.status==='pending'?'Read the idea, then approve, request clarification or decline.':'This decision has been recorded. Approved delivery work is managed on the Work board.';
+    if(mode==='work'&&['pending','rejected'].includes(active.status))state.textContent='This idea is not active delivery work. Open Review ideas to read its decision.';
     actions.replaceChildren();
+    if(mode==='review'&&['approved','in_progress','resolved'].includes(active.status)||mode==='work'&&['pending','rejected'].includes(active.status)){
+      const link=document.createElement('a');link.className='workspace-button workspace-button--primary';link.textContent=mode==='review'?'Open in Work board':'Open Review ideas';link.href=sfSchoolPath((mode==='review'?'/admin/board':'/admin/reviews')+'?idea='+encodeURIComponent(active.id));actions.append(link);
+    }
     const names:Record<string,string>={approve:'Approve',decline:'Decline',start:'Start work',update:'Publish update',milestone:'Record milestone',pause:'Pause work',resume:'Resume work',complete:'Complete with evidence',correction:'Correct an update',reopen:'Reopen work',withdraw:'Withdraw public idea'};
     const more=document.createElement('details'),caption=document.createElement('summary');caption.textContent='Other actions';more.className='workflow-secondary';more.append(caption);
     const primary=active.status==='pending'?['approve','decline']:active.status==='approved'?['start']:context.allowedActions.includes('resume')?['resume','complete']:active.status==='in_progress'?['update','complete']:['reopen','correction'];
-    for(const action of context.allowedActions){if(group&&action!==groupAction(active))continue;const button=document.createElement('button');button.type='button';button.className='workspace-button';button.textContent=names[action];button.dataset.workflowAction=action;(primary.includes(action)?actions:more).append(button);}
-    if(!group&&context.allowedActions.includes('withdraw')){const merge=document.createElement('a');merge.className='workspace-button';merge.textContent='Merge duplicate';merge.href=sfSchoolPath('/admin/community?section=clarifications&task=merge&idea='+encodeURIComponent(active.id));more.append(merge);}
+    for(const action of context.allowedActions){if(mode==='review'&&(active.status!=='pending'||!['approve','decline'].includes(action))||mode==='work'&&['approve','decline'].includes(action))continue;if(group&&action!==groupAction(active))continue;const button=document.createElement('button');button.type='button';button.className='workspace-button';button.textContent=names[action];button.dataset.workflowAction=action;(primary.includes(action)?actions:more).append(button);}
+    if(mode!=='review'&&!group&&context.allowedActions.includes('withdraw')){const merge=document.createElement('a');merge.className='workspace-button';merge.textContent='Merge duplicate';merge.href=sfSchoolPath('/admin/community?section=clarifications&task=merge&idea='+encodeURIComponent(active.id));more.append(merge);}
+    if(mode==='review'&&active.status==='pending'){
+      const clarify=document.createElement('a');clarify.className='workspace-button';clarify.textContent='Request clarification';clarify.href=sfSchoolPath('/admin/community?section=clarifications&idea='+encodeURIComponent(active.id));actions.append(clarify);
+    }
     if(more.children.length>1)actions.append(more);
     if(repairForm)repairForm.hidden=!context.canRepair;
   }
@@ -104,25 +116,31 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     rejected:'Remove this idea from public views. Explain the decision for the submitter.'
   };
   function selectTab(key:string, focus=false) {
+    if(mode==='review'&&key==='progress'){const tab=dialog.querySelector<HTMLButtonElement>('[data-review-tab="progress"]');if(tab)tab.hidden=false;}
     dialog.querySelectorAll<HTMLButtonElement>('[data-review-tab]').forEach(button=>{
       const selected=button.dataset.reviewTab===key;
       button.setAttribute('aria-selected',String(selected)); button.tabIndex=selected?0:-1;
       if(selected && focus) button.focus();
     });
     dialog.querySelectorAll<HTMLElement>('[role="tabpanel"]').forEach(panel=>{panel.hidden=panel.id!=='review-panel-'+key;});
-    save.hidden=saved || key==='progress';saveNext.hidden=!isQueue || !items.some(i=>i.id===active?.id) || saved || key==='progress';
+    updateDraft();
   }
   const tabs=Array.from(dialog.querySelectorAll<HTMLButtonElement>('[data-review-tab]'));
-  tabs.forEach((button,index)=>{
+  tabs.forEach(button=>{
     button.addEventListener('click',()=>selectTab(button.dataset.reviewTab!));
     button.addEventListener('keydown',event=>{
-      const next=event.key==='ArrowRight'?(index+1)%tabs.length:event.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:event.key==='Home'?0:event.key==='End'?tabs.length-1:-1;
-      if(next>=0){event.preventDefault();selectTab(tabs[next].dataset.reviewTab!,true);}
+      const available=tabs.filter(tab=>!tab.hidden),position=available.indexOf(button);
+      const next=event.key==='ArrowRight'?(position+1)%available.length:event.key==='ArrowLeft'?(position+available.length-1)%available.length:event.key==='Home'?0:event.key==='End'?available.length-1:-1;
+      if(next>=0){event.preventDefault();selectTab(available[next].dataset.reviewTab!,true);}
     });
   });
   function hasReviewDraft() {return Boolean(active && !saved && (status.value!==active.status || note.value!==active.staff_note || assignee.value!==active.assignee_id || priority.value!==active.priority || targetDate.value!==active.target_date));}
   function hasUnsavedChanges() {return Boolean(internalNote.value.trim() || hasReviewDraft() || hasRepairDraft() || window.sfStaffProgress?.hasDraft());}
-  function updateDraft() {document.getElementById('review-draft-state')!.textContent=hasUnsavedChanges()?'Unsaved changes':saved?'Changes saved':'No unsaved changes';}
+  function updateDraft() {
+    document.getElementById('review-draft-state')!.textContent=hasUnsavedChanges()?'Unsaved changes':saved?'Changes saved':'No unsaved changes';
+    const coordination=dialog.querySelector('[data-review-tab="decision"]')?.getAttribute('aria-selected')==='true';
+    save.hidden=saved||!coordination||!hasReviewDraft();saveNext.hidden=save.hidden||!isQueue;
+  }
   function updateHint(){document.getElementById('review-status-hint')!.textContent=hints[status.value] || '';}
   function updateCount(){document.getElementById('review-note-count')!.textContent=note.value.length.toLocaleString()+' / 2,000';updateDraft();}
   function close(discard=false){
@@ -130,8 +148,14 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     if(!discard && hasUnsavedChanges()){discardWarning.hidden=false;document.getElementById('review-keep-editing')!.focus();return;}
     dialog.close();
   }
+  function paintWorkFacts(item:QueueItem){
+    if(mode!=='work')return;
+      const date=(value?:string)=>value?new Date(value.length===10?value+'T12:00:00':value).toLocaleDateString('en-PH',{dateStyle:'medium'}):'Not recorded';
+      for(const [id,text] of [['owner',assignee.selectedOptions[0]?.textContent||'Unassigned'],['target',item.target_date?date(item.target_date):'Not set'],['started',date(item.started_at)],['completed',date(item.resolved_at)]])document.getElementById('work-fact-'+id)!.textContent=text;
+  }
   function populateReview(item:QueueItem, section='decision') {
-    active=item;
+    active=item;decisionSaved=false;resultPanel.hidden=true;
+    if(mode==='review'){const tab=dialog.querySelector<HTMLButtonElement>('[data-review-tab="progress"]');if(tab)tab.hidden=true;}
     const index=items.findIndex(i=>i.id===item.id);if(index>=0)items[index]=item;
     saved=false; fields.disabled=false; save.disabled=false; save.hidden=false; saveNext.hidden=false; saveNext.disabled=false;
     save.textContent='Save assignment'; discardWarning.hidden=true; message.textContent=''; message.classList.remove('is-success');
@@ -149,7 +173,9 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     if(item.assignee_id && !Array.from(assignee.options).some(o=>o.value===item.assignee_id)){
       const option=new Option('Former staff — choose an active assignee',item.assignee_id);option.dataset.formerStaff='true';assignee.add(option);
     }
-    assignee.value=item.assignee_id; internalNote.value='';internalMessage.textContent='';
+    assignee.value=item.assignee_id;
+    paintWorkFacts(item);
+    internalNote.value='';internalMessage.textContent='';
     targetDate.removeAttribute('aria-invalid');document.getElementById('review-date-error')!.textContent='';
     updateHint();updateCount();selectTab(section);
     if(!dialog.open)dialog.showModal();else tabs[0].focus();
@@ -196,6 +222,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
       if(!dialog.open || detailRequest!==controller)return;
       if(body.item?.id!==id || !labels[body.item?.status])throw new Error('Submission details were incomplete. Please retry.');
       delete dialog.dataset.unavailable;populateReview(body.item,requestedSection);
+      if(isQueue||mode==='work'){const url=new URL(window.location.href);url.searchParams.set('idea',id);history.replaceState(history.state,'',url);}
     }catch(error){
       if(dialog.open && detailRequest===controller){document.getElementById('review-title')!.textContent='Submission unavailable';message.textContent=error.name==='AbortError'?'Loading timed out. Retry loading this submission.':error.message;retry.hidden=false;}
     }finally{clearTimeout(timer);if(detailRequest===controller)dialog.removeAttribute('aria-busy');paintGroup();}
@@ -217,7 +244,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   document.getElementById('review-discard-confirm')!.addEventListener('click',()=>close(true));
   dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
   dialog.addEventListener('click',event=>{if(event.target===dialog && event.clientX<dialog.getBoundingClientRect().left)close();});
-  dialog.addEventListener('close',()=>{if(group){const counts={saved:0,skipped:0,already:0,pending:0};for(const item of group.entries)counts[item.result]++;pageMessage.textContent=`Group review ended: ${counts.saved} moves saved, ${counts.skipped} skipped, ${counts.already} already in target stage, ${counts.pending} not moved. Saved changes remain; other selections are retained.`;group=null;paintGroup();}detailRequest?.abort();activityRequest?.abort();window.sfStaffProgress?.close();if(returnFocus?.isConnected)returnFocus.focus();else document.querySelector<HTMLElement>('#staff-queue-title,.workspace-heading h1')?.focus();});
+  dialog.addEventListener('close',()=>{if(isQueue||mode==='work'){const url=new URL(location.href);url.searchParams.delete('idea');history.replaceState(history.state,'',url);}if(group){const counts={saved:0,skipped:0,already:0,pending:0};for(const item of group.entries)counts[item.result]++;pageMessage.textContent=`Group review ended: ${counts.saved} moves saved, ${counts.skipped} skipped, ${counts.already} already in target stage, ${counts.pending} not moved. Saved changes remain; other selections are retained.`;group=null;paintGroup();}detailRequest?.abort();activityRequest?.abort();window.sfStaffProgress?.close();if(returnFocus?.isConnected)returnFocus.focus();else document.querySelector<HTMLElement>('#staff-queue-title,.workspace-heading h1')?.focus();});
   window.addEventListener('beforeunload',event=>{if(dialog.open && (busy || noteBusy || window.sfStaffProgress?.isBusy() || hasUnsavedChanges())){event.preventDefault();event.returnValue='';}});
   status.addEventListener('change',()=>{updateHint();updateDraft();});note.addEventListener('input',updateCount);
   [assignee,priority,targetDate,internalNote].forEach(input=>input.addEventListener('input',updateDraft));
@@ -260,7 +287,8 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     const refreshButton=document.getElementById('staff-refresh') as HTMLButtonElement;refreshButton.disabled=true;
     const queue=document.querySelector('.staff-queue')!;queue.setAttribute('aria-busy','true');
     try {
-      const response=await sfSchoolFetch(window.location.href,{headers:{Accept:'text/html'},cache:'no-store',signal:controller.signal});
+      const listUrl=new URL(location.href);listUrl.searchParams.delete('idea');
+      const response=await sfSchoolFetch(listUrl.href,{headers:{Accept:'text/html'},cache:'no-store',signal:controller.signal});
       const html=await response.text();const doc=new DOMParser().parseFromString(html,'text/html');
       const data=doc.getElementById('staff-queue-data');
       if(!response.ok || !data)throw new Error('The queue could not be refreshed. Your staff session may have expired.');
@@ -273,7 +301,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
       }
       items=fresh;document.getElementById('staff-queue-data')!.textContent=JSON.stringify(items);
       (document.getElementById('staff-export') as HTMLButtonElement).disabled=!items.length;
-      if(response.url!==window.location.href)window.history.replaceState(null,'',response.url);
+      const canonical=new URL(response.url);if(dialog.open&&active)canonical.searchParams.set('idea',active.id);window.history.replaceState(history.state,'',canonical);
       pageMessage.textContent='Queue updated.';pageMessage.classList.add('is-success');
     } finally {clearTimeout(timer);refreshing=false;refreshButton.disabled=false;queue.removeAttribute('aria-busy');}
   }
@@ -396,13 +424,15 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
       if(!active || active.id!==submission.id || busy)return false;
       if(hasReviewDraft())return active.updated_at===submission.updated_at;
       const normalized={...submission,staff_note:submission.staff_note || '',assignee_id:submission.assignee_id || '',priority:submission.priority || 'normal',target_date:submission.target_date || ''};
+      const previousStatus=active.status;
       Object.assign(active,normalized);
+      if(mode==='review'&&previousStatus==='pending'&&['approved','rejected'].includes(normalized.status))decisionSaved=true;
       const queued=items.find(item=>item.id===submission.id);if(queued)Object.assign(queued,normalized);
       status.value=active.status;note.value=active.staff_note;priority.value=active.priority;targetDate.value=active.target_date;
       if(active.assignee_id && !Array.from(assignee.options).some(option=>option.value===active!.assignee_id)){
         const option=new Option('Former staff — choose an active assignee',active.assignee_id);option.dataset.formerStaff='true';assignee.add(option);
       }
-      assignee.value=active.assignee_id;
+      assignee.value=active.assignee_id;paintWorkFacts(active);paintWorkflow(active.workflow);
       const badge=document.getElementById('review-current-status')!;badge.textContent=labels[active.status] || active.status;badge.dataset.status=active.status;
       saved=false;const posting=window.sfStaffProgress?.isBusy() || false;fields.disabled=posting;save.disabled=posting;saveNext.disabled=posting;
       const onProgress=dialog.querySelector('[data-review-tab="progress"]')?.getAttribute('aria-selected')==='true';
@@ -412,7 +442,15 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     confirmed(submission){
       if(group){const entry=group.entries[group.index];if(entry.id===submission.id){entry.result=submission.status===group.stage?'saved':'pending';group.notice=entry.result==='saved'?'Move saved. Continue to the next idea when ready.':'Update saved, but this idea has not reached the selected stage.';if(entry.result==='saved')document.dispatchEvent(new CustomEvent('sf:board-group-saved',{detail:{id:entry.id}}));paintGroup();}}
     },
-    async afterPost(){await refreshQueue();void loadActivity();},
+    async afterPost(){
+      try{await refreshQueue();void loadActivity();}finally{
+      if(mode==='review'&&decisionSaved&&active){
+        resultPanel.hidden=false;document.getElementById('review-decision-label')!.textContent=active.status==='approved'?'Approved · Added to Planned':'Declined · Decision recorded';
+        openWork.hidden=active.status!=='approved';openWork.href=sfSchoolPath('/admin/board?idea='+encodeURIComponent(active.id));
+        const next=document.getElementById('review-next-idea') as HTMLButtonElement;next.disabled=false;
+        selectTab('decision');const tab=dialog.querySelector<HTMLButtonElement>('[data-review-tab="progress"]');if(tab)tab.hidden=true;
+      }}
+    },
     changed(){updateDraft();paintGroup();},
     posting(value){
       fields.disabled=value || saved;
@@ -422,8 +460,9 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
       updateDraft();paintGroup();
     }
   });
+  document.getElementById('review-next-idea')?.addEventListener('click',()=>{const next=items.find(item=>item.status==='pending'&&item.id!==active?.id);if(next)void openReview(next.id);else window.location.assign(sfSchoolPath('/admin/reviews'));});
   const initial=new URL(window.location.href).searchParams.get('idea');
-  if(initial && sfSchoolRoute(window.location.pathname)==='/admin')void openReview(initial);
+  if(initial && ['/admin','/admin/reviews','/admin/board'].includes(sfSchoolRoute(window.location.pathname)))void openReview(initial);
   if(!isQueue)return;
   const viewDialog=document.getElementById('staff-save-view-dialog') as HTMLDialogElement;
   const viewMessage=document.getElementById('staff-view-message')!;

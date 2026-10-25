@@ -4,8 +4,9 @@ import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import { CommunityError, textField, idField, communityAction, privateInbox, replyToClarification, similarIdeas, staffCommunity, loadReportDecisions, loadPublicMergeHistory, loadCommunityStaffIdea } from '../lib/community';
-import { staffRole, loadStaffMembers } from '../lib/staff-workspace';
-import { invalidateCache } from '../lib/data';
+import { staffRole, loadStaffMembers, loadSavedViews, UUID } from '../lib/staff-workspace';
+import { supabaseService } from '../lib/supabase';
+import { invalidateCache, loadModerationCounts } from '../lib/data';
 import { boardFilters, loadStaffBoard, WORK_STAGES } from '../lib/staff-board';
 
 export const communityRouter = Router();
@@ -86,6 +87,11 @@ communityPages.get('/admin/board',run(async(req,res)=>{
   if(!user) return res.redirect('/admin');
   if(!staffRole(user.role)) return res.status(403).render('school-message',{title:'Access denied',message:'Staff access required.'});
   res.setHeader('Cache-Control','private, no-store');
-  const [board,members]=await Promise.all([loadStaffBoard(boardFilters(req.query), WORK_STAGES),loadStaffMembers()]);
-  res.render('staff-board',{title:'Work board — SuggFeed',activeSection:'board',...board,members});
+  if(typeof req.query.idea==='string'&&UUID.test(req.query.idea)){
+    const result=await supabaseService.from('submissions').select('status').eq('id',req.query.idea).maybeSingle();
+    if(result.error)throw result.error;
+    if(result.data&&['pending','rejected'].includes(result.data.status))return res.redirect('/admin/reviews?idea='+encodeURIComponent(req.query.idea));
+  }
+  const [board,members,counts,savedViews]=await Promise.all([loadStaffBoard(boardFilters(req.query), WORK_STAGES),loadStaffMembers(),loadModerationCounts(),loadSavedViews(user.id)]);
+  res.render('staff-board',{title:'Work board — SuggFeed',activeSection:'board',...board,members,counts,savedViews});
 }));

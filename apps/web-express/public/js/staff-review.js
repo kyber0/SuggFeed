@@ -5,6 +5,10 @@
     let items = JSON.parse(queueData?.textContent || '[]');
     const currentUser = JSON.parse(document.getElementById('staff-current-user').textContent || '{}').id;
     const dialog = document.getElementById('staff-review-dialog');
+    const mode = dialog.dataset.detailMode || 'community';
+    const resultPanel = document.getElementById('review-decision-result');
+    const openWork = document.getElementById('review-open-work');
+    let decisionSaved = false;
     const form = document.getElementById('staff-review-form');
     const fields = document.getElementById('staff-review-fields');
     const status = document.getElementById('review-status');
@@ -145,8 +149,19 @@
         const state = document.getElementById('workflow-state'), actions = document.getElementById('workflow-actions');
         if (!state || !actions)
             return;
-        state.textContent = context.paused ? 'Work changes are temporarily paused.' : context.issues.length ? 'Work changes require verified historical dates. Reading, assignment and private follow-ups remain available.' : context.mode === 'preview' ? 'Guided actions are available. Operator rollout enforcement has not been enabled yet.' : 'Choose the next action. Saving assignment does not publish an update.';
+        state.textContent = context.paused ? 'Work changes are temporarily paused.' : context.issues.length ? 'Work changes require verified historical dates. Reading, assignment and private follow-ups remain available.' : context.mode === 'preview' ? 'Choose an action. Nothing changes until you save.' : 'Choose the next action. Saving assignment does not publish an update.';
+        if (mode === 'review' && !context.paused && !context.issues.length)
+            state.textContent = active.status === 'pending' ? 'Read the idea, then approve, request clarification or decline.' : 'This decision has been recorded. Approved delivery work is managed on the Work board.';
+        if (mode === 'work' && ['pending', 'rejected'].includes(active.status))
+            state.textContent = 'This idea is not active delivery work. Open Review ideas to read its decision.';
         actions.replaceChildren();
+        if (mode === 'review' && ['approved', 'in_progress', 'resolved'].includes(active.status) || mode === 'work' && ['pending', 'rejected'].includes(active.status)) {
+            const link = document.createElement('a');
+            link.className = 'workspace-button workspace-button--primary';
+            link.textContent = mode === 'review' ? 'Open in Work board' : 'Open Review ideas';
+            link.href = sfSchoolPath((mode === 'review' ? '/admin/board' : '/admin/reviews') + '?idea=' + encodeURIComponent(active.id));
+            actions.append(link);
+        }
         const names = { approve: 'Approve', decline: 'Decline', start: 'Start work', update: 'Publish update', milestone: 'Record milestone', pause: 'Pause work', resume: 'Resume work', complete: 'Complete with evidence', correction: 'Correct an update', reopen: 'Reopen work', withdraw: 'Withdraw public idea' };
         const more = document.createElement('details'), caption = document.createElement('summary');
         caption.textContent = 'Other actions';
@@ -154,6 +169,8 @@
         more.append(caption);
         const primary = active.status === 'pending' ? ['approve', 'decline'] : active.status === 'approved' ? ['start'] : context.allowedActions.includes('resume') ? ['resume', 'complete'] : active.status === 'in_progress' ? ['update', 'complete'] : ['reopen', 'correction'];
         for (const action of context.allowedActions) {
+            if (mode === 'review' && (active.status !== 'pending' || !['approve', 'decline'].includes(action)) || mode === 'work' && ['approve', 'decline'].includes(action))
+                continue;
             if (group && action !== groupAction(active))
                 continue;
             const button = document.createElement('button');
@@ -163,12 +180,19 @@
             button.dataset.workflowAction = action;
             (primary.includes(action) ? actions : more).append(button);
         }
-        if (!group && context.allowedActions.includes('withdraw')) {
+        if (mode !== 'review' && !group && context.allowedActions.includes('withdraw')) {
             const merge = document.createElement('a');
             merge.className = 'workspace-button';
             merge.textContent = 'Merge duplicate';
             merge.href = sfSchoolPath('/admin/community?section=clarifications&task=merge&idea=' + encodeURIComponent(active.id));
             more.append(merge);
+        }
+        if (mode === 'review' && active.status === 'pending') {
+            const clarify = document.createElement('a');
+            clarify.className = 'workspace-button';
+            clarify.textContent = 'Request clarification';
+            clarify.href = sfSchoolPath('/admin/community?section=clarifications&idea=' + encodeURIComponent(active.id));
+            actions.append(clarify);
         }
         if (more.children.length > 1)
             actions.append(more);
@@ -197,6 +221,11 @@
         rejected: 'Remove this idea from public views. Explain the decision for the submitter.'
     };
     function selectTab(key, focus = false) {
+        if (mode === 'review' && key === 'progress') {
+            const tab = dialog.querySelector('[data-review-tab="progress"]');
+            if (tab)
+                tab.hidden = false;
+        }
         dialog.querySelectorAll('[data-review-tab]').forEach(button => {
             const selected = button.dataset.reviewTab === key;
             button.setAttribute('aria-selected', String(selected));
@@ -205,23 +234,28 @@
                 button.focus();
         });
         dialog.querySelectorAll('[role="tabpanel"]').forEach(panel => { panel.hidden = panel.id !== 'review-panel-' + key; });
-        save.hidden = saved || key === 'progress';
-        saveNext.hidden = !isQueue || !items.some(i => i.id === active?.id) || saved || key === 'progress';
+        updateDraft();
     }
     const tabs = Array.from(dialog.querySelectorAll('[data-review-tab]'));
-    tabs.forEach((button, index) => {
+    tabs.forEach(button => {
         button.addEventListener('click', () => selectTab(button.dataset.reviewTab));
         button.addEventListener('keydown', event => {
-            const next = event.key === 'ArrowRight' ? (index + 1) % tabs.length : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1;
+            const available = tabs.filter(tab => !tab.hidden), position = available.indexOf(button);
+            const next = event.key === 'ArrowRight' ? (position + 1) % available.length : event.key === 'ArrowLeft' ? (position + available.length - 1) % available.length : event.key === 'Home' ? 0 : event.key === 'End' ? available.length - 1 : -1;
             if (next >= 0) {
                 event.preventDefault();
-                selectTab(tabs[next].dataset.reviewTab, true);
+                selectTab(available[next].dataset.reviewTab, true);
             }
         });
     });
     function hasReviewDraft() { return Boolean(active && !saved && (status.value !== active.status || note.value !== active.staff_note || assignee.value !== active.assignee_id || priority.value !== active.priority || targetDate.value !== active.target_date)); }
     function hasUnsavedChanges() { return Boolean(internalNote.value.trim() || hasReviewDraft() || hasRepairDraft() || window.sfStaffProgress?.hasDraft()); }
-    function updateDraft() { document.getElementById('review-draft-state').textContent = hasUnsavedChanges() ? 'Unsaved changes' : saved ? 'Changes saved' : 'No unsaved changes'; }
+    function updateDraft() {
+        document.getElementById('review-draft-state').textContent = hasUnsavedChanges() ? 'Unsaved changes' : saved ? 'Changes saved' : 'No unsaved changes';
+        const coordination = dialog.querySelector('[data-review-tab="decision"]')?.getAttribute('aria-selected') === 'true';
+        save.hidden = saved || !coordination || !hasReviewDraft();
+        saveNext.hidden = save.hidden || !isQueue;
+    }
     function updateHint() { document.getElementById('review-status-hint').textContent = hints[status.value] || ''; }
     function updateCount() { document.getElementById('review-note-count').textContent = note.value.length.toLocaleString() + ' / 2,000'; updateDraft(); }
     function close(discard = false) {
@@ -234,8 +268,22 @@
         }
         dialog.close();
     }
+    function paintWorkFacts(item) {
+        if (mode !== 'work')
+            return;
+        const date = (value) => value ? new Date(value.length === 10 ? value + 'T12:00:00' : value).toLocaleDateString('en-PH', { dateStyle: 'medium' }) : 'Not recorded';
+        for (const [id, text] of [['owner', assignee.selectedOptions[0]?.textContent || 'Unassigned'], ['target', item.target_date ? date(item.target_date) : 'Not set'], ['started', date(item.started_at)], ['completed', date(item.resolved_at)]])
+            document.getElementById('work-fact-' + id).textContent = text;
+    }
     function populateReview(item, section = 'decision') {
         active = item;
+        decisionSaved = false;
+        resultPanel.hidden = true;
+        if (mode === 'review') {
+            const tab = dialog.querySelector('[data-review-tab="progress"]');
+            if (tab)
+                tab.hidden = true;
+        }
         const index = items.findIndex(i => i.id === item.id);
         if (index >= 0)
             items[index] = item;
@@ -276,6 +324,7 @@
             assignee.add(option);
         }
         assignee.value = item.assignee_id;
+        paintWorkFacts(item);
         internalNote.value = '';
         internalMessage.textContent = '';
         targetDate.removeAttribute('aria-invalid');
@@ -391,6 +440,11 @@
                 throw new Error('Submission details were incomplete. Please retry.');
             delete dialog.dataset.unavailable;
             populateReview(body.item, requestedSection);
+            if (isQueue || mode === 'work') {
+                const url = new URL(window.location.href);
+                url.searchParams.set('idea', id);
+                history.replaceState(history.state, '', url);
+            }
         }
         catch (error) {
             if (dialog.open && detailRequest === controller) {
@@ -443,7 +497,11 @@
     dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
     dialog.addEventListener('click', event => { if (event.target === dialog && event.clientX < dialog.getBoundingClientRect().left)
         close(); });
-    dialog.addEventListener('close', () => { if (group) {
+    dialog.addEventListener('close', () => { if (isQueue || mode === 'work') {
+        const url = new URL(location.href);
+        url.searchParams.delete('idea');
+        history.replaceState(history.state, '', url);
+    } if (group) {
         const counts = { saved: 0, skipped: 0, already: 0, pending: 0 };
         for (const item of group.entries)
             counts[item.result]++;
@@ -528,7 +586,9 @@
         const queue = document.querySelector('.staff-queue');
         queue.setAttribute('aria-busy', 'true');
         try {
-            const response = await sfSchoolFetch(window.location.href, { headers: { Accept: 'text/html' }, cache: 'no-store', signal: controller.signal });
+            const listUrl = new URL(location.href);
+            listUrl.searchParams.delete('idea');
+            const response = await sfSchoolFetch(listUrl.href, { headers: { Accept: 'text/html' }, cache: 'no-store', signal: controller.signal });
             const html = await response.text();
             const doc = new DOMParser().parseFromString(html, 'text/html');
             const data = doc.getElementById('staff-queue-data');
@@ -546,8 +606,10 @@
             items = fresh;
             document.getElementById('staff-queue-data').textContent = JSON.stringify(items);
             document.getElementById('staff-export').disabled = !items.length;
-            if (response.url !== window.location.href)
-                window.history.replaceState(null, '', response.url);
+            const canonical = new URL(response.url);
+            if (dialog.open && active)
+                canonical.searchParams.set('idea', active.id);
+            window.history.replaceState(history.state, '', canonical);
             pageMessage.textContent = 'Queue updated.';
             pageMessage.classList.add('is-success');
         }
@@ -775,7 +837,10 @@
             if (hasReviewDraft())
                 return active.updated_at === submission.updated_at;
             const normalized = { ...submission, staff_note: submission.staff_note || '', assignee_id: submission.assignee_id || '', priority: submission.priority || 'normal', target_date: submission.target_date || '' };
+            const previousStatus = active.status;
             Object.assign(active, normalized);
+            if (mode === 'review' && previousStatus === 'pending' && ['approved', 'rejected'].includes(normalized.status))
+                decisionSaved = true;
             const queued = items.find(item => item.id === submission.id);
             if (queued)
                 Object.assign(queued, normalized);
@@ -789,6 +854,8 @@
                 assignee.add(option);
             }
             assignee.value = active.assignee_id;
+            paintWorkFacts(active);
+            paintWorkflow(active.workflow);
             const badge = document.getElementById('review-current-status');
             badge.textContent = labels[active.status] || active.status;
             badge.dataset.status = active.status;
@@ -817,7 +884,26 @@
                 }
             }
         },
-        async afterPost() { await refreshQueue(); void loadActivity(); },
+        async afterPost() {
+            try {
+                await refreshQueue();
+                void loadActivity();
+            }
+            finally {
+                if (mode === 'review' && decisionSaved && active) {
+                    resultPanel.hidden = false;
+                    document.getElementById('review-decision-label').textContent = active.status === 'approved' ? 'Approved · Added to Planned' : 'Declined · Decision recorded';
+                    openWork.hidden = active.status !== 'approved';
+                    openWork.href = sfSchoolPath('/admin/board?idea=' + encodeURIComponent(active.id));
+                    const next = document.getElementById('review-next-idea');
+                    next.disabled = false;
+                    selectTab('decision');
+                    const tab = dialog.querySelector('[data-review-tab="progress"]');
+                    if (tab)
+                        tab.hidden = true;
+                }
+            }
+        },
         changed() { updateDraft(); paintGroup(); },
         posting(value) {
             fields.disabled = value || saved;
@@ -829,8 +915,12 @@
             paintGroup();
         }
     });
+    document.getElementById('review-next-idea')?.addEventListener('click', () => { const next = items.find(item => item.status === 'pending' && item.id !== active?.id); if (next)
+        void openReview(next.id);
+    else
+        window.location.assign(sfSchoolPath('/admin/reviews')); });
     const initial = new URL(window.location.href).searchParams.get('idea');
-    if (initial && sfSchoolRoute(window.location.pathname) === '/admin')
+    if (initial && ['/admin', '/admin/reviews', '/admin/board'].includes(sfSchoolRoute(window.location.pathname)))
         void openReview(initial);
     if (!isQueue)
         return;

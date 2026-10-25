@@ -5,7 +5,7 @@
   <% for(const item of lane.items) { %>
   <article class="staff-flow-card" data-board-id="<%= item.id %>" draggable="true">
    <div class="staff-card-top"><label class="staff-card-select"><input type="checkbox" data-bulk-id="<%= item.id %>" aria-label="Select <%= item.title %>"/></label><span class="staff-card-category" title="<%= item.categories?.name || 'Other' %>"><%= item.categories?.name || 'Other' %></span><% if(['high','urgent'].includes(item.priority)) { %><span class="staff-card-priority" data-priority="<%= item.priority %>"><%= item.priority %></span><% } %></div>
-   <h3><a href="/admin?idea=<%= item.id %>" data-review="<%= item.id %>" aria-haspopup="dialog" title="<%= item.title %>"><%= item.title %></a></h3>
+   <h3><a href="/admin/board?idea=<%= item.id %>" data-review="<%= item.id %>" aria-haspopup="dialog" title="<%= item.title %>"><%= item.title %></a></h3>
    <div class="staff-card-bottom"><span class="staff-card-assignee" title="<%= item.assignee_name || 'Unassigned' %>"><%= item.assignee_name || 'Unassigned' %></span><details class="staff-card-move"><summary>Move <span aria-hidden="true">⌄</span></summary><label><span>Move <%= item.title %> to</span><select class="workspace-input" data-stage-select="<%= item.id %>" aria-label="Move <%= item.title %> to"><% for(const [status,label] of [['approved','Planned'],['in_progress','In progress'],['resolved','Completed']]) { %><option value="<%= status %>" <%= item.status===status?'selected':'' %>><%= label %></option><% } %></select></label></details></div>
   </article>
   <% } %>

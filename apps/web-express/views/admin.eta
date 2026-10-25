@@ -1,11 +1,11 @@
 <% layout('layout') %>
 <%
-  const labels = { all:'All submissions', pending:'Needs review', approved:'Planned', in_progress:'In progress', resolved:'Completed', rejected:'Declined' };
+  const labels = { all:'Review history', pending:'Needs review', approved:'Planned', in_progress:'In progress', resolved:'Completed', rejected:'Declined' };
   const counts = it.counts;
   const status = it.status;
   const filters = it.filters || { status, search:it.search, assignment:'all', priority:'all', overdue:'false' };
-  const urlFor = (s, p=1) => '/admin?' + new URLSearchParams({...filters,status:s,page:String(p)}).toString();
-  const viewUrl = f => '/admin?' + new URLSearchParams(f).toString();
+  const urlFor = (s, p=1) => '/admin/reviews?' + new URLSearchParams({...filters,status:s,page:String(p)}).toString();
+  const viewUrl = f => '/admin/reviews?' + new URLSearchParams(f).toString();
   const without = key => viewUrl({...filters,[key]:key==='search'?'':key==='overdue'?'false':'all'});
   const sameView = f => Object.keys(filters).every(k => (f[k] ?? (k==='search'?'':k==='overdue'?'false':k==='status'?'pending':'all')) === filters[k]);
   const isFiltered = !!filters.search || filters.assignment!=='all' || filters.priority!=='all' || filters.overdue==='true';
@@ -16,38 +16,25 @@
 <a class="workspace-skip" href="#staff-queue-title">Skip to review queue</a>
 <main class="staff-workspace">
   <%~ include('partials/staff-sidebar', it) %>
-  <div class="staff-main" data-workspace-sections data-default-section="<%= it.overviewDefault?'overview-workspace':'review-workspace' %>">
+  <div class="staff-main">
     <header class="workspace-heading">
-      <div><p class="workspace-kicker">WORKSPACE / <%= it.user?.role==='admin'?'ADMINISTRATION':'REVIEW' %></p><h1><%= it.user?.role==='admin'?'School dashboard':'Review submissions' %><span class="workspace-title-dot" aria-hidden="true">.</span></h1><p><%= it.user?.role==='admin'?'Review feedback and manage your school from dedicated sections.':'Review new suggestions and track approved work.' %> Open <a href="/admin/board">Manage work</a> to follow delivery.</p></div>
-      <div class="workspace-actions" data-workspace-panel-footer="review-workspace"><button class="workspace-button" id="staff-refresh" type="button"><%~ icon('refresh') %> Refresh</button><button class="workspace-button" id="staff-export" type="button" <%= it.submissions.length ? '' : 'disabled' %>><%~ icon('export') %> Export page</button></div>
+      <div><p class="workspace-kicker">WORKSPACE / <%= it.user?.role==='admin'?'ADMINISTRATION':'REVIEW' %></p><h1>Review ideas<span class="workspace-title-dot" aria-hidden="true">.</span></h1><p>Decide which new ideas should proceed. Approved ideas move to the <a href="/admin/board">Work board</a>.</p></div>
+      <div class="workspace-actions" ><button class="workspace-button" id="staff-refresh" type="button"><%~ icon('refresh') %> Refresh</button><button class="workspace-button" id="staff-export" type="button" <%= it.submissions.length ? '' : 'disabled' %>><%~ icon('export') %> Export page</button></div>
     </header>
-    <% if(it.user?.role==='admin') { %>
-    <nav class="admin-dashboard-sections" data-section-navigation aria-label="School dashboard sections"><a href="#overview-workspace">Overview</a><a href="#review-workspace">Review queue</a><a href="#administration-workspace">School administration</a></nav>
-    <%~ include('partials/admin-overview',it) %>
-    <section id="administration-workspace" data-workspace-panel class="admin-administration" aria-labelledby="administration-title"><header><p class="workspace-kicker">SCHOOL ADMINISTRATION</p><h2 id="administration-title">Manage your school</h2><p>Choose a task. Changes to people, policies and appearance have their own dedicated screens.</p></header><div class="admin-administration-grid">
-    <% for(const [href,name,description,graphic] of [['/admin/members','Members & access','Find students and moderators. Suspend, ban, remove or restore school access.','users'],['/admin/student-access','Student joining','Review access requests and control joining from your approved email list.','user-plus'],['/admin/staff','Staff roles','Manage your administrator and moderator team.','shield'],['/admin/invitations','Member invitations','Send invitations and track acceptance.','mail'],['/admin/school-settings','School settings','Policies, contacts, email domains and enrollment settings.','list'],['/admin/customization','Workspace appearance','Open the visual editor when enabled for your school.','board']]) { %><a class="admin-task-card" href="<%= href %>"><%~ icon(graphic) %><span><strong><%= name %></strong><small><%= description %></small></span><%~ icon('arrow') %></a><% } %>
-    </div></section>
-    <% } %>
     <div id="review-workspace" data-workspace-panel>
-    <div class="staff-overview-caption"><span>School-wide overview</span><span>All submissions · independent of queue filters</span></div>
-    <section class="staff-metrics" aria-label="School-wide submission counts">
-      <% for(const [key,caption] of [['pending','Awaiting a decision'],['in_progress','Work underway'],['resolved','Ideas put into action'],['all','Across every status']]) { %>
-        <a class="staff-metric staff-metric--<%= key %><%= status===key ? ' is-selected' : '' %>" href="<%= urlFor(key) %>"><div><span><%= labels[key] %></span><small><%= caption %></small></div><strong><%= counts[key].toLocaleString() %></strong></a>
-      <% } %>
-    </section>
+    <div class="staff-flow-guide" aria-label="Idea workflow"><strong class="is-current">1 · Review</strong><span aria-hidden="true">→</span><a href="/admin/board">2 · Deliver</a><span aria-hidden="true">→</span><span>3 · Share results</span></div>
     <p id="staff-page-message" class="workspace-message" role="status" aria-live="polite"></p>
     <section class="staff-queue" aria-labelledby="staff-queue-title">
-      <div class="staff-queue-heading"><div><h2 id="staff-queue-title" tabindex="-1"><%= labels[status] %></h2><p><%= status==='pending' ? 'Oldest first, so no idea gets left behind.' : 'Most recent submissions first.' %></p></div><span class="workspace-tag" id="staff-result-count"><%= it.totalCount %> matching submissions</span></div>
+      <div class="staff-queue-heading"><div><h2 id="staff-queue-title" tabindex="-1"><%= labels[status] %></h2><p><%= status==='pending' ? 'Read the oldest ideas first, then record a decision.' : status==='all'?'Past decisions. Open approved ideas in the Work board.':'Declined ideas and their recorded explanations.' %></p></div><span class="workspace-tag" id="staff-result-count"><%= it.totalCount %> matching submissions</span></div>
       <nav class="staff-status-tabs" aria-label="Filter submissions by status">
         <% for(const key of ['pending','rejected','all']) { %><a href="<%= urlFor(key) %>" class="<%= status===key ? 'is-active' : '' %>" aria-current="<%= status===key ? 'page' : 'false' %>"><%= labels[key] %><span><%= counts[key] %></span></a><% } %>
       </nav>
-      <% if(['approved','in_progress','resolved'].includes(status)) { %><p class="staff-footnote">This saved or legacy view still works. To manage delivery by stage, open <a href="/admin/board">Manage work</a>. Exact idea links continue to open here.</p><% } %>
-      <form action="/admin" method="get" class="staff-search-form" role="search">
+      <form action="/admin/reviews" method="get" class="staff-search-form" role="search">
         <input type="hidden" name="status" value="<%= status %>"/>
         <label class="workspace-search"><%~ icon('search') %><input class="workspace-search-input" type="search" name="search" maxlength="120" value="<%= filters.search %>" placeholder="Search suggestions…" aria-label="Search titles and descriptions"/></label>
         <label class="staff-filter-label"><span>Assignment</span><select class="workspace-input" name="assignment"><% for(const [key,name] of [['all','Anyone'],['mine','Assigned to me'],['unassigned','Unassigned']]) { %><option value="<%= key %>" <%= filters.assignment===key ? 'selected' : '' %>><%= name %></option><% } %></select></label>
         <label class="staff-filter-label"><span>Priority</span><select class="workspace-input" name="priority"><% for(const key of ['all','low','normal','high','urgent']) { %><option value="<%= key %>" <%= filters.priority===key ? 'selected' : '' %>><%= key==='all' ? 'Any priority' : key.charAt(0).toUpperCase()+key.slice(1) %></option><% } %></select></label>
-        <label class="staff-overdue-filter"><input type="checkbox" name="overdue" value="true" <%= filters.overdue==='true' ? 'checked' : '' %>/> Overdue</label>
+
         <button class="workspace-button workspace-button--primary" type="submit">Apply</button>
       </form>
       <div class="staff-filter-summary">
@@ -56,7 +43,7 @@
           <% if(filters.assignment!=='all') { %><a href="<%= without('assignment') %>" class="staff-filter-chip" aria-label="Remove assignment filter"><%= filters.assignment==='mine' ? 'Assigned to me' : 'Unassigned' %> <span aria-hidden="true">×</span></a><% } %>
           <% if(filters.priority!=='all') { %><a href="<%= without('priority') %>" class="staff-filter-chip" aria-label="Remove priority filter"><%= filters.priority %> priority <span aria-hidden="true">×</span></a><% } %>
           <% if(filters.overdue==='true') { %><a href="<%= without('overdue') %>" class="staff-filter-chip" aria-label="Remove overdue filter">Past target date <span aria-hidden="true">×</span></a><% } %>
-          <% if(!isFiltered) { %><span class="staff-filter-hint">Showing everyone, at every priority</span><% } else { %><a href="/admin?status=<%= status %>" class="workspace-text-link">Clear all filters</a><% } %>
+          <% if(!isFiltered) { %><span class="staff-filter-hint">Showing everyone, at every priority</span><% } else { %><a href="/admin/reviews?status=<%= status %>" class="workspace-text-link">Clear all filters</a><% } %>
         </div>
         <button type="button" class="workspace-text-link" id="staff-open-save-view">Save applied view</button>
       </div>
@@ -72,12 +59,12 @@
 
           </article>
         <% } %>
-        <% if(!it.submissions.length) { %><div class="workspace-empty"><span class="workspace-empty-symbol" aria-hidden="true"><%~ icon(isFiltered?'search':'inbox') %></span><h3><%= isFiltered ? 'No matching submissions' : status==='pending' ? 'You’re all caught up' : 'No submissions here yet' %></h3><p><%= isFiltered ? 'Adjust the filters to find the suggestions you need.' : 'Choose another status to explore the queue.' %></p><a class="workspace-button" href="/admin?status=all">View all submissions</a></div><% } %>
+        <% if(!it.submissions.length) { %><div class="workspace-empty"><span class="workspace-empty-symbol" aria-hidden="true"><%~ icon(isFiltered?'search':'inbox') %></span><h3><%= isFiltered ? 'No matching submissions' : status==='pending' ? 'You’re all caught up' : 'No submissions here yet' %></h3><p><%= isFiltered ? 'Adjust the filters to find the suggestions you need.' : 'Choose another status to explore the queue.' %></p><a class="workspace-button" href="/admin/reviews?status=all">View review history</a></div><% } %>
       </div>
       <footer class="staff-pagination"><span><%= it.totalCount ? (it.page-1)*it.perPage+1 : 0 %>–<%= Math.min(it.page*it.perPage,it.totalCount) %> of <%= it.totalCount %> matching submissions</span><nav aria-label="Submission pages"><% if(it.page>1) { %><a class="workspace-button" href="<%= urlFor(status,it.page-1) %>">← Previous</a><% } %><span>Page <%= it.page %> of <%= it.pageCount %></span><% if(it.page<it.pageCount) { %><a class="workspace-button" href="<%= urlFor(status,it.page+1) %>">Next →</a><% } %></nav></footer>
     </section>
     <details class="care-card"><summary>Queue presets and keyboard help</summary>
-      <nav class="workspace-actions" aria-label="Review queue presets"><a class="workspace-button" href="/admin?status=pending&assignment=mine">My pending reviews</a><a class="workspace-button" href="/admin?status=pending&assignment=unassigned">Unassigned reviews</a><a class="workspace-button" href="/admin?status=all&priority=high">High priority</a><a class="workspace-button" href="/admin?status=all&overdue=true">Overdue work</a></nav>
+      <nav class="workspace-actions" aria-label="Review queue presets"><a class="workspace-button" href="/admin/reviews?status=pending&assignment=mine">My pending reviews</a><a class="workspace-button" href="/admin/reviews?status=pending&assignment=unassigned">Unassigned reviews</a><a class="workspace-button" href="/admin/reviews?status=all&priority=high">High priority</a></nav>
       <p>Press / to search, J for the next idea, K for the previous one, and Escape to close a dialog. Shortcuts are inactive while typing. Save your configured filters as a personal view using the existing view controls.</p>
       <p>Private notes stay private. Conflicting edits retain your draft. Review the audit history before correcting a saved change.</p>
     </details>
@@ -87,12 +74,9 @@
   <%~ include('partials/staff-review',it) %>
   <dialog class="staff-save-view-dialog" id="staff-save-view-dialog" aria-labelledby="staff-save-view-title"><form id="staff-save-view"><header><h2 id="staff-save-view-title">Save this queue view</h2><button type="button" class="workspace-icon-button" id="staff-close-save-view" aria-label="Close save view">×</button></header><p>Save the currently applied filters. This view is private to you.</p><label class="workspace-field-label" for="staff-view-name">View name</label><input id="staff-view-name" class="workspace-input" required maxlength="60" placeholder="e.g. Urgent facilities"/><p id="staff-view-message" class="workspace-message" role="status"></p><div class="workspace-dialog-actions"><button class="workspace-button workspace-button--primary" type="submit">Save view</button></div></form></dialog>
 </main>
-<section class="staff-mobile-notice"><span class="workspace-empty-symbol" aria-hidden="true"><%~ icon('inbox') %></span><h1>Staff workspace</h1><p>Open the staff portal on a desktop or larger screen to review submissions.</p><a class="workspace-button" href="/roadmap">Explore the campus roadmap →</a></section>
 <script id="staff-queue-data" type="application/json"><%~ JSON.stringify(it.submissions.map(s=>({id:s.id,title:s.title,description:s.description,status:s.status,category:s.category || s.categories?.name || 'Other',created_at:s.created_at,updated_at:s.updated_at,staff_note:s.staff_note || '',assignee_id:s.assignee_id || '',priority:s.priority || 'normal',target_date:s.target_date || ''}))).replace(/</g,'\\u003c') %></script>
 <script id="staff-filter-data" type="application/json"><%~ JSON.stringify(filters).replace(/</g,'\\u003c') %></script>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
-<script defer src="/js/staff-progress.js?v=20261022-group-drag"></script>
-<script defer src="/js/staff-review.js?v=20261022-compact-group"></script>
-<script defer src="/js/staff-tools.js?v=20261022-group-drag"></script>
-
-<% if(it.user?.role==='admin') { %><script defer src="/js/admin-overview.js?v=20261021-platform-insights"></script><% } %>
+<script defer src="/js/staff-progress.js?v=20261025-staff-flow"></script>
+<script defer src="/js/staff-review.js?v=20261025-staff-flow"></script>
+<script defer src="/js/staff-tools.js?v=20261025-staff-flow"></script>

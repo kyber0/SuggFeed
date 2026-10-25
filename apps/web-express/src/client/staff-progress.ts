@@ -71,7 +71,10 @@ interface Window {
   const actionKind:Record<string,string>={approve:'approve',decline:'decline',start:'started',update:'update',milestone:'milestone',pause:'blocked',resume:'resumed',complete:'completed',correction:'correction',reopen:'reopened',withdraw:'withdrawn'};
   let prepared:string | undefined;
   function setWorkflow(value?:StaffWorkflowContext){
-    if(!value)return;workflow=value;
+    if(!value)return;
+    const mode=document.getElementById('staff-review-dialog')?.dataset.detailMode;
+    value={...value,allowedActions:value.allowedActions.filter(action=>mode==='review'?['approve','decline'].includes(action):mode==='work'?!['approve','decline'].includes(action):true)};
+    workflow=value;
     const explicit=!!prepared;const selected=prepared? actionKind[prepared]:kind.value;prepared=undefined;
     const options=value.allowedActions.map(action=>{const option=document.createElement('option');option.value=actionKind[action];option.textContent=labels[option.value];return option;});
     if(!options.length){const option=document.createElement('option');option.value='';option.textContent=value.paused?'Work changes paused':'No work action available';options.push(option);}
@@ -352,7 +355,7 @@ interface Window {
       }
       if(generation!==ownGeneration)return;
       snapshot=data.submission;setWorkflow(data.workflow);host?.applySnapshot(snapshot);host?.confirmed?.(snapshot);resetDraft(false);drawSummary();
-      try{await host?.afterPost(snapshot);setMessage(workflow?'Action saved. The originating workspace has been refreshed.':payload.visibility==='public'?'Public update posted. The workspace has been refreshed.':'Staff-only update posted. The public roadmap is unchanged.',true);}
+      try{await host?.afterPost(snapshot);setMessage(workflow?payload.kind==='approve'?'Approved. This idea is now in Planned on the Work board.':payload.kind==='decline'?'Decision saved. This idea remains in decision history.':'Work action saved. The board has been refreshed.':payload.visibility==='public'?'Public update posted. The workspace has been refreshed.':'Staff-only update posted. The public roadmap is unchanged.',true);}
       catch{setMessage('Saved successfully, but the workspace could not refresh. Refresh the list before reviewing another idea.',true);}
     }catch(error){if(generation===ownGeneration)setMessage(error instanceof Error && error.name!=='AbortError' && !(error instanceof TypeError)?error.message:'We could not confirm the update. Your draft is safe. Retry this same draft to avoid a duplicate.');}
     finally{

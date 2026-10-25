@@ -1,4 +1,6 @@
 (() => {
+ if(location.hash==='#review-workspace'){location.replace(sfSchoolPath('/admin/reviews'));return;}
+
  const panel=document.querySelector<HTMLElement>('[data-overview-root]');
  if(!panel)return;
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');

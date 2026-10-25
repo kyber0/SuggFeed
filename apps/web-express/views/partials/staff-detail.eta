@@ -1,0 +1,60 @@
+<% const mode=it.detailMode||'community';const labels={pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'}; %>
+  <dialog class="workspace-dialog staff-review-dialog" id="staff-review-dialog" data-detail-mode="<%= it.detailMode||'community' %>" aria-labelledby="review-title">
+    <header class="workspace-dialog-header"><div class="staff-review-heading-title"><small class="staff-detail-purpose"><%= mode==='review'?'REVIEW IDEA':mode==='work'?'WORK DETAIL':'COMMUNITY FOLLOW-UP' %></small><h2 id="review-title"></h2><span class="workspace-status" id="review-current-status"></span></div><button type="button" class="workspace-icon-button" data-close-review aria-label="Close review">×</button></header>
+    <section id="review-group" class="staff-group-review" aria-label="Selected idea moves" hidden>
+      <div class="staff-group-review-heading"><strong id="review-group-position"></strong><details><summary>Details</summary><p id="review-group-message" role="status" aria-live="polite"></p><ol id="review-group-results" aria-label="Selected ideas and results"></ol></details></div>
+      <div class="staff-group-review-actions"><button type="button" class="workspace-button" id="review-group-skip" aria-label="Skip this idea">Skip</button><button type="button" class="workspace-button" id="review-group-next" disabled>Next</button><button type="button" class="workspace-text-link" data-close-review aria-label="Stop group review">Stop</button></div>
+    </section>
+    <div class="staff-review-tabs" role="tablist" aria-label="Submission sections"><% for(const [key,name] of [['decision',mode==='review'?'Submission':'Summary'],['progress',mode==='review'?'Decision form':'Updates & evidence'],['notes','Internal notes'],['history','History']]) { %><button type="button" role="tab" id="review-tab-<%= key %>" aria-controls="review-panel-<%= key %>" aria-selected="<%= key==='decision' %>" tabindex="<%= key==='decision' ? '0' : '-1' %>" data-review-tab="<%= key %>" <%= mode==='review'&&key==='progress'?'hidden':'' %>><%= name %><% if(key==='notes') { %><span class="workspace-tag">Private</span><% } %></button><% } %></div>
+    <div class="staff-review-scroll">
+      <details class="staff-review-details" <%= mode==='review'?'open':'' %>><summary>Submission details</summary><span id="review-position" class="staff-review-position"></span><p id="review-meta" class="workspace-detail-meta"></p><a id="review-clarification-link" class="workspace-text-link" href="/admin/community" title="Request private clarification">Private clarification →</a></details>
+      <section role="tabpanel" id="review-panel-decision" aria-labelledby="review-tab-decision" class="staff-review-panel">
+        <section class="staff-review-context" aria-labelledby="review-context-title"><h3 class="workspace-field-label" id="review-context-title">The suggestion</h3><p class="workspace-description" id="review-description"></p><% if(mode==='work') { %><dl class="staff-work-facts"><div><dt>Owner</dt><dd id="work-fact-owner">—</dd></div><div><dt>Target date</dt><dd id="work-fact-target">—</dd></div><div><dt>Work started</dt><dd id="work-fact-started">—</dd></div><div><dt>Completed</dt><dd id="work-fact-completed">—</dd></div></dl><% } %><p class="staff-footnote">Read the original suggestion before changing its status or publishing a response.</p><section class="workflow-guidance" aria-labelledby="workflow-guidance-title"><h3 id="workflow-guidance-title">Next step</h3><p id="workflow-state" role="status"></p><div id="workflow-actions" class="workspace-actions"></div></section>
+          <form id="work-date-repair-form" class="care-form" hidden>
+           <h3>Verify historical work dates</h3><p>Only enter dates supported by a real record. This does not change status or rewrite old updates.</p>
+           <label>Verified work start<input type="date" class="workspace-input" id="repair-start" required/></label>
+           <label id="repair-end-wrap">Verified completion date<input type="date" class="workspace-input" id="repair-end"/></label>
+           <label>Private verification source/reference<textarea id="repair-source" class="workspace-input" maxlength="2000" required></textarea></label>
+           <label>Private audit reason<textarea id="repair-reason" class="workspace-input" maxlength="600" required></textarea></label>
+           <button type="submit" class="workspace-button">Save verified dates</button><p id="repair-message" role="status"></p>
+          </form>
+        </section>
+        <details class="staff-coordination" <%= mode==='work'?'open':'' %>><summary>Assignment &amp; planning <span>Private staff coordination</span></summary><form id="staff-review-form" novalidate>
+          <div hidden><label class="workspace-field-label" for="staff-response-template">Legacy response starter</label><select id="staff-response-template" class="workspace-input" disabled><option value="">Use a guided action to explain the decision</option></select></div>
+          <fieldset id="staff-review-fields">
+            <legend>Staff coordination</legend>
+            <input id="review-status" type="hidden"/><p class="staff-footnote">This form saves assignment, priority and target date. Use Next step for decisions and public work changes.</p>
+            <p class="workspace-field-hint" id="review-status-hint"></p>
+            <div class="staff-review-workflow">
+              <div class="staff-assignee-field"><label class="workspace-field-label" for="review-assignee">Assigned staff</label><button type="button" class="workspace-text-link" id="review-assign-me">Assign to me</button><select id="review-assignee" class="workspace-input"><option value="">Unassigned</option><% for(const staff of it.staffMembers || []) { %><option value="<%= staff.id %>"><%= staff.display_name || 'Unnamed staff' %> · <%= staff.role %></option><% } %></select></div>
+              <label>Priority<select id="review-priority" class="workspace-input"><% for(const key of ['low','normal','high','urgent']) { %><option value="<%= key %>"><%= key.charAt(0).toUpperCase()+key.slice(1) %></option><% } %></select></label>
+              <label for="review-target-date">Target date · optional<input id="review-target-date" class="workspace-input" type="date" min="2000-01-01" max="2100-12-31" aria-describedby="review-date-error"/><span id="review-date-error" class="staff-field-error" role="status"></span></label>
+            </div>
+            <p class="staff-privacy-hint">Assignment, priority, and target date are visible to staff only.</p>
+            <label class="workspace-field-label" for="review-note"><%= mode==='work'?'Approval decision':'School decision' %> <span>Read only here · changes are recorded through guided actions</span></label><textarea id="review-note" class="workspace-input" rows="3" readonly maxlength="2000" placeholder="Explain the decision and what happens next."></textarea><div class="staff-note-footer"><span>Avoid names and personal information.</span><span id="review-note-count">0 / 2,000</span></div>
+          </fieldset>
+        </form></details>
+      </section>
+      <section role="tabpanel" id="review-panel-progress" aria-labelledby="review-tab-progress" class="staff-review-panel" hidden>
+        <%~ include('./staff-progress', it) %>
+      </section>
+      <section role="tabpanel" id="review-panel-notes" aria-labelledby="review-tab-notes" class="staff-review-panel" hidden>
+        <h3 class="staff-panel-title">Coordinate with your team</h3><p class="staff-panel-copy">Internal notes are visible only to school staff. Keep sensitive personal details out of these notes.</p>
+        <div class="staff-notes-layout">
+        <form id="staff-internal-note-form"><label class="workspace-field-label" for="review-internal-note">New private note</label><textarea id="review-internal-note" class="workspace-input" required maxlength="2000" rows="4" placeholder="Add context, a question, or the next action…"></textarea><button class="workspace-button workspace-button--primary" type="submit" id="review-add-note">Add internal note</button><p id="review-internal-message" role="status" aria-live="polite"></p></form>
+        <section aria-labelledby="review-notes-title"><h3 class="staff-panel-title" id="review-notes-title">Team notes</h3><p id="review-notes-state" role="status" aria-live="polite"></p><div id="review-internal-notes" class="staff-activity-list" aria-live="polite"></div></section>
+        </div>
+      </section>
+      <section role="tabpanel" id="review-panel-history" aria-labelledby="review-tab-history" class="staff-review-panel" hidden>
+        <div class="staff-panel-heading"><div><h3 class="staff-panel-title">Submission history</h3><p class="staff-panel-copy">Decisions and changes, most recent first.</p></div><button class="workspace-button" type="button" id="review-retry-activity">Refresh</button></div>
+        <p id="review-activity-message" role="status" aria-live="polite"></p><div id="review-history" class="staff-activity-list"></div><p class="staff-footnote">Up to 100 recent events of each type.</p>
+      </section>
+    </div>
+    <footer class="staff-review-footer sf-sticky-action-bar">
+      <section class="staff-decision-result" id="review-decision-result" hidden><div><strong id="review-decision-label"></strong><span>Your decision is saved.</span></div><div><button type="button" class="workspace-button" id="review-next-idea">Review next</button><a class="workspace-button workspace-button--primary" id="review-open-work" href="/admin/board">Open in Work board →</a></div></section>
+      <p id="review-message" class="workspace-message" role="status" aria-live="polite" tabindex="-1"></p>
+      <button type="button" class="workspace-button" id="review-retry-detail" hidden>Retry loading submission</button>
+      <div id="review-discard-warning" class="staff-discard-warning" role="alert" hidden><strong>Leave without saving?</strong><p>Unsaved review, progress, and private-note drafts will be discarded.</p><div><button type="button" class="workspace-button" id="review-keep-editing">Keep editing</button><button type="button" class="workspace-button" id="review-discard-confirm">Discard draft</button></div></div>
+      <div class="workspace-dialog-actions"><span id="review-draft-state" role="status" aria-live="polite">No unsaved changes</span><button type="button" class="workspace-button" id="review-dismiss" data-close-review>Cancel</button><button type="submit" form="staff-review-form" class="workspace-button" id="review-save-next" name="action" value="next">Save & next</button><button type="submit" form="staff-review-form" class="workspace-button workspace-button--primary" id="review-save">Save assignment</button></div>
+    </footer>
+  </dialog>

@@ -3,6 +3,9 @@
  const urlFor=(stage,page)=>{
   const values=new URLSearchParams({sort:filters.sort,pageSize:String(filters.pageSize)});
   if(filters.search) values.set('search',filters.search);
+  if(filters.assignment&&filters.assignment!=='all')values.set('assignment',filters.assignment);
+  if(filters.priority&&filters.priority!=='all')values.set('priority',filters.priority);
+  if(filters.overdue)values.set('overdue','true');
   for(const lane of it.lanes) {const number=lane.status===stage?page:lane.page;if(number>1) values.set(lane.status+'Page',String(number));}
   return '/admin/board?'+values.toString()+(stage?'#board-lane-'+stage:'');
  };
@@ -10,13 +13,14 @@
  const meta={filters,totalCount:it.totalCount,lanes:it.lanes.map(({items,...lane})=>lane)};
 %>
 <main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main staff-board-main">
- <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / DELIVERY</p><h1>Manage work</h1><p>Plan → start → publish updates → complete with evidence. Select cards to assign or drag them together. Review each move before saving.</p></div><a class="workspace-button" href="/admin">Review submissions</a></header>
+ <header class="workspace-heading"><div><p class="workspace-kicker">WORKSPACE / DELIVERY</p><h1>Work board</h1><p>Approved ideas only. Assign an owner, publish progress and complete work with evidence.</p></div><a class="workspace-button" href="/admin/reviews">Review ideas</a></header>
  <form class="staff-board-toolbar" action="/admin/board" method="get" role="search" id="staff-board-filters">
   <label class="staff-board-search"><span>Search work</span><input class="workspace-input" type="search" name="search" value="<%= filters.search %>" maxlength="120" placeholder="Search suggestions…" aria-label="Search the work board"/></label>
   <label>Order<select class="workspace-input" name="sort"><option value="oldest" <%= filters.sort==='oldest'?'selected':'' %>>Oldest first</option><option value="newest" <%= filters.sort==='newest'?'selected':'' %>>Newest first</option></select></label>
   <label>Cards per stage<select class="workspace-input" name="pageSize"><% for(const size of [6,12,24]) { %><option value="<%= size %>" <%= filters.pageSize===size?'selected':'' %>><%= size %></option><% } %></select></label>
-  <button class="workspace-button" type="submit">Apply</button>
-  <% if(filters.search || filters.sort!=='oldest' || filters.pageSize!==6) { %><a class="workspace-text-link" href="/admin/board" data-board-reset>Reset</a><% } %>
+  <details class="staff-board-more-filters"><summary>Filters<%= filters.assignment!=='all'||filters.priority!=='all'||filters.overdue?' · active':'' %></summary><div><label>Assignment<select class="workspace-input" name="assignment"><% for(const [value,label] of [['all','Anyone'],['mine','Assigned to me'],['unassigned','Unassigned']]) { %><option value="<%= value %>" <%= filters.assignment===value?'selected':'' %>><%= label %></option><% } %></select></label><label>Priority<select class="workspace-input" name="priority"><% for(const value of ['all','low','normal','high','urgent']) { %><option value="<%= value %>" <%= filters.priority===value?'selected':'' %>><%= value==='all'?'Any priority':value %></option><% } %></select></label><label class="staff-overdue-filter"><input type="checkbox" name="overdue" value="true" <%= filters.overdue?'checked':'' %>/> Past target date</label></div></details>
+ <button class="workspace-button" type="submit">Apply</button>
+  <% if(filters.search || filters.sort!=='oldest' || filters.pageSize!==6||filters.assignment!=='all'||filters.priority!=='all'||filters.overdue) { %><a class="workspace-text-link" href="/admin/board" data-board-reset>Reset</a><% } %>
  </form>
  <div class="staff-board-caption"><p id="staff-board-summary"><%= it.items.length %> shown · <%= it.totalCount.toLocaleString() %> matching submissions</p><p>Scroll down to see this page · stages page independently</p></div>
  <div class="staff-board-feedback"><p id="staff-tools-message" role="status" aria-live="polite"></p><button type="button" class="workspace-text-link" id="staff-board-retry" hidden>Retry loading</button></div>
@@ -26,17 +30,18 @@
   <button class="workspace-button" id="staff-bulk-assign" type="button">Assign selected</button><button class="workspace-text-link" id="staff-clear-selection" type="button">Clear selection</button>
  </div>
  <p class="visually-hidden" id="staff-drag-status" role="status" aria-live="polite"></p>
+ <label class="staff-mobile-stage">Stage<select class="workspace-input" id="staff-mobile-stage"><% for(const lane of it.lanes) { %><option value="<%= lane.status %>"><%= lane.label %></option><% } %></select></label>
  <section class="staff-flow-board" id="staff-flow-board" aria-label="Submission stages">
   <% for(const lane of it.lanes) { %><%~ include('partials/staff-board-lane',{lane,urlFor,pageFields}) %><% } %>
  </section>
- <p class="staff-board-safety">Move or drag opens an action form; nothing changes until you save. Needs review and Declined submissions are now in <a href="/admin">Review submissions</a>. Existing links and idea IDs still work.</p>
+ <p class="staff-board-safety">Move or drag opens an action form; nothing changes until you save. Needs review and Declined submissions are now in <a href="/admin/reviews">Review ideas</a>. Existing links and idea IDs still work.</p>
  <details class="staff-board-help"><summary>Board controls and recovery</summary><p>Use Move on a selected card to review the selected group with a keyboard, or drag a selected card with a pointer. Scroll down to see all cards on this page. Each stage pages independently. Selection can include other pages and is kept only during this visit. Drag a selected card to review moves for the selected group, one idea at a time. A destination must support every selected idea. Dragging an unselected card moves only that idea.</p><p>Assignments save together: if any selected version changed, none are saved. After a timeout, refresh to confirm before retrying. Published history is corrected with a new update; merges require an operator to review the audit for recovery.</p></details>
  <script id="staff-board-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script>
  <script id="staff-board-meta" type="application/json"><%~ JSON.stringify(meta).replace(/</g,'\\u003c') %></script>
- <script defer src="/js/staff-tools.js?v=20261022-group-drag"></script>
+ <script defer src="/js/staff-tools.js?v=20261025-staff-flow"></script>
 </div>
-<%~ include('partials/staff-review',{...it,staffMembers:it.members}) %>
+<%~ include('partials/staff-work-detail',{...it,staffMembers:it.members}) %>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
-<script defer src="/js/staff-progress.js?v=20261022-group-drag"></script>
-<script defer src="/js/staff-review.js?v=20261022-compact-group"></script>
-</main><section class="staff-mobile-notice"><h1>Staff workspace</h1><p>Use a desktop or larger screen to manage the work board.</p><a class="workspace-button" href="/roadmap">Explore the roadmap</a></section>
+<script defer src="/js/staff-progress.js?v=20261025-staff-flow"></script>
+<script defer src="/js/staff-review.js?v=20261025-staff-flow"></script>
+</main>

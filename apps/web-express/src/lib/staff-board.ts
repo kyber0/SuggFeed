@@ -1,3 +1,4 @@
+import { requireSchool } from './school-scope';
 import { sanitizeSearch } from './data';
 import { supabaseService } from './supabase';
 
@@ -13,6 +14,9 @@ export type BoardStage = typeof BOARD_STAGES[number]['status'];
 export const WORK_STAGES = BOARD_STAGES.filter(stage => !['pending','rejected'].includes(stage.status));
 export type BoardPageSize = 6 | 12 | 24;
 export interface BoardFilters {
+  assignment?:'all'|'mine'|'unassigned';
+  priority?:string;
+  overdue?:boolean;
   search: string;
   sort: 'oldest' | 'newest';
   pageSize: BoardPageSize;
@@ -42,6 +46,9 @@ function pageNumber(value: unknown): number {
 export function boardFilters(query: Record<string, unknown>): BoardFilters {
   const pages = Object.fromEntries(BOARD_STAGES.map(stage => [stage.status, pageNumber(query[`${stage.status}Page`])])) as Record<BoardStage, number>;
   return {
+    assignment:query.assignment==='mine'||query.assignment==='unassigned'?query.assignment:'all',
+    priority:['low','normal','high','urgent'].includes(String(query.priority))?String(query.priority):'all',
+    overdue:query.overdue==='true',
     search: typeof query.search === 'string' ? query.search.trim().slice(0, 120) : '',
     sort: query.sort === 'newest' ? 'newest' : 'oldest',
     pageSize: query.pageSize === '12' ? 12 : query.pageSize === '24' ? 24 : 6,
@@ -53,6 +60,10 @@ function stageQuery(status: BoardStage, filters: BoardFilters, head = false) {
   let query = supabaseService.from('staff_submission_queue')
     .select('*', { count: 'exact', head })
     .eq('status', status);
+  if(filters.assignment==='mine')query=query.eq('assignee_id',requireSchool().actorId);
+  if(filters.assignment==='unassigned')query=query.is('assignee_id',null);
+  if(filters.priority&&filters.priority!=='all')query=query.eq('priority',filters.priority);
+  if(filters.overdue){const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());query=query.lt('target_date',today).neq('status','resolved');}
   if (filters.search) {
     // Quoting prevents a search term from introducing another PostgREST filter.
     const search = sanitizeSearch(filters.search).replace(/\\/g, '\\\\').replace(/"/g, '\\"');

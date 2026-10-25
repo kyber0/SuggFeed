@@ -37,6 +37,8 @@
     function setWorkflow(value) {
         if (!value)
             return;
+        const mode = document.getElementById('staff-review-dialog')?.dataset.detailMode;
+        value = { ...value, allowedActions: value.allowedActions.filter(action => mode === 'review' ? ['approve', 'decline'].includes(action) : mode === 'work' ? !['approve', 'decline'].includes(action) : true) };
         workflow = value;
         const explicit = !!prepared;
         const selected = prepared ? actionKind[prepared] : kind.value;
@@ -644,7 +646,7 @@
             drawSummary();
             try {
                 await host?.afterPost(snapshot);
-                setMessage(workflow ? 'Action saved. The originating workspace has been refreshed.' : payload.visibility === 'public' ? 'Public update posted. The workspace has been refreshed.' : 'Staff-only update posted. The public roadmap is unchanged.', true);
+                setMessage(workflow ? payload.kind === 'approve' ? 'Approved. This idea is now in Planned on the Work board.' : payload.kind === 'decline' ? 'Decision saved. This idea remains in decision history.' : 'Work action saved. The board has been refreshed.' : payload.visibility === 'public' ? 'Public update posted. The workspace has been refreshed.' : 'Staff-only update posted. The public roadmap is unchanged.', true);
             }
             catch {
                 setMessage('Saved successfully, but the workspace could not refresh. Refresh the list before reviewing another idea.', true);

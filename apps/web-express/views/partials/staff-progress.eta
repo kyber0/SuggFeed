@@ -1,5 +1,5 @@
 <div class="staff-panel-heading">
-  <div><h3 class="staff-panel-title">Keep everyone informed</h3><p class="staff-panel-copy">Share a clear update when work moves forward or needs more time.</p></div>
+  <div><h3 class="staff-panel-title"><%= it.detailMode==='review'?'Record your decision':'Keep everyone informed' %></h3><p class="staff-panel-copy"><%= it.detailMode==='review'?'Explain the decision and what the submitter can expect next.':'Share a clear update when work moves forward or needs more time.' %></p></div>
   <button class="workspace-button" type="button" id="staff-progress-refresh">Refresh</button>
 </div>
 <p id="staff-progress-state" class="staff-progress-state" role="status" aria-live="polite"></p>
@@ -7,14 +7,14 @@
 <div class="staff-progress-layout">
 <form id="staff-progress-form" class="staff-progress-form" novalidate>
   <fieldset id="staff-progress-fields" disabled>
-    <legend class="staff-progress-legend">New progress update</legend>
+    <legend class="staff-progress-legend"><%= it.detailMode==='review'?'School decision':'New progress update' %></legend>
     <div class="staff-progress-grid">
-      <label for="staff-progress-kind">Update type<select id="staff-progress-kind" class="workspace-input" aria-describedby="staff-progress-kind-hint"><option value="update">Progress update</option><option value="started">Work started</option><option value="milestone">Milestone reached</option><option value="blocked">Work is blocked</option><option value="completed">Work completed</option><option value="correction">Correction</option></select></label>
+      <label for="staff-progress-kind"><%= it.detailMode==='review'?'Decision':'Update type' %><select id="staff-progress-kind" class="workspace-input" aria-describedby="staff-progress-kind-hint"><option value="update">Progress update</option><option value="started">Work started</option><option value="milestone">Milestone reached</option><option value="blocked">Work is blocked</option><option value="completed">Work completed</option><option value="correction">Correction</option></select></label>
       <label for="staff-progress-visibility">Audience<select id="staff-progress-visibility" class="workspace-input" aria-describedby="staff-progress-audience-hint"><option value="public">Public · campus community</option><option value="staff">Staff only · private</option></select></label>
     </div>
     <p id="staff-progress-kind-hint" class="workspace-field-hint"></p>
     <p id="staff-progress-audience-hint" class="staff-privacy-hint"></p>
-    <label class="workspace-field-label" for="staff-progress-body">What changed?</label>
+    <label class="workspace-field-label" for="staff-progress-body"><%= it.detailMode==='review'?'Decision explanation':'What changed?' %></label>
     <textarea id="staff-progress-body" class="workspace-input" rows="4" required maxlength="600" placeholder="Describe what has happened and what the community can expect next." aria-describedby="staff-progress-body-hint"></textarea>
     <div class="staff-note-footer"><span id="staff-progress-body-hint">Keep names and personal information out.</span><span id="staff-progress-count">0 / 600</span></div>
     <div class="staff-progress-grid">

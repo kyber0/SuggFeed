@@ -23,6 +23,12 @@
     }
     if (boardData) {
         const board = document.getElementById('staff-flow-board');
+        const stageSelect = document.getElementById('staff-mobile-stage');
+        const syncStage = (hash) => { if (!stageSelect)
+            return; const stage = hash.replace('#board-lane-', ''); if (Array.from(stageSelect.options).some(option => option.value === stage))
+            stageSelect.value = stage; board.dataset.mobileStage = stageSelect.value; const form = document.getElementById('staff-board-filters'); form.action = sfSchoolPath('/admin/board#board-lane-' + stageSelect.value); };
+        syncStage(location.hash);
+        stageSelect?.addEventListener('change', () => { syncStage('#board-lane-' + stageSelect.value); const url = new URL(location.href); url.hash = 'board-lane-' + stageSelect.value; history.replaceState(history.state, '', url); });
         const metaData = document.getElementById('staff-board-meta');
         let meta = JSON.parse(metaData.textContent || '{}');
         let items = new Map(JSON.parse(boardData.textContent || '[]').map(item => [item.id, item]));
@@ -34,6 +40,12 @@
             const url = new URL(sfSchoolPath('/admin/board'), window.location.origin);
             url.searchParams.set('sort', meta.filters.sort);
             url.searchParams.set('pageSize', String(meta.filters.pageSize));
+            if (meta.filters.assignment && meta.filters.assignment !== 'all')
+                url.searchParams.set('assignment', meta.filters.assignment);
+            if (meta.filters.priority && meta.filters.priority !== 'all')
+                url.searchParams.set('priority', meta.filters.priority);
+            if (meta.filters.overdue)
+                url.searchParams.set('overdue', 'true');
             if (meta.filters.search)
                 url.searchParams.set('search', meta.filters.search);
             for (const [key, number] of Object.entries(meta.filters.pages)) {
@@ -109,6 +121,12 @@
                 document.getElementById('staff-board-summary').textContent = `${items.size} shown · ${meta.totalCount.toLocaleString()} matching submissions`;
                 selectionState();
                 const canonical = urlFor(stage, stage ? meta.filters.pages[stage] : undefined);
+                if (!stage && /^#board-lane-(approved|in_progress|resolved)$/.test(target.hash))
+                    canonical.hash = target.hash;
+                syncStage(canonical.hash);
+                const openIdea = new URL(location.href).searchParams.get('idea');
+                if (document.getElementById('staff-review-dialog')?.hasAttribute('open') && openIdea)
+                    canonical.searchParams.set('idea', openIdea);
                 if (push)
                     window.history.pushState(null, '', canonical.href);
                 else

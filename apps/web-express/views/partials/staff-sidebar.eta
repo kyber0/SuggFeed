@@ -3,9 +3,9 @@
   const activeSection = it.activeSection || 'queue';
   const counts = it.counts || { pending: 0 };
   const filters = it.filters || { status: 'pending', search: '', assignment: 'all', priority: 'all', overdue: 'false' };
-  const viewUrl = f => '/admin?' + new URLSearchParams(f).toString();
+  const delivery=f=>['approved','in_progress','resolved'].includes(f.status)||f.overdue==='true';
+  const viewUrl=f=>{if(!delivery(f))return '/admin/reviews?'+new URLSearchParams(f).toString();const values=new URLSearchParams(f);values.delete('status');values.delete('page');return '/admin/board?'+values.toString()+(['approved','in_progress','resolved'].includes(f.status)?'#board-lane-'+f.status:'');};
   const sameView = f => Object.keys(filters).every(k => (f[k] ?? (k==='search'?'':k==='overdue'?'false':k==='status'?'pending':'all')) === filters[k]);
-  const isFiltered = !!filters.search || filters.assignment !== 'all' || filters.priority !== 'all' || filters.overdue === 'true';
 %>
 <aside class="staff-sidebar" aria-label="Staff workspace">
 <button type="button" class="staff-sidebar-toggle" id="staff-sidebar-toggle" aria-controls="staff-sidebar-content" aria-expanded="true" aria-label="Hide sidebar" title="Hide sidebar">
@@ -18,27 +18,32 @@
   <div class="staff-navigation-body">
   <p class="workspace-kicker">WORKSPACE</p>
   <nav aria-label="Staff navigation">
-    <a class="staff-nav-item<%= activeSection === 'queue' && !isFiltered ? ' is-current' : '' %>" href="/admin" <%= activeSection === 'queue' && !isFiltered ? 'aria-current="page"' : '' %>><%~ icon('inbox') %> <%= it.user?.role==='admin'?'School dashboard':'Review submissions' %> <span class="staff-nav-count" id="staff-pending-count"><%= counts.pending || 0 %></span></a>
-    <a class="staff-nav-item<%= activeSection === 'board' ? ' is-current' : '' %>" href="/admin/board" aria-current="<%= activeSection === 'board' ? 'page' : 'false' %>"><%~ icon('board') %> Manage work</a>
-    <a class="staff-nav-item<%= activeSection === 'community' ? ' is-current' : '' %>" href="/admin/community" aria-current="<%= activeSection === 'community' ? 'page' : 'false' %>"><%~ icon('care') %> Follow-ups</a>
-  <a href="/admin/form-responses" class="staff-nav-link">School form responses</a><% if(it.user?.role==='admin') { %><a href="/admin/safety"><svg class="workspace-svg" aria-hidden="true"><use href="#ws-shield"/></svg><span>Submission safety</span></a><% } %></nav>
-  <p class="workspace-kicker">ADMINISTRATION</p>
-  <nav aria-label="Administration">
-    <a class="staff-nav-item<%= activeSection === 'analytics' ? ' is-current' : '' %>" href="/admin/analytics" <%= activeSection === 'analytics' ? 'aria-current="page"' : '' %>><%~ icon('chart') %> Analytics</a>
-    <% if (it.user?.role === 'admin') { %><a class="staff-nav-item<%= activeSection === 'staff' ? ' is-current' : '' %>" href="/admin/staff" <%= activeSection === 'staff' ? 'aria-current="page"' : '' %>><%~ icon('users') %> Manage staff</a><a class="staff-nav-item" href="/admin/assistant"><%~ icon('care') %> Sugi knowledge &amp; review</a><a class="staff-nav-item" href="/admin/school-settings"><%~ icon('shield') %> School settings</a><a class="staff-nav-item" href="/admin/members"><%~ icon('users') %> Members & access</a><a class="staff-nav-item" href="/admin/invitations"><%~ icon('users') %> Member invitations</a><% } %>
+  <% if(it.user?.role==='admin') { %><a class="staff-nav-item<%= activeSection==='overview'?' is-current':'' %>" href="/admin" aria-current="<%= activeSection==='overview'?'page':'false' %>"><%~ icon('chart') %> Overview</a><% } %>
+  <a class="staff-nav-item<%= activeSection==='queue'?' is-current':'' %>" href="/admin/reviews" aria-current="<%= activeSection==='queue'?'page':'false' %>"><%~ icon('inbox') %> Review ideas <% if(typeof counts.pending==='number') { %><span class="staff-nav-count" id="staff-pending-count"><%= counts.pending %></span><% } %></a>
+  <a class="staff-nav-item<%= activeSection==='board'?' is-current':'' %>" href="/admin/board" aria-current="<%= activeSection==='board'?'page':'false' %>"><%~ icon('board') %> Work board</a>
+  <a class="staff-nav-item<%= activeSection==='community'?' is-current':'' %>" href="/admin/community" aria-current="<%= activeSection==='community'?'page':'false' %>"><%~ icon('care') %> Community</a>
+  <% if(it.user?.role==='admin') { %><a class="staff-nav-item" href="/admin/safety"><%~ icon('shield') %> Safety review</a><% } %>
   </nav>
+  <p class="workspace-kicker">MANAGEMENT</p><nav aria-label="School management">
+  <a class="staff-nav-item<%= activeSection==='analytics'?' is-current':'' %>" href="/admin/analytics"><%~ icon('chart') %> Analytics</a>
+  <% if(it.user?.role==='admin') { %>
+  <details class="staff-management-group" <%= activeSection==='staff'?'open':'' %>><summary><%~ icon('users') %> People &amp; access</summary><div><a class="staff-nav-item" href="/admin/members">Members</a><a class="staff-nav-item" href="/admin/staff">Staff roles</a><a class="staff-nav-item" href="/admin/student-access">Student joining</a><a class="staff-nav-item" href="/admin/invitations">Invitations</a></div></details>
+  <details class="staff-management-group"><summary><%~ icon('shield') %> School settings</summary><div><a class="staff-nav-item" href="/admin/school-settings">Policies &amp; settings</a><a class="staff-nav-item" href="/admin/customization">Workspace appearance</a><a class="staff-nav-item" href="/admin/assistant">Sugi knowledge</a></div></details>
+  <% } %><a class="staff-nav-item" href="/admin/form-responses"><%~ icon('list') %> Form responses</a></nav>
   <% if (activeSection === 'queue') { %>
   <p class="workspace-kicker">YOUR QUEUES</p>
   <nav aria-label="Personal queues">
-    <% for(const [name,f] of [['Assigned to me',{status:'all',assignment:'mine'}],['Unassigned review',{status:'pending',assignment:'unassigned'}],['Past target date',{status:'all',overdue:'true'}]]) { %>
+    <% for(const [name,f] of [['Assigned to me',{status:'pending',assignment:'mine'}],['Unassigned review',{status:'pending',assignment:'unassigned'}]]) { %>
       <a class="staff-nav-item<%= sameView(f) ? ' is-current' : '' %>" href="<%= viewUrl(f) %>" <%= sameView(f) ? 'aria-current="page"' : '' %>><%= name %></a>
     <% } %>
   </nav>
-  <p class="workspace-kicker">SAVED VIEWS</p>
-  <div class="staff-saved-views" id="staff-saved-views"><% for(const view of it.savedViews || []) { %>
+  <% } %>
+  <% if (['queue','board'].includes(activeSection)) { %>
+  <details class="staff-saved-disclosure"><summary>Saved views</summary>
+  <div class="staff-saved-views" id="staff-saved-views"><% for(const view of (it.savedViews || []).filter(view=>activeSection==='board'?delivery(view.filters||{}):!delivery(view.filters||{}))) { %>
     <div class="staff-saved-view"><a class="staff-nav-item<%= sameView(view.filters) ? ' is-current' : '' %>" href="<%= viewUrl(view.filters) %>"><%= view.name %></a><button type="button" class="staff-remove-view" data-delete-view="<%= view.id %>" aria-label="Remove saved view: <%= view.name %>">×</button></div>
   <% } %><% if(!it.savedViews?.length) { %><p class="staff-sidebar-hint">Save a filter combination for quick access. Your views are private to you.</p><% } %></div>
-  <% } %>
+  </details><% } %>
   <a class="staff-nav-item" href="/"><%~ icon('users') %> View school community</a>
   <div class="staff-identity"><span class="staff-brand-mark" aria-hidden="true"><%= (it.user?.display_name || 'S').slice(0,1).toUpperCase() %></span><div><strong><%= it.user?.display_name || 'School staff' %></strong><small><%= it.user?.role==='admin' ? 'Administrator' : 'Moderator' %></small></div></div>
   </div>

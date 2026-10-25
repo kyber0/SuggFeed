@@ -22,8 +22,9 @@ export function queueFilters(input: Record<string, unknown>) {
     overdue: input.overdue === 'true' ? 'true' : 'false',
   };
 }
-export async function loadStaffQueue(filters: ReturnType<typeof queueFilters>, staffId: string, page: number) {
+export async function loadStaffQueue(filters: ReturnType<typeof queueFilters>, staffId: string, page: number, reviewOnly = false) {
   let query = supabaseService.from('staff_submission_queue').select('*', { count: 'exact' });
+  if (reviewOnly) query = filters.status==='all'?query.neq('status','pending'):query.in('status', ['pending','rejected']);
   if (filters.status !== 'all') query = query.eq('status', filters.status);
   if (filters.assignment === 'mine') query = query.eq('assignee_id', staffId);
   if (filters.assignment === 'unassigned') query = query.is('assignee_id', null);
