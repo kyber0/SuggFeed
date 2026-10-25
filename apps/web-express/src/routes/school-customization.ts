@@ -1,3 +1,4 @@
+import {PREVIEW_VARIANTS} from '../lib/school-preview-model';
 import {reserveSchoolImage,finishSchoolImage} from '../lib/school-images';
 import {submissionHash} from '../lib/submission-context';
 import {Router,Request,Response,NextFunction} from 'express';
@@ -18,14 +19,14 @@ function failure(res:Response,error:any){const code=error?.code;return res.statu
 router.use(paths,(req,res,next)=>{const csp=res.getHeader('Content-Security-Policy');if(typeof csp==='string')res.setHeader('Content-Security-Policy',csp.replace(/frame-src ([^;]+)/,"frame-src 'self' $1").replace(/frame-ancestors [^;]+/,req.path.endsWith('/preview/content')?"frame-ancestors 'self'":"frame-ancestors 'none'"));if(req.path.endsWith('/preview/content'))res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Cache-Control','private, no-store');res.setHeader('Referrer-Policy','same-origin');next();});
 router.get(paths,run(async(req,res)=>{
  const context=await authorizeSchoolStudio(req,res);if(!context)return;const data=context.state;
- return res.render('school-customization',{title:'School customization — '+context.school.name,school:context.school,data,base:base(req),enabled:editing()&&data.editing_enabled,uploadsReady:uploadsReady(),palettes:SCHOOL_PALETTES,icons:SCHOOL_ICONS,changes:customizationChanges(data.published,data.draft)});
+ return res.render('school-customization',{title:'School customization — '+context.school.name,school:context.school,data,base:base(req),enabled:editing()&&data.editing_enabled,previewVariants:PREVIEW_VARIANTS,uploadsReady:uploadsReady(),palettes:SCHOOL_PALETTES,icons:SCHOOL_ICONS,changes:customizationChanges(data.published,data.draft)});
 }));
 router.post(paths.map(p=>p+'/save'),run(async(req,res)=>{
  const context=await authorizeSchoolStudio(req,res);if(!context)return;if(!editing())return res.status(503).json({success:false,error:'Customization editing is temporarily paused. Published workspaces remain available.'});
  let configuration;try{configuration=normalizeCustomization(req.body?.configuration);}catch(error){return res.status(400).json({success:false,error:error instanceof Error?error.message:'Check the customization fields.'});}
  if(!Number.isSafeInteger(req.body.revision)||req.body.revision<0)return res.status(400).json({success:false,error:'Reload the current draft.'});
  const result=await supabasePlatform.rpc('save_school_customization',{p_school:context.school.id,p_actor:context.user.id,p_revision:req.body.revision,p_configuration:configuration});
- if(result.error)return failure(res,result.error);res.json({success:true,configuration,revision:result.data,changes:customizationChanges((await state(context.school.id,context.user.id)).published,configuration)});
+ if(result.error)return failure(res,result.error);const current=await state(context.school.id,context.user.id);res.json({success:true,configuration,revision:result.data,savedAt:current.revision===result.data?current.saved_at:null,savedBy:current.saved_by_name,changes:customizationChanges(current.published,configuration)});
 }));
 for(const action of ['publish','restore','request-review'])router.post(paths.map(p=>p+'/'+action),run(async(req,res)=>{
  const context=await authorizeSchoolStudio(req,res);if(!context)return;if(!editing())return res.status(503).json({success:false,error:'Customization editing is paused.'});
@@ -50,6 +51,7 @@ router.get(paths.map(p=>p+'/assets/:assetId'),run(async(req,res)=>{
 }));
 router.use(previewRouter);
 router.get(paths.map(p=>p+'/preview'),run(async(req,res)=>{const context=await authorizeSchoolStudio(req,res);if(!context)return;const query=new URLSearchParams({mode:'preview'});if(['light','dark'].includes(String(req.query.theme)))query.set('theme',String(req.query.theme));if(['320','375','768','1440'].includes(String(req.query.width)))query.set('width',String(req.query.width));res.redirect(303,req.path.replace(/\/preview$/,'')+'?'+query);}));
+router.get(paths.map(p=>p+'/versions/:version'),run(async(req,res)=>{const context=await authorizeSchoolStudio(req,res);if(!context)return;const version=Number(req.params.version);if(!Number.isSafeInteger(version)||version<1)return res.sendStatus(400);const {data,error}=await supabasePlatform.from('school_customization_versions').select('version,configuration,created_at').eq('school_id',context.school.id).eq('version',version).maybeSingle();if(error)throw error;if(!data)return res.sendStatus(404);res.setHeader('Cache-Control','private, no-store');res.json({success:true,...data});}));
 router.get(paths.map(p=>p+'/capability'),run(async(req,res)=>{const context=await authorizeSchoolStudio(req,res);if(!context)return;res.setHeader('Cache-Control','private, no-store');res.json({success:true,revision:context.state.revision});}));
 router.get(paths.map(p=>p+'/state'),run(async(req,res)=>{const context=await authorizeSchoolStudio(req,res);if(!context)return;res.setHeader('Cache-Control','private, no-store');res.json({success:true,...context.state});}));
 router.get('/platform/customization',run(async(req,res)=>{

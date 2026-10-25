@@ -227,11 +227,72 @@
         next.textContent = step === 3 ? 'Preview only · no submission' : 'Continue'; const prev = document.getElementById('sip-prev-btn'); prev?.classList.toggle('sip-btn-back--hidden', step === 1); }
     function syncMotion() { document.documentElement.dataset.studioMode = mode; window.sfMotion?.destroy(); if (mode === 'preview')
         window.sfMotion?.mount(document); }
-    function initialize() { SfSchoolDesign.apply(document.body, configuration.design, initial.page, configuration.palette); syncMotion(); document.body.classList.toggle('studio-frame-edit', mode === 'edit'); annotate(); makeOverlay(); const queue = document.getElementById('sip-queue-btn'); if (queue) {
+    function prepareExample() {
+        const example = initial.example || {}, variant = initial.variant || '';
+        if (initial.page === 'submit') {
+            openForm();
+            showStep(variant === 'questions' ? 2 : variant === 'review' ? 3 : 1);
+            if (variant === 'receipt') {
+                for (const button of document.querySelectorAll('.sip-step-item'))
+                    button.disabled = true;
+                document.getElementById('sip-queue-btn')?.setAttribute('hidden', '');
+                for (const selector of ['#sip-step-1', '#sip-step-2', '#sip-step-3', '#sip-footer'])
+                    document.querySelector(selector)?.setAttribute('hidden', '');
+                const receipt = document.getElementById('sip-success');
+                if (receipt)
+                    receipt.hidden = false;
+                text('#sip-success-code', 'CV-00000000000000000000000000000000');
+            }
+            if (variant === 'invalid' || variant === 'recovery') {
+                const root = document.querySelector('.sip-body');
+                if (root && !root.querySelector('[data-studio-form-notice]')) {
+                    const notice = document.createElement('p');
+                    notice.dataset.studioFormNotice = '';
+                    notice.className = 'workspace-message';
+                    notice.textContent = variant === 'invalid' ? 'Example validation: choose a category and complete the required fields.' : 'Example recovery: your draft is still here. Review it before retrying.';
+                    root.prepend(notice);
+                }
+            }
+        }
+        if (initial.page === 'idea' && variant === 'drawer') {
+            const source = document.querySelector('.standalone-idea-page'), drawer = document.getElementById('idea-detail-drawer'), columns = document.getElementById('drawer-columns');
+            if (source && drawer && columns) {
+                const left = source.querySelector('.detail-col-left'), right = source.querySelector('.detail-col-right');
+                if (left && right) {
+                    columns.replaceChildren(left, right);
+                    columns.style.display = 'flex';
+                    source.hidden = true;
+                    drawer.hidden = false;
+                    document.getElementById('idea-drawer-overlay')?.removeAttribute('hidden');
+                    document.getElementById('drawer-skeleton')?.setAttribute('hidden', '');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+        if (initial.page === 'staff' && ['review-detail', 'work-detail'].includes(variant)) {
+            const dialog = document.getElementById('staff-review-dialog');
+            if (dialog) {
+                if (!dialog.open)
+                    dialog.show();
+                text('#review-title', example.title || 'Fictional school suggestion');
+                text('#review-description', example.description || 'A fictional suggestion for this preview.');
+                text('#review-category', example.category || 'Campus');
+                text('#review-received', 'Oct 1, 2026');
+                text('#review-current-status', variant === 'review-detail' ? 'Needs review' : 'In progress');
+                text('#workflow-state', 'Fictional preview. Real decisions and updates stay disabled.');
+                text('#work-fact-owner', 'Jordan Reyes');
+                text('#work-fact-target', 'Not set');
+                text('#work-fact-started', 'Oct 5, 2026');
+                text('#work-fact-completed', 'Not completed');
+                for (const skeleton of dialog.querySelectorAll('.staff-detail-skeleton'))
+                    skeleton.hidden = true;
+            }
+        }
+    }
+    function initialize() { SfSchoolDesign.apply(document.body, configuration.design, initial.page, configuration.palette); syncMotion(); document.body.classList.toggle('studio-frame-edit', mode === 'edit'); prepareExample(); annotate(); makeOverlay(); const queue = document.getElementById('sip-queue-btn'); if (queue) {
         queue.disabled = true;
         queue.title = 'Preview only: ideas are not stored on this device.';
-    } if (initial.page === 'submit')
-        openForm(); schedule(); }
+    } schedule(); }
     window.addEventListener('message', event => {
         const data = event.data;
         if (event.origin !== origin || event.source !== parent || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || typeof data.type !== 'string')
@@ -316,6 +377,29 @@
             document.getElementById('saved-search-dialog')?.close();
             return;
         }
+        const staffTab = element.closest('[data-review-tab]');
+        if (staffTab) {
+            event.preventDefault();
+            const key = staffTab.dataset.reviewTab;
+            for (const tab of document.querySelectorAll('[data-review-tab]'))
+                tab.setAttribute('aria-selected', String(tab === staffTab));
+            for (const panel of document.querySelectorAll('.staff-review-panel'))
+                panel.hidden = panel.id !== 'review-panel-' + key;
+            return;
+        }
+        if (element.closest('[data-close-review]')) {
+            document.getElementById('staff-review-dialog')?.close();
+            return;
+        }
+        if (element.closest('[data-close-drawer],.panel-close-btn,#idea-drawer-overlay')) {
+            const drawer = document.getElementById('idea-detail-drawer');
+            if (drawer)
+                drawer.hidden = true;
+            document.getElementById('idea-drawer-overlay')?.setAttribute('hidden', '');
+            document.body.style.overflow = '';
+            send('navigate', { page: 'idea', variant: 'page' });
+            return;
+        }
         const route = element.closest('[data-studio-route]')?.dataset.studioRoute;
         if (route) {
             event.preventDefault();
@@ -392,6 +476,9 @@
     else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !typing) {
         event.preventDefault();
         send('shortcut', { command: event.shiftKey ? 'redo' : 'undo' });
+    } if (event.altKey && event.key === 'ArrowUp') {
+        event.preventDefault();
+        send('shortcut', { command: 'parent' });
     } if (event.key === 'Escape') {
         selected = '';
         send('select', { componentId: '' });

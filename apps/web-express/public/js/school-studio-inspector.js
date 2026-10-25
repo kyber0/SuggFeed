@@ -1,7 +1,7 @@
 "use strict";
 (() => {
     const escape = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const input = (field, label, value, max = 200, kind = 'text') => '<label>' + escape(label) + (kind === 'textarea' ? '<textarea rows="3" maxlength="' + max + '" data-property="' + field + '">' + escape(value) + '</textarea><span class="studio-field-count" aria-hidden="true">' + String(value ?? '').length + ' / ' + max + '</span>' : '<input type="' + kind + '" maxlength="' + max + '" data-property="' + field + '" value="' + escape(value) + '">') + '</label>';
+    const input = (field, label, value, max = 200, kind = 'text') => '<label>' + escape(label) + (kind === 'textarea' ? '<textarea rows="3" maxlength="' + max + '" data-property="' + field + '">' + escape(value) + '</textarea><span class="studio-field-count" aria-hidden="true">' + String(value ?? '').length + ' / ' + max + '</span>' : '<input ' + (['link-label', 'link-url', 'name', 'slug', 'label'].includes(field) ? 'required ' : '') + 'type="' + kind + '" maxlength="' + max + '" data-property="' + field + '" value="' + escape(value) + '">') + '</label>';
     function colors(value) { return '<fieldset class="studio-colors"><legend>Brand color presets</legend><div class="studio-color-presets">' + Object.entries(SfSchoolColors.presets).map(([name, color]) => '<button type="button" data-palette="' + name + '" aria-pressed="' + (value === name || value === color) + '" title="' + name + '" aria-label="Use ' + name + ' primary"><span style="background:' + color + '"></span></button>').join('') + '</div><p>Choose a preset or fine-tune the colors below.</p></fieldset>'; }
     const select = (field, label, value, options, disabled = false) => '<label>' + escape(label) + '<select data-property="' + field + '" ' + (disabled ? 'disabled' : '') + '>' + options.map(option => { const [key, text] = Array.isArray(option) ? option : [option, option]; return '<option value="' + escape(key) + '" ' + (key === value ? 'selected' : '') + '>' + escape(text) + '</option>'; }).join('') + '</select></label>';
     const check = (field, label, value, hint = '') => '<label class="studio-check"><input type="checkbox" data-property="' + field + '" ' + (value ? 'checked' : '') + '><span>' + escape(label) + (hint ? '<small style="display:block;font-weight:400">' + escape(hint) + '</small>' : '') + '</span></label>';
@@ -10,7 +10,8 @@
         for (const role of SfSchoolDesign.roles)
             html += '<div class="studio-theme-row"><label for="sd-' + mode + '-' + role + '">' + role[0].toUpperCase() + role.slice(1) + '</label><input class="workspace-input" id="sd-' + mode + '-' + role + '" aria-label="' + mode + ' ' + role + ' color" type="color" data-theme-mode="' + mode + '" data-theme-role="' + role + '" value="' + (d[mode][role] || SfSchoolDesign.defaults(p.palette)[mode][role]) + '"><input aria-label="' + mode + ' ' + role + ' hex" class="workspace-input" type="text" data-theme-mode="' + mode + '" data-theme-role="' + role + '" value="' + (d[mode][role] || SfSchoolDesign.defaults(p.palette)[mode][role]) + '" maxlength="7" required pattern="#[0-9a-fA-F]{6}" spellcheck="false"><button type="button" data-reset-color="' + mode + ':' + role + '" aria-label="Reset ' + mode + ' ' + role + '">↺</button></div>';
         html += '</details>';
-    } html += '</div><p id="studio-theme-issues" role="status">' + escape(SfSchoolDesign.issues(d).join(' ') || 'Text contrast meets 4.5:1 in both appearances.') + '</p><div class="studio-theme-sample" style="background:' + d.light.surface + ';color:' + d.light.text + ';border-color:' + d.light.border + '"><strong>Theme sample</strong><p style="color:' + d.light.muted + '">A readable school workspace.</p><span style="background:' + d.light.primary + ';color:' + (SfSchoolDesign.contrast(d.light.primary, '#000000') >= 4.5 ? '#000000' : '#ffffff') + '">Primary action</span><a href="#" tabindex="-1" style="color:' + d.light.link + '">School link</a></div>'; html += select('design-corners', 'Card corners', d.corners, [['square', 'Subtle · 4 px'], ['rounded', 'Rounded · 12 px'], ['soft', 'Soft · 20 px']]) + select('design-font', 'Workspace typeface', d.font, [['brand', 'SuggFeed brand'], ['inter', 'Inter'], ['system', 'System font']]) + '<button type="button" data-reset-design>Reset theme & page layouts</button><p>State colors, permission rules and SuggFeed branding keep their meaning.</p>'; return html; }
+    } html += '</div><p id="studio-theme-issues" role="status">' + escape(SfSchoolDesign.issues(d).join(' ') || 'Text contrast meets 4.5:1 in both appearances.') + '</p><div class="studio-theme-samples">'; for (const mode of ['light', 'dark'])
+        html += '<div class="studio-theme-sample" data-theme-sample="' + mode + '" style="background:' + d[mode].surface + ';color:' + d[mode].text + ';border-color:' + d[mode].border + '"><strong>' + mode[0].toUpperCase() + mode.slice(1) + ' appearance</strong><p style="color:' + d[mode].muted + '">A readable school workspace.</p><span style="background:' + d[mode].primary + ';color:' + (SfSchoolDesign.contrast(d[mode].primary, '#000000') >= 4.5 ? '#000000' : '#ffffff') + '">Primary action</span><a href="#" tabindex="-1" style="color:' + d[mode].link + '">School link</a></div>'; html += '</div>'; html += select('design-corners', 'Card corners', d.corners, [['square', 'Subtle · 4 px'], ['rounded', 'Rounded · 12 px'], ['soft', 'Soft · 20 px']]) + select('design-font', 'Workspace typeface', d.font, [['brand', 'SuggFeed brand'], ['inter', 'Inter'], ['system', 'System font']]) + '<button type="button" data-reset-design>Reset theme & page layouts</button><p>State colors, permission rules and SuggFeed branding keep their meaning.</p>'; return html; }
     function pageEditor(p, selected) {
         const [, pageId, sectionId] = selected.split('.'), definition = SfSchoolDesign.pages[pageId], settings = p.design?.pages[pageId] || SfSchoolDesign.pageDefaults();
         let html = '<p class="studio-scope-badge">This screen · ' + escape(definition.label) + '</p>';
@@ -18,7 +19,7 @@
             const section = definition.sections[sectionId];
             html += '<p>' + escape(section.label) + ' uses the workspace theme. Its real content remains owned by its author.</p>';
             const styling = settings.sections?.[sectionId] || { spacing: 'inherit', surface: 'inherit', alignment: 'inherit' };
-            html += select('section-spacing', 'Component spacing', styling.spacing, [['inherit', 'Use page spacing'], ['compact', 'Compact'], ['comfortable', 'Comfortable'], ['airy', 'Airy']]) + select('section-surface', 'Component surface', styling.surface, [['inherit', 'Use existing surface'], ['card', 'Card surface'], ['raised', 'Raised surface'], ['transparent', 'Transparent']]) + select('section-alignment', 'Text alignment', styling.alignment, [['inherit', 'Use existing alignment'], ['start', 'Start'], ['center', 'Center']]) + '<button type="button" data-reset-section="' + sectionId + '">Reset this component style</button>';
+            html += select('section-spacing', 'Component spacing', styling.spacing, [['inherit', 'Use page spacing · ' + settings.spacing], ['compact', 'Compact'], ['comfortable', 'Comfortable'], ['airy', 'Airy']]) + select('section-surface', 'Component surface', styling.surface, [['inherit', 'Use existing surface'], ['card', 'Card surface'], ['raised', 'Raised surface'], ['transparent', 'Transparent']]) + select('section-alignment', 'Text alignment', styling.alignment, [['inherit', 'Use existing alignment'], ['start', 'Start'], ['center', 'Center']]) + '<button type="button" data-reset-section="' + sectionId + '">Reset this component style</button>';
             if (section.optional)
                 html += '<label class="studio-check"><input type="checkbox" data-section-visible="' + sectionId + '" ' + (!settings.hidden.includes(sectionId) ? 'checked' : '') + '><span>Show this section</span></label>';
             if (section.reorder)
@@ -46,7 +47,9 @@
     }
     function mount(host, model, settings) {
         let selected = 'school.identity', renderedSelection = '';
-        const state = () => model.getState(), apply = (property, value) => model.applyChange(selected, property, value);
+        const pendingColors = new Map();
+        let issueComponent = '';
+        const state = () => ({ ...model.getState(), configuration: settings.getConfiguration?.() || model.getState().configuration }), apply = (property, value) => model.applyChange(selected, property, value);
         const toolbar = (label, kind, id, index) => '<div class="studio-repeat-toolbar" draggable="true" data-drag-kind="' + kind + '" data-drag-id="' + id + '"><strong>' + escape(label) + '</strong><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="-1" aria-label="Move ' + escape(label) + ' up">↑</button><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="1" aria-label="Move ' + escape(label) + ' down">↓</button></div>';
         function render() {
             const p = state().configuration;
@@ -110,6 +113,8 @@
             }
             else if (selected === 'school.email')
                 html = input('invitation', 'Invitation welcome', p.email.invitation, 1000, 'textarea') + input('introduction', 'School email introduction', p.email.introduction, 1000, 'textarea') + select('digest', 'Digest availability', p.email.digest, [['weekly', 'Weekly, for opted-in users'], ['off', 'Off']]) + '<p>SuggFeed identification, verified sender, security instructions and unsubscribe choices are retained.</p>';
+            else if (settings.readOnly?.() && (selected.startsWith('category:') || selected.startsWith('question:')))
+                html = '<p>This item is not part of the published version. Switch to Draft to edit it.</p>';
             else
                 html = '<p>SuggFeed branding, shared navigation, security state colors and account permissions are managed by the platform. Select a school component to edit its supported properties.</p>';
             host.innerHTML = '<section class="studio-inspector-section">' + html + '</section>';
@@ -127,7 +132,7 @@
                 if (child.classList.contains('studio-scope-badge') || child.classList.contains('studio-selection-empty'))
                     continue;
                 const property = (child.matches('[data-property]') ? child : child.querySelector('[data-property]'))?.dataset.property;
-                if (child.matches('button[data-reset-design],button[data-reset-page],button[data-reset-section]'))
+                if (property === 'slug' || child.matches('button[data-reset-design],button[data-reset-page],button[data-reset-section]'))
                     current = 'Advanced';
                 else if (child.matches('.studio-colors,.studio-theme-modes,.studio-theme-sample,.studio-asset,#studio-theme-issues') || property === 'icon' || property === 'section-surface')
                     current = 'Appearance';
@@ -170,6 +175,34 @@
                 for (const details of host.querySelectorAll('details'))
                     if (openDetails.has(details.querySelector('summary')?.textContent))
                         details.open = !!openDetails.get(details.querySelector('summary')?.textContent);
+            for (const label of Array.from(host.querySelectorAll('label'))) {
+                const field = label.querySelector('[data-property]');
+                if (!field || label.querySelector('.studio-property-origin'))
+                    continue;
+                const property = field.dataset.property;
+                const inherited = (selected === 'school.identity' && property === 'displayName' && !p.displayName) || (selected === 'home.hero' && !p.welcome[property]) || (selected === 'home.links' && property === 'help' && !p.welcome.help) || field.value === 'inherit';
+                const note = document.createElement('small');
+                note.className = 'studio-property-origin';
+                note.textContent = inherited ? 'Inherited default · changes apply only after publication' : selected.startsWith('section.') ? 'This component override' : selected.startsWith('page.') ? (!p.design?.pages[selected.split('.')[1]] ? 'Inherited page defaults' : 'This page override') : selected.startsWith('home.') ? 'Home content' : 'School-wide setting';
+                label.append(note);
+                if (['home.hero', 'home.links', 'school.identity'].includes(selected) && ['displayName', 'headline', 'intro', 'message', 'help'].includes(property) || selected.startsWith('page.') && ['layout', 'spacing', 'cards'].includes(property) || selected.startsWith('section.') && property.startsWith('section-')) {
+                    const reset = document.createElement('button');
+                    reset.type = 'button';
+                    reset.dataset.resetField = property;
+                    reset.className = 'studio-field-reset';
+                    reset.textContent = 'Use default';
+                    label.after(reset);
+                }
+            }
+            if (!settings.readOnly?.())
+                for (const [key, value] of pendingColors) {
+                    const [mode, role] = key.split(':');
+                    const field = host.querySelector('input[type="text"][data-theme-mode="' + mode + '"][data-theme-role="' + role + '"]');
+                    if (field) {
+                        field.value = value;
+                        field.setAttribute('aria-invalid', 'true');
+                    }
+                }
             renderedSelection = selected;
             settings.controls?.refresh();
             window.sfFileUpload?.refresh(host);
@@ -190,19 +223,31 @@
             }
             if (panel)
                 panel.scrollTop = scroll;
+            settings.onValidation?.();
         }
         host.addEventListener('focusout', () => model.endGroup());
         host.addEventListener('input', event => {
+            if (settings.readOnly?.())
+                return;
             const changed = event.target;
             const count = changed.closest('label')?.querySelector('.studio-field-count');
             if (count)
                 count.textContent = changed.value.length + ' / ' + changed.maxLength;
             const element = event.target;
             const property = element.dataset.property;
+            const origin = element.closest('label')?.querySelector('.studio-property-origin');
+            if (origin && property)
+                origin.textContent = !element.value && ['home.hero', 'home.links', 'school.identity'].includes(selected) ? 'Inherited default · changes apply only after publication' : selected.startsWith('home.') ? 'Custom value · Home only' : selected.startsWith('section.') ? 'This component override' : selected.startsWith('page.') ? 'This page override' : 'Custom school setting';
             const config = state().configuration;
             if (element.dataset.themeMode && element.dataset.themeRole) {
-                if (!/^#[0-9a-f]{6}$/i.test(element.value))
+                const pendingKey = element.dataset.themeMode + ':' + element.dataset.themeRole;
+                if (!/^#[0-9a-f]{6}$/i.test(element.value)) {
+                    pendingColors.set(pendingKey, element.value);
+                    element.setAttribute('aria-invalid', 'true');
                     return;
+                }
+                pendingColors.delete(pendingKey);
+                element.removeAttribute('aria-invalid');
                 const design = structuredClone(config.design || SfSchoolDesign.defaults(config.palette));
                 const mode = element.dataset.themeMode, role = element.dataset.themeRole;
                 design[mode][role] = element.value.toLowerCase();
@@ -210,6 +255,17 @@
                 for (const other of host.querySelectorAll('[data-theme-mode="' + mode + '"][data-theme-role="' + role + '"]'))
                     if (other !== element)
                         other.value = element.value;
+                for (const sample of host.querySelectorAll('[data-theme-sample]')) {
+                    const c = design[sample.dataset.themeSample];
+                    sample.style.background = c.surface;
+                    sample.style.color = c.text;
+                    sample.style.borderColor = c.border;
+                    sample.querySelector('p').style.color = c.muted;
+                    const action = sample.querySelector('span');
+                    action.style.background = c.primary;
+                    action.style.color = SfSchoolDesign.contrast(c.primary, '#000000') >= 4.5 ? '#000000' : '#ffffff';
+                    sample.querySelector('a').style.color = c.link;
+                }
                 document.getElementById('studio-theme-issues').textContent = SfSchoolDesign.issues(design).join(' ') || 'Text contrast meets 4.5:1 in both appearances.';
                 return;
             }
@@ -266,26 +322,39 @@
                 if (property === 'options')
                     value = value.split(/\r?\n/).map((v) => v.trim()).filter(Boolean);
                 if (property === 'type') {
-                    if (value !== 'choice')
-                        model.applyChange(selected, 'options', []);
-                    else if (!p.form.questions.find((q) => q.id === selected.slice(9))?.options.length)
-                        model.applyChange(selected, 'options', ['Option 1', 'Option 2']);
-                }
-                apply(property, value);
-                if (property === 'type')
+                    const row = p.form.questions.find((q) => q.id === selected.slice(9)), options = value !== 'choice' ? [] : row?.options.length ? row.options : ['Option 1', 'Option 2'];
+                    model.batch([{ componentId: selected, property: 'options', value: options }, { componentId: selected, property, value }]);
                     render();
+                }
+                else
+                    apply(property, value);
             }
         });
         host.addEventListener('click', async (event) => {
+            if (settings.readOnly?.())
+                return;
             const button = event.target.closest('button');
             if (!button)
                 return;
             const p = state().configuration;
+            if (button.dataset.resetField) {
+                const property = button.dataset.resetField;
+                if (property.startsWith('section-')) {
+                    const [, pageId, sectionId] = selected.split('.'), sections = structuredClone(p.design?.pages[pageId]?.sections || {});
+                    sections[sectionId] = { spacing: 'inherit', surface: 'inherit', alignment: 'inherit', ...sections[sectionId], [property.slice(8)]: 'inherit' };
+                    model.applyChange('page.' + pageId, 'sections', sections);
+                }
+                else if (selected.startsWith('page.'))
+                    apply(property, SfSchoolDesign.pageDefaults()[property]);
+                else
+                    apply(property, '');
+                render();
+                return;
+            }
             if (button.dataset.palette) {
-                model.applyChange('school.identity', 'palette', button.dataset.palette);
                 const design = structuredClone(p.design || SfSchoolDesign.defaults(button.dataset.palette));
                 design.light.primary = design.dark.primary = SfSchoolColors.resolve(button.dataset.palette);
-                model.applyChange('school.theme', 'design', design);
+                model.batch([{ componentId: 'school.identity', property: 'palette', value: button.dataset.palette }, { componentId: 'school.theme', property: 'design', value: design }]);
                 render();
                 return;
             }
@@ -296,11 +365,13 @@
             if (button.hasAttribute('data-reset-design')) {
                 if (settings.confirm && !await settings.confirm('Reset the school theme and every page layout? School content, members and the published version are preserved until you save and publish.', 'Reset theme & layouts'))
                     return;
+                pendingColors.clear();
                 model.applyChange('school.theme', 'design', SfSchoolDesign.defaults(p.palette));
                 render();
                 return;
             }
             if (button.dataset.resetColor) {
+                pendingColors.delete(button.dataset.resetColor);
                 const [mode, role] = button.dataset.resetColor.split(':');
                 const design = structuredClone(p.design || SfSchoolDesign.defaults(p.palette));
                 design[mode][role] = SfSchoolDesign.defaults(p.palette)[mode][role];
@@ -349,7 +420,7 @@
                 if (kind === 'link') {
                     if (p.welcome.links.length >= 5)
                         return settings.say('Use up to five official links.');
-                    apply('links', [...p.welcome.links, { label: 'School website', url: 'https://example.edu.ph/' }]);
+                    apply('links', [...p.welcome.links, { label: '', url: '' }]);
                     render();
                 }
             }
@@ -377,7 +448,10 @@
                 render();
             }
         });
-        host.addEventListener('dragstart', event => { const row = event.target.closest('[data-drag-kind]'); if (!row || !event.dataTransfer)
+        host.addEventListener('dragstart', event => { if (settings.readOnly?.()) {
+            event.preventDefault();
+            return;
+        } const row = event.target.closest('[data-drag-kind]'); if (!row || !event.dataTransfer)
             return; event.dataTransfer.setData('application/x-suggfeed-studio', JSON.stringify({ kind: row.dataset.dragKind, id: row.dataset.dragId })); event.dataTransfer.effectAllowed = 'move'; });
         host.addEventListener('dragover', event => { const target = event.target.closest('[data-drag-kind]'); for (const row of host.querySelectorAll('[data-drop-target]'))
             row.removeAttribute('data-drop-target'); if (target) {
@@ -388,7 +462,10 @@
         } });
         host.addEventListener('dragend', () => { for (const row of host.querySelectorAll('[data-drop-target]'))
             row.removeAttribute('data-drop-target'); });
-        host.addEventListener('drop', event => { for (const row of host.querySelectorAll('[data-drop-target]'))
+        host.addEventListener('drop', event => { if (settings.readOnly?.()) {
+            event.preventDefault();
+            return;
+        } for (const row of host.querySelectorAll('[data-drop-target]'))
             row.removeAttribute('data-drop-target'); const target = event.target.closest('[data-drag-kind]'); if (!target || !event.dataTransfer)
             return; event.preventDefault(); try {
             const source = JSON.parse(event.dataTransfer.getData('application/x-suggfeed-studio'));
@@ -407,7 +484,8 @@
         catch {
             settings.say('Use the move buttons to reorder this item.');
         } });
-        host.addEventListener('change', async (event) => { const input = event.target; if (!input.dataset.upload)
+        host.addEventListener('change', async (event) => { if (settings.readOnly?.())
+            return; const input = event.target; if (!input.dataset.upload)
             return; const file = input.files?.[0], kind = input.dataset.upload; if (!file)
             return; const feedback = input.closest('.studio-asset')?.querySelector('[data-upload-feedback]'); const uploadStatus = (message) => { if (feedback) {
             feedback.hidden = false;
@@ -424,7 +502,7 @@
             const result = await settings.request('assets/finalize', { kind, id: intent.id });
             model.applyChange('school.identity', kind, result.id);
             render();
-            settings.say('Image ready. Save the draft to keep this change.');
+            settings.say('Image ready. Your draft will save privately.');
         }
         catch (error) {
             uploadStatus(error instanceof Error ? error.message : 'Image upload failed.');
@@ -435,7 +513,29 @@
             input.disabled = false;
             input.value = '';
         } });
-        return { render };
+        function validation() { const issues = []; issueComponent = ''; if (pendingColors.size) {
+            issues.push('Complete the six-digit color values in Colors & theme.');
+            issueComponent = 'school.theme';
+        } const invalid = settings.readOnly?.() ? undefined : Array.from(host.querySelectorAll('input,select,textarea')).find(field => !field.disabled && !field.validity.valid); if (invalid) {
+            issues.push('Correct ' + (invalid.getAttribute('aria-label') || invalid.closest('label')?.childNodes[0]?.textContent || 'the selected property') + '.');
+            issueComponent || (issueComponent = selected);
+        } const p = model.getState().configuration; if (!p.categories.some((c) => c.active)) {
+            issues.push('Keep at least one active school category.');
+            issueComponent || (issueComponent = 'community.categories');
+        } for (const link of p.welcome.links) {
+            let valid = false;
+            try {
+                const url = new URL(link.url);
+                valid = url.protocol === 'https:' && !url.username && !url.password && !!link.label.trim();
+            }
+            catch { }
+            if (!valid) {
+                issues.push('Official links need a label and an HTTPS address without credentials.');
+                issueComponent || (issueComponent = 'home.links');
+                break;
+            }
+        } return issues; }
+        return { render, validation, issueComponent: () => issueComponent, hasPending: () => pendingColors.size > 0, discardPending() { const had = pendingColors.size > 0; pendingColors.clear(); return had; } };
     }
     Object.assign(window, { sfSchoolStudioInspector: { mount } });
 })();

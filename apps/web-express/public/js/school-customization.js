@@ -5,6 +5,10 @@
         return;
     const base = host.dataset.base, initial = JSON.parse(document.getElementById('studio-initial').textContent || '{}');
     const api = window.sfSchoolStudioModel, model = api.create({ configuration: initial.configuration, serverRevision: initial.revision });
+    const variant = document.getElementById('studio-variant');
+    let sourceSequence = 0;
+    let source = 'draft', published = initial.published, publishedVersion = initial.publishedVersion, lastSavedAt = initial.savedAt, navTab = 'pages', conflict = false, saveFailed = false, reviewRevision = -1;
+    let autosaveTimer;
     const frame = document.getElementById('studio-frame'), board = document.getElementById('studio-board'), space = document.getElementById('studio-board-space'), canvas = document.getElementById('studio-canvas-scroll'), loading = document.getElementById('studio-frame-loading');
     const page = document.getElementById('studio-page'), scenario = document.getElementById('studio-scenario'), theme = document.getElementById('studio-theme'), width = document.getElementById('studio-width'), zoom = document.getElementById('studio-zoom');
     if (innerWidth >= 1024)
@@ -20,10 +24,13 @@
     let instance = '', sequence = 0, incoming = 0, ready = false, busy = false, allowed = true, mode = new URLSearchParams(location.search).get('mode') === 'preview' ? 'preview' : 'edit', view = '', renderTimer, renderController = null, renderVersion = 0, renderedKey = '', lastConfiguration = JSON.stringify(model.getState().configuration), lastSelection = '', changes = initial.changes || [], latest = null, returnFocus = null;
     const controls = window.sfControls.mount(host, { endGroup: () => model.endGroup(), beginGroup: () => model.beginGroup() });
     const pill = document.getElementById('studio-save-state');
-    const say = (text, error = false) => { status.textContent = text; status.parentElement.dataset.error = String(error); pill.dataset.state = error ? 'error' : model.getState().dirty ? 'dirty' : 'saved'; pill.textContent = error ? 'Needs attention' : text.startsWith('Saving') ? 'Saving…' : text.startsWith('Uploading') ? 'Uploading…' : text.startsWith('Published') ? 'Published' : model.getState().dirty ? 'Unsaved changes' : 'Draft saved'; };
-    function syncActions() { const state = model.getState(), blocked = busy || !allowed || uploading; const saveButton = document.getElementById('studio-save'), reviewButton = document.getElementById('studio-review'), publishButton = document.getElementById('studio-publish'); saveButton.disabled = blocked || !state.dirty; reviewButton.disabled = blocked || state.dirty; const reason = !allowed ? 'Editor access is unavailable.' : uploading ? 'Wait for the image upload to finish.' : busy ? 'Your change is being processed.' : state.dirty ? 'Save your draft before reviewing publication.' : 'Review saved changes before publishing.'; reviewButton.title = reason; document.getElementById('studio-review-help').textContent = reason; saveButton.title = state.dirty ? 'Save privately · Ctrl/⌘ S' : 'Your draft is saved'; publishButton.disabled = blocked || state.dirty || !document.getElementById('studio-publish-confirm').checked; document.getElementById('studio-request-review').disabled = blocked || state.dirty; controls.schedule(); }
-    async function confirmChange(message, label) { controls.close(); const dialog = document.createElement('dialog'); dialog.className = 'studio-dialog'; const title = document.createElement('h2'), heading = document.createElement('header'), body = document.createElement('p'), actions = document.createElement('div'), cancel = document.createElement('button'), confirm = document.createElement('button'); title.id = 'studio-confirm-title'; title.textContent = 'Reset workspace settings?'; heading.append(title); dialog.setAttribute('aria-labelledby', title.id); body.textContent = message; actions.className = 'studio-dialog-actions'; cancel.type = confirm.type = 'button'; cancel.textContent = 'Cancel'; confirm.textContent = label; confirm.className = 'studio-primary'; actions.append(cancel, confirm); dialog.append(heading, body, actions); document.body.append(dialog); return new Promise(resolve => { cancel.addEventListener('click', () => dialog.close('cancel')); confirm.addEventListener('click', () => dialog.close('confirm')); dialog.addEventListener('close', () => { resolve(dialog.returnValue === 'confirm'); dialog.remove(); }, { once: true }); dialog.showModal(); cancel.focus(); }); }
-    function revoked(message) { allowed = false; controls.close(); renderController?.abort(); clearTimeout(renderTimer); for (const control of host.querySelectorAll('input,select,textarea,button'))
+    function validation() { const errors = inspector?.validation?.() || []; const issues = SfSchoolDesign.issues(model.getState().configuration.design || SfSchoolDesign.defaults(model.getState().configuration.palette)); const node = document.getElementById('studio-validation'); node.hidden = !errors.length && !issues.length; node.textContent = [...errors, ...issues].join(' '); return !errors.length && !issues.length; }
+    function queueSave() { clearTimeout(autosaveTimer); if (!allowed || conflict || saveFailed || uploading || !navigator.onLine || !model.getState().dirty)
+        return; autosaveTimer = setTimeout(() => void save(true), 1000); }
+    const say = (text, error = false) => { status.textContent = text; status.parentElement.dataset.error = String(error); pill.dataset.state = error ? 'error' : model.getState().dirty ? 'dirty' : 'saved'; pill.textContent = text.startsWith('Offline') ? 'Offline' : conflict ? 'Conflict' : saveFailed ? 'Save failed' : error ? 'Needs attention' : text.startsWith('Saving') ? 'Saving…' : text.startsWith('Uploading') ? 'Uploading…' : text.startsWith('Published') ? 'Published' : model.getState().dirty ? 'Unsaved changes' : 'Draft saved'; };
+    function syncActions() { const state = model.getState(), blocked = busy || !allowed || uploading, valid = validation(); const saveButton = document.getElementById('studio-save'), reviewButton = document.getElementById('studio-review'), publishButton = document.getElementById('studio-publish'); document.getElementById('studio-undo').disabled = blocked || (!state.canUndo && !inspector.hasPending?.()); saveButton.disabled = blocked || !state.dirty || !valid || conflict; reviewButton.disabled = blocked || !valid || conflict; const reason = !allowed ? 'Editor access is unavailable.' : uploading ? 'Wait for image processing.' : conflict ? 'Compare the newer draft before saving.' : !valid ? 'Correct the highlighted properties before saving.' : busy ? 'Processing your change…' : state.dirty ? 'Review will save your draft first.' : 'Draft autosaves privately. Publication is always explicit.'; reviewButton.title = reason; document.getElementById('studio-review-help').textContent = reason; saveButton.title = 'Save privately · Ctrl/⌘ S'; publishButton.disabled = blocked || state.dirty || !valid || reviewRevision !== state.serverRevision || !document.getElementById('studio-publish-confirm').checked; document.getElementById('studio-request-review').disabled = blocked || state.dirty || !valid; controls.schedule(); }
+    async function confirmChange(message, label) { controls.close(); const dialog = document.createElement('dialog'); dialog.className = 'studio-dialog'; const title = document.createElement('h2'), heading = document.createElement('header'), body = document.createElement('p'), actions = document.createElement('div'), cancel = document.createElement('button'), confirm = document.createElement('button'); title.id = 'studio-confirm-title'; title.textContent = label + '?'; heading.append(title); dialog.setAttribute('aria-labelledby', title.id); body.textContent = message; actions.className = 'studio-dialog-actions'; cancel.type = confirm.type = 'button'; cancel.textContent = 'Cancel'; confirm.textContent = label; confirm.className = 'studio-primary'; actions.append(cancel, confirm); dialog.append(heading, body, actions); document.body.append(dialog); return new Promise(resolve => { cancel.addEventListener('click', () => dialog.close('cancel')); confirm.addEventListener('click', () => dialog.close('confirm')); dialog.addEventListener('close', () => { resolve(dialog.returnValue === 'confirm'); dialog.remove(); }, { once: true }); dialog.showModal(); cancel.focus(); }); }
+    function revoked(message) { allowed = false; ready = false; instance = crypto.randomUUID(); frame.src = 'about:blank'; clearTimeout(autosaveTimer); controls.close(); renderController?.abort(); clearTimeout(renderTimer); for (const control of host.querySelectorAll('input,select,textarea,button'))
         control.disabled = true; document.getElementById('studio-copy')?.removeAttribute('disabled'); say(message + ' Your unsaved changes remain in memory. Copy them before leaving.', true); const dialog = document.getElementById('studio-conflict-dialog'); document.getElementById('studio-conflict-sections').textContent = 'Workspace access changed. Further saves and previews are blocked.'; const load = document.getElementById('studio-load-latest'); load.disabled = true; if (!dialog.open)
         dialog.showModal(); }
     async function request(action, body) { const response = await fetch(base + '/' + action, { method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(20000), ...(body !== undefined ? { body: JSON.stringify(body) } : {}) }); if ([401, 403].includes(response.status) || response.redirected) {
@@ -41,12 +48,13 @@
         Object.assign(error, { status: response.status, code: result.code });
         throw error;
     } return result; }
-    const inspector = window.sfSchoolStudioInspector.mount(document.getElementById('studio-inspector'), model, { ...initial, base, controls, confirm: confirmChange, select: (id) => select(id), say, request, uploading: (value) => { uploading = value; syncActions(); } });
+    const inspector = window.sfSchoolStudioInspector.mount(document.getElementById('studio-inspector'), model, { ...initial, base, controls, getConfiguration: () => source === 'published' ? published : model.getState().configuration, readOnly: () => source === 'published', onValidation: () => syncActions(), confirm: confirmChange, select: (id) => select(id), say, request, uploading: (value) => { uploading = value; syncActions(); if (!value)
+            queueSave(); } });
     const registry = () => api.registry(model.getState().configuration, page.value);
     function find(id) { return registry().find((n) => n.id === id) || Object.keys(SfSchoolDesign.pages).flatMap(p => api.registry(model.getState().configuration, p)).find((n) => n.id === id); }
     function send(type, payload = {}) { if (ready && frame.contentWindow)
         frame.contentWindow.postMessage({ protocol: 1, instanceId: instance, sequence: ++sequence, type, payload }, location.origin); }
-    function layout() { const viewport = Number(width.value), padding = getComputedStyle(canvas), available = Math.max(220, canvas.clientWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight)); const scale = zoom.value === 'fit' ? Math.min(1, available / viewport) : Number(zoom.value); const height = Math.max(740, (canvas.clientHeight - 40) / scale); frame.style.width = viewport + 'px'; frame.style.height = height + 'px'; board.style.width = viewport + 'px'; board.style.height = height + 'px'; board.style.transform = 'scale(' + scale + ')'; space.style.width = viewport * scale + 'px'; space.style.height = height * scale + 'px'; document.getElementById('studio-canvas-title').textContent = page.selectedOptions[0].text + ' · ' + viewport + ' px'; }
+    function layout() { const viewport = Number(width.value), padding = getComputedStyle(canvas), available = Math.max(220, canvas.clientWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight)); const scale = zoom.value === 'fit' ? Math.min(1, available / viewport) : Number(zoom.value); const height = Math.max(740, (canvas.clientHeight - 40) / scale); frame.style.width = viewport + 'px'; frame.style.height = height + 'px'; board.style.width = viewport + 'px'; board.style.height = height + 'px'; board.style.transform = 'scale(' + scale + ')'; space.style.width = viewport * scale + 'px'; space.style.height = height * scale + 'px'; document.getElementById('studio-canvas-title').textContent = page.selectedOptions[0].text + ' · ' + viewport + ' px · ' + (source === 'published' ? 'Published v' + publishedVersion : 'Draft'); }
     function openPanel(panel, opener) { controls.close(); if (innerWidth < 1024) {
         returnFocus = opener || document.activeElement;
         host.dataset.sheet = panel;
@@ -79,37 +87,69 @@
         host.dataset[panel + 'Collapsed'] = 'true';
         layout();
     } }
-    function drawTree() { const query = search.value.toLowerCase(); tree.replaceChildren(); let group = ''; for (const n of registry().filter((n) => n.label.toLowerCase().includes(query))) {
-        const scope = n.group === 'workspace' ? 'Workspace · all screens' : 'This screen';
-        if (scope !== group) {
-            const heading = document.createElement('h3');
-            heading.textContent = scope;
-            heading.className = 'studio-tree-group';
-            tree.append(heading);
-            group = scope;
+    function drawTree() {
+        const query = search.value.toLowerCase();
+        tree.replaceChildren();
+        host.dataset.navigationTab = navTab;
+        document.querySelectorAll('[data-studio-tab]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.studioTab === navTab)));
+        const nodes = navTab === 'pages' ? Object.entries(SfSchoolDesign.pages).map(([id, p]) => ({ id: 'page.' + id, label: p.label, group: id === 'staff' ? 'Staff experience' : 'Student experience', pages: [id] })) : registry().filter((n) => !(n.id.startsWith('section.') && presentComponents && !presentComponents.has(n.id)));
+        let group = '';
+        let groupRoot = tree;
+        for (const n of nodes.filter((n) => (n.label + ' ' + n.group + ' ' + n.id).toLowerCase().includes(query))) {
+            const scope = navTab === 'pages' ? n.group : n.group === 'workspace' ? 'School-wide' : 'On this screen';
+            if (scope !== group) {
+                groupRoot = tree;
+                if (scope === 'School-wide') {
+                    const disclosure = document.createElement('details'), summary = document.createElement('summary');
+                    disclosure.className = 'studio-global-components';
+                    summary.textContent = 'School-wide settings';
+                    disclosure.open = !!query || registry().some((item) => item.group === 'workspace' && item.id === model.getState().selection?.componentId);
+                    disclosure.append(summary);
+                    tree.append(disclosure);
+                    groupRoot = disclosure;
+                }
+                else {
+                    const heading = document.createElement('h3');
+                    heading.textContent = scope;
+                    heading.className = 'studio-tree-group';
+                    tree.append(heading);
+                }
+                group = scope;
+            }
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = n.label;
+            button.dataset.component = n.id;
+            button.setAttribute('aria-pressed', String(navTab === 'pages' ? n.id === 'page.' + page.value : model.getState().selection?.componentId === n.id));
+            button.disabled = !allowed;
+            button.addEventListener('click', () => { select(n.id); if (innerWidth < 1024)
+                closePanel(); });
+            groupRoot.append(button);
         }
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = n.label;
-        button.dataset.component = n.id;
-        button.setAttribute('aria-pressed', String(model.getState().selection?.componentId === n.id));
-        const absent = (n.id.startsWith('section.') || n.id.startsWith('page.')) && presentComponents && !presentComponents.has(n.id);
-        button.disabled = !allowed || !!absent;
-        if (absent) {
-            button.title = 'Not present in this screen, viewport or example.';
-            button.textContent += ' · unavailable';
+        if (!tree.children.length) {
+            const p = document.createElement('p');
+            p.textContent = 'No matching components in this preview. Try another page or state.';
+            tree.append(p);
         }
-        button.addEventListener('click', () => { select(n.id); if (innerWidth < 1024)
-            closePanel(); });
-        tree.append(button);
-    } if (!tree.children.length) {
-        const p = document.createElement('p');
-        p.textContent = 'No matching components.';
-        tree.append(p);
-    } }
+    }
+    function fillVariants() { const chosen = variant.value; variant.replaceChildren(); for (const [value, label] of initial.previewVariants?.[page.value] || [['default', 'Default view']]) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        variant.append(option);
+    } if (Array.from(variant.options).some(option => option.value === chosen))
+        variant.value = chosen; controls.schedule(); }
+    function selectParent() { const id = model.getState().selection?.componentId || ''; select(id.startsWith('section.') ? 'page.' + id.split('.')[1] : id.startsWith('category:') ? 'community.categories' : id.startsWith('question:') ? 'submission.instructions' : id.startsWith('home.') ? 'page.home' : 'school.theme'); }
     function select(id, fromFrame = false) {
         if (!allowed)
             return;
+        if (!id && fromFrame) {
+            model.select(null);
+            inspector.render();
+            document.getElementById('studio-selection-title').textContent = 'Select a component';
+            document.getElementById('studio-property-scope').textContent = 'Choose a component in this page.';
+            return;
+        }
         if (!id)
             id = 'school.theme';
         const component = find(id);
@@ -119,11 +159,24 @@
             page.value = component.pages[0];
             navigate(false);
         }
+        if (page.value === 'submit') {
+            const target = id.startsWith('question:') || id === 'submission.instructions' ? 'questions' : id.startsWith('category:') || id === 'community.categories' ? 'categories' : '';
+            if (target && variant.value !== target) {
+                variant.value = target;
+                navigate(false);
+            }
+        }
+        if (fromFrame) {
+            navTab = 'components';
+            document.querySelectorAll('[data-studio-tab]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.studioTab === navTab)));
+        }
         model.select({ componentId: id });
         document.getElementById('studio-selection-title').textContent = component.label;
         document.getElementById('studio-breadcrumb').textContent = page.selectedOptions[0].text + ' / ' + component.group;
         document.getElementById('studio-mobile-selection').textContent = component.label;
         inspector.render();
+        document.getElementById('studio-properties-form').inert = source === 'published';
+        document.getElementById('studio-property-scope').textContent = source === 'published' ? 'Published comparison · switch to Draft to edit' : component.group === 'workspace' ? 'All student and staff screens in this school' : component.group === 'category' ? 'School-wide category' : component.group === 'question' ? 'School submission form' : 'This page · ' + page.selectedOptions[0].text;
         if (innerWidth >= 1024)
             openPanel('properties');
         controls.refresh();
@@ -136,9 +189,9 @@
         const version = ++renderVersion;
         renderController?.abort();
         renderController = new AbortController();
-        const configuration = structuredClone(model.getState().configuration), key = structure(configuration), requestPage = page.value, requestInstance = instance;
+        const configuration = structuredClone(source === 'published' ? published : model.getState().configuration), key = source + ':' + structure(configuration), requestPage = page.value, requestInstance = instance;
         try {
-            const response = await fetch(base + '/preview/render', { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, signal: renderController.signal, body: JSON.stringify({ configuration, page: requestPage, scenario: scenario.value, theme: theme.value, view: page.value === 'roadmap' ? (view || configuration.design?.pages.roadmap?.view || 'board') : 'board' }) });
+            const response = await fetch(base + '/preview/render', { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, signal: renderController.signal, body: JSON.stringify({ configuration, source, variant: variant.value, page: requestPage, scenario: scenario.value, theme: theme.value, view: page.value === 'roadmap' ? (view || configuration.design?.pages.roadmap?.view || 'board') : 'board' }) });
             if ([401, 403].includes(response.status) || response.redirected) {
                 revoked('Your editor access changed.');
                 return;
@@ -151,8 +204,14 @@
                     revoked(data.error || 'Editor access changed.');
                 throw new Error(data.error || 'Complete the property fields to refresh the preview.');
             }
+            if (source === 'published' && data.configuration) {
+                published = data.configuration;
+                publishedVersion = data.publishedVersion;
+            }
+            if (source === 'published')
+                inspector.render();
             renderedKey = key;
-            send('replace-fragment', { html: data.html, configuration: model.getState().configuration, renderedConfiguration: configuration });
+            send('replace-fragment', { html: data.html, configuration: source === 'published' ? published : model.getState().configuration, renderedConfiguration: configuration });
             loading.hidden = true;
         }
         catch (error) {
@@ -161,10 +220,11 @@
         }
     }
     function navigate(resetSelection = true) { if (!allowed)
-        return; controls.close(); controls.schedule(); presentComponents = null; ready = false; incoming = 0; sequence = 0; instance = crypto.randomUUID(); renderVersion++; renderController?.abort(); clearTimeout(renderTimer); loading.hidden = false; frame.src = base + '/preview/content?' + new URLSearchParams({ page: page.value, scenario: scenario.value, theme: theme.value, view: view || model.getState().configuration.design?.pages.roadmap?.view || 'board', instance }); if (resetSelection) {
+        return; controls.close(); controls.schedule(); presentComponents = null; ready = false; incoming = 0; sequence = 0; instance = crypto.randomUUID(); renderVersion++; renderController?.abort(); clearTimeout(renderTimer); loading.hidden = false; frame.src = base + '/preview/content?' + new URLSearchParams({ page: page.value, scenario: scenario.value, theme: theme.value, source, variant: variant.value, view: view || model.getState().configuration.design?.pages.roadmap?.view || 'board', instance }); if (resetSelection) {
         model.setPage(page.value);
         document.getElementById('studio-selection-title').textContent = 'Select a component';
         document.getElementById('studio-breadcrumb').textContent = page.selectedOptions[0].text;
+        document.getElementById('studio-property-scope').textContent = source === 'published' ? 'Published comparison · switch to Draft to edit' : 'Select a component in ' + page.selectedOptions[0].text;
         inspector.render();
     } drawTree(); layout(); }
     let pendingPatch = false;
@@ -178,29 +238,35 @@
             drawTree();
             if (!pendingPatch) {
                 pendingPatch = true;
-                requestAnimationFrame(() => { pendingPatch = false; send('patch', { configuration: model.getState().configuration }); });
+                requestAnimationFrame(() => { pendingPatch = false; if (source === 'draft')
+                    send('patch', { configuration: model.getState().configuration }); });
             }
             clearTimeout(renderTimer);
-            if (structure(state.configuration) !== renderedKey)
-                renderTimer = setTimeout(() => void render(), 250);
-            say(state.dirty ? 'Unsaved changes · save privately before publishing.' : 'Draft saved · preview matches the saved configuration.');
+            if (source === 'draft' && 'draft:' + structure(state.configuration) !== renderedKey)
+                renderTimer = setTimeout(() => void render(), 350);
+            if (state.dirty) {
+                reviewRevision = -1;
+                document.getElementById('studio-publish-confirm').checked = false;
+            }
+            say(!navigator.onLine ? 'Offline · edits stay in this workspace.' : state.dirty ? 'Unsaved changes · saving privately…' : 'Draft saved. Publication stays under your control.');
+            saveFailed = false;
+            queueSave();
         }
         syncActions();
+        if (document.getElementById('studio-review-dialog').open && reviewRevision !== state.serverRevision)
+            document.getElementById('studio-review-blockers').textContent = 'The draft changed. Close this dialog and review the latest saved changes before publishing.';
         if (state.selection?.componentId !== lastSelection) {
             lastSelection = state.selection?.componentId || '';
             drawTree();
         }
     });
-    async function showConflict() { say('A newer draft is available. Your edits are preserved; compare before loading.', true); try {
+    async function showConflict() { conflict = true; clearTimeout(autosaveTimer); say('A newer draft is available. Your edits are preserved; compare before loading.', true); try {
         latest = await request('state');
+        conflict = true;
+        clearTimeout(autosaveTimer);
         const list = document.getElementById('studio-conflict-sections');
-        list.replaceChildren();
-        for (const key of ['displayName', 'palette', 'logo', 'cover', 'welcome', 'categories', 'features', 'form', 'labels', 'stageDescriptions', 'email', 'design'])
-            if (JSON.stringify(model.getState().configuration[key]) !== JSON.stringify(latest.draft[key])) {
-                const item = document.createElement('li');
-                item.textContent = { displayName: 'School name', stageDescriptions: 'Progress explanations' }[key] || key;
-                list.append(item);
-            }
+        SfStudioTools.renderChanges(list, SfStudioTools.changes(latest.draft, model.getState().configuration));
+        syncActions();
         if (!document.getElementById('studio-conflict-dialog').open)
             document.getElementById('studio-conflict-dialog').showModal();
     }
@@ -221,29 +287,56 @@
         const button = document.getElementById(id);
         button.disabled = value || !allowed;
     } host.setAttribute('aria-busy', String(value)); syncActions(); }
-    async function save() { if (busy || !allowed)
-        return; if (!model.getState().dirty) {
-        say('Your draft is already saved.');
-        return;
-    } if (uploading)
-        return say('Wait for the image upload to finish before saving.', true); const form = document.getElementById('studio-properties-form'); if (!form.reportValidity()) {
-        openPanel('properties');
-        return;
-    } const sent = structuredClone(model.getState().configuration); busyState(true); say('Saving your private draft…'); try {
-        const result = await request('save', { revision: model.getState().serverRevision, configuration: sent });
-        changes = result.changes;
-        model.markSaved(result.configuration || sent, result.revision, sent);
-        say(model.getState().dirty ? 'Draft saved. Your newer edits are still unsaved.' : 'Draft saved privately. Review changes before publication.');
+    async function save(automatic = false) {
+        clearTimeout(autosaveTimer);
+        if (busy || !allowed || conflict)
+            return false;
+        if (!validation()) {
+            if (!automatic) {
+                openPanel('properties');
+                document.getElementById('studio-properties-form').reportValidity();
+                say('Correct the highlighted properties. Your input is preserved.', true);
+            }
+            return false;
+        }
+        if (!model.getState().dirty)
+            return true;
+        if (uploading)
+            return false;
+        if (!navigator.onLine) {
+            say('Offline · your edits remain here. Saving resumes when connected.', true);
+            return false;
+        }
+        const sent = structuredClone(model.getState().configuration);
+        busyState(true);
+        say('Saving your private draft…');
+        let success = false;
+        try {
+            const result = await request('save', { revision: model.getState().serverRevision, configuration: sent });
+            changes = result.changes;
+            lastSavedAt = result.savedAt || null;
+            model.markSaved(result.configuration || sent, result.revision, sent);
+            success = true;
+            saveFailed = false;
+            const time = lastSavedAt ? new Date(lastSavedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '';
+            say(model.getState().dirty ? 'Saved the previous edit. Saving your newer changes next.' : 'Draft saved' + (time ? ' at ' + time : '') + '. Changes are not live.');
+            if (time)
+                pill.textContent = 'Saved ' + time;
+        }
+        catch (error) {
+            saveFailed = true;
+            if (error.status === 409)
+                await showConflict();
+            else
+                say(error.message, true);
+        }
+        finally {
+            busyState(false);
+            if (success && model.getState().dirty)
+                queueSave();
+        }
+        return success && !model.getState().dirty;
     }
-    catch (error) {
-        if (error.status === 409)
-            await showConflict();
-        else
-            say(error.message, true);
-    }
-    finally {
-        busyState(false);
-    } }
     async function perform(action, extra = {}) { if (busy || !allowed)
         return; if (uploading)
         return say('Wait for the image upload to finish.', true); if (model.getState().dirty) {
@@ -261,7 +354,11 @@
                 model.replaceDraft(current.draft, current.revision);
             else
                 model.markSaved(current.draft, current.revision, sent);
+            published = current.published;
+            publishedVersion = current.published_version;
+            initial.published = current.published;
             changes = current.history?.[0]?.change_summary || [];
+            inspector.discardPending?.();
             inspector.render();
             navigate(false);
             say((action === 'publish' ? 'Published. Your school website uses this version.' : 'Historical version restored into a private draft. Review before publication.') + (model.getState().dirty ? ' Your newer local edits remain unsaved.' : ''));
@@ -272,34 +369,42 @@
     catch (error) {
         if (error.status === 409 && error.code === '40001')
             await showConflict();
-        else
+        else {
             say(error.message, true);
+            document.getElementById('studio-review-blockers').textContent = error.message;
+        }
     }
     finally {
         busyState(false);
+        if (model.getState().dirty)
+            queueSave();
     } }
     window.addEventListener('message', event => {
         const data = event.data;
-        if (event.origin !== location.origin || event.source !== frame.contentWindow || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || JSON.stringify(data).length > 2000)
+        if (event.origin !== location.origin || event.source !== frame.contentWindow || data?.protocol !== 1 || data.instanceId !== instance || !Number.isSafeInteger(data.sequence) || data.sequence <= incoming || JSON.stringify(data).length > (data.type === 'components' ? 16000 : 2000))
             return;
         if (!['ready', 'select', 'navigate', 'render-complete', 'render-error', 'shortcut', 'components'].includes(data.type))
             return;
         incoming = data.sequence;
         const payload = data.payload || {};
-        if (data.type === 'components' && Array.isArray(payload.ids)) {
-            presentComponents = new Set(payload.ids.filter((id) => typeof id === 'string'));
+        if (data.type === 'components' && Array.isArray(payload.ids) && payload.ids.length <= 150) {
+            presentComponents = new Set(payload.ids.filter((id) => typeof id === 'string' && id.length < 120));
+            const selected = model.getState().selection?.componentId;
+            if (selected?.startsWith('section.') && !presentComponents.has(selected))
+                select('page.' + page.value);
             drawTree();
         }
         if (data.type === 'ready') {
             ready = true;
             loading.hidden = true;
-            send('initialize', { configuration: model.getState().configuration });
-            send('set-mode', { mode });
+            if (source === 'draft')
+                send('initialize', { configuration: model.getState().configuration });
+            send('set-mode', { mode: source === 'published' ? 'preview' : mode });
             send('set-theme', { theme: theme.value });
             if (model.getState().selection)
                 send('select', { componentId: model.getState().selection.componentId });
-            if (payload.revision === model.getState().serverRevision && !model.getState().dirty)
-                renderedKey = structure(model.getState().configuration);
+            if (source === 'draft' && payload.revision === model.getState().serverRevision && !model.getState().dirty)
+                renderedKey = source + ':' + structure(model.getState().configuration);
             else
                 void render();
         }
@@ -311,27 +416,35 @@
             select(payload.componentId, true);
         if (data.type === 'navigate' && Object.keys(SfSchoolDesign.pages).includes(payload.page)) {
             page.value = payload.page;
+            fillVariants();
+            if (initial.previewVariants?.[page.value]?.some((item) => item[0] === payload.variant))
+                variant.value = payload.variant;
             view = ['board', 'tree', 'timeline', 'done'].includes(payload.view) ? payload.view : '';
             navigate();
         }
         if (data.type === 'shortcut' && allowed) {
-            if (payload.command === 'save')
+            if (payload.command === 'parent')
+                selectParent();
+            else if (payload.command === 'save')
                 void save();
             else if (payload.command === 'undo') {
                 controls.close();
-                model.undo();
+                if (!inspector.discardPending?.())
+                    model.undo();
                 inspector.render();
             }
             else if (payload.command === 'redo') {
                 controls.close();
+                inspector.discardPending?.();
                 model.redo();
                 inspector.render();
             }
         }
     });
     document.getElementById('studio-refresh').addEventListener('click', () => navigate(false));
-    for (const control of [page, scenario])
-        control.addEventListener('change', () => { view = ''; navigate(); });
+    page.addEventListener('change', () => { fillVariants(); view = ''; navigate(); });
+    for (const control of [scenario, variant])
+        control.addEventListener('change', () => { view = ''; navigate(false); });
     theme.addEventListener('change', () => send('set-theme', { theme: theme.value }));
     for (const control of [width, zoom])
         control.addEventListener('change', layout);
@@ -341,20 +454,43 @@
     host.querySelectorAll('[data-close-panel]').forEach(button => button.addEventListener('click', () => closePanel(button.dataset.closePanel)));
     document.getElementById('studio-sheet-backdrop').addEventListener('click', () => closePanel());
     document.getElementById('studio-save').addEventListener('click', () => void save());
-    document.getElementById('studio-undo').addEventListener('click', () => { controls.close(); model.undo(); inspector.render(); });
-    document.getElementById('studio-redo').addEventListener('click', () => { controls.close(); model.redo(); inspector.render(); });
+    document.getElementById('studio-undo').addEventListener('click', () => { controls.close(); if (!inspector.discardPending?.())
+        model.undo(); inspector.render(); });
+    document.getElementById('studio-redo').addEventListener('click', () => { controls.close(); inspector.discardPending?.(); model.redo(); inspector.render(); });
     const modeButton = document.getElementById('studio-mode'), editButton = document.getElementById('studio-edit');
-    function setMode(value) { mode = value; modeButton.setAttribute('aria-pressed', String(mode === 'preview')); editButton.setAttribute('aria-pressed', String(mode === 'edit')); modeButton.tabIndex = mode === 'preview' ? 0 : -1; editButton.tabIndex = mode === 'edit' ? 0 : -1; send('set-mode', { mode }); document.getElementById('studio-canvas-hint').textContent = mode === 'edit' ? 'Select a component in the preview or choose it from the list.' : 'Preview · fictional content only. Real actions stay disabled.'; }
+    function setMode(value) { if (source === 'published' && value === 'edit') {
+        say('Switch to Draft to edit. Published comparison cannot change the live workspace.');
+        return;
+    } mode = value; modeButton.setAttribute('aria-pressed', String(mode === 'preview')); editButton.setAttribute('aria-pressed', String(mode === 'edit')); modeButton.tabIndex = mode === 'preview' ? 0 : -1; editButton.tabIndex = mode === 'edit' ? 0 : -1; send('set-mode', { mode }); document.getElementById('studio-canvas-hint').textContent = mode === 'edit' ? 'Select a component in the preview or choose it from the list.' : 'Preview · fictional content only. Real actions stay disabled.'; }
     modeButton.addEventListener('click', () => setMode('preview'));
     editButton.addEventListener('click', () => setMode('edit'));
     modeButton.parentElement.addEventListener('keydown', event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key))
         return; event.preventDefault(); const next = event.key === 'Home' ? 'edit' : event.key === 'End' ? 'preview' : mode === 'edit' ? 'preview' : 'edit'; setMode(next); (next === 'edit' ? editButton : modeButton).focus(); });
-    document.getElementById('studio-review').addEventListener('click', () => { if (model.getState().dirty)
-        return say('Save your draft before reviewing publication.', true); const list = document.getElementById('studio-changes'); list.replaceChildren(); for (const text of changes.length ? changes : ['No changes from the published version.']) {
-        const li = document.createElement('li');
-        li.textContent = text;
-        list.append(li);
-    } document.getElementById('studio-publish-confirm').checked = false; syncActions(); controls.close(); document.getElementById('studio-review-dialog').showModal(); });
+    async function review() { if (!await save())
+        return; try {
+        const current = await request('state');
+        if (current.revision !== model.getState().serverRevision) {
+            await showConflict();
+            return;
+        }
+        published = current.published;
+        publishedVersion = current.published_version;
+        const list = document.getElementById('studio-changes');
+        SfStudioTools.renderChanges(list, SfStudioTools.changes(published, model.getState().savedConfiguration), id => { document.getElementById('studio-review-dialog').close(); setSource('draft'); select(id); });
+        reviewRevision = current.revision;
+        document.getElementById('studio-review-meta').textContent = 'Saved draft revision ' + current.revision + ' · published version ' + current.published_version + (current.saved_by_name ? ' · saved by ' + current.saved_by_name : '');
+        const changedForm = !SfStudioTools.equal(published.form, current.draft.form) && (current.draft.form.questions.length > 0 || current.draft.form.attachments !== 'off');
+        document.getElementById('studio-review-blockers').textContent = changedForm ? (current.review_requested_at ? 'Form review was requested. Publication will recheck its approval.' : 'Collection changes may require platform review. Request review before publishing if approval is outstanding.') : 'Cosmetic changes preserve existing school access and policy approvals.';
+        document.getElementById('studio-request-review').hidden = !changedForm;
+        document.getElementById('studio-publish-confirm').checked = false;
+        syncActions();
+        controls.close();
+        document.getElementById('studio-review-dialog').showModal();
+    }
+    catch (error) {
+        say(error.message, true);
+    } }
+    document.getElementById('studio-review').addEventListener('click', () => void review());
     document.getElementById('studio-publish-confirm').addEventListener('change', syncActions);
     document.getElementById('studio-publish').addEventListener('click', () => { if (!document.getElementById('studio-publish-confirm').checked)
         return say('Confirm that you reviewed the publication effects.', true); void perform('publish', { confirmed: true }); });
@@ -378,6 +514,11 @@
             detail.textContent = (version.actor_name || 'School administrator') + ' · ' + new Date(version.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
             const summary = document.createElement('small');
             summary.textContent = (version.change_summary || []).join(', ');
+            const compare = document.createElement('button');
+            compare.type = 'button';
+            compare.dataset.studioCompare = String(version.version);
+            compare.textContent = 'Compare';
+            row.append(compare);
             const button = document.createElement('button');
             button.type = 'button';
             button.dataset.studioRestore = String(version.version);
@@ -390,9 +531,22 @@
     catch (error) {
         say(error.message, true);
     } });
-    document.getElementById('studio-history-dialog').addEventListener('click', event => { const button = event.target.closest('[data-studio-restore]'); if (!button)
-        return; if (model.getState().dirty)
-        return say('Save or undo your changes before restoring a version.', true); void perform('restore', { version: Number(button.dataset.studioRestore) }); });
+    document.getElementById('studio-history-dialog').addEventListener('click', async (event) => { const compare = event.target.closest('[data-studio-compare]'); if (compare) {
+        try {
+            const version = await request('versions/' + compare.dataset.studioCompare);
+            const root = document.getElementById('studio-version-diff');
+            root.querySelector('h3').textContent = 'Version ' + version.version + ' → current draft';
+            SfStudioTools.renderChanges(root.querySelector('[data-version-changes]'), SfStudioTools.changes(version.configuration, model.getState().configuration));
+            root.hidden = false;
+        }
+        catch (error) {
+            say(error.message, true);
+        }
+        return;
+    } const button = event.target.closest('[data-studio-restore]'); if (!button)
+        return; if (model.getState().dirty || inspector.hasPending?.())
+        return say('Save or undo your changes before restoring a version.', true); if (await confirmChange('Restore version ' + button.dataset.studioRestore + ' into a new draft? The saved draft is replaced; members, ideas and the live version stay intact.', 'Restore to draft'))
+        void perform('restore', { version: Number(button.dataset.studioRestore) }); });
     document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => button.closest('dialog')?.close()));
     document.getElementById('studio-copy').addEventListener('click', async () => { const text = JSON.stringify(model.getState().configuration, null, 2); try {
         await navigator.clipboard.writeText(text);
@@ -405,9 +559,9 @@
         fallback.focus();
         fallback.select();
     } });
-    document.getElementById('studio-load-latest').addEventListener('click', () => { if (!latest)
-        return; model.replaceDraft(latest.draft, latest.revision); inspector.render(); navigate(false); document.getElementById('studio-conflict-dialog').close(); say('Latest saved draft loaded. Your copied changes can be compared manually.'); });
-    window.addEventListener('beforeunload', event => { if (model.getState().dirty) {
+    document.getElementById('studio-load-latest').addEventListener('click', async () => { if (!latest || !await confirmChange('Load the saved draft and discard the local differences shown above? Copy anything you still need first.', 'Load saved draft'))
+        return; conflict = false; saveFailed = false; inspector.discardPending?.(); model.replaceDraft(latest.draft, latest.revision); inspector.render(); navigate(false); document.getElementById('studio-conflict-dialog').close(); say('Latest saved draft loaded. Your copied changes can be compared manually.'); });
+    window.addEventListener('beforeunload', event => { if (model.getState().dirty || inspector.hasPending?.()) {
         event.preventDefault();
         event.returnValue = '';
     } });
@@ -438,14 +592,20 @@
     } });
     async function capability() { if (!allowed || document.hidden)
         return; try {
-        await request('capability');
+        const current = await request('capability');
+        if (Number.isSafeInteger(current.revision) && current.revision !== model.getState().serverRevision && !busy && !conflict)
+            await showConflict();
     }
     catch (error) {
         if (allowed)
             say('Editor access could not be refreshed. Save will recheck permissions.', true);
     } }
     window.addEventListener('focus', () => void capability());
-    setInterval(() => void capability(), 60000);
+    const capabilityTimer = setInterval(() => void capability(), 60000);
+    window.addEventListener('pagehide', event => { clearTimeout(autosaveTimer); clearTimeout(renderTimer); renderController?.abort(); if (!event.persisted)
+        clearInterval(capabilityTimer); });
+    window.addEventListener('pageshow', event => { if (event.persisted)
+        void capability().then(queueSave); });
     window.addEventListener('resize', () => { if (innerWidth >= 1024 && host.dataset.sheet)
         closePanel(); layout(); });
     const undoGroup = document.querySelector('.studio-undo-group'), toolbarActions = document.querySelector('.studio-toolbar-actions'), more = document.querySelector('.studio-more'), moreContent = document.querySelector('.studio-more-content');
@@ -475,6 +635,56 @@
     } });
     window.addEventListener('resize', compactTools);
     document.getElementById('studio-refresh').addEventListener('click', () => more.open = false);
+    async function setSource(next) { if (!['draft', 'published'].includes(next))
+        return; const requestSequence = ++sourceSequence; if (next === 'published') {
+        try {
+            const current = await request('state');
+            if (requestSequence !== sourceSequence)
+                return;
+            published = current.published;
+            publishedVersion = current.published_version;
+        }
+        catch (error) {
+            say(error.message, true);
+            return;
+        }
+    } source = next; host.dataset.source = source; inspector.render(); document.querySelectorAll('[data-studio-source]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.studioSource === source))); document.getElementById('studio-properties-form').inert = source === 'published'; document.getElementById('studio-property-scope').textContent = source === 'published' ? 'Published comparison · switch to Draft to edit' : 'Select a component to see where its settings apply.'; renderedKey = ''; navigate(false); }
+    document.querySelectorAll('[data-studio-source]').forEach(button => button.addEventListener('click', () => void setSource(button.dataset.studioSource)));
+    document.getElementById('studio-validation').addEventListener('click', () => { select(inspector.issueComponent?.() || 'school.theme'); openPanel('properties'); document.getElementById('studio-properties-form').reportValidity(); });
+    document.getElementById('studio-select-parent').addEventListener('click', selectParent);
+    document.querySelectorAll('[data-studio-tab]').forEach(button => button.addEventListener('click', () => { navTab = button.dataset.studioTab; document.querySelectorAll('[data-studio-tab]').forEach(item => item.setAttribute('aria-pressed', String(item === button))); drawTree(); }));
+    document.querySelectorAll('[data-studio-task]').forEach(button => button.addEventListener('click', () => { const task = button.dataset.studioTask; if (source === 'published')
+        void setSource('draft'); source = 'draft'; host.dataset.source = 'draft'; document.querySelectorAll('[data-studio-source]').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.studioSource === 'draft'))); document.getElementById('studio-properties-form').inert = false; const destination = task === 'home' ? 'home' : task === 'ideas' ? 'feed' : task === 'form' ? 'submit' : page.value; if (task === 'mobile')
+        width.value = '375'; if (page.value !== destination) {
+        page.value = destination;
+        fillVariants();
+        navigate();
+    } navTab = 'components'; select(task === 'identity' ? 'school.identity' : task === 'brand' ? 'school.theme' : task === 'home' ? 'home.hero' : task === 'ideas' ? 'community.categories' : task === 'form' ? 'submission.instructions' : 'page.' + page.value); drawTree(); layout(); }));
+    host.addEventListener('input', () => queueMicrotask(() => { syncActions(); if (!validation()) {
+        clearTimeout(autosaveTimer);
+        pill.textContent = 'Needs correction';
+    }
+    else
+        queueSave(); }));
+    window.addEventListener('offline', () => { clearTimeout(autosaveTimer); say('Offline · edits remain in this workspace. Saving resumes when connected.', true); });
+    window.addEventListener('online', () => { saveFailed = false; say('Connection restored. Saving your draft…'); queueSave(); });
+    const preferenceKey = 'sf:studio:preferences:' + base;
+    try {
+        const saved = JSON.parse(localStorage.getItem(preferenceKey) || 'null');
+        if (saved) {
+            if (['320', '375', '768', '1440'].includes(saved.width) && !preferences.has('width'))
+                width.value = saved.width;
+            if (['fit', '0.5', '0.75', '1'].includes(saved.zoom))
+                zoom.value = saved.zoom;
+        }
+    }
+    catch { }
+    for (const control of [width, zoom])
+        control.addEventListener('change', () => { try {
+            localStorage.setItem(preferenceKey, JSON.stringify({ width: width.value, zoom: zoom.value }));
+        }
+        catch { } });
+    fillVariants();
     compactTools();
     inspector.render();
     drawTree();

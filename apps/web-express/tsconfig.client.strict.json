@@ -29,6 +29,7 @@
     "src/client/scroll-reveal.ts",
     "src/client/animations/**/*.ts",
     "src/client/controls.ts",
-    "src/client/student-experience.ts"
+    "src/client/student-experience.ts",
+    "src/client/school-studio-tools.ts"
   ]
 }
