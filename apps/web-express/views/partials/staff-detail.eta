@@ -50,7 +50,7 @@
       </section>
     </div>
     <footer class="staff-review-footer sf-sticky-action-bar">
-      <section class="staff-decision-result" id="review-decision-result" hidden><div><strong id="review-decision-label"></strong><span>Your decision is saved.</span></div><div><button type="button" class="workspace-button" id="review-next-idea">Review next</button><a class="workspace-button workspace-button--primary" id="review-open-work" href="/admin/board">Open in Work board →</a></div></section>
+      <section class="staff-decision-result" id="review-decision-result" hidden><div><strong id="review-decision-label"></strong><span>Your decision is saved.</span></div><div><button type="button" class="workspace-button" id="review-next-idea">Review next</button><a class="workspace-button workspace-button--primary" id="review-open-work" href="/admin/work?presentation=board">Open in Work →</a></div></section>
       <p id="review-message" class="workspace-message" role="status" aria-live="polite" tabindex="-1"></p>
       <button type="button" class="workspace-button" id="review-retry-detail" hidden>Retry loading submission</button>
       <div id="review-discard-warning" class="staff-discard-warning" role="alert" hidden><strong>Leave without saving?</strong><p>Unsaved review, progress, and private-note drafts will be discarded.</p><div><button type="button" class="workspace-button" id="review-keep-editing">Keep editing</button><button type="button" class="workspace-button" id="review-discard-confirm">Discard draft</button></div></div>

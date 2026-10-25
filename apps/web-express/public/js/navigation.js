@@ -148,6 +148,8 @@
                 return ['staff-analytics', 'School analytics'];
             if (view === 'staff')
                 return ['staff-members', 'Manage staff'];
+            if (view === 'work')
+                return [destination.searchParams.has('presentation') && destination.searchParams.get('presentation') !== 'tasks' ? 'staff-board' : 'staff-queue', 'Work'];
             if (view === 'board')
                 return ['staff-board', 'Manage work'];
             if (view === 'login')

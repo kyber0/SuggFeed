@@ -277,7 +277,7 @@ app.get('/', (_req,res) => res.redirect(302, '/account/home'));
 app.use((req,res,next) => {
   if (req.path === '/s' || req.path.startsWith('/s/')) return next();
   if (['GET','HEAD'].includes(req.method)) {
-    if (['/feed','/roadmap','/profile','/notifications','/inbox','/admin','/admin/reviews','/admin/my-work','/admin/routing','/admin/assignments','/admin/safety','/admin/board','/admin/community','/admin/analytics','/admin/staff'].includes(req.path.replace(/\/$/, ''))) return res.redirect(302, '/account/home');
+    if (['/feed','/roadmap','/profile','/notifications','/inbox','/admin','/admin/reviews','/admin/my-work','/admin/work','/admin/routing','/admin/assignments','/admin/safety','/admin/board','/admin/community','/admin/analytics','/admin/staff'].includes(req.path.replace(/\/$/, ''))) return res.redirect(302, '/account/home');
     return res.status(404).render('404', { title: 'Page not found' });
   }
   return res.status(410).json({success:false,error:'Choose a school and use its current address.'});

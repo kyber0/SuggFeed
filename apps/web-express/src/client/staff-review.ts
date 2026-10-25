@@ -91,7 +91,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     if(mode==='work'&&['pending','rejected'].includes(active.status))state.textContent='This idea is not active delivery work. Open Review ideas to read its decision.';
     actions.replaceChildren();
     if(mode==='review'&&['approved','in_progress','resolved'].includes(active.status)||mode==='work'&&['pending','rejected'].includes(active.status)){
-      const link=document.createElement('a');link.className='workspace-button workspace-button--primary';link.textContent=mode==='review'?'Open in Work board':'Open Review ideas';link.href=sfSchoolPath((mode==='review'?'/admin/board':'/admin/reviews')+'?idea='+encodeURIComponent(active.id));actions.append(link);
+      const link=document.createElement('a');link.className='workspace-button workspace-button--primary';link.textContent=mode==='review'?'Open in Work':'Open Review ideas';link.href=sfSchoolPath((mode==='review'?'/admin/work?presentation=board&':'/admin/reviews?')+'idea='+encodeURIComponent(active.id));actions.append(link);
     }
     const names:Record<string,string>={approve:'Approve',decline:'Decline',start:'Start work',update:'Publish update',milestone:'Record milestone',pause:'Pause work',resume:'Resume work',complete:'Complete with evidence',correction:'Correct an update',reopen:'Reopen work',withdraw:'Withdraw public idea'};
     const more=document.createElement('details'),caption=document.createElement('summary');caption.textContent='Other actions';more.className='workflow-secondary';more.append(caption);
@@ -253,8 +253,8 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   const sourceWork=new URL(location.href).searchParams;
   const sourceWorkView=sourceWork.get('workView'),sourceWorkPage=sourceWork.get('workPage');
   if(sourceWorkView&&['mine','triage','all','overdue'].includes(sourceWorkView)){
-    dialog.querySelectorAll<HTMLElement>('[data-close-review]').forEach(button=>button.setAttribute('aria-label','Close detail and return to My work'));
-    dialog.addEventListener('close',()=>{const query=new URLSearchParams({view:sourceWorkView,page:sourceWorkPage&&/^\d{1,6}$/.test(sourceWorkPage)?sourceWorkPage:'1'});location.replace(sfSchoolPath('/admin/my-work?'+query.toString()));});
+    dialog.querySelectorAll<HTMLElement>('[data-close-review]').forEach(button=>button.setAttribute('aria-label','Close detail and return to Work tasks'));
+    dialog.addEventListener('close',()=>{const query=new URLSearchParams({view:sourceWorkView,page:sourceWorkPage&&/^\d{1,6}$/.test(sourceWorkPage)?sourceWorkPage:'1'});location.replace(sfSchoolPath('/admin/work?'+query.toString()));});
   }
   dialog.addEventListener('close',()=>{if(isQueue||mode==='work'){const url=new URL(location.href);url.searchParams.delete('idea');history.replaceState(history.state,'',url);}if(group){const counts={saved:0,skipped:0,already:0,pending:0};for(const item of group.entries)counts[item.result]++;pageMessage.textContent=`Group review ended: ${counts.saved} moves saved, ${counts.skipped} skipped, ${counts.already} already in target stage, ${counts.pending} not moved. Saved changes remain; other selections are retained.`;group=null;paintGroup();}detailRequest?.abort();activityRequest?.abort();window.sfStaffProgress?.close();if(returnFocus?.isConnected)returnFocus.focus();else document.querySelector<HTMLElement>('#staff-queue-title,.workspace-heading h1')?.focus();});
   window.addEventListener('beforeunload',event=>{if(dialog.open && (busy || noteBusy || window.sfStaffProgress?.isBusy() || hasUnsavedChanges())){event.preventDefault();event.returnValue='';}});
@@ -458,7 +458,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
       try{await refreshQueue();void loadActivity();}finally{
       if(mode==='review'&&decisionSaved&&active){
         resultPanel.hidden=false;document.getElementById('review-decision-label')!.textContent=active.status==='approved'?'Approved · Added to Planned':'Declined · Decision recorded';
-        openWork.hidden=active.status!=='approved';openWork.href=sfSchoolPath('/admin/board?idea='+encodeURIComponent(active.id));
+        openWork.hidden=active.status!=='approved';openWork.href=sfSchoolPath('/admin/work?presentation=board&idea='+encodeURIComponent(active.id));
         const next=document.getElementById('review-next-idea') as HTMLButtonElement;next.disabled=false;
         selectTab('decision');const tab=dialog.querySelector<HTMLButtonElement>('[data-review-tab="progress"]');if(tab)tab.hidden=true;
       }}
@@ -474,7 +474,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   });
   document.getElementById('review-next-idea')?.addEventListener('click',()=>{const next=items.find(item=>item.status==='pending'&&item.id!==active?.id);if(next)void openReview(next.id);else window.location.assign(sfSchoolPath('/admin/reviews'));});
   const initial=new URL(window.location.href).searchParams.get('idea');
-  if(initial && ['/admin','/admin/reviews','/admin/board'].includes(sfSchoolRoute(window.location.pathname)))void openReview(initial);
+  if(initial && ['/admin','/admin/reviews','/admin/work'].includes(sfSchoolRoute(window.location.pathname)))void openReview(initial);
   if(!isQueue)return;
   const viewDialog=document.getElementById('staff-save-view-dialog') as HTMLDialogElement;
   const viewMessage=document.getElementById('staff-view-message')!;

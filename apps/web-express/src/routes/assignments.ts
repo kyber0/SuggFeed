@@ -14,14 +14,15 @@ router.get('/internal/assignment-escalation',async(req,res)=>{
  if(error)return res.status(503).json({success:false,error:'Assignment processing is temporarily unavailable.'});
  res.json({success:true,...data});
 });
-router.get(['/admin/assignments','/admin/my-work','/admin/routing'],async(req,res,next)=>{
+router.get(['/admin/assignments','/admin/my-work','/admin/work','/admin/routing'],async(req,res,next)=>{
  const user=schoolUser(req);if(!user||!['admin','moderator'].includes(user.role||''))return res.status(403).render('403',{title:'Staff access required'});
  res.setHeader('Cache-Control','private, no-store');
  const configuration=['rules','teams','workload','settings'];
- if(req.path==='/admin/assignments'){
+ if(req.path==='/admin/assignments'||req.path==='/admin/my-work'){
   const params=new URLSearchParams();for(const key of ['view','page','kind','id'])if(typeof req.query[key]==='string')params.set(key,String(req.query[key]));
-  return res.redirect(302,(configuration.includes(String(req.query.view))?'/admin/routing':'/admin/my-work')+(params.size?'?'+params.toString():''));
+  return res.redirect(302,(configuration.includes(String(req.query.view))?'/admin/routing':'/admin/work')+(params.size?'?'+params.toString():''));
  }
+ if(req.path==='/admin/work'&&(['board','list','calendar'].includes(String(req.query.presentation))||req.query.idea&&!req.query.presentation))return next();
  const routing=req.path==='/admin/routing';
  if(routing&&user.role!=='admin')return res.status(403).render('403',{title:'School administrator access required'});
  try{
@@ -32,10 +33,10 @@ router.get(['/admin/assignments','/admin/my-work','/admin/routing'],async(req,re
   const reports=list.items.filter((item:{item_kind:string;item_id:string;queueHref?:string})=>item.item_kind==='report');
   if(reports.length){const result=await supabaseService.from('reports').select('id,comment_id').in('id',reports.map((item:{item_id:string})=>item.item_id));if(result.error)throw result.error;for(const item of reports)item.queueHref=result.data?.find(report=>report.id===item.item_id)?.comment_id?'/admin/safety?section=comments':'/admin/safety';}
  }
- if(!routing&&view!=='history'&&list.page>1&&!list.items.length)return res.redirect(302,'/admin/my-work?'+new URLSearchParams({view,notice:'page-changed'}).toString());
+ if(!routing&&view!=='history'&&list.page>1&&!list.items.length)return res.redirect(302,'/admin/work?'+new URLSearchParams({view,notice:'page-changed'}).toString());
  const history=view==='history'?await assignmentAction(user.id,'history',{kind:req.query.kind,id:req.query.id}):null;
- res.render('assignments',{pageChanged:req.query.notice==='page-changed',routing,assignmentBase:routing?'/admin/routing':'/admin/my-work',history,title:(routing?'Routing & teams':'My work')+' — SuggFeed',activeSection:routing?'routing':'my-work',view,list,state,isAssignmentAdmin:user.role==='admin'});
- }catch(error){if(error instanceof AssignmentError)return res.status(error.status).render('school-message',{title:'Assignments unavailable',message:error.message,nextHref:routing?'/admin/routing':'/admin/my-work',nextLabel:'Try again'});next(error);}
+ res.render('assignments',{pageChanged:req.query.notice==='page-changed',routing,presentation:'tasks',assignmentBase:routing?'/admin/routing':'/admin/work',history,title:(routing?'Routing & teams':'Work')+' — SuggFeed',activeSection:routing?'routing':'work',view,list,state,isAssignmentAdmin:user.role==='admin'});
+ }catch(error){if(error instanceof AssignmentError)return res.status(error.status).render('school-message',{title:'Assignments unavailable',message:error.message,nextHref:routing?'/admin/routing':'/admin/work',nextLabel:'Try again'});next(error);}
 });
 router.post('/admin/assignments/action',sameOriginOnly,writeLimit,async(req,res,next)=>{
  const user=schoolUser(req);if(!user||!['admin','moderator'].includes(user.role||''))return res.status(403).json({success:false,error:'Staff access required.'});

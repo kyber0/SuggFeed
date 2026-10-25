@@ -4,7 +4,7 @@
   const counts = it.counts || {};
   const filters = it.filters || { status: 'pending', search: '', assignment: 'all', priority: 'all', overdue: 'false' };
   const delivery=f=>['approved','in_progress','resolved'].includes(f.status)||f.overdue==='true';
-  const viewUrl=f=>{if(!delivery(f))return '/admin/reviews?'+new URLSearchParams(f).toString();const values=new URLSearchParams(f);values.delete('status');values.delete('page');return '/admin/board?'+values.toString()+(['approved','in_progress','resolved'].includes(f.status)?'#board-lane-'+f.status:'');};
+  const viewUrl=f=>{if(!delivery(f))return '/admin/reviews?'+new URLSearchParams(f).toString();const values=new URLSearchParams(f);values.delete('status');values.delete('page');values.set('presentation','board');return '/admin/work?'+values.toString()+(['approved','in_progress','resolved'].includes(f.status)?'#board-lane-'+f.status:'');};
   const sameView = f => Object.keys(filters).every(k => (f[k] ?? (k==='search'?'':k==='overdue'?'false':k==='status'?'pending':'all')) === filters[k]);
 %>
 <aside class="staff-sidebar" aria-label="Staff workspace">
@@ -17,7 +17,7 @@
   <summary>Workspace menu</summary>
   <div class="staff-navigation-body">
   <p class="workspace-kicker">DAILY WORK</p>
-  <% const path=(it.currentPath||'').replace(/^\/s\/[^/]+/,'');const isAdmin=it.user?.role==='admin';const daily=[...(isAdmin?[['/admin','Overview','chart',path==='/admin']]:[]),['/admin/my-work','My work','inbox',path==='/admin/my-work'],['/admin/reviews','Review ideas','list',path==='/admin/reviews'],['/admin/board','Work board','board',path==='/admin/board'],['/admin/community','Community','care',path==='/admin/community'],...(isAdmin?[['/admin/safety','Safety review','shield',path==='/admin/safety']]:[])]; %>
+  <% const path=(it.currentPath||'').replace(/^\/s\/[^/]+/,'');const isAdmin=it.user?.role==='admin';const daily=[...(isAdmin?[['/admin','Overview','chart',path==='/admin']]:[]),['/admin/work','Work','board',['/admin/work','/admin/my-work','/admin/board'].includes(path)],['/admin/reviews','Review ideas','list',path==='/admin/reviews'],['/admin/community','Community','care',path==='/admin/community'],...(isAdmin?[['/admin/safety','Safety review','shield',path==='/admin/safety']]:[])]; %>
   <nav aria-label="Daily staff work"><% for(const [href,label,glyph,current] of daily) { %><a class="staff-nav-item<%= current?' is-current':'' %>" href="<%= href %>" aria-current="<%= current?'page':'false' %>"><%~ icon(glyph) %><span><%= label %></span><% if(href==='/admin/reviews'&&typeof counts.pending==='number') { %><span class="staff-nav-count" id="staff-pending-count"><%= counts.pending %></span><% } %></a><% } %></nav>
   <% if(isAdmin) { %><p class="workspace-kicker">SCHOOL MANAGEMENT</p><nav aria-label="School management">
   <% for(const [href,label,glyph,current] of [['/admin/members','People & access','users',/\/(members|staff|student-access|invitations)$/.test(path)],['/admin/routing','Routing & teams','users',path==='/admin/routing'],['/admin/school-settings','School settings','shield',path==='/admin/school-settings'||path.endsWith('/domains')],['/admin/customization','Workspace editor','board',/\/customization/.test(path)],['/admin/assistant','Sugi knowledge','care',/\/assistant/.test(path)],['/admin/analytics','Insights','chart',path==='/admin/analytics'||/\/form-responses/.test(path)]]) { %><a class="staff-nav-item<%= current?' is-current':'' %>" href="<%= href %>" aria-current="<%= current?'page':'false' %>"><%~ icon(glyph) %><span><%= label %></span></a><% } %>

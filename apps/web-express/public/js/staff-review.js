@@ -158,8 +158,8 @@
         if (mode === 'review' && ['approved', 'in_progress', 'resolved'].includes(active.status) || mode === 'work' && ['pending', 'rejected'].includes(active.status)) {
             const link = document.createElement('a');
             link.className = 'workspace-button workspace-button--primary';
-            link.textContent = mode === 'review' ? 'Open in Work board' : 'Open Review ideas';
-            link.href = sfSchoolPath((mode === 'review' ? '/admin/board' : '/admin/reviews') + '?idea=' + encodeURIComponent(active.id));
+            link.textContent = mode === 'review' ? 'Open in Work' : 'Open Review ideas';
+            link.href = sfSchoolPath((mode === 'review' ? '/admin/work?presentation=board&' : '/admin/reviews?') + 'idea=' + encodeURIComponent(active.id));
             actions.append(link);
         }
         const names = { approve: 'Approve', decline: 'Decline', start: 'Start work', update: 'Publish update', milestone: 'Record milestone', pause: 'Pause work', resume: 'Resume work', complete: 'Complete with evidence', correction: 'Correct an update', reopen: 'Reopen work', withdraw: 'Withdraw public idea' };
@@ -534,8 +534,8 @@
     const sourceWork = new URL(location.href).searchParams;
     const sourceWorkView = sourceWork.get('workView'), sourceWorkPage = sourceWork.get('workPage');
     if (sourceWorkView && ['mine', 'triage', 'all', 'overdue'].includes(sourceWorkView)) {
-        dialog.querySelectorAll('[data-close-review]').forEach(button => button.setAttribute('aria-label', 'Close detail and return to My work'));
-        dialog.addEventListener('close', () => { const query = new URLSearchParams({ view: sourceWorkView, page: sourceWorkPage && /^\d{1,6}$/.test(sourceWorkPage) ? sourceWorkPage : '1' }); location.replace(sfSchoolPath('/admin/my-work?' + query.toString())); });
+        dialog.querySelectorAll('[data-close-review]').forEach(button => button.setAttribute('aria-label', 'Close detail and return to Work tasks'));
+        dialog.addEventListener('close', () => { const query = new URLSearchParams({ view: sourceWorkView, page: sourceWorkPage && /^\d{1,6}$/.test(sourceWorkPage) ? sourceWorkPage : '1' }); location.replace(sfSchoolPath('/admin/work?' + query.toString())); });
     }
     dialog.addEventListener('close', () => { if (isQueue || mode === 'work') {
         const url = new URL(location.href);
@@ -934,7 +934,7 @@
                     resultPanel.hidden = false;
                     document.getElementById('review-decision-label').textContent = active.status === 'approved' ? 'Approved · Added to Planned' : 'Declined · Decision recorded';
                     openWork.hidden = active.status !== 'approved';
-                    openWork.href = sfSchoolPath('/admin/board?idea=' + encodeURIComponent(active.id));
+                    openWork.href = sfSchoolPath('/admin/work?presentation=board&idea=' + encodeURIComponent(active.id));
                     const next = document.getElementById('review-next-idea');
                     next.disabled = false;
                     selectTab('decision');
@@ -960,7 +960,7 @@
     else
         window.location.assign(sfSchoolPath('/admin/reviews')); });
     const initial = new URL(window.location.href).searchParams.get('idea');
-    if (initial && ['/admin', '/admin/reviews', '/admin/board'].includes(sfSchoolRoute(window.location.pathname)))
+    if (initial && ['/admin', '/admin/reviews', '/admin/work'].includes(sfSchoolRoute(window.location.pathname)))
         void openReview(initial);
     if (!isQueue)
         return;

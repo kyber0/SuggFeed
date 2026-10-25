@@ -101,6 +101,7 @@
    const view=path==='/admin'?destination.searchParams.get('view'):path.split('/')[2];
    if(view==='analytics')return ['staff-analytics','School analytics'];
    if(view==='staff')return ['staff-members','Manage staff'];
+   if(view==='work')return [destination.searchParams.has('presentation')&&destination.searchParams.get('presentation')!=='tasks'?'staff-board':'staff-queue','Work'];
    if(view==='board')return ['staff-board','Manage work'];
    if(view==='login')return ['login','Staff sign in'];
    return ['staff-queue','Review submissions'];

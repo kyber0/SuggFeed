@@ -15,7 +15,7 @@
   interface BoardMeta {filters:{presentation?:string;month?:string;calendarPage?:number;assignment?:string;priority?:string;overdue?:boolean;search:string;sort:string;pageSize:number;pages:Record<string,number>};totalCount:number;lanes:Array<{status:string;label:string;count:number;page:number;pageCount:number;from:number;to:number}>;}
   const board=document.getElementById('staff-flow-board')!;
   const stageSelect=document.getElementById('staff-mobile-stage') as HTMLSelectElement|null;
-  const syncStage=(hash:string)=>{if(!stageSelect)return;const stage=hash.replace('#board-lane-','');if(Array.from(stageSelect.options).some(option=>option.value===stage))stageSelect.value=stage;board.dataset.mobileStage=stageSelect.value;const form=document.getElementById('staff-board-filters') as HTMLFormElement;form.action=sfSchoolPath('/admin/board'+(board.dataset.presentation==='board'?'#board-lane-'+stageSelect.value:''));};
+  const syncStage=(hash:string)=>{if(!stageSelect)return;const stage=hash.replace('#board-lane-','');if(Array.from(stageSelect.options).some(option=>option.value===stage))stageSelect.value=stage;board.dataset.mobileStage=stageSelect.value;const form=document.getElementById('staff-board-filters') as HTMLFormElement;form.action=sfSchoolPath('/admin/work'+(board.dataset.presentation==='board'?'#board-lane-'+stageSelect.value:''));};
   syncStage(location.hash);
   stageSelect?.addEventListener('change',()=>{syncStage('#board-lane-'+stageSelect.value);const url=new URL(location.href);url.hash='board-lane-'+stageSelect.value;history.replaceState(history.state,'',url);});
   const metaData=document.getElementById('staff-board-meta')!;
@@ -26,7 +26,7 @@
   const retry=document.getElementById('staff-board-retry') as HTMLButtonElement;
   let loading=false, failedPage:{stage:string|null;url:string;push:boolean}|null=null;
   const urlFor=(stage:string|null,page?:number)=>{
-   const url=new URL(sfSchoolPath('/admin/board'),window.location.origin);url.searchParams.set('sort',meta.filters.sort);url.searchParams.set('pageSize',String(meta.filters.pageSize));if(meta.filters.assignment&&meta.filters.assignment!=='all')url.searchParams.set('assignment',meta.filters.assignment);if(meta.filters.priority&&meta.filters.priority!=='all')url.searchParams.set('priority',meta.filters.priority);if(meta.filters.overdue)url.searchParams.set('overdue','true');
+   const url=new URL(sfSchoolPath('/admin/work'),window.location.origin);url.searchParams.set('sort',meta.filters.sort);url.searchParams.set('pageSize',String(meta.filters.pageSize));if(meta.filters.assignment&&meta.filters.assignment!=='all')url.searchParams.set('assignment',meta.filters.assignment);if(meta.filters.priority&&meta.filters.priority!=='all')url.searchParams.set('priority',meta.filters.priority);if(meta.filters.overdue)url.searchParams.set('overdue','true');
    if(meta.filters.presentation)url.searchParams.set('presentation',meta.filters.presentation);if(meta.filters.month)url.searchParams.set('month',meta.filters.month);if(meta.filters.calendarPage)url.searchParams.set('calendarPage',String(meta.filters.calendarPage));
    if(meta.filters.search)url.searchParams.set('search',meta.filters.search);
    for(const [key,number] of Object.entries(meta.filters.pages)){const value=key===stage?page:number;if(value && value>1)url.searchParams.set(key+'Page',String(value));}
@@ -47,7 +47,7 @@
   async function navigate(stage:string|null,rawUrl:string,push=true,internal=false){
    if(loading || (busy && !internal))return false;
    const target=new URL(rawUrl,window.location.origin);
-   if(target.origin!==window.location.origin || sfSchoolRoute(target.pathname)!=='/admin/board')return false;
+   if(target.origin!==window.location.origin || sfSchoolRoute(target.pathname)!=='/admin/work')return false;
    loading=true;failedPage=null;retry.hidden=true;controls();tell(stage?`Loading ${labels[stage]} page…`:'Refreshing the work board…');
    const ownLane=stage?board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"]`):board;
    ownLane?.setAttribute('aria-busy','true');

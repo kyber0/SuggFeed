@@ -36,11 +36,10 @@ router.get('/', requireStaff, asyncHandler(async (req, res) => {
     for (const key of ['status','search','assignment','priority','overdue','page','idea']) if (typeof req.query[key] === 'string') query.set(key, String(req.query[key]));
     return res.redirect('/admin/reviews?' + query.toString());
   }
-  if (schoolUser(req)!.role !== 'admin') return res.redirect('/admin/my-work');
-  const overviewRange = ['7d','30d','90d'].includes(String(req.query.overviewRange)) ? String(req.query.overviewRange) : '30d';
-  const [counts, overviewAnalytics, overdueWork, openReports] = await Promise.all([loadModerationCounts(), loadAnalyticsData({range:overviewRange}).catch(() => { console.warn('School overview analytics unavailable'); return null; }),supabaseService.from('staff_submission_queue').select('id',{count:'exact',head:true}).in('status',['approved','in_progress']).lt('target_date',new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())),supabaseService.from('reports').select('id',{count:'exact',head:true}).is('resolved_at',null)]);
+  if (schoolUser(req)!.role !== 'admin') return res.redirect('/admin/work');
+  const [counts, overdueWork, openReports] = await Promise.all([loadModerationCounts(),supabaseService.from('staff_submission_queue').select('id',{count:'exact',head:true}).in('status',['approved','in_progress']).lt('target_date',new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())),supabaseService.from('reports').select('id',{count:'exact',head:true}).is('resolved_at',null)]);
   res.setHeader('Cache-Control','private, no-store');
-  res.render('admin-overview', {title:'School overview — SuggFeed', activeSection:'overview', counts, overviewAnalytics, overviewRange,portalFocus:{overdue:overdueWork.error?null:overdueWork.count,reports:openReports.error?null:openReports.count}});
+  res.render('admin-overview', {title:'School overview — SuggFeed', activeSection:'overview', counts,portalFocus:{overdue:overdueWork.error?null:overdueWork.count,reports:openReports.error?null:openReports.count}});
 }));
 router.get('/reviews', requireStaff, asyncHandler(async (req, res) => {
   res.setHeader('Cache-Control','private, no-store');
@@ -50,7 +49,7 @@ router.get('/reviews', requireStaff, asyncHandler(async (req, res) => {
   if (idea) {
     const result = await supabaseService.from('submissions').select('status').eq('id',idea).maybeSingle();
     if (result.error) throw result.error;
-    if (result.data && ['approved','in_progress','resolved'].includes(result.data.status)) return res.redirect('/admin/board?idea='+encodeURIComponent(idea)+staffWorkReturn(req.query));
+    if (result.data && ['approved','in_progress','resolved'].includes(result.data.status)) return res.redirect('/admin/work?presentation=board&idea='+encodeURIComponent(idea)+staffWorkReturn(req.query));
   }
   if (filters.overdue==='true'||['approved','in_progress','resolved'].includes(filters.status)) {
     const query = new URLSearchParams();
@@ -58,7 +57,7 @@ router.get('/reviews', requireStaff, asyncHandler(async (req, res) => {
     if(filters.assignment!=='all') query.set('assignment',filters.assignment);
     if(filters.priority!=='all') query.set('priority',filters.priority);
     if(filters.overdue==='true') query.set('overdue','true');
-    return res.redirect('/admin/board?'+query.toString()+(['approved','in_progress','resolved'].includes(filters.status)?'#board-lane-'+filters.status:''));
+    return res.redirect('/admin/work?presentation=board&'+query.toString()+(['approved','in_progress','resolved'].includes(filters.status)?'#board-lane-'+filters.status:''));
   }
   const requestedPage = Number(req.query.page);
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -73,7 +72,7 @@ router.get('/reviews', requireStaff, asyncHandler(async (req, res) => {
 router.get(
   "/analytics",
   requireStaff,
-  (req,res,next)=>schoolUser(req)?.role==='admin'?next():res.redirect('/admin/my-work'),
+  (req,res,next)=>schoolUser(req)?.role==='admin'?next():res.redirect('/admin/work'),
   asyncHandler(async (req: Request, res: Response) => {
     const [counts, analytics] = await Promise.all([
       loadModerationCounts(),

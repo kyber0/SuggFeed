@@ -96,7 +96,12 @@ communityPages.get('/admin/community',run(async(req,res)=>{
   res.setHeader('Cache-Control','private, no-store');
   res.render('staff-community',{title:'Follow-ups — SuggFeed',activeSection:'community',mergeSelected:req.query.task==='merge' && user.role==='admin',submissionId:typeof req.query.idea==='string' && /^[a-f0-9-]{36}$/i.test(req.query.idea) ? req.query.idea : '',...await staffCommunity(user,{...req.query,section:req.query.task==='merge'&&user.role==='admin'?'duplicates':req.query.section}),members:await loadStaffMembers()});
 }));
-communityPages.get('/admin/board',run(async(req,res)=>{
+communityPages.get('/admin/board',(req,res)=>{
+  const query=new URLSearchParams();for(const [key,value] of Object.entries(req.query))if(typeof value==='string')query.set(key,value);
+  if(!['board','list','calendar'].includes(query.get('presentation')||''))query.set('presentation','board');
+  return res.redirect(302,'/admin/work?'+query.toString());
+});
+communityPages.get('/admin/work',run(async(req,res)=>{
   const user=schoolUser(req);
   if(!user) return res.redirect('/admin');
   if(!staffRole(user.role)) return res.status(403).render('school-message',{title:'Access denied',message:'Staff access required.'});
@@ -108,5 +113,5 @@ communityPages.get('/admin/board',run(async(req,res)=>{
   }
   const presentation=['board','list','calendar'].includes(String(req.query.presentation))?String(req.query.presentation):'board';
   const [board,members,counts,savedViews,calendar]=await Promise.all([loadStaffBoard(boardFilters(req.query), WORK_STAGES),loadStaffMembers(),loadModerationCounts(),loadSavedViews(user.id),presentation==='calendar'?loadStaffCalendar(boardFilters(req.query),req.query):Promise.resolve(null)]);
-  res.render('staff-board',{title:'Work board — SuggFeed',activeSection:'board',...board,members,counts,savedViews,presentation,calendar});
+  res.render('staff-board',{title:'Work — SuggFeed',activeSection:'board',...board,members,counts,savedViews,presentation,calendar});
 }));

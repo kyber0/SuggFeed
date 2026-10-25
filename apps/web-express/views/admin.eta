@@ -18,11 +18,11 @@
   <%~ include('partials/staff-sidebar', it) %>
   <div class="staff-main">
     <header class="workspace-heading">
-      <div><p class="workspace-kicker">WORKSPACE / <%= it.user?.role==='admin'?'ADMINISTRATION':'REVIEW' %></p><h1>Review ideas<span class="workspace-title-dot" aria-hidden="true">.</span></h1><p>Decide which new ideas should proceed. Approved ideas move to the <a href="/admin/board">Work board</a>.</p></div>
+      <div><p class="workspace-kicker">WORKSPACE / <%= it.user?.role==='admin'?'ADMINISTRATION':'REVIEW' %></p><h1>Review ideas<span class="workspace-title-dot" aria-hidden="true">.</span></h1><p>Decide which new ideas should proceed. Approved ideas move to the <a href="/admin/work?presentation=board">Work board</a>.</p></div>
       <div class="workspace-actions" ><button class="workspace-button" id="staff-refresh" type="button"><%~ icon('refresh') %> Refresh</button><button class="workspace-button" id="staff-export" type="button" <%= it.submissions.length ? '' : 'disabled' %>><%~ icon('export') %> Export page</button></div>
     </header>
     <div id="review-workspace" data-workspace-panel>
-    <div class="staff-flow-guide" aria-label="Idea workflow"><strong class="is-current">1 · Review</strong><span aria-hidden="true">→</span><a href="/admin/board">2 · Deliver</a><span aria-hidden="true">→</span><span>3 · Share results</span></div>
+    <div class="staff-flow-guide" aria-label="Idea workflow"><strong class="is-current">1 · Review</strong><span aria-hidden="true">→</span><a href="/admin/work?presentation=board">2 · Deliver</a><span aria-hidden="true">→</span><span>3 · Share results</span></div>
     <p id="staff-page-message" class="workspace-message" role="status" aria-live="polite"></p>
     <section class="staff-queue" aria-labelledby="staff-queue-title">
       <div class="staff-queue-heading"><div><h2 id="staff-queue-title" tabindex="-1"><%= labels[status] %></h2><p><%= status==='pending' ? 'Read the oldest ideas first, then record a decision.' : status==='all'?'Past decisions. Open approved ideas in the Work board.':'Declined ideas and their recorded explanations.' %></p></div><span class="workspace-tag" id="staff-result-count"><%= it.totalCount %> matching submissions</span></div>
@@ -78,5 +78,5 @@
 <script id="staff-filter-data" type="application/json"><%~ JSON.stringify(filters).replace(/</g,'\\u003c') %></script>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
 <script defer src="/js/staff-progress.js?v=20261025-detail-polish"></script>
-<script defer src="/js/staff-review.js?v=20261025-portal"></script>
-<script defer src="/js/staff-tools.js?v=20261025-portal"></script>
+<script defer src="/js/staff-review.js?v=20261025-unified-work"></script>
+<script defer src="/js/staff-tools.js?v=20261025-unified-work"></script>

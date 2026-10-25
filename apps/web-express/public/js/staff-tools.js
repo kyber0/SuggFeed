@@ -26,7 +26,7 @@
         const stageSelect = document.getElementById('staff-mobile-stage');
         const syncStage = (hash) => { if (!stageSelect)
             return; const stage = hash.replace('#board-lane-', ''); if (Array.from(stageSelect.options).some(option => option.value === stage))
-            stageSelect.value = stage; board.dataset.mobileStage = stageSelect.value; const form = document.getElementById('staff-board-filters'); form.action = sfSchoolPath('/admin/board' + (board.dataset.presentation === 'board' ? '#board-lane-' + stageSelect.value : '')); };
+            stageSelect.value = stage; board.dataset.mobileStage = stageSelect.value; const form = document.getElementById('staff-board-filters'); form.action = sfSchoolPath('/admin/work' + (board.dataset.presentation === 'board' ? '#board-lane-' + stageSelect.value : '')); };
         syncStage(location.hash);
         stageSelect?.addEventListener('change', () => { syncStage('#board-lane-' + stageSelect.value); const url = new URL(location.href); url.hash = 'board-lane-' + stageSelect.value; history.replaceState(history.state, '', url); });
         const metaData = document.getElementById('staff-board-meta');
@@ -37,7 +37,7 @@
         const retry = document.getElementById('staff-board-retry');
         let loading = false, failedPage = null;
         const urlFor = (stage, page) => {
-            const url = new URL(sfSchoolPath('/admin/board'), window.location.origin);
+            const url = new URL(sfSchoolPath('/admin/work'), window.location.origin);
             url.searchParams.set('sort', meta.filters.sort);
             url.searchParams.set('pageSize', String(meta.filters.pageSize));
             if (meta.filters.assignment && meta.filters.assignment !== 'all')
@@ -80,7 +80,7 @@
             if (loading || (busy && !internal))
                 return false;
             const target = new URL(rawUrl, window.location.origin);
-            if (target.origin !== window.location.origin || sfSchoolRoute(target.pathname) !== '/admin/board')
+            if (target.origin !== window.location.origin || sfSchoolRoute(target.pathname) !== '/admin/work')
                 return false;
             loading = true;
             failedPage = null;

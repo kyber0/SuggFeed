@@ -717,3 +717,32 @@ html:has(.staff-review-dialog[open]) { overflow:hidden; }
 .portal-work-summary .portal-work-deadline[data-overdue=true] {color:var(--error);font-weight:600;}
 
 .portal-task-summary>.portal-task-empty {opacity:.65;}
+
+/* A single Work destination, with assignments and delivery as complementary views. */
+.staff-work-heading.workspace-heading {align-items:center;gap:16px;margin-bottom:20px;}
+.staff-work-heading h1 {font-size:clamp(28px,3vw,36px);line-height:1.15;letter-spacing:-.035em;margin:6px 0 10px;}
+.staff-work-heading .workspace-button {flex:none;}
+.staff-work-views {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:min(100%,540px);padding:5px;margin:0 0 14px;border:1px solid var(--line);border-radius:14px;background:var(--bg);}
+.staff-work-views>a {display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:0;padding:10px 12px;border:1px solid transparent;border-radius:10px;text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600;}
+.staff-work-views .workspace-svg {width:16px;height:16px;flex:none;}
+.staff-work-views>a[aria-current=page] {background:var(--surface);border-color:var(--line);color:var(--navy);box-shadow:var(--shadow-sm);}
+.staff-work-views>a:hover {color:var(--navy);background:var(--surface);}
+.staff-work-views>a:focus-visible {outline:2px solid var(--navy);outline-offset:3px;}
+.staff-work-context {display:flex;align-items:baseline;gap:8px;color:var(--ink-2);font-size:12px;line-height:1.7;margin:0 0 22px;max-width:90ch;}
+.staff-work-context-dot {width:6px;height:6px;flex:none;background:var(--navy);border-radius:50%;}
+.staff-work-tasks .assignment-tabs {gap:8px;margin-bottom:14px;padding-bottom:12px;}
+.staff-work-tasks .assignment-tabs>a {font-size:12px;min-height:44px;}
+.staff-work-tasks>.assignment-card {padding:12px 16px;margin-bottom:16px;}
+.staff-work-tasks>.assignment-card>summary {min-height:44px;padding:10px 0;}
+.staff-work-tasks .portal-task-summary {gap:10px;margin-top:16px;}
+.staff-work-tasks .portal-task-summary>:is(a,div) {padding:12px 14px;gap:12px;}
+.staff-work-tasks .portal-task-summary strong {font-size:23px;}
+.staff-work-tasks .portal-work-group {margin:22px 0;}
+.staff-work-tasks .portal-work-item {padding:14px 16px;}
+.staff-work-tasks .portal-work-details {margin-top:8px;}
+.staff-work-tasks .portal-work-details>summary {min-height:44px;padding:10px 0;}
+.staff-work-tasks .assignment-items {display:grid;grid-template-columns:minmax(0,1fr);gap:10px;}
+.staff-work-tasks .portal-work-summary h3 {margin:4px 0;font-size:15px;}
+@media(max-width:800px){.staff-work-heading.workspace-heading{align-items:start}.staff-work-heading .workspace-button{align-self:start}.staff-work-tasks .portal-work-summary{gap:10px}.staff-work-tasks .portal-work-primary .workspace-button{width:auto}.staff-work-context{margin-bottom:18px}.staff-work-tasks .portal-task-summary>:is(a,div){padding:10px;gap:4px}.staff-work-tasks .portal-work-item{padding:14px}}
+@media(max-width:480px){.staff-work-heading.workspace-heading{flex-direction:column;gap:12px}.staff-work-views{gap:4px;padding:4px}.staff-work-views>a{flex-direction:column;gap:4px;padding:8px 3px;font-size:12px}.staff-work-views>a>span{white-space:nowrap;overflow-wrap:normal}.staff-work-views .workspace-svg{width:14px;height:14px}.staff-work-tasks .assignment-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.staff-work-tasks .assignment-tabs>a{min-width:0;padding:10px 8px}.staff-work-tasks .portal-task-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.staff-work-tasks .portal-task-summary>:is(a,div){flex-direction:column;align-items:start;gap:3px;padding:10px 8px}.staff-work-tasks .portal-task-summary span{font-size:11px}.staff-work-tasks .portal-work-primary .workspace-button{width:100%}}
+@media(prefers-reduced-motion:no-preference){.staff-work-views>a{transition:transform .2s ease,opacity .2s ease}.staff-work-views>a:active{transform:translateY(1px)}}
