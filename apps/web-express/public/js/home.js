@@ -80,6 +80,7 @@
         ['mouseleave', 'focusout'].forEach(name => prompt?.addEventListener(name, () => setTimeout(syncPromptMotion, 0)));
         if (new URLSearchParams(window.location.search).get('track') === '1')
             sfSwitchTab('track');
+        document.querySelector('[data-home-track]')?.addEventListener('click', () => { sfSwitchTab('track'); document.getElementById('tracking-input')?.focus({ preventScroll: true }); });
         window.addEventListener('resize', () => {
             updateGlider();
         });
@@ -92,7 +93,7 @@
             }
             return;
         }
-        if (e.key === '/') {
+        if (e.key === '/' && document.getElementById('home-search')) {
             e.preventDefault();
             const search = document.getElementById('home-search');
             if (search) {
@@ -208,6 +209,9 @@
     }
     function sfSwitchTab(mode) {
         const isShare = mode === 'share';
+        const disclosure = document.getElementById('home-tracking');
+        if (disclosure && !isShare)
+            disclosure.open = true;
         const tabShare = document.getElementById('tab-share');
         const tabTrack = document.getElementById('tab-track');
         const panelShare = document.getElementById('panel-share');

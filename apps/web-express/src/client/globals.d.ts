@@ -49,7 +49,6 @@ declare function sfVoteFeed(...args: any[]): any;
 declare function sfSharePost(...args: any[]): any;
 declare function sfCloseMobileFilter(...args: any[]): any;
 declare function sfEscapeHtml(...args: any[]): any;
-declare function sfCreatePostCardHtml(...args: any[]): any;
 declare function sfLoadMoreFeed(...args: any[]): any;
 declare function syncPromptMotion(...args: any[]): any;
 declare function typePrompt(...args: any[]): any;

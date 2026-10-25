@@ -1,117 +1,26 @@
-<% layout('layout'); const welcome=it.schoolCustomization?.welcome; const identity=it.schoolCustomization; %>
-
-<main data-student-home="<%= it.user?'returning':'welcome' %>" class="sf-main">
-  <% if(it.user) { %><%~ include('partials/student-home-brief',it) %><% } %>
-  <!-- Hero Section -->
-  <section class="sf-hero" id="top">
-    <div class="sf-hero-orb sf-hero-orb-1" aria-hidden="true"></div>
-    <div class="sf-hero-orb sf-hero-orb-2" aria-hidden="true"></div>
-    <div class="sf-hero-orb sf-hero-orb-3" aria-hidden="true"></div>
-    <% if(identity?.cover) { %><img class="school-welcome-cover" src="<%= it.schoolBase %>/branding/<%= identity.cover %>" alt="" width="1600" height="600"/><% } %>
-    <div class="sf-hero-container">
-      <% if(identity?.displayName || identity?.logo) { %><div class="school-welcome-identity"><% if(identity.logo) { %><img src="<%= it.schoolBase %>/branding/<%= identity.logo %>" alt="" width="48" height="48"/><% } %><strong><%= identity.displayName || it.schoolName %></strong></div><% } %>
-      <div class="sf-hero-badge">
-        <span class="sf-hero-badge-text">A clearer way to improve campus life</span>
-      </div>
-
-      <h1 class="sf-hero-title" data-sf-split-text="words">
-        <% if(welcome?.headline) { %><span class="sf-hero-title-accent"><%= welcome.headline %></span><% } else { %>Make campus better, <span class="sf-hero-title-accent">one idea at a time.</span><% } %>
-      </h1>
-      
-      <p class="sf-hero-subtitle">
-        <%= welcome?.intro || 'Share a suggestion, choose whether to attach your account, and use a private tracking code to check for updates.' %>
-      </p>
-
-      <% if(welcome?.message) { %><p class="school-welcome-message"><%= welcome.message %></p><% } %>
-      <div class="sf-hero-actions">
-        <a data-sf-magnetic class="sf-hero-action-primary" href="#action-hub">Share feedback</a>
-        <a class="sf-hero-action-secondary" href="#feed">Browse ideas</a>
-        <% if(it.user){ %><a class="sf-hero-action-secondary" href="/profile">Track my ideas</a><% } else { %><a class="sf-hero-action-secondary" href="#action-hub" data-sf-click="action-59">Track with a code</a><% } %>
-      </div>
-
-      <% if(welcome?.help) { %><p class="school-welcome-help"><%= welcome.help %></p><% } %>
-      <% if(welcome?.links.length) { %><nav class="school-welcome-links" aria-label="Official school links"><% for(const link of welcome.links) { %><a href="<%= link.url %>" target="_blank" rel="noopener noreferrer"><%= link.label %> ↗</a><% } %></nav><% } %>
-      <% if(it.user){ %><details class="student-home-guide"><summary>How SuggFeed works</summary><%~ include('partials/home-story',it) %></details><% }else{ %><%~ include('partials/home-story',it) %><% } %>
-    </div>
-  </section>
-
-  <!-- Interactive Action Hub / Workspace -->
-  <section class="sf-workspace-section" id="action-hub" aria-label="Share feedback or track a submission">
-    <div class="sf-workspace-wrapper" data-sf-reveal="fade">
-      <!-- Modern Segmented Tabs -->
-      <div class="sf-segmented-tabs" role="tablist" aria-label="Action hub tabs" id="sf-segmented-tabs">
-        <div class="sf-segmented-glider" id="sf-tab-glider"></div>
-        <button
-          type="button"
-          id="tab-share"
-          role="tab"
-          aria-controls="panel-share"
-          aria-selected="true"
-          tabindex="0"
-          class="sf-segmented-tab sf-segmented-tab--active"
-          data-sf-click="action-58"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9"/>
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-          </svg>
-          Share an Idea
-        </button>
-        <button
-          type="button"
-          id="tab-track"
-          role="tab"
-          aria-controls="panel-track"
-          aria-selected="false"
-          tabindex="-1"
-          class="sf-segmented-tab"
-          data-sf-click="action-59"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          Track Submission
-        </button>
-      </div>
-
-      <!-- Main Action Card -->
-      <div class="sf-action-card">
-        <!-- Share Panel (Creation Prompt Trigger) -->
-        <div id="panel-share" class="sf-share-panel" role="tabpanel" aria-labelledby="tab-share" tabindex="0">
-          <button type="button" class="sf-prompt-trigger" data-sf-click="action-60" aria-label="Open the feedback form">
-            <span class="sf-prompt-avatar" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-              </svg>
-            </span>
-            <span class="sf-prompt-placeholder">
-              <span id="sf-prompt-dynamic-text" class="sf-prompt-dynamic-text" aria-hidden="true">What would you like to improve on campus?</span>
-              <span class="sf-prompt-cursor" aria-hidden="true"></span>
-            </span>
-            <span class="sf-prompt-actions-wrap">
-              <span class="sf-prompt-btn" aria-hidden="true">
-                <span>Share idea</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                  <polyline points="12 5 19 12 12 19"/>
-                </svg>
-              </span>
-            </span>
-          </button>
-
-          <!-- Category Shortcut Chips -->
-          <div class="sf-shortcuts-row">
-            <span class="sf-shortcuts-label">Quick topics:</span>
-            <div class="sf-shortcuts-list"><% for(const cat of it.schoolCategories || []) { %><button type="button" class="sf-shortcut-chip" data-school-submit-category="<%= cat.id %>"><%= cat.name %></button><% } %>
-            </div>
-          </div>
-        </div>
-
-        <!-- Track Panel -->
-        <form id="panel-track" class="sf-track-panel" role="tabpanel" aria-labelledby="tab-track" tabindex="0" data-sf-submit="action-66" hidden>
+<% layout('layout'); const welcome=it.schoolCustomization?.welcome; const identity=it.schoolCustomization;const highlights=(it.feed||[]).slice(0,6);const progress=(it.feed||[]).filter(item=>['in_progress','resolved'].includes(item.status)).slice(0,3); %>
+<main data-student-home="<%= it.user?'returning':'welcome' %>" class="sf-main sf-landing">
+ <section class="sf-hero landing-hero" id="top" aria-labelledby="home-title">
+  <% if(identity?.cover){ %><img class="school-welcome-cover" src="<%= it.schoolBase %>/branding/<%= identity.cover %>" alt="" width="1600" height="600"/><% } %>
+  <div class="sf-hero-container landing-hero-grid">
+   <div class="landing-welcome">
+    <div class="school-welcome-identity"><% if(identity?.logo){ %><img src="<%= it.schoolBase %>/branding/<%= identity.logo %>" alt="" width="40" height="40"/><% } %><strong><%= identity?.displayName||it.schoolName||'Your campus community' %></strong></div>
+    <p class="student-eyebrow">SMALL IDEAS. SHARED PROGRESS.</p>
+    <h1 id="home-title" class="sf-hero-title<%= welcome?.headline?' landing-custom-headline':'' %>" data-sf-split-text="words"><% if(welcome?.headline){ %><span class="sf-hero-title-accent"><%= welcome.headline %></span><% }else{ %>Your ideas can <span class="sf-hero-title-accent">shape your campus.</span><% } %></h1>
+    <p class="sf-hero-subtitle"><%= welcome?.intro||'Share what could be better, support useful suggestions, and follow your school’s progress.' %></p>
+    <p class="school-welcome-message" <%= welcome?.message?'':'hidden' %>><%= welcome?.message||'' %></p>
+    <div class="sf-hero-actions"><button type="button" class="sf-hero-action-primary" data-sf-magnetic data-sf-click="action-60">Share an idea <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button><a class="sf-hero-action-secondary" href="#action-hub" data-home-track>Track an idea <span aria-hidden="true">→</span></a></div>
+    <div class="landing-topics" aria-label="Start with a school topic"><% for(const cat of (it.schoolCategories||[]).slice(0,4)){ %><button type="button" data-school-submit-category="<%= cat.id %>"><%= cat.name %></button><% } %></div>
+    <p class="school-welcome-help" <%= welcome?.help?'':'hidden' %>><%= welcome?.help||'' %></p>
+    <nav class="school-welcome-links" aria-label="Official school links" <%= welcome?.links?.length?'':'hidden' %>><% for(const link of welcome?.links||[]){ %><a href="<%= link.url %>" target="_blank" rel="noopener noreferrer"><%= link.label %> ↗</a><% } %></nav>
+   </div>
+   <div class="landing-companion"><% if(it.user){ %><%~ include('partials/student-home-brief',it) %><% }else{ %><%~ include('partials/home-journey',it) %><% } %></div>
+  </div>
+ </section>
+ <section class="sf-workspace-section landing-tracking" id="action-hub" aria-label="Track a private submission">
+  <div class="sf-workspace-wrapper"><details class="landing-track-disclosure" id="home-tracking"><summary><svg class="workspace-svg" aria-hidden="true"><use href="#ws-shield"/></svg><span><strong>Already shared an idea?</strong><span>Check its status with your private tracking code.</span></span><svg class="workspace-svg" aria-hidden="true"><use href="#ws-chevron-down"/></svg></summary><div class="landing-track-body"><form id="panel-track" class="sf-track-panel" aria-labelledby="home-track-title" tabindex="0" data-sf-submit="action-66">
           <div class="sf-track-header">
-            <h2 class="sf-track-title-head">Check proposal status</h2>
+            <h2 class="sf-track-title-head" id="home-track-title">Check idea status</h2>
             <p class="sf-track-desc-head">
               Enter your private tracking code (starts with <code>CV-</code>) to view status updates and staff replies.
             </p>
@@ -187,204 +96,15 @@
               <div id="tr-note" class="sf-track-note-text"></div>
             </div>
           </div>
-        </form>
-      </div>
-    </div>
-  </section>
-
-  <!-- Feed Section -->
-  <section class="sf-feed-section" id="feed">
-    <!-- Header -->
-    <div class="sf-feed-header-bar" data-sf-reveal="slide-up">
-      <div>
-        <div class="sf-feed-kicker">COMMUNITY IDEAS</div>
-        <h2 class="sf-feed-headline">What the campus is talking about</h2>
-      </div>
-      <button type="button" class="sf-btn-share-alt" data-sf-click="action-69">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Submit suggestion
-      </button>
-    </div>
-
-    <!-- Filter & Search Toolbar -->
-    <div class="sf-toolbar">
-      <!-- Search -->
-      <div class="sf-search-box">
-        <svg class="sf-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input
-          class="sf-search-input"
-          type="text"
-          id="home-search"
-          placeholder="Search ideas by title or keyword…"
-          aria-label="Search ideas"
-          data-sf-input="action-70"
-        />
-        <div class="sf-search-kbd-hint" id="search-kbd-hint" title="Press / to search">/</div>
-        <button type="button" id="search-clear-btn" class="sf-search-clear" data-sf-click="action-71" aria-label="Clear search" hidden>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Sort Dropdown -->
-      <div class="sf-sort-dropdown-wrap" data-sf-click="action-72">
-        <button type="button" class="sf-sort-toggle" id="home-sort-btn" data-sf-click="action-73" aria-expanded="false">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="4" y1="21" x2="4" y2="14"/>
-            <line x1="4" y1="10" x2="4" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="12"/>
-            <line x1="12" y1="8" x2="12" y2="3"/>
-            <line x1="20" y1="21" x2="20" y2="16"/>
-            <line x1="20" y1="12" x2="20" y2="3"/>
-          </svg>
-          <span id="home-sort-label">Most Supported</span>
-          <svg id="home-sort-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sf-sort-chevron">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
-        <div class="sf-sort-popup" id="home-sort-menu" hidden>
-          <button type="button" class="sf-sort-item sf-sort-item--active" data-sort="popular" data-sf-click="action-74">
-            Most Supported
-            <svg class="sf-sort-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </button>
-          <button type="button" class="sf-sort-item" data-sort="newest" data-sf-click="action-75">
-            Newest First
-          </button>
-          <button type="button" class="sf-sort-item" data-sort="oldest" data-sf-click="action-76">
-            Oldest First
-          </button>
-        </div>
-      </div>
-
-      <!-- Category Filter Pills -->
-      <div class="sf-category-pills" role="group" aria-label="Filter by category" id="cat-chips">
-        <button type="button" class="sf-cat-pill sf-cat-pill--active" data-cat="All" aria-pressed="true" data-sf-click="action-77">
-          All <span class="sf-cat-count"><%= (it.feed ? it.feed.length : 0) %></span>
-        </button>
-        <% for (const cat of it.categories) { 
-             const catCount = (it.feed || []).filter(item => (item.category ?? (item.categories?.name ?? 'Other')) === cat).length;
-        %>
-          <button type="button" class="sf-cat-pill" data-cat="<%= cat %>" aria-pressed="false" data-sf-click="action-78" data-sf-click-arg-0="<%= cat %>">
-            <%= cat %> <span class="sf-cat-count"><%= catCount %></span>
-          </button>
-        <% } %>
-      </div>
-    </div>
-
-    <!-- Live Results Count -->
-    <div class="sf-results-meta">
-      <span id="sf-visible-count" aria-live="polite" aria-atomic="true"><%= (it.feed ? it.feed.length : 0) %> ideas shown</span>
-    </div>
-
-    <!-- Ideas Grid -->
-    <div class="sf-ideas-grid" id="ideas-grid">
-      <% if (!it.feed || it.feed.length === 0) { %>
-        <div class="sf-empty-state-wrap">
-          <div class="sf-empty-box">
-            <div class="sf-empty-icon-wrap" aria-hidden="true">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-            </div>
-            <h3 class="sf-empty-head">Great changes start with one idea</h3>
-            <p class="sf-empty-msg">Share a constructive improvement for your school. Published ideas will appear here after review.</p>
-            <button type="button" class="sf-btn-empty-action" data-sf-click="action-79">
-              Submit the first idea
-            </button>
-          </div>
-        </div>
-      <% } else { %>
-        <% for (const item of it.feed) { %>
-          <article
-            class="sf-idea-card"
-            data-id="<%= item.id %>"
-            data-category="<%= item.category ?? (item.categories?.name ?? 'Other') %>"
-            data-title="<%= (item.title || '').toLowerCase() %>"
-            data-desc="<%= (item.description || '').toLowerCase() %>"
-            data-votes="<%= item.vote_count ?? 0 %>"
-            data-date="<%= new Date(item.created_at).getTime() %>"
-          >
-            <!-- Card Meta Header -->
-            <div class="sf-card-meta">
-              <span class="sf-card-cat-badge">
-                <%= item.category ?? (item.categories?.name ?? 'Other') %>
-              </span>
-              <span class="status-badge <%= (item.status || 'pending').replace('_', '-') %>">
-                <span class="sf-status-dot"></span>
-                <%= (item.status || 'pending').replace('_', ' ') %>
-              </span>
-              <span class="sf-card-date">
-                <%= new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) %>
-              </span>
-            </div>
-
-            <!-- Card Title & Description -->
-            <h3 class="sf-card-title"><a href="/idea/<%= item.id %>"><%= item.title %></a></h3>
-            <p class="sf-card-desc"><%= item.description %></p>
-
-            <!-- Card Footer -->
-            <div class="sf-card-footer">
-              <button
-                type="button"
-                class="sf-vote-btn<%= (it.votedIds || []).includes(item.id) ? ' sf-vote-btn--voted' : '' %>"
-                aria-pressed="<%= (it.votedIds || []).includes(item.id) %>"
-                data-id="<%= item.id %>"
-                data-sf-click="action-80" data-sf-click-arg-0="<%= item.id %>"
-                aria-label="<%= (it.votedIds || []).includes(item.id) ? 'Undo your vote' : 'Support idea' %>: <%= item.title %>"
-              >
-                <svg class="sf-vote-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="18 15 12 9 6 15"/>
-                </svg>
-                <span class="sf-vote-num"><%= item.vote_count ?? 0 %></span>
-              </button>
-
-              <div class="sf-card-footer-right">
-                <% if (item.comment_count !== undefined && item.comment_count > 0) { %>
-                  <span class="sf-comment-pill" title="<%= item.comment_count %> comments">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <%= item.comment_count %>
-                  </span>
-                <% } %>
-                <a href="/idea/<%= item.id %>" class="sf-card-link-arrow" aria-label="View idea: <%= item.title %>">
-                  View →
-                </a>
-              </div>
-            </div>
-          </article>
-        <% } %>
-      <% } %>
-    </div>
-
-    <div class="sf-filter-empty" id="sf-filter-empty" role="status" hidden>
-      <span class="sf-empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ws-search"/></svg></span><h3>No ideas match those filters</h3>
-      <p>Try another search or show all categories.</p>
-      <button type="button" class="sf-filter-reset" data-sf-click="action-81">Clear filters</button>
-    </div>
-
-    <!-- Feed Footer Banner -->
-    <div class="sf-feed-more-wrap">
-      <a href="/feed" class="sf-feed-more-btn">
-        Browse all community proposals
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="12 5 19 12 12 19"/>
-        </svg>
-      </a>
-    </div>
-  </section>
-
+        </form></div></details></div>
+ </section>
+ <section class="sf-feed-section landing-highlights" id="feed" aria-labelledby="highlights-title">
+  <header class="landing-section-heading"><div><p class="student-eyebrow">THE COMMUNITY BOARD</p><h2 id="highlights-title">Ideas from your community</h2><p>Good ideas grow when we build on each other.</p></div><a class="student-text-link" href="/feed">View all ideas →</a></header>
+  <div id="feed-posts-container" class="landing-ideas-grid"><% for(const item of highlights){ %><%~ include('partials/feed-card',{...it,item,compact:true}) %><% } %></div>
+  <% if(!highlights.length){ %><%~ include('partials/empty-state',{icon:'message',heading:'Great changes start with one idea',description:'Published suggestions will appear here after school review. Share a constructive improvement to start the conversation.',actions:[{label:'Share an idea',event:'action-60'}]}) %><% } %>
+ </section>
+ <% if(progress.length&&it.schoolCustomization?.features.roadmap!==false){ %><section class="landing-progress" aria-labelledby="home-progress-title"><header class="landing-section-heading"><div><p class="student-eyebrow">FROM FEEDBACK TO ACTION</p><h2 id="home-progress-title">See what’s moving forward</h2><p>Explore ideas with work underway or a recorded outcome.</p></div><a class="student-text-link" href="/roadmap">Explore progress →</a></header><div class="landing-progress-grid"><% for(const item of progress){ %><a href="/idea/<%= item.id %>" class="landing-outcome"><span class="student-state" data-tone="<%= item.status==='resolved'?'success':'progress' %>"><%= it.schoolCustomization?.labels?.[item.status]||(item.status==='resolved'?'Completed':'In progress') %></span><h3><%= item.title %></h3><p><%= item.staff_note||'Open this idea to read the school’s published progress.' %></p><span class="student-text-link">Read progress →</span></a><% } %></div></section><% } %>
+ <section class="landing-guide"><% if(it.user){ %><details class="student-home-guide"><summary>How SuggFeed works</summary><%~ include('partials/home-story',it) %></details><% }else{ %><%~ include('partials/home-story',it) %><% } %><p class="landing-review-note">Every submission is reviewed. A receipt confirms delivery, not approval.</p></section>
   <!-- Modern Footer -->
   <footer class="sf-footer">
     <div class="sf-footer-content">
@@ -404,7 +124,10 @@
       </div>
     </div>
   </footer>
+<div id="sf-feed-config" hidden data-highlights="true" data-sort="all" data-category="All" data-search="" data-page="1" data-has-more="false" data-votes="<%= JSON.stringify(it.votedIds||[]) %>" data-vote-state="<%= it.voteStateKnown!==false %>"></div>
 </main>
 <%~ include('partials/assistant-widget',it) %>
 
-<script defer src="/js/home.js?v=20261025-student-flow"></script>
+<script defer src="/js/home.js?v=20261025-landing-ideas"></script>
+
+<script defer src="/js/feed.js?v=20261025-landing-ideas"></script>

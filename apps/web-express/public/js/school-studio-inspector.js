@@ -73,7 +73,7 @@
                     html += '<p>Image uploads need service setup. Ask the platform operator to enable file cleanup.</p>';
             }
             else if (selected === 'home.hero')
-                html = input('headline', 'Welcome headline', p.welcome.headline || 'Make campus better, one idea at a time.', 100) + input('intro', 'Introduction', p.welcome.intro || 'Share a suggestion, choose whether to attach your account, and use a private tracking code to check for updates.', 500, 'textarea') + input('message', 'Welcome message', p.welcome.message, 1500, 'textarea') + '<button type="button" data-select="school.identity">Edit logo & cover</button>';
+                html = input('headline', 'Welcome headline', p.welcome.headline || 'Your ideas can shape your campus.', 100) + input('intro', 'Introduction', p.welcome.intro || 'Share what could be better, support useful suggestions, and follow your school’s progress.', 500, 'textarea') + input('message', 'Welcome message', p.welcome.message, 1500, 'textarea') + '<button type="button" data-select="school.identity">Edit logo & cover</button>';
             else if (selected === 'home.links') {
                 html = input('help', 'Help & contact information', p.welcome.help, 500, 'textarea');
                 for (const [i, link] of p.welcome.links.entries())

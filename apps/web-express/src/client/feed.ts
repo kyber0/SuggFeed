@@ -1,8 +1,9 @@
 // Search, filtering, support, saved ideas, and deliberate pagination for the feed.
 (function () {
   const config = document.getElementById('sf-feed-config');
-  if (!config) return;
-  const panes = ['.community-feed-main', '.community-left-nav', '.community-right-panel'];
+  if (!config||config.dataset.feedReady==='true') return;
+  config.dataset.feedReady='true';
+  const panes = ['.community-feed-main', '.community-left-nav'];
   // Document scroll restoration does not reliably restore independently scrolling panes.
   function rememberPanes() {
     if (window.innerWidth < 900) return;
@@ -67,7 +68,15 @@
     const panel = document.getElementById('topic-chips-panel');
     if (panel) panel.hidden = false;
   }
-  function sfCloseMobileFilter() {}
+  const filterDialog=document.getElementById('feed-filter-dialog') as HTMLDialogElement|null;
+  const filterForm=document.getElementById('feed-filter-form') as HTMLFormElement|null;
+  const filterOpener=document.querySelector<HTMLButtonElement>('[data-feed-filters-open]');
+  filterOpener?.addEventListener('click',()=>{if(!filterDialog||!filterForm)return;const radio=Array.from(filterForm.querySelectorAll<HTMLInputElement>('input[name="category"]')).find(input=>input.value===_currentCat);if(radio)radio.checked=true;filterDialog.showModal();});
+  function sfCloseMobileFilter(){filterDialog?.close();}
+  document.querySelector('[data-feed-filters-close]')?.addEventListener('click',sfCloseMobileFilter);
+  filterDialog?.addEventListener('close',()=>filterOpener?.focus());
+  document.querySelector('[data-feed-filters-reset]')?.addEventListener('click',()=>{const all=filterForm?.querySelector<HTMLInputElement>('input[value="All"]');if(all)all.checked=true;});
+  filterForm?.addEventListener('submit',event=>{event.preventDefault();if(!filterForm)return;_currentCat=String(new FormData(filterForm).get('category')||'All');sfCloseMobileFilter();sfNavigate();});
 
   function sfFeedSearch(value: string) {
     const clearButton = document.getElementById('feed-search-clear') as HTMLButtonElement | null;
@@ -89,6 +98,7 @@
   }
 
   function sfNavigate() {
+    _appliedSearch=searchInput?.value.trim()??_appliedSearch;
     const url = new URL(sfSchoolPath('/feed'), window.location.origin);
     url.searchParams.set('sort', _currentSort);
     if (_currentCat !== 'All') url.searchParams.set('category', _currentCat);
@@ -97,6 +107,12 @@
     window.location.href = url.toString();
   }
 
+  document.querySelector<HTMLSelectElement>('[data-feed-sort-select]')?.addEventListener('change',event=>sfSetSort((event.target as HTMLSelectElement).value));
+  const savedDialog=document.getElementById('saved-search-dialog') as HTMLDialogElement|null;
+  const savedOpener=document.querySelector<HTMLButtonElement>('[data-feed-saved-open]');
+  savedOpener?.addEventListener('click',()=>savedDialog?.showModal());
+  document.querySelector('[data-feed-saved-close]')?.addEventListener('click',()=>savedDialog?.close());
+  savedDialog?.addEventListener('close',()=>savedOpener?.focus());
   document.getElementById('feed-search-form')?.addEventListener('submit', event => {
     event.preventDefault();
     _appliedSearch = searchInput?.value.trim() || '';
@@ -121,6 +137,10 @@
     }
   });
 
+  const knownVotes=new Map<string,boolean>();
+  const initialVotes:unknown=JSON.parse(config.dataset.votes||'[]');
+  const votedIds=new Set(Array.isArray(initialVotes)?initialVotes:[]);
+  if(config.dataset.voteState!=='false')document.querySelectorAll<HTMLElement>('.post-card[data-idea-id]').forEach(card=>knownVotes.set(card.dataset.ideaId!,votedIds.has(card.dataset.ideaId!)));
   let rememberedVotes = new Set<string>();
   function readLocalSet(key: string): Set<string> {
     try {
@@ -130,7 +150,7 @@
   }
 
   function sfGetVotedSet(): Set<string> {
-    return new Set([...readLocalSet('sf_voted_ideas'), ...rememberedVotes]);
+    const values=new Set([...readLocalSet('sf_voted_ideas'),...rememberedVotes]);knownVotes.forEach((voted,id)=>voted?values.add(id):values.delete(id));return values;
   }
   function sfSaveVotedId(id: string) {
     rememberedVotes.add(id);
@@ -199,14 +219,16 @@
   function sfInitLocalStates() {
     const votes = sfGetVotedSet();
     const saved = sfGetSavedSet();
-    document.querySelectorAll<HTMLElement>('.action-like[data-id]').forEach(button => setSupportedState(button, votes.has(button.dataset.id || '')));
+    document.querySelectorAll<HTMLElement>('.action-like[data-id]').forEach(button=>{const id=button.dataset.id||'';if(knownVotes.has(id)){delete button.dataset.supportUnknown;setSupportedState(button,votes.has(id));}else markSupportUnknown(button);});
     document.querySelectorAll<HTMLElement>('.action-bookmark[data-id]').forEach(button => setSavedState(button, saved.has(button.dataset.id || '')));
   }
 
-  document.addEventListener('sf:vote-changed',event=>{const {id,voted}=(event as CustomEvent).detail;if(voted)rememberedVotes.add(id);else rememberedVotes.delete(id);});
+  document.addEventListener('sf:vote-changed',event=>{const {id,voted}=(event as CustomEvent).detail;knownVotes.set(id,voted);if(voted)rememberedVotes.add(id);else rememberedVotes.delete(id);});
+  function markSupportUnknown(button:HTMLElement){button.dataset.supportUnknown='true';button.classList.remove('active');const count=button.querySelector('.action-count');if(count)count.textContent='—';button.removeAttribute('aria-pressed');button.title='Refresh to check support';const label=button.querySelector('.action-label');if(label)label.textContent='Check support';}
   const pendingVotes = new Set<string>();
   async function sfVoteFeed(id: string, button: HTMLButtonElement) {
     if (!id || pendingVotes.has(id)) return;
+    if(button.dataset.supportUnknown==='true'){location.reload();return;}
     const voted=!button.classList.contains('active');
     pendingVotes.add(id);
     const matchingButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.action-like[data-id]')).filter(other => other.dataset.id === id);
@@ -223,7 +245,7 @@
         body: JSON.stringify({ action: voted?'up':'unvote' }),
         signal: controller.signal
       });
-      if (!response.ok) throw new Error(response.status === 429 ? 'rate-limit' : 'request-failed');
+      if (!response.ok) throw new Error(response.status === 429 ? 'rate-limit' : response.status<500?'rejected':'request-failed');
       const data = await response.json();
       if (!data.success || typeof data.voted!=='boolean' || !Number.isFinite(Number(data.vote_count))) throw new Error('invalid-response');
       sfRememberVote(id,data.voted,data.vote_count);
@@ -235,12 +257,13 @@
       });
       if (window.sfToast) window.sfToast(data.voted?'Your support has been recorded.':'Your support has been removed.','success');
     } catch (error) {
-      previous.forEach(saved=>{setSupportedState(saved.other,saved.supported);const count=saved.other.querySelector<HTMLElement>('.action-count');if(count)count.textContent=saved.count;});
+      previous.forEach(saved=>{const count=saved.other.querySelector<HTMLElement>('.action-count');if(count)count.textContent=saved.count;});
+      if(['rate-limit','rejected'].includes((error as Error).message)){previous.forEach(saved=>setSupportedState(saved.other,saved.supported));}else{knownVotes.delete(id);matchingButtons.forEach(markSupportUnknown);}
       const message = (error as any)?.message === 'rate-limit'
         ? 'Too many requests. Wait a moment, then try supporting this idea again.'
         : controller.signal.aborted
-          ? 'The request timed out. Try again to confirm your support.'
-          : 'Could not confirm your support. Please try again.';
+          ? 'The request timed out. Refresh to check whether your support was saved.'
+          : 'Could not confirm your support. Refresh to check its current state.';
       if (window.sfToast) window.sfToast(message, 'error');
     } finally {
       window.clearTimeout(timeout);
@@ -283,82 +306,6 @@
     return String(value ?? '').replace(/[&<>"']/g, (character: string) => (({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' } as Record<string, string>)[character] || character));
   }
 
-  function sfCreatePostCardHtml(item: any) {
-    const category = String(item.category || item.categories?.name || 'Other');
-    const categoryClass = category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const statuses: Record<string, string> = { approved: 'Planned', in_progress: 'In progress', resolved: 'Completed' };
-    const status = ['approved', 'in_progress', 'resolved'].includes(item.status) ? item.status : 'approved';
-    const anonymous = item.is_anonymous || !item.author?.display_name;
-    const author = anonymous ? 'Anonymous student' : String(item.author.display_name);
-    const votes = Math.max(0, Number(item.vote_count) || 0);
-    const comments = Math.max(0, Number(item.comment_count) || 0);
-    const id = sfEscapeHtml(item.id);
-    const href = sfSchoolPath('/idea/' + encodeURIComponent(String(item.id)));
-    const created = new Date(item.created_at);
-    const validDate = Number.isFinite(created.getTime());
-    const secondsAgo = validDate ? Math.max(0, Math.floor((Date.now() - created.getTime()) / 1000)) : 0;
-    const relativeTime = !validDate ? '' : secondsAgo < 60 ? 'Just now' : secondsAgo < 3600 ? Math.floor(secondsAgo / 60) + 'm ago' : secondsAgo < 86400 ? Math.floor(secondsAgo / 3600) + 'h ago' : secondsAgo < 604800 ? Math.floor(secondsAgo / 86400) + 'd ago' : created.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
-    const title = sfEscapeHtml(item.title);
-    const description = sfEscapeHtml(item.description);
-    const supported = sfGetVotedSet().has(String(item.id));
-    const saved = sfGetSavedSet().has(String(item.id));
-    const attachmentCount = Array.isArray(item.attachments) ? item.attachments.length : 0;
-    return `
-      <article class="post-card" data-idea-id="${id}" aria-label="Idea: ${title}">
-        <div class="post-header">
-          <div class="post-avatar${anonymous ? ' is-anon' : ''}" aria-hidden="true">${anonymous ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>' : sfEscapeHtml(author.charAt(0).toUpperCase())}</div>
-          <div class="post-author-meta"><div class="post-author-row">
-            <span class="post-author-name">${sfEscapeHtml(author)}</span>
-            ${validDate ? `<span class="post-dot" aria-hidden="true">·</span><time class="post-timestamp" datetime="${created.toISOString()}" title="${sfEscapeHtml(created.toLocaleString('en-PH'))}">${relativeTime}</time>` : ''}
-          </div></div>
-          <span class="post-badge-status status-${status}"><span class="badge-dot" aria-hidden="true"></span>${sfEscapeHtml((window as any).sfSchoolCustomization?.labels?.[status] || statuses[status])}</span>
-          <div class="post-menu-wrap">
-            <button type="button" class="post-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="More options" title="More options">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-            </button>
-            <div class="post-menu-dropdown" hidden>
-              <button type="button" class="post-menu-item action-bookmark${saved ? ' active' : ''}" data-id="${id}" data-sf-click="bookmark-feed" aria-pressed="${saved}" aria-label="${saved ? 'Remove saved idea from this device' : 'Save idea on this device'}">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-                <span class="action-label">${saved ? 'Saved' : 'Save'}</span>
-              </button>
-              <button type="button" class="post-menu-item action-share" data-sf-click="share-feed" data-id="${id}" aria-label="Share idea">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98m0-10.98-6.83 3.98"/></svg>
-                <span>Share</span>
-              </button>
-              <div class="post-menu-divider" role="separator"></div>
-              <button type="button" class="post-menu-item post-menu-item--danger care-report" data-report-idea="${id}">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                <span>Report</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="post-content">
-          <span class="post-badge-category cat-${categoryClass}"><span class="badge-dot" aria-hidden="true"></span>${sfEscapeHtml(category)}</span>
-          <h2 class="post-title"><a class="post-title-link" href="${href}" data-sf-click="open-detail" data-idea-id="${id}">${title}</a></h2>
-          <p class="post-body">${description}</p>
-        </div>
-        ${attachmentCount ? `<div class="post-media-container"><a class="post-attachment-pill" href="${href}" data-sf-click="open-detail" data-idea-id="${id}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg><span>${attachmentCount} attachment${attachmentCount === 1 ? '' : 's'}</span><span class="attachment-cta">View files →</span>
-        </a></div>` : ''}
-        <div class="post-footer" data-sf-click="stop">
-          <button type="button" class="care-report" data-report-idea="${id}">Report</button>
-          <button type="button" class="action-btn action-like${supported ? ' active' : ''}" data-id="${id}" data-sf-click="vote-feed" aria-pressed="${supported}" title="${supported ? 'Undo your support' : 'Support this idea'}">
-            <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="action-count">${votes}</span><span class="action-label">${supported ? 'Supported' : 'Support'}</span>
-          </button>
-          <button type="button" class="action-btn action-comment" data-sf-click="comment-feed" data-idea-id="${id}" aria-label="Open discussion, ${comments} comments" title="Open discussion">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="action-count">${comments}</span><span class="action-label">Comments</span>
-          </button>
-          <button type="button" class="action-btn action-bookmark${saved ? ' active' : ''}" data-id="${id}" data-sf-click="bookmark-feed" aria-pressed="${saved}" aria-label="${saved ? 'Remove saved idea from this device' : 'Save idea on this device'}" title="${saved ? 'Remove from saved ideas on this device' : 'Save this idea on this device'}">
-            <svg class="bookmark-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg><span class="action-label">${saved ? 'Saved' : 'Save'}</span>
-          </button>
-          <button type="button" class="action-btn action-share" data-sf-click="share-feed" data-id="${id}" aria-label="Share idea" title="Share idea link">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="action-label">Share</span>
-          </button>
-        </div>
-      </article>`;
-  }
-
   // ── Post card 3-dot dropdown menu ────────────────────────────────────
   function sfCloseAllPostMenus(except?: Element) {
     document.querySelectorAll<HTMLElement>('.post-menu-wrap').forEach(wrap => {
@@ -383,6 +330,7 @@
           dropdown.hidden = !opening;
           btn.setAttribute('aria-expanded', String(opening));
           if (opening) {
+            const follow=dropdown.querySelector<HTMLButtonElement>('[data-follow-idea]');if(follow&&follow.dataset.following===undefined)document.dispatchEvent(new CustomEvent('sf:follow-context',{detail:follow}));
             const items = Array.from(dropdown.querySelectorAll<HTMLElement>('.post-menu-item'));
             const firstVisible = items.find(el => el.offsetWidth > 0 || el.offsetHeight > 0 || window.getComputedStyle(el).display !== 'none');
             (firstVisible || items[0])?.focus();
@@ -407,7 +355,7 @@
   }, true /* capture phase so nothing can intercept menu toggle or outside click */);
 
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') sfCloseAllPostMenus();
+    if (event.key === 'Escape'){const opener=document.activeElement?.closest('.post-menu-wrap')?.querySelector<HTMLButtonElement>('.post-menu-btn');sfCloseAllPostMenus();opener?.focus();}
   });
   // ─────────────────────────────────────────────────────────────────────
 
@@ -434,7 +382,7 @@
     const timeout = window.setTimeout(() => controller.abort(), 15000);
     try {
       const nextPage = _currentPage + 1;
-      const params = new URLSearchParams({ page: String(nextPage), sort: _currentSort, category: _currentCat, search: _appliedSearch });
+      const params = new URLSearchParams({ cards:'1',page: String(nextPage), sort: _currentSort, category: _currentCat, search: _appliedSearch });
       if (following) params.set('scope','following');else params.set('total','skip');
       const response = await sfSchoolFetch('/api/feed?' + params.toString(), { headers: { Accept: 'application/json' }, signal: controller.signal });
       if (!response.ok) throw new Error('request-failed');
@@ -448,12 +396,11 @@
         return true;
       });
       const previousCount = _feedContainer.children.length;
-      const fragment = document.createDocumentFragment();
-      fresh.forEach(item => {
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = sfCreatePostCardHtml(item);
-        if (wrapper.firstElementChild) fragment.appendChild(wrapper.firstElementChild);
-      });
+      if(typeof data.cardsHtml!=='string')throw new Error('missing-card-markup');
+      const pageTemplate=document.createElement('template');pageTemplate.innerHTML=data.cardsHtml;
+      const freshIds=new Set(fresh.map(item=>String(item.id))),votes=new Set<string>(data.votedIds||[]);
+      const fragment=document.createDocumentFragment();
+      for(const card of Array.from(pageTemplate.content.querySelectorAll<HTMLElement>('article.post-card[data-idea-id]'))){const id=card.dataset.ideaId!;if(!freshIds.has(id))continue;freshIds.delete(id);if(data.voteStateKnown!==false)knownVotes.set(id,votes.has(id));fragment.append(card);}
       _feedContainer.appendChild(fragment);
       // Keep keyboard users at the start of the newly added results.
       (_feedContainer.children[previousCount]?.querySelector('.post-title-link') as HTMLElement | null)?.focus({ preventScroll: true });
@@ -488,12 +435,12 @@
   sfFeedSearch(searchInput?.value || '');
   updateResultSummary();
   sfInitLocalStates();
-  if(!following && config.dataset.total===''){
+  if(config.dataset.highlights!=='true'&&!following && config.dataset.total===''){
     const params=new URLSearchParams({category:_currentCat,search:_appliedSearch});
     void sfSchoolFetch('/api/feed-total?'+params,{credentials:'omit',signal:AbortSignal.timeout(15000),headers:{Accept:'application/json'}})
       .then(response=>{if(!response.ok)throw new Error();return response.json();})
       .then(data=>{if(data.success && typeof data.count==='number')updateResultSummary(data.count);})
       .catch(()=>undefined); // A missing total never blocks ideas, saving or pagination.
   }
-  Object.assign(window, { sfSetSort, sfSetTopic, sfSetLeftTopic, sfToggleTopicsChips, sfFeedSearch, sfClearSearch, sfNavigate, sfGetVotedSet, sfSaveVotedId, sfGetSavedSet, sfBookmarkPost, sfInitLocalStates, sfVoteFeed, sfSharePost, sfCloseMobileFilter, sfEscapeHtml, sfCreatePostCardHtml, sfLoadMoreFeed });
+  Object.assign(window, { sfSetSort, sfSetTopic, sfSetLeftTopic, sfToggleTopicsChips, sfFeedSearch, sfClearSearch, sfNavigate, sfGetVotedSet, sfSaveVotedId, sfGetSavedSet, sfBookmarkPost, sfInitLocalStates, sfVoteFeed, sfSharePost, sfCloseMobileFilter, sfEscapeHtml, sfLoadMoreFeed });
 })();

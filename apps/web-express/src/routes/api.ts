@@ -1,3 +1,4 @@
+import {feedVoteState} from '../lib/feed-account';
 import {studentIdeaState} from '../lib/student-experience';
 import {deliverSafetyEmail} from '../lib/safety-email';
 import {assessSubmission,categorize} from '../lib/content-moderation';
@@ -236,10 +237,13 @@ router.get(
     const { page, sort: sortBy, category, search, scope } = feedFilters(req.query);
     const following = scope === 'following';
     if (following && !schoolUser(req)) return res.status(401).json({success:false,error:'Sign in to see followed ideas.'});
-    if (following) res.setHeader('Cache-Control','private, no-store');
+    res.setHeader('Cache-Control','private, no-store');
     const result = await loadPublishedSubmissions({ page, sortBy, category, search, followingUserId: following ? schoolUser(req)!.id : undefined, includeTotal:req.query.total!=='skip' });
+    const voteState=await feedVoteState(req,result.data.map(item=>item.id));
+    const cardsHtml=req.query.cards==='1'?await new Promise<string>((resolve,reject)=>res.render('partials/feed-page',{feed:result.data,...voteState},(error,html)=>error?reject(error):resolve(html))):undefined;
     res.json({
-      success: true,
+      success: true,cardsHtml,
+      ...voteState,
       feed: result.data,
       data: result.data,
       count: result.count,

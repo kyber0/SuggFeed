@@ -15,4 +15,4 @@ write('customization.bundle.css',['customization.css']);
 
 write('school-studio.css',['school-studio.css']);
 
-write('student.bundle.css',['student-experience.css']);
+write('student.bundle.css',['student-experience.css','landing-ideas.css']);

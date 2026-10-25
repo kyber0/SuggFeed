@@ -80,6 +80,7 @@ let activeCategory = 'All';
     ['mouseenter', 'focusin'].forEach(name => prompt?.addEventListener(name, () => clearTimeout(promptTimer)));
     ['mouseleave', 'focusout'].forEach(name => prompt?.addEventListener(name, () => setTimeout(syncPromptMotion, 0)));
     if(new URLSearchParams(window.location.search).get('track')==='1')sfSwitchTab('track');
+    document.querySelector<HTMLElement>('[data-home-track]')?.addEventListener('click',()=>{sfSwitchTab('track');document.getElementById('tracking-input')?.focus({preventScroll:true});});
     window.addEventListener('resize', () => {
       updateGlider();
     });
@@ -93,7 +94,7 @@ let activeCategory = 'All';
       }
       return;
     }
-    if (e.key === '/') {
+    if (e.key === '/' && document.getElementById('home-search')) {
       e.preventDefault();
       const search = (document.getElementById('home-search') as HTMLInputElement);
       if (search) {
@@ -202,6 +203,7 @@ let activeCategory = 'All';
 
   function sfSwitchTab(mode) {
     const isShare = mode === 'share';
+    const disclosure=document.getElementById('home-tracking') as HTMLDetailsElement|null;if(disclosure&&!isShare)disclosure.open=true;
     const tabShare = (document.getElementById('tab-share') as HTMLButtonElement);
     const tabTrack = (document.getElementById('tab-track') as HTMLButtonElement);
     const panelShare = (document.getElementById('panel-share') as HTMLElement);

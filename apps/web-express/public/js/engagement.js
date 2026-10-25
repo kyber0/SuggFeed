@@ -73,7 +73,7 @@
         if (button)
             void sync(button);
     });
-    document.querySelectorAll('[data-follow-idea]').forEach(button => { if (button.dataset.followIdea)
+    document.querySelectorAll('[data-follow-idea]').forEach(button => { if (button.dataset.followIdea && !button.closest('[hidden]'))
         void sync(button); });
     document.addEventListener('click', async (event) => {
         const button = event.target.closest('[data-follow-idea]');
@@ -102,7 +102,13 @@
                 return;
             button.dataset.following = String(result.following);
             button.setAttribute('aria-pressed', String(result.following));
-            button.textContent = result.following ? 'Following · Unfollow' : 'Follow this idea';
+            for (const other of document.querySelectorAll('[data-follow-idea]')) {
+                if (other.dataset.followIdea !== id)
+                    continue;
+                other.dataset.following = String(result.following);
+                other.setAttribute('aria-pressed', String(result.following));
+                other.textContent = result.following ? 'Following · Unfollow' : 'Follow this idea';
+            }
         }
         catch {
             if (button.dataset.followIdea === id && requests.get(button) === controller) {

@@ -44,7 +44,7 @@
     const button = (event as CustomEvent<HTMLButtonElement>).detail;
     if (button) void sync(button);
   });
-  document.querySelectorAll<HTMLButtonElement>('[data-follow-idea]').forEach(button => { if (button.dataset.followIdea) void sync(button); });
+  document.querySelectorAll<HTMLButtonElement>('[data-follow-idea]').forEach(button => { if (button.dataset.followIdea&&!button.closest('[hidden]')) void sync(button); });
   document.addEventListener('click', async event => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-follow-idea]');
     if (!button || !button.dataset.followIdea || button.disabled) return;
@@ -62,7 +62,7 @@
       if (button.dataset.followIdea !== id || requests.get(button) !== controller) return;
       button.dataset.following = String(result.following);
       button.setAttribute('aria-pressed', String(result.following));
-      button.textContent = result.following ? 'Following · Unfollow' : 'Follow this idea';
+      for(const other of document.querySelectorAll<HTMLButtonElement>('[data-follow-idea]')){if(other.dataset.followIdea!==id)continue;other.dataset.following=String(result.following);other.setAttribute('aria-pressed',String(result.following));other.textContent=result.following?'Following · Unfollow':'Follow this idea';}
     } catch {
       if (button.dataset.followIdea === id && requests.get(button) === controller) {
         delete button.dataset.following;

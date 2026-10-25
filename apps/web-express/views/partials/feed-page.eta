@@ -1,0 +1,1 @@
+<% for(const item of it.feed||[]){ %><%~ include('feed-card',{...it,item}) %><% } %>

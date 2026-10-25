@@ -79,13 +79,16 @@
         label.style.left = Math.max(4, r.left) + 'px';
         label.style.top = Math.max(4, r.top - 26) + 'px';
     } }); }
-    function text(selector, value) { for (const el of document.querySelectorAll(selector))
-        el.textContent = value; }
+    function text(selector, value) { for (const el of document.querySelectorAll(selector)) {
+        el.textContent = value;
+        if (el.matches('.school-welcome-message,.school-welcome-help'))
+            el.hidden = !value;
+    } }
     function headline(value) { for (const el of document.querySelectorAll('.sf-hero-title')) {
         const accent = document.createElement('span');
         accent.className = 'sf-hero-title-accent';
-        accent.textContent = value || 'one idea at a time.';
-        el.replaceChildren(...(value ? [] : [document.createTextNode('Make campus better, ')]), accent);
+        accent.textContent = value || 'shape your campus.';
+        el.replaceChildren(...(value ? [] : [document.createTextNode('Your ideas can ')]), accent);
     } }
     async function replaceFragment(payload, sequence) {
         fragmentSequence = sequence;
@@ -159,7 +162,7 @@
         if (next.welcome.headline !== old.welcome.headline)
             headline(next.welcome.headline);
         if (next.welcome.intro !== old.welcome.intro)
-            text('.school-welcome-intro,.sf-hero-subtitle', next.welcome.intro || 'Share a suggestion, choose whether to attach your account, and use a private tracking code to check for updates.');
+            text('.school-welcome-intro,.sf-hero-subtitle', next.welcome.intro || 'Share what could be better, support useful suggestions, and follow your school’s progress.');
         if (next.welcome.message !== old.welcome.message)
             text('.school-welcome-message', next.welcome.message);
         if (next.welcome.help !== old.welcome.help)
@@ -284,6 +287,33 @@
                 send('select', { componentId: selected });
                 schedule();
             }
+            return;
+        }
+        if (element.closest('[data-home-track]')) {
+            event.preventDefault();
+            const tracking = document.getElementById('home-tracking');
+            if (tracking) {
+                tracking.open = true;
+                tracking.scrollIntoView({ block: 'start' });
+            }
+            return;
+        }
+        if (element.closest('[data-feed-filters-open]')) {
+            event.preventDefault();
+            document.getElementById('feed-filter-dialog')?.showModal();
+            return;
+        }
+        if (element.closest('[data-feed-filters-close]')) {
+            document.getElementById('feed-filter-dialog')?.close();
+            return;
+        }
+        if (element.closest('[data-feed-saved-open]')) {
+            event.preventDefault();
+            document.getElementById('saved-search-dialog')?.showModal();
+            return;
+        }
+        if (element.closest('[data-feed-saved-close]')) {
+            document.getElementById('saved-search-dialog')?.close();
             return;
         }
         const route = element.closest('[data-studio-route]')?.dataset.studioRoute;
