@@ -52,7 +52,7 @@
             const row = document.createElement('article');
             row.className = 'care-row';
             const link = document.createElement('a');
-            link.href = sfSchoolPath(item.kind === 'urgent' ? '/admin/safety' : '/profile');
+            link.href = sfSchoolPath(item.kind === 'urgent' ? '/admin/safety' : item.submission_id ? '/submission/' + encodeURIComponent(item.submission_id) : '/profile');
             const labels = { pending: 'Submitted', approved: 'Planned', in_progress: 'In progress', resolved: 'Completed', rejected: 'Not proceeding' };
             link.textContent = item.kind === 'urgent' ? 'A private submission needs administrator review.' : 'Your submission is now ' + (labels[item.workflow_status] || 'updated') + '.';
             row.append(link);

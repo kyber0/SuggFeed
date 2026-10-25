@@ -1,6 +1,7 @@
 <% layout('layout'); const welcome=it.schoolCustomization?.welcome; const identity=it.schoolCustomization; %>
 
-<main class="sf-main">
+<main data-student-home="<%= it.user?'returning':'welcome' %>" class="sf-main">
+  <% if(it.user) { %><%~ include('partials/student-home-brief',it) %><% } %>
   <!-- Hero Section -->
   <section class="sf-hero" id="top">
     <div class="sf-hero-orb sf-hero-orb-1" aria-hidden="true"></div>
@@ -30,7 +31,7 @@
 
       <% if(welcome?.help) { %><p class="school-welcome-help"><%= welcome.help %></p><% } %>
       <% if(welcome?.links.length) { %><nav class="school-welcome-links" aria-label="Official school links"><% for(const link of welcome.links) { %><a href="<%= link.url %>" target="_blank" rel="noopener noreferrer"><%= link.label %> ↗</a><% } %></nav><% } %>
-      <%~ include('partials/home-story',it) %>
+      <% if(it.user){ %><details class="student-home-guide"><summary>How SuggFeed works</summary><%~ include('partials/home-story',it) %></details><% }else{ %><%~ include('partials/home-story',it) %><% } %>
     </div>
   </section>
 
@@ -174,7 +175,7 @@
               </div>
               <span id="tr-date" class="sf-track-result-date"></span>
             </div>
-            <h3 id="tr-title" class="sf-track-result-heading"></h3>
+            <p id="tr-state-detail" class="student-status-explanation"></p><h3 id="tr-title" class="sf-track-result-heading"></h3>
             <p id="tr-desc" class="sf-track-result-body"></p>
             <div id="tr-note-wrap" class="sf-track-note-box" hidden>
               <div class="sf-track-note-header">
@@ -406,4 +407,4 @@
 </main>
 <%~ include('partials/assistant-widget',it) %>
 
-<script defer src="/js/home.js?v=20261025-tracking-date"></script>
+<script defer src="/js/home.js?v=20261025-student-flow"></script>

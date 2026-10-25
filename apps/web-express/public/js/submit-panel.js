@@ -439,7 +439,23 @@
                 iconSpinner.style.display = 'none';
         }
     }
+    document.getElementById('sip-download-receipt')?.addEventListener('click', () => {
+        const status = document.getElementById('sip-owner-status');
+        const school = document.querySelector('meta[name="school-base"]')?.content || '';
+        const receipt = ['SuggFeed private submission receipt', 'School workspace: ' + location.origin + school, 'Status: received for school review.', ...(sipTrackingCode ? ['Private tracking code: ' + sipTrackingCode, 'Keep this code private. It grants access to your submission updates.'] : []), ...(status && !status.hidden ? ['Your status page: ' + status.href] : []), 'Access still requires your authorized account or original browser.'].join('\n');
+        const url = URL.createObjectURL(new Blob([receipt], { type: 'text/plain;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'suggfeed-private-receipt.txt';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
     function sfShowSubmissionSuccess(data) {
+        const status = document.getElementById('sip-owner-status');
+        if (status) {
+            status.hidden = !data.id;
+            status.href = sfSchoolPath('/submission/' + encodeURIComponent(data.id || ''));
+        }
         const details = document.getElementById('sip-private-details');
         if (details) {
             details.hidden = !data.id;
@@ -472,7 +488,7 @@
         }
         const summary = document.querySelector('.sip-success-sub');
         if (summary)
-            summary.textContent = sipTrackingCode ? 'Received for school review. Keep your private tracking code to check its status and any requests for clarification.' : 'Received for school review. Follow its status from My activity; the school may ask for clarification before publishing.';
+            summary.textContent = sipTrackingCode ? 'Received for school review. Keep your private tracking code to check its status and any requests for clarification.' : 'Received for school review. Follow its status from My ideas; the school may ask for clarification before publishing.';
     }
     function copyTrackingCode() {
         if (!sipTrackingCode)

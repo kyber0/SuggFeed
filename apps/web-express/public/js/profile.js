@@ -12,9 +12,17 @@
             body.hidden = !open;
     }
     function sfToggleSettings() { settings(document.getElementById('prof-settings-header')?.getAttribute('aria-expanded') !== 'true'); }
+    const page = document.querySelector('[data-profile-section]');
+    const profileSection = page?.dataset.profileSection || 'ideas';
     let selectedTab = 'submissions';
     const activity = new Map();
     function sfSetProfileTab(tab) {
+        if (!['submissions', 'bookmarks', 'shared', 'voted'].includes(tab))
+            return;
+        if (profileSection === 'account' || (tab === 'submissions' && profileSection === 'saved') || (tab !== 'submissions' && profileSection === 'ideas')) {
+            location.assign(sfSchoolPath('/profile?' + new URLSearchParams({ section: tab === 'submissions' ? 'ideas' : 'saved', tab }).toString()));
+            return;
+        }
         selectedTab = tab;
         for (const name of ['submissions', 'bookmarks', 'shared', 'voted']) {
             const active = name === tab, button = document.getElementById('tab-btn-' + name), pane = document.getElementById('prof-pane-' + name);
@@ -26,6 +34,7 @@
         }
         const url = new URL(location.href);
         url.searchParams.set('tab', tab);
+        url.searchParams.set('section', tab === 'submissions' ? 'ideas' : 'saved');
         history.replaceState({}, '', url);
         if (tab !== 'submissions' && !activity.get(tab)?.loaded)
             void loadActivity(tab);
@@ -197,11 +206,11 @@
         textSize.value = window.sfPreferences?.read('textSize') || 'compact';
         textSize.addEventListener('change', () => { document.documentElement.dataset.textSize = textSize.value; const saved = window.sfPreferences?.write('textSize', textSize.value); tell(saved ? 'Text size saved on this browser.' : 'Text size changed for this visit. Browser storage is unavailable.'); });
         const desktop = matchMedia('(min-width:769px)');
-        settings(desktop.matches || location.hash === '#prof-settings-panel');
-        desktop.addEventListener('change', event => settings(event.matches));
+        settings(profileSection === 'account' || desktop.matches || location.hash === '#prof-settings-panel');
+        desktop.addEventListener('change', event => settings(profileSection === 'account' || event.matches));
         document.querySelector('a[href="#prof-settings-panel"]')?.addEventListener('click', () => settings(true));
         document.getElementById('profile-activity-retry')?.addEventListener('click', () => void loadActivity());
-        const tabs = ['submissions', 'bookmarks', 'shared', 'voted'];
+        const tabs = profileSection === 'saved' ? ['bookmarks', 'shared', 'voted'] : ['submissions'];
         document.querySelector('.prof-activity-tabs')?.addEventListener('keydown', (event) => {
             const button = event.target.closest('[role="tab"]');
             if (!button)
@@ -221,8 +230,12 @@
             tell('Browser preferences are unavailable for this visit.');
         }
         const tab = new URLSearchParams(location.search).get('tab');
-        if (['submissions', 'bookmarks', 'shared', 'voted'].includes(tab))
-            sfSetProfileTab(tab);
+        if (profileSection !== 'account') {
+            if (['submissions', 'bookmarks', 'shared', 'voted'].includes(tab))
+                sfSetProfileTab(tab);
+            else if (profileSection === 'saved')
+                sfSetProfileTab('bookmarks');
+        }
     });
     Object.assign(window, { sfToggleSettings, sfSetProfileTab, sfSaveProfilePrefs });
 })();

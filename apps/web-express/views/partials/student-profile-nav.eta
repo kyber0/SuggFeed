@@ -1,0 +1,2 @@
+<% const path=it.currentPath||'';const section=it.profileSection||(path==='/notifications'||path==='/inbox'?'inbox':it.supportPage?'account':'ideas'); %>
+<nav class="student-profile-navigation" aria-label="Your personal space"><% for(const [key,label,href] of [['ideas','My ideas','/profile'],['saved','Saved & following','/profile?section=saved&tab=bookmarks'],['inbox','Inbox','/notifications'],['account','Account','/profile?section=account']]) { %><a href="<%= href %>" aria-current="<%= section===key?'page':'false' %>"><%= label %></a><% } %></nav>

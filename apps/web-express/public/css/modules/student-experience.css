@@ -1,0 +1,94 @@
+/* Student experience: shared school tokens, mobile-first, no staff-shell overrides. */
+.student-page{width:min(100% - 32px,1040px);margin:32px auto;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+.student-eyebrow{font-size:12px;letter-spacing:.12em;font-weight:800;color:var(--muted);margin:0 0 8px}
+.student-page-heading,.student-home-brief>header{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.student-page-heading h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.04em;margin:0 0 10px;line-height:1.15}
+.student-page-heading p,.student-home-brief p,.student-section-intro p{color:var(--muted);line-height:1.65}
+.student-status-card{margin-top:24px;padding:clamp(20px,4vw,40px);border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:var(--shadow-sm);overflow-wrap:anywhere}
+.student-status-card h2{font-size:clamp(22px,3vw,30px);line-height:1.3;letter-spacing:-.025em;margin:16px 0 12px}
+.student-status-explanation{max-width:65ch;line-height:1.7;color:var(--muted)}
+.student-status-card details{margin:24px 0;border-block:1px solid var(--line);padding:16px 0}
+.student-status-card summary,.student-report-history summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center;gap:10px}
+.student-status-card summary::before,.student-report-history summary::before{content:'+';color:var(--muted);font-size:20px}
+.student-status-card details[open]>summary::before,.student-report-history[open]>summary::before{content:'−'}
+.student-original-text{white-space:pre-wrap;line-height:1.75;color:var(--ink-2);max-width:75ch}
+.student-action-group{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:24px}
+.student-action-group>a,.student-action-group>button{min-height:44px;text-align:center;max-width:100%;white-space:normal}
+.student-privacy-note{margin:24px 0 0;font-size:14px;line-height:1.65;color:var(--muted);max-width:70ch}
+.student-state{display:inline-flex;align-items:center;gap:7px;border-radius:6px;padding:5px 9px;font-size:12px;font-weight:700;line-height:1.4;background:var(--sky);color:var(--navy);white-space:normal}
+.student-state::before{content:'';width:6px;height:6px;flex:none;border-radius:50%;background:currentColor}
+.student-state[data-tone=review]{background:var(--warn-bg);color:var(--warn)}
+.student-state[data-tone=success]{background:var(--success-bg);color:var(--success)}
+.student-state[data-tone=muted]{background:var(--bg-2);color:var(--muted)}
+.student-profile-navigation,.student-section-navigation,.student-account-links{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0}
+.student-profile-navigation{padding:6px;border:1px solid var(--line);background:var(--surface);border-radius:14px}
+.student-profile-navigation a,.student-section-navigation a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:9px;color:var(--muted);font-size:14px;font-weight:700;text-decoration:none;transition:opacity .2s,transform .2s;flex:1 1 auto;text-align:center}
+.student-profile-navigation a[aria-current=page]{background:var(--sky);color:var(--navy)}
+.student-section-navigation{gap:8px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.student-section-navigation a{flex:0 1 auto;border-radius:8px;background:transparent}
+.student-section-navigation a[aria-current=page]{color:var(--navy);background:var(--sky)}
+.student-profile-navigation a:focus-visible,.student-section-navigation a:focus-visible,.student-home-brief a:focus-visible{outline:2px solid var(--navy);outline-offset:3px}
+.student-account-links a{display:flex;align-items:center;justify-content:space-between;min-height:56px;flex:1 1 220px;padding:16px;border:1px solid var(--line);background:var(--surface);border-radius:12px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:600}
+.student-section-intro{padding:8px 0 24px;max-width:65ch}.student-section-intro h2{font-size:24px;letter-spacing:-.02em;margin-bottom:8px}
+.student-profile-page{max-width:1040px;margin:32px auto;padding-inline:16px;min-height:0;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+.student-profile-page .prof-hero{border-radius:18px;padding:24px;background:var(--surface);border:1px solid var(--line);overflow:visible}
+.student-profile-page .prof-hero::before,.student-profile-page .prof-hero::after,.student-profile-page .prof-hero-wave{display:none}
+.student-profile-page .prof-hero-inner{align-items:center;gap:16px;padding:0}
+.student-profile-page .prof-avatar{height:56px;width:56px;font-size:24px;background:var(--sky);color:var(--navy);border:1px solid var(--line);box-shadow:none}
+.student-profile-page .prof-hero-info{min-width:0;flex:1}.student-profile-page .prof-hero-name{font-size:clamp(20px,3vw,28px);color:var(--ink);line-height:1.3;overflow-wrap:anywhere}
+.student-profile-page .prof-hero-email{color:var(--muted);overflow-wrap:anywhere;font-size:14px}
+.student-profile-page .prof-hero-stats{display:none}.student-profile-page .prof-hero-actions{margin:0}
+.student-profile-page .prof-settings-link{background:var(--bg-2);color:var(--ink);border-color:var(--line)}
+.student-profile-page .prof-content{display:block;max-width:none;margin:0;padding:0}
+.student-profile-page .prof-settings{width:100%;max-width:none}.student-profile-page .prof-activity{min-width:0;min-height:0}
+.student-profile-page .prof-activity-card-wrap{padding:18px 20px}.student-profile-page .prof-activity-title{line-height:1.5;overflow-wrap:anywhere}
+.student-profile-page .prof-activity-tabs{flex-wrap:wrap;overflow:visible;gap:8px;padding:12px}.student-profile-page .prof-tab-btn{min-height:44px;flex:1 1 auto}
+.student-profile-page .prof-activity-pane{padding:0}.student-profile-page .prof-activity-card-top{flex-wrap:wrap;gap:8px}
+.student-profile-page .prof-activity-footer{flex-wrap:wrap;gap:12px}.student-profile-page .prof-input{font-size:16px}
+.student-profile-page [hidden]{display:none!important}.student-tracking-shortcut{font-size:14px;line-height:1.6;color:var(--muted);margin:8px 0 24px}
+.student-activity-heading{font-weight:800;font-size:clamp(26px,4vw,36px);letter-spacing:-.035em;color:var(--ink);margin:0}
+.student-pagination{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:24px 0;font-size:14px;color:var(--muted)}
+.student-pagination a,.student-pagination button{min-height:44px;display:flex;align-items:center;padding:10px 16px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--ink);background:var(--surface)}
+[data-student-inbox] .care-card{border-radius:16px;padding:24px;margin-block:16px;overflow-wrap:anywhere}
+[data-student-inbox] .care-card h2{font-size:20px;margin-bottom:12px;letter-spacing:-.02em}
+[data-student-inbox] .care-card blockquote{margin:16px 0;border-left:3px solid var(--line);padding:12px 16px;background:var(--bg);border-radius:0 10px 10px 0;white-space:pre-wrap}
+[data-student-inbox] .care-form{gap:16px;max-width:760px}[data-student-inbox] .care-form textarea{font-size:16px;min-height:110px;resize:vertical}
+[data-student-inbox] .workspace-heading h1{font-size:clamp(28px,4vw,40px);line-height:1.2;letter-spacing:-.035em}
+[data-student-inbox] .notification-layout{grid-template-columns:minmax(0,1fr)}
+[data-student-inbox] .notification-settings{width:100%;max-width:none}[data-student-inbox] .notification-settings>summary{min-height:44px}
+.student-home-brief{width:min(100% - 32px,1100px);margin:32px auto 48px;padding:clamp(20px,4vw,32px);border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:var(--shadow-sm)}
+.student-home-brief h2{font-size:clamp(24px,3vw,32px);letter-spacing:-.035em;margin:0 0 8px;line-height:1.2;color:var(--ink)}
+.student-home-brief>header p:not(.student-eyebrow){font-size:14px;margin:0}.student-text-link{font-size:14px;color:var(--navy);font-weight:700;text-decoration:none;min-height:44px;display:flex;align-items:center}
+.student-next-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:24px 0}
+.student-next-actions>a{display:flex;align-items:center;gap:14px;padding:20px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--ink);transition:transform .2s,opacity .2s;min-width:0}
+.student-action-symbol{width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;flex:none;border-radius:12px;background:var(--sky);color:var(--navy);font-size:22px}
+.student-next-actions>a>div{min-width:0}.student-next-actions strong,.student-next-actions span:not(.student-action-symbol){display:block;overflow-wrap:anywhere}
+.student-next-actions strong{font-size:15px;margin-bottom:5px}.student-next-actions span:not(.student-action-symbol){font-size:14px;color:var(--muted);line-height:1.5}
+.student-recent-ideas{padding-top:24px;border-top:1px solid var(--line)}.student-recent-ideas h3{font-size:15px;margin:0 0 12px;color:var(--ink)}
+.student-recent-ideas>div{display:grid;gap:4px}.student-recent-ideas a:not(p a){display:flex;align-items:center;gap:16px;min-height:64px;border-radius:10px;padding:12px;text-decoration:none;color:var(--ink);transition:transform .2s}
+.student-recent-ideas a>strong{font-size:14px;flex:1;min-width:0;overflow-wrap:anywhere}.student-recent-ideas p{font-size:14px;margin:0}
+[data-student-home=returning] .sf-hero{min-height:0;padding-block:48px 24px}[data-student-home=returning] .sf-hero-title{font-size:clamp(32px,5vw,56px)}
+.student-signin-card{max-width:680px;margin:40px auto}.student-signin-card>p:not(.student-eyebrow){color:var(--muted);line-height:1.7}
+.sip-success-actions{gap:12px;flex-wrap:wrap}.sip-success-actions .workspace-button{min-height:44px;white-space:normal}.sip-tracking-code{overflow-wrap:anywhere;white-space:normal}
+@media(hover:hover){.student-next-actions>a:hover,.student-recent-ideas a:hover{background:var(--bg);transform:translateY(-2px)}.student-profile-navigation a:hover,.student-section-navigation a:hover{opacity:.8}}
+@media(max-width:600px){
+ .student-page,.student-profile-page{margin-block:24px}.student-page-heading{gap:12px}.student-profile-page .prof-hero{padding:20px}.student-profile-page .prof-hero-inner{gap:12px;flex-direction:row;align-items:center;text-align:left}
+ .student-profile-page .prof-hero-actions{width:auto}.student-profile-page .prof-activity-card-wrap{padding:16px}.student-profile-page .prof-hero-info{flex-basis:calc(100% - 70px)}
+ .student-profile-navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.student-profile-navigation a{padding:10px 8px}.student-section-navigation a{flex:1 1 120px;padding:10px}
+ .student-next-actions{grid-template-columns:minmax(0,1fr)}.student-home-brief{margin-block:24px;border-radius:16px}.student-home-brief>header{gap:8px}
+ .student-recent-ideas a:not(p a){flex-wrap:wrap;gap:8px;padding-inline:0}.student-recent-ideas a>.student-state{flex-basis:auto}.student-recent-ideas a>strong{flex-basis:100%;order:2}.student-recent-ideas a>span:last-child{margin-left:auto}
+ .student-action-group>*{flex:1 1 100%}.student-status-card{border-radius:16px}[data-student-inbox] .care-card{padding:20px}[data-student-inbox] .workspace-heading{align-items:stretch}[data-student-inbox] .workspace-heading>.workspace-button{width:100%}
+ .sip-success-actions>*{flex:1 1 100%}.student-pagination{gap:8px}.student-pagination>span{flex-basis:100%;text-align:center}
+}
+@media(prefers-reduced-motion:reduce){.student-home-brief a,.student-profile-navigation a,.student-section-navigation a{transition:none;transform:none!important}}
+
+.student-question-filters{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 16px}.student-question-filters a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;font-size:14px;font-weight:600;border:1px solid var(--line);border-radius:10px;color:var(--muted);background:var(--surface);text-decoration:none}.student-question-filters a[aria-current=page]{color:var(--navy);background:var(--sky);border-color:var(--navy)}
+@media(max-width:600px){.student-question-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.student-question-filters a{padding-inline:8px}}
+
+.student-profile-page .prof-hero-name{text-shadow:none;white-space:normal;text-overflow:clip}.student-profile-page .prof-activity-card-wrap{padding:0}.student-profile-page .prof-activity-card{padding:20px;min-height:0}.student-profile-page .prof-activity-footer{padding:0;margin-top:12px;border:0;min-height:0}.student-profile-page .prof-activity-arrow{margin-left:auto}.student-profile-page .prof-activity-card-wrap .prof-activity-title{margin:6px 0;font-size:16px}.student-profile-page .prof-hero-email{margin-bottom:0}
+[data-student-home=returning] .student-home-brief{margin-bottom:16px}[data-student-home=returning] .sf-hero{padding-top:24px}.student-home-guide{margin-top:24px;border-top:1px solid var(--line);padding-top:12px}.student-home-guide>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:700;font-size:14px;color:var(--muted)}.student-home-guide>summary::before{content:'+';margin-right:10px}.student-home-guide[open]>summary::before{content:'−'}
+@media(max-width:600px){.student-profile-page .prof-activity-card{padding:16px}.student-profile-page .prof-activity-footer{display:flex;align-items:center;justify-content:space-between}.student-profile-page .prof-activity-date{margin-left:auto}.student-profile-page .prof-activity-arrow{display:none}}
+
+.student-owner-editor .care-form{display:grid;gap:20px;max-width:760px}.student-owner-editor .care-form>label{display:grid;gap:8px;font-size:14px;font-weight:700}.student-owner-editor .workspace-input{font-size:16px;max-width:100%;width:100%;min-width:0}.student-owner-editor textarea{resize:vertical}.student-owner-editor .care-form>p{font-size:14px;line-height:1.7;color:var(--muted)}.student-owner-editor button[type=submit]{justify-self:start;min-height:44px}
+
+.student-profile-page .prof-activity-card .prof-activity-footer{flex-direction:row;justify-content:flex-start;text-align:left}.student-profile-page .prof-activity-card .prof-activity-date{margin-left:auto}

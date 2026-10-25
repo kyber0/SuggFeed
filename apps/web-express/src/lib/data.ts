@@ -347,11 +347,11 @@ export async function lookupTrackingCode(code: string) {
   if(!/^CV-[A-F0-9]{32}$/.test(clean)) throw new Error('A full private tracking code is required.');
   const hashes=[clean,clean.slice(3)].map(value=>createHash('sha256').update(value).digest('hex'));
   const {data,error}=await supabaseService.from('submissions')
-    .select('id,title,description,status,created_at,categories(name),status_history(new_status,created_at)')
+    .select('id,title,description,status,safety_state,review_started_at,created_at,categories(name),status_history(new_status,created_at)')
     .in('anonymous_tracking_hash',hashes).maybeSingle();
   if(error) throw new Error('Tracking is temporarily unavailable.');
   if(!data)return null;
-  return {id:data.id,title:data.title,description:data.description,status:data.status,createdAt:data.created_at,
+  return {id:data.id,title:data.title,description:data.description,status:data.status,safety_state:data.safety_state,review_started_at:data.review_started_at,createdAt:data.created_at,
     category:(data.categories as any)?.name || 'General',
     timeline:[...((data.status_history as any[]) || [])].map(row=>({new_status:row.new_status,created_at:row.created_at})).sort((a,b)=>a.created_at.localeCompare(b.created_at))};
 }

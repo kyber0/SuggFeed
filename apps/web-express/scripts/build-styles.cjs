@@ -14,3 +14,5 @@ write('platform.bundle.css',['platform.css','overview.css']);
 write('customization.bundle.css',['customization.css']);
 
 write('school-studio.css',['school-studio.css']);
+
+write('student.bundle.css',['student-experience.css']);

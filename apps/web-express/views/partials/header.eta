@@ -11,8 +11,8 @@
       <a href="/admin" class="nav-link-hide-mobile">School administration</a><a href="/" class="nav-link-hide-mobile">View school community</a>
     <% } else { %>
       <a href="/" class="nav-link-hide-mobile<%= it.currentPath === '/' ? ' active' : '' %>" aria-current="<%= it.currentPath === '/' ? 'page' : 'false' %>">Home</a>
-      <a href="/feed" class="nav-link-hide-mobile<%= ['/feed','/roadmap'].includes(it.currentPath) ? ' active' : '' %>" aria-current="<%= ['/feed','/roadmap'].includes(it.currentPath) ? 'page' : 'false' %>">Ideas</a>
-      <a href="/profile" class="nav-link-hide-mobile<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath)) ? ' active' : '' %>">Profile</a>
+      <a href="/feed" class="nav-link-hide-mobile<%= (['/feed','/roadmap'].includes(it.currentPath)||/^\/idea\//.test(it.currentPath||'')) ? ' active' : '' %>" aria-current="<%= (['/feed','/roadmap'].includes(it.currentPath)||/^\/idea\//.test(it.currentPath||'')) ? 'page' : 'false' %>">Ideas</a>
+      <a href="/profile" class="nav-link-hide-mobile<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath) || /^\/submission(?:-details)?\//.test(it.currentPath||'')) ? ' active' : '' %>">Profile</a>
       <% if (isStaff) { %><a href="/admin" class="nav-link-hide-mobile">School administration</a><% } %>
     <% } %>
 

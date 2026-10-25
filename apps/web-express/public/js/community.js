@@ -130,6 +130,15 @@
     let privateCode = '';
     let inboxVersion = 0;
     const messages = document.getElementById('private-messages');
+    const drafts = new Map();
+    let inboxPage = 1, inboxSending = false, inboxLoading = false;
+    const inboxPages = document.createElement('nav');
+    inboxPages.className = 'student-pagination';
+    inboxPages.setAttribute('aria-label', 'Private question pages');
+    messages?.after(inboxPages);
+    document.querySelectorAll('[data-private-view]').forEach(link => link.addEventListener('click', event => { event.preventDefault(); if (!messages || inboxSending || inboxLoading)
+        return; messages.dataset.inboxView = link.dataset.privateView; inboxPage = 1; const url = new URL(location.href); url.searchParams.set('view', link.dataset.privateView); window.history.replaceState(window.history.state, '', url); document.querySelectorAll('[data-private-view]').forEach(item => item.setAttribute('aria-current', item === link ? 'page' : 'false')); if (signedIn || privateCode)
+        void loadInbox(); }));
     const inboxRetry = document.createElement('button');
     inboxRetry.type = 'button';
     inboxRetry.className = 'workspace-button';
@@ -138,18 +147,39 @@
     messages?.before(inboxRetry);
     inboxRetry.addEventListener('click', () => void loadInbox());
     async function loadInbox() {
-        if (!messages)
+        if (!messages || inboxSending)
             return;
         inboxRetry.hidden = true;
-        const drafts = new Map(Array.from(messages.querySelectorAll('textarea[data-request-id]')).map(input => [input.dataset.requestId, input.value]));
+        messages.querySelectorAll('textarea[data-request-id]').forEach(input => { if (input.value.trim())
+            drafts.set(input.dataset.requestId, input.value);
+        else
+            drafts.delete(input.dataset.requestId); });
         const inboxCode = privateCode;
         const version = ++inboxVersion;
+        inboxLoading = true;
+        messages.setAttribute('aria-busy', 'true');
         notify('Loading private messages…');
         try {
-            const data = await request('inbox', inboxCode ? { trackingCode: inboxCode } : {});
+            const data = await request('inbox', { view: messages.dataset.inboxView || 'needs-reply', page: inboxPage, ...(inboxCode ? { trackingCode: inboxCode } : {}) });
             if (version !== inboxVersion)
                 return;
             messages.replaceChildren();
+            inboxPage = data.page || 1;
+            inboxPages.replaceChildren();
+            for (const [label, page] of [['Previous', inboxPage - 1], ['Next', inboxPage + 1]]) {
+                if (page < 1 || page > (data.pages || 1))
+                    continue;
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'workspace-button';
+                button.textContent = label;
+                button.addEventListener('click', () => { if (inboxSending || inboxLoading)
+                    return; inboxPage = page; void loadInbox(); });
+                inboxPages.append(button);
+            }
+            const pageLabel = document.createElement('span');
+            pageLabel.textContent = 'Page ' + inboxPage + ' of ' + (data.pages || 1) + ' · ' + (data.total ?? data.requests.length) + ' matching questions';
+            inboxPages.append(pageLabel);
             for (const entry of data.requests) {
                 const card = document.createElement('article');
                 card.className = 'care-card';
@@ -177,6 +207,10 @@
                     textarea.maxLength = 2000;
                     textarea.dataset.requestId = entry.id;
                     textarea.value = drafts.get(entry.id) || '';
+                    textarea.addEventListener('input', () => { if (textarea.value.trim())
+                        drafts.set(entry.id, textarea.value);
+                    else
+                        drafts.delete(entry.id); });
                     label.append(textarea);
                     const button = document.createElement('button');
                     button.type = 'submit';
@@ -185,6 +219,11 @@
                     form.append(label, button);
                     form.addEventListener('submit', async (event) => {
                         event.preventDefault();
+                        if (inboxSending || inboxLoading) {
+                            notify('Wait for the current request to finish before sending.');
+                            return;
+                        }
+                        inboxSending = true;
                         button.disabled = true;
                         try {
                             const reply = textarea.value;
@@ -193,11 +232,15 @@
                             quote.textContent = reply;
                             form.replaceWith(quote);
                             state.textContent = 'Reply sent privately to staff';
-                            notify('Private reply sent.');
+                            drafts.delete(entry.id);
+                            notify('Private reply sent. Find it under Reply sent.');
                         }
                         catch (error) {
                             notify(fail(error));
                             button.disabled = false;
+                        }
+                        finally {
+                            inboxSending = false;
                         }
                     });
                     card.append(form);
@@ -205,7 +248,7 @@
                 messages.append(card);
             }
             if (!data.requests.length)
-                messages.append(sfEmptyState({ icon: 'message', heading: 'No private questions right now', description: 'When staff need more detail about your submission, their question will appear here. Public updates are on the roadmap.', href: '/roadmap', label: 'Explore the roadmap' }));
+                messages.append(sfEmptyState({ icon: 'message', heading: 'No matching private questions', description: 'Choose another status to see other questions. School staff will ask here if your idea needs clarification.', href: '/roadmap', label: 'Explore the roadmap' }));
             notify(data.requests.length ? `${data.requests.length} private requests shown.` : 'No clarification requests for these submissions.');
         }
         catch (error) {
@@ -214,11 +257,18 @@
                 inboxRetry.hidden = false;
             }
         }
+        finally {
+            if (version === inboxVersion) {
+                inboxLoading = false;
+                messages.removeAttribute('aria-busy');
+            }
+        }
     }
-    document.getElementById('private-code-form')?.addEventListener('submit', async (e) => { e.preventDefault(); if (Array.from(messages?.querySelectorAll('textarea') || []).some(el => el.value.trim()) && !await window.sfConfirm('Discard your unsent private reply and look up another submission?'))
-        return; privateCode = String(new FormData(e.target).get('trackingCode') || '').trim(); void loadInbox(); });
+    document.getElementById('private-code-form')?.addEventListener('submit', async (e) => { e.preventDefault(); if (inboxSending || inboxLoading)
+        return; if (drafts.size > 0 && !await window.sfConfirm('Discard your unsent private reply and look up another submission?'))
+        return; drafts.clear(); inboxPage = 1; privateCode = String(new FormData(e.target).get('trackingCode') || '').trim(); void loadInbox(); });
     if (messages)
-        window.addEventListener('beforeunload', e => { if (Array.from(messages.querySelectorAll('textarea')).some(el => el.value.trim())) {
+        window.addEventListener('beforeunload', e => { if (drafts.size > 0) {
             e.preventDefault();
             e.returnValue = '';
         } });

@@ -1,4 +1,5 @@
 <nav class="student-idea-navigation" aria-label="Ideas and progress">
- <a href="/feed"<% if(it.currentPath==='/feed'){ %> aria-current="page"<% } %>>All ideas</a>
+ <a href="/feed"<% if(it.currentPath==='/feed'&&!it.following){ %> aria-current="page"<% } %>>Browse</a>
+ <a href="/feed?scope=following"<% if(it.following){ %> aria-current="page"<% } %>>Following</a>
  <% if(it.schoolCustomization?.features.roadmap!==false){ %><a href="/roadmap"<% if(it.currentPath==='/roadmap'){ %> aria-current="page"<% } %>>Progress</a><% } %>
 </nav>

@@ -1,15 +1,17 @@
 <% layout('layout') %>
-<main class="campus-roadmap notifications-page">
+<main data-student-inbox="<%= it.inboxView||'updates' %>" class="campus-roadmap notifications-page">
  <header class="workspace-heading">
-  <div><p class="workspace-kicker">STAY IN THE LOOP</p><h1>Your school updates</h1><p class="roadmap-subtitle">Milestones, blockers and completed improvements from ideas you follow.</p></div>
-  <a class="workspace-button" href="/roadmap">Explore the roadmap →</a>
- </header>
+  <div><p class="workspace-kicker">STAY IN THE LOOP</p><h1><%= it.inboxView==='decisions'?'Your review decisions':'Your inbox' %></h1><p class="roadmap-subtitle"><%= it.inboxView==='decisions'?'Private decisions about your submissions, comments and reports.':'Milestones and verified progress from ideas you follow.' %></p></div>
+  <a class="workspace-button" href="<%= it.inboxView==='decisions'?'/profile':'/feed?scope=following' %>"><%= it.inboxView==='decisions'?'My ideas':'Followed ideas' %> →</a>
+ </header><%~ include('partials/student-profile-nav',{...it,profileSection:'inbox'}) %><%~ include('partials/student-inbox-nav',it) %>
  <% if (!it.signedIn) { %>
   <%~ include('partials/empty-state',{hero:true,icon:'bell',heading:'Keep up with ideas you care about',description:'Sign in and follow an idea to see your school’s progress updates here.',actions:[{label:'Sign in',event:'action-94'},{label:'Explore the roadmap',href:'/roadmap',secondary:true}],hint:'Following an idea enables in-app updates. Email preferences are managed separately.'}) %>
  <% } else { %>
-  <% if(it.commentNotices?.length||it.commentNoticesUnavailable) { %><section class="care-card comment-review-updates"><h2>Your comment reviews</h2><p>Private decisions from your school administrators.</p><% if(it.commentNoticesUnavailable) { %><p role="status">Comment review updates could not load.</p><a href="/notifications">Refresh comment reviews →</a><% } %><% for(const notice of it.commentNotices) { %><article><strong><%= notice.decision==='approve'?'Comment approved':notice.decision==='hide'?'Comment kept private':'Comment text removed' %></strong><p><%= notice.reason %></p><a href="/idea/<%= notice.submission_id %>">Open discussion →</a><% if(!notice.read_at) { %><button type="button" class="workspace-button" data-comment-notice-read="<%= notice.id %>">Mark read</button><% } %></article><% } %></section><% } %>
+  <% if(it.inboxView==='decisions') { %>
+  <% if(it.commentNotices?.length||it.commentNoticesUnavailable) { %><section class="care-card comment-review-updates"><h2>Your comment reviews</h2><p>Private decisions from your school administrators.</p><% if(it.commentNoticesUnavailable) { %><p role="status">Comment review updates could not load.</p><a href="/notifications?view=decisions">Refresh comment reviews →</a><% } %><% for(const notice of it.commentNotices) { %><article><strong><%= notice.decision==='approve'?'Comment approved':notice.decision==='hide'?'Comment kept private':'Comment text removed' %></strong><p><%= notice.reason %></p><a href="/idea/<%= notice.submission_id %>">Open discussion →</a><% if(!notice.read_at) { %><button type="button" class="workspace-button" data-comment-notice-read="<%= notice.id %>">Mark read</button><% } %></article><% } %></section><% } %>
   <section class="care-card" data-safety-notices><h2>Your submission updates</h2><p data-safety-status role="status">Loading submission updates…</p><div data-safety-notice-list></div><button type="button" class="workspace-button" data-safety-retry hidden>Try again</button></section>
-  <div class="notification-layout">
+  <details class="care-card student-report-history"><summary>Reports you sent</summary><p>Only your private reports and school decisions appear here.</p><div id="my-report-history"></div></details>
+  <% } %><% if(it.inboxView!=='decisions') { %><div class="notification-layout">
   <section class="notification-stream" aria-labelledby="notification-stream-title">
    <h2 id="notification-stream-title">Latest updates</h2>
    <p id="notification-summary" role="status"><%= it.renderMode==='studio'?'Fictional school updates for this preview.':'Loading your updates…' %></p>
@@ -36,6 +38,6 @@
    <div class="workspace-actions"><a href="/feed?scope=following">Browse ideas you follow →</a><a href="/inbox">Private school messages →</a></div>
   </details>
   </div>
-  <script defer src="/js/notifications.js?v=20261018-empty-states"></script>
+  <script defer src="/js/notifications.js?v=20261018-empty-states"></script><% } %>
  <% } %>
 </main>

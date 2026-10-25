@@ -1,3 +1,4 @@
+import {studentIdeaState} from '../lib/student-experience';
 import {deliverSafetyEmail} from '../lib/safety-email';
 import {assessSubmission,categorize} from '../lib/content-moderation';
 import {contentSafetyConfig} from '../lib/content-safety-config';
@@ -91,7 +92,7 @@ const trackHandler=asyncHandler(async(req:Request,res:Response)=>{
   if(!/^CV-[0-9A-F]{32}$/.test(code))return res.status(400).json({success:false,error:'Invalid tracking code format.'});
   const result=await lookupTrackingCode(code);
   if(!result)return res.status(404).json({success:false,error:'Idea not found. Check your private tracking code.'});
-  res.json({success:true,data:result});
+  res.json({success:true,data:{...result,state:studentIdeaState(result,currentSchool()?.customization?.labels)}});
 });
 router.post('/track',trackHandler);
 // Preserve older clients; logs redact the capability in this legacy URL.

@@ -60,20 +60,27 @@ export async function communityAction(actor: string | null, action: string, data
   }
   return result.data;
 }
-export async function privateInbox(actor: string | null, code?: unknown) {
-  let query = supabaseService.from('submissions').select('id,title,status,anonymous_tracking_hash');
-  if (code) query = query.is('user_id', null).in('anonymous_tracking_hash', trackingHashes(code));
-  else if (actor) query = query.eq('user_id', actor);
-  else throw new CommunityError(401, 'Sign in or use your private tracking code.');
-  const { data, error } = await query.order('created_at', { ascending: false }).limit(50);
-  if (error) throw error;
-  if (code && !data?.length) throw new CommunityError(404, 'No submission found for this code.');
-  if (!data?.length) return [];
-  const requests = await supabaseService.from('idea_clarifications').select('id,submission_id,prompt,reply,created_at,replied_at,closed_at')
-    .in('submission_id', data.map(s => s.id)).order('created_at', { ascending: false }).limit(100);
-  if (requests.error) throw requests.error;
-  return (requests.data || []).map(r => ({ ...r, title: data.find(s => s.id === r.submission_id)?.title }));
+export async function privateInbox(actor:string|null,code?:unknown,input:Record<string,unknown>={}){
+ const view=['needs-reply','waiting','resolved','all'].includes(String(input.view))?String(input.view):'all';
+ let page=typeof input.page==='number'&&Number.isSafeInteger(input.page)&&input.page>0?Math.min(input.page,100000):1;
+ let anonymous:Array<{id:string;title:string}>=[];
+ if(code){const result=await supabaseService.from('submissions').select('id,title').is('user_id',null).in('anonymous_tracking_hash',trackingHashes(code)).limit(2);if(result.error)throw result.error;anonymous=result.data||[];if(!anonymous.length)throw new CommunityError(404,'No submission found for this code.');}
+ else if(!actor)throw new CommunityError(401,'Sign in or use your private tracking code.');
+ const query=(head=false)=>{
+  let q=supabaseService.from('idea_clarifications').select('id,submission_id,prompt,reply,created_at,replied_at,closed_at,submission:submissions!inner(title,user_id)',{count:'exact',head});
+  q=code?q.in('submission_id',anonymous.map(item=>item.id)):q.eq('submission.user_id',actor);
+  if(view==='needs-reply')q=q.is('closed_at',null).is('reply',null);if(view==='waiting')q=q.is('closed_at',null).not('reply','is',null);if(view==='resolved')q=q.not('closed_at','is',null);
+  return q;
+ };
+ for(let attempt=0;attempt<3;attempt++){
+  const result=await query().order('created_at',{ascending:false}).order('id').range((page-1)*25,page*25-1);if(result.error&&result.error.code!=='PGRST103')throw result.error;
+  let count=result.count;if(result.error){const total=await query(true);if(total.error)throw total.error;count=total.count;}
+  const pages=Math.max(1,Math.ceil((count||0)/25));if(page>pages){page=pages;continue;}
+  return {requests:(result.data||[]).map(row=>({id:row.id,submission_id:row.submission_id,prompt:row.prompt,reply:row.reply,created_at:row.created_at,replied_at:row.replied_at,closed_at:row.closed_at,title:(Array.isArray(row.submission)?row.submission[0]:row.submission)?.title||'Your idea'})),page,pages,total:count||0};
+ }
+ throw new CommunityError(503,'Your questions changed while loading. Retry to see the latest view.');
 }
+
 export async function replyToClarification(actor: string | null, input: any) {
   const id = idField(input.id), body = textField(input.body);
   let trackingHash: string | null = null;

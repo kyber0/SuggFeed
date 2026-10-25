@@ -1,7 +1,8 @@
+import {studentIdeaState,studentIdeasPage} from '../lib/student-experience';
 import {schoolFeature} from '../lib/school-customization';
 import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from "express";
-import { loadUserProfile, loadUserSubmissions } from "../lib/data";
+import { loadUserProfile } from "../lib/data";
 
 import { supabaseService, supabasePlatform } from '../lib/supabase';
 import { sameOriginOnly } from '../lib/security';
@@ -22,6 +23,8 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const user = schoolUser(req) ?? null;
 
+    const profileSection=req.query.section==='account'||req.query.section==='saved'?String(req.query.section):['bookmarks','shared','voted'].includes(String(req.query.tab))?'saved':'ideas';
+    Object.assign(res.locals,{profileSection,studentIdeaState});
     if (!user) {
       return res.render("profile", {
         title: "Profile — SuggFeed",
@@ -33,11 +36,11 @@ router.get(
     }
 
     const dataStarted=performance.now();
-    const [profile, submissions] = await Promise.all([
+    const [profile, ideaPage] = await Promise.all([
       res.locals.verifiedProfile?.userId===user.id
         ? Promise.resolve(res.locals.verifiedProfile.profile)
         : loadUserProfile(user.id),
-      loadUserSubmissions(user.id),
+      profileSection==='ideas'?studentIdeasPage(user.id,req.query.page):Promise.resolve(null),
     ]);
 
     res.append('Server-Timing',`data;dur=${(performance.now()-dataStarted).toFixed(1)}`);
@@ -45,7 +48,7 @@ router.get(
       title: "My activity — SuggFeed",
       description: "Manage your ideas and bookmarks.",
       profile,
-      submissions,
+      submissions:ideaPage?.items||[],ideaPage,
       bookmarks: [],
     });
   })

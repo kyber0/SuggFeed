@@ -1,3 +1,4 @@
+<% const studentPage=!it.platformDashboard&&!it.accountArea&&!/^\/(?:admin|staff|platform)(?:\/|$)/.test(it.currentPath||''); %>
 <% const motionTransitionPage = !/^\/(auth|digest|account\/security|staff-login)(\/|$)/.test(it.currentPath || '') && !/customization/.test(it.currentPath || ''); %>
 <!DOCTYPE html>
 <html lang="en" data-theme="light"<% if(motionTransitionPage) { %> data-sf-transitions<% } %>>
@@ -28,6 +29,7 @@
   <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-comment-review" />
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261021-platform-insights" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261021-mobile-audit"/><% } %>
+  <% if(studentPage) { %><link rel="stylesheet" href="/css/student.bundle.css?v=20261025-student-flow"/><script defer src="/js/student-experience.js?v=20261025-student-flow"></script><% } %>
   <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
   <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>
   <script defer src="/js/interaction-feedback.js?v=20261022-pending-reset"></script>
@@ -78,7 +80,7 @@
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>
 <% if (!it.accountArea && !it.platformDashboard) { %>
 <script defer src="/js/engagement.js?v=20261021-toggle-votes"></script>
-<script defer src="/js/community.js?v=20261025-portal"></script>
+<script defer src="/js/community.js?v=20261025-student-flow"></script>
 
 <script defer src="/js/public-history.js?v=20261018-empty-states"></script>
 
@@ -92,7 +94,7 @@
 
 <% if (/(?:school-settings|settings|student-access)$/.test(it.currentPath || '')) { %><script defer src="/js/student-access.js?v=20261021-student-joining"></script><% } %>
 <script defer src="/js/comment-edit.js?v=20261025-comment-review"></script>
-<script defer src="/js/submission-safety.js?v=20261024-safety"></script>
+<script defer src="/js/submission-safety.js?v=20261025-student-flow"></script>
 <% if(it.supportPage||it.currentPath==='/help'||it.assistantKnowledge) { %><script defer src="/js/assistant.js?v=20261025-support"></script><% } %><% if(/assistant/.test(it.currentPath||'')||it.platformDashboard) { %><script defer src="/js/assistant-admin.js?v=20261024-grounded"></script><% if(it.schoolEditor) { %><script defer src="/js/assistant-knowledge.js?v=20261024-grounded"></script><script defer src="/js/assistant-documents.js?v=20261024-grounded"></script><% } %><% } %>
 </body>
 </html>

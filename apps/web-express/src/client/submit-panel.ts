@@ -397,7 +397,17 @@
     }
   }
 
+
+  document.getElementById('sip-download-receipt')?.addEventListener('click',()=>{
+    const status=document.getElementById('sip-owner-status') as HTMLAnchorElement|null;
+    const school=document.querySelector<HTMLMetaElement>('meta[name="school-base"]')?.content||'';
+    const receipt=['SuggFeed private submission receipt', 'School workspace: '+location.origin+school, 'Status: received for school review.', ...(sipTrackingCode?['Private tracking code: '+sipTrackingCode,'Keep this code private. It grants access to your submission updates.']:[]), ...(status&&!status.hidden?['Your status page: '+status.href]:[]), 'Access still requires your authorized account or original browser.'].join('\n');
+    const url=URL.createObjectURL(new Blob([receipt],{type:'text/plain;charset=utf-8'}));
+    const link=document.createElement('a');link.href=url;link.download='suggfeed-private-receipt.txt';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+
   function sfShowSubmissionSuccess(data: any) {
+      const status=document.getElementById('sip-owner-status') as HTMLAnchorElement|null;if(status){status.hidden=!data.id;status.href=sfSchoolPath('/submission/'+encodeURIComponent(data.id||''));}
       const details=document.getElementById('sip-private-details') as HTMLAnchorElement|null;if(details){details.hidden=!data.id;details.href=typeof sfSchoolPath === 'function' ? sfSchoolPath('/submission-details/'+encodeURIComponent(data.id||'')) : '/submission-details/'+encodeURIComponent(data.id||'');}
       sipTrackingCode = data.tracking_code || "";
       (document.getElementById('sip-success-code') as HTMLElement).textContent = sipTrackingCode;
@@ -420,7 +430,7 @@
       successView.classList.add('sip-step-animate-in');
       const card=document.querySelector<HTMLElement>('.sip-tracking-card');if(card)card.hidden=!sipTrackingCode;
       const heading=document.querySelector<HTMLElement>('.sip-success-title');if(heading){heading.tabIndex=-1;heading.focus();}
-      const summary=document.querySelector<HTMLElement>('.sip-success-sub');if(summary)summary.textContent=sipTrackingCode?'Received for school review. Keep your private tracking code to check its status and any requests for clarification.':'Received for school review. Follow its status from My activity; the school may ask for clarification before publishing.';
+      const summary=document.querySelector<HTMLElement>('.sip-success-sub');if(summary)summary.textContent=sipTrackingCode?'Received for school review. Keep your private tracking code to check its status and any requests for clarification.':'Received for school review. Follow its status from My ideas; the school may ask for clarification before publishing.';
   }
 
   function copyTrackingCode() {

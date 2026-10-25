@@ -16,7 +16,7 @@ communityRouter.use((_req, res, next) => { res.setHeader('Cache-Control','privat
 communityRouter.use(rateLimit({ windowMs: 15 * 60_000, limit: 60, standardHeaders: 'draft-7', legacyHeaders: false }));
 communityRouter.post('/similar',run(async(req,res)=>res.json({success:true,ideas:await similarIdeas(req.body.q)})));
 communityRouter.get('/similar', run(async (req,res) => res.json({ success: true, ideas: await similarIdeas(req.query.q) })));
-communityRouter.post('/inbox', run(async (req,res) => res.json({ success: true, requests: await privateInbox(schoolUser(req)?.id || null, req.body.trackingCode) })));
+communityRouter.post('/inbox', run(async (req,res) => res.json({ success: true, ...await privateInbox(schoolUser(req)?.id || null, req.body.trackingCode,{view:req.body.view,page:req.body.page}) })));
 communityRouter.post('/reply', run(async (req,res) => res.json({ success: true, ...await replyToClarification(schoolUser(req)?.id || null,req.body) })));
 communityRouter.post('/report', run(async (req,res) => {
   if (!schoolUser(req)) throw new CommunityError(401,'Sign in to report content.');
@@ -86,7 +86,7 @@ communityRouter.get('/staff/board',run(async(req,res)=>{
   if(!user || !staffRole(user.role)) throw new CommunityError(user ? 403 : 401,'Staff access required.');
   return res.json({success:true,...await loadStaffBoard(boardFilters(req.query), WORK_STAGES)});
 }));
-communityPages.get('/inbox',(_req,res)=>{res.setHeader('Cache-Control','private, no-store');res.render('private-inbox',{title:'Private school messages — SuggFeed'});});
+communityPages.get('/inbox',(_req,res)=>{res.setHeader('Cache-Control','private, no-store');res.render('private-inbox',{title:'Private school questions — SuggFeed',profileSection:'inbox',inboxView:['needs-reply','waiting','resolved','all'].includes(String(_req.query.view))?String(_req.query.view):'needs-reply'});});
 communityPages.get('/admin/community',run(async(req,res)=>{
   const user=schoolUser(req);
   if(!user) return res.redirect('/admin');

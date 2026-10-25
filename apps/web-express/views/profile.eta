@@ -9,16 +9,12 @@
   const initial = (displayName || 'U')[0].toUpperCase();
   const isStaff = user?.role === 'staff' || user?.role === 'admin' || user?.role === 'moderator';
 
-  function statusClass(status) {
-    const s = (status || 'pending').toLowerCase().replace(' ', '_');
-    return `status-${s}`;
-  }
   function statusLabel(status) {
     return (it.schoolCustomization?.labels?.[status] || {pending:'Needs review',approved:'Planned',in_progress:'In progress',resolved:'Completed',rejected:'Declined'}[status || 'pending']) || 'Needs review';
   }
 %>
 
-<main class="prof-page">
+<main class="prof-page student-profile-page" data-profile-section="<%= it.profileSection||'ideas' %>">
   <p class="student-activity-heading">My activity</p>
   <p class="student-tracking-shortcut">Submitted anonymously? <a href="/?track=1#action-hub">Track with your private code</a>.</p>
   <!-- ── Hero Banner ── -->
@@ -46,7 +42,7 @@
       <div class="prof-hero-stats">
         <span class="prof-hero-badge">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span id="stat-ideas-count"><%= submissions.length %></span> ideas
+          <span id="stat-ideas-count"><%= (it.profileSection||'ideas')==='ideas'?(it.ideaPage?.total??submissions.length):'—' %></span> ideas
         </span>
         <span class="prof-hero-badge">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
@@ -80,7 +76,7 @@
               Staff Portal
             </a>
           <% } %>
-          <a href="#prof-settings-panel" class="prof-settings-link" aria-label="Profile settings" title="Profile Settings">
+          <a href="/profile?section=account" class="prof-settings-link" aria-label="Profile settings" title="Profile Settings">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span>Settings</span>
           </a>
@@ -91,17 +87,15 @@
     <div class="prof-hero-wave"></div>
   </div>
 
-  <nav class="prof-shortcuts" aria-label="Your account spaces">
-    <a href="/notifications"><strong>School updates</strong><span>Followed ideas &amp; preferences →</span></a>
-    <a href="/inbox"><strong>Private messages</strong><span>Questions &amp; school replies →</span></a>
-    <a href="/feed?scope=following"><strong>Following</strong><span>Ideas you’re keeping up with →</span></a>
-    <a class="prof-help-link" href="/profile/help"><strong>Help &amp; support</strong><span>Ask Sugi, browse FAQs &amp; school info →</span></a>
-  </nav>
+  <%~ include('partials/student-profile-nav',it) %>
+  <% if(it.profileSection==='saved') { %><div class="student-section-intro"><h2>Keep good ideas close</h2><p>Saved ideas are your bookmarks. Follow ideas to receive school progress updates.</p><a class="workspace-button" href="/feed?scope=following">Open followed ideas →</a></div><% } %>
+  <% if(it.profileSection==='account') { %><nav class="student-account-links" aria-label="Account tools"><a href="/account/security">Account security →</a><a href="/schools">Switch or join a school →</a><a href="/profile/help">Help &amp; support →</a></nav><% } %>
+
   <div class="prof-feedback-row"><p id="profile-feedback" role="status" aria-live="polite"></p><button type="button" class="workspace-button" id="profile-activity-retry" hidden>Retry activity</button></div>
   <!-- ── Content Area ── -->
   <div class="prof-content">
     <!-- Left: Settings Panel -->
-    <aside class="prof-settings" id="prof-settings-panel">
+    <aside class="prof-settings" id="prof-settings-panel" <%= it.profileSection!=='account'?'hidden':'' %>>
       <button type="button" class="prof-settings-header" data-sf-click="action-133" id="prof-settings-header" aria-expanded="true" aria-controls="prof-settings-body">
         <span class="prof-section-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -187,14 +181,14 @@
     </aside>
 
     <!-- Right: Activity Tabs -->
-    <section class="prof-activity">
+    <section class="prof-activity" <%= it.profileSection==='account'?'hidden':'' %>>
       <details class="prof-activity-note"><summary>About your activity</summary><p>Account bookmarks follow your sign-in. Supported and shared activity also includes public ideas remembered on this device. Account activity loads in pages. Device history includes up to 200 recent ideas. Counts show the public ideas loaded so far.</p></details>
 
-      <div class="prof-activity-tabs" role="tablist" aria-label="Your activity">
+      <div class="prof-activity-tabs" <%= (it.profileSection||'ideas')!=='saved'?'hidden':'' %> role="tablist" aria-label="Your activity">
         <button
           type="button"
           role="tab"
-          id="tab-btn-submissions"
+          id="tab-btn-submissions" hidden
           aria-controls="prof-pane-submissions"
           tabindex="0"
           aria-selected="true"
@@ -253,7 +247,7 @@
       </div>
 
       <!-- Tab 1: My Submissions -->
-      <div id="prof-pane-submissions" class="prof-activity-pane" role="tabpanel" aria-labelledby="tab-btn-submissions" tabindex="0">
+      <div id="prof-pane-submissions" class="prof-activity-pane" role="region" aria-label="Your submitted ideas" tabindex="0" <%= it.profileSection==='saved'?'hidden':'' %>>
         <% if (submissions.length === 0) { %>
           <div class="prof-empty-state">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -265,15 +259,14 @@
           <div class="prof-activity-grid">
             <% for (const item of submissions) { %>
               <%
-                const sc = statusClass(item.status);
-                const sl = statusLabel(item.status);
+                const state=it.studentIdeaState?.(item,it.schoolCustomization?.labels);const sl = state?.label||statusLabel(item.status);
                 const catLabel = item.category ?? (item.categories?.name ?? 'Other');
               %>
               <div class="prof-activity-card-wrap">
-                <a href="<%= item.status==='pending'?'/submission/'+item.id+'/edit':'/idea/'+item.id %>" class="prof-activity-card" aria-label="<%= item.title %>">
+                <a href="<%= '/submission/'+item.id %>" class="prof-activity-card" aria-label="<%= item.title %>">
                   <div class="prof-activity-card-top">
                     <span class="prof-activity-cat"><%= catLabel %></span>
-                    <span class="prof-activity-status <%= sc %>"><%= sl %></span>
+                    <span class="prof-activity-status student-state" data-tone="<%= state?.tone||'progress' %>"><%= sl %></span>
                   </div>
                   <h3 class="prof-activity-title"><%= item.title %></h3>
                   <div class="prof-activity-footer">
@@ -294,8 +287,9 @@
         <% } %>
       </div>
 
+      <% if((it.profileSection||'ideas')==='ideas'&&it.ideaPage) { %><nav class="student-pagination" aria-label="Your idea pages"><% if(it.ideaPage.page>1) { %><a class="workspace-button" href="/profile?page=<%= it.ideaPage.page-1 %>">Previous</a><% } %><span>Page <%= it.ideaPage.page %> of <%= it.ideaPage.pages %> · <%= it.ideaPage.total %> ideas</span><% if(it.ideaPage.page<it.ideaPage.pages) { %><a class="workspace-button" href="/profile?page=<%= it.ideaPage.page+1 %>">Next</a><% } %></nav><% } %>
       <!-- Tab 2: Bookmarks -->
-      <div id="prof-pane-bookmarks" class="prof-activity-pane" role="tabpanel" aria-labelledby="tab-btn-bookmarks" tabindex="0" hidden>
+      <div id="prof-pane-bookmarks" class="prof-activity-pane" role="tabpanel" aria-labelledby="tab-btn-bookmarks" tabindex="0" <%= it.profileSection==='saved'?'':'hidden' %>>
         <% if (bookmarks.length === 0) { %>
           <div class="prof-empty-state">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" class="prof-empty-icon"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
@@ -307,15 +301,14 @@
           <div class="prof-activity-grid">
             <% for (const item of bookmarks) { %>
               <%
-                const sc = statusClass(item.status);
-                const sl = statusLabel(item.status);
+                const state=it.studentIdeaState?.(item,it.schoolCustomization?.labels);const sl = state?.label||statusLabel(item.status);
                 const catLabel = item.category ?? (item.categories?.name ?? 'Other');
               %>
               <div class="prof-activity-card-wrap" id="bm-wrap-<%= item.id %>">
                 <a href="/idea/<%= item.id %>" class="prof-activity-card" aria-label="<%= item.title %>">
                   <div class="prof-activity-card-top">
                     <span class="prof-activity-cat"><%= catLabel %></span>
-                    <span class="prof-activity-status <%= sc %>"><%= sl %></span>
+                    <span class="prof-activity-status student-state" data-tone="<%= state?.tone||'progress' %>"><%= sl %></span>
                   </div>
                   <h3 class="prof-activity-title"><%= item.title %></h3>
                   <div class="prof-activity-footer">
@@ -361,4 +354,4 @@
   </div>
 </main>
 
-<script defer src="/js/profile.js?v=20261018-customization"></script>
+<script defer src="/js/profile.js?v=20261025-student-flow"></script>

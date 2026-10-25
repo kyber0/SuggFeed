@@ -246,7 +246,7 @@
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-        <h3 class="sip-success-title">Idea submitted successfully</h3>
+        <h3 class="sip-success-title">Your idea was received</h3>
         <p class="sip-success-sub">
           Your suggestion has been submitted for review. Keep your tracking code to check its status.
         </p>
@@ -295,7 +295,7 @@
         </div>
       </div>
 
-      <div class="sip-success-actions"><% if(it.user){ %><a class="workspace-button" href="/profile">Go to My activity</a><% } %><a class="workspace-button" id="sip-private-details" hidden>View your private answers & images</a>
+      <div class="sip-success-actions"><a class="workspace-button" id="sip-owner-status" hidden>View idea status →</a><button type="button" class="workspace-button" id="sip-download-receipt">Download private receipt</button><% if(it.user){ %><a class="workspace-button" href="/profile">My ideas</a><% } %><a class="workspace-button" id="sip-private-details" hidden>View your private answers & images</a>
         <button type="button" class="sip-btn-done" data-sf-click="action-129">
           Done
         </button>
@@ -338,4 +338,4 @@
 
 <script defer src="/js/submission-storage.js?v=20261022-student-journey"></script>
 <script defer src="/js/submission-recovery.js?v=20261022-student-journey"></script>
-<script defer src="/js/submit-panel.js?v=20261022-student-journey"></script>
+<script defer src="/js/submit-panel.js?v=20261025-student-flow"></script>

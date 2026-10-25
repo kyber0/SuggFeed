@@ -10,7 +10,7 @@ import { requireStrongAuth } from '../lib/auth-assurance';
 import { legalDetails } from '../lib/legal';
 import { DEMO_SCHOOL_ID, allowSchoolApplication, invitationHash, invitationToken, schoolApplicationsConfigured, schoolSettingFields, validInvitationToken } from '../lib/school-onboarding';
 
-declare module 'express-session' { interface SessionData { schoolEnrollmentNotice?:string; schoolDomainNotice?:string; invitationReturn?: {path:string;expires:number}; schoolInvitation?: { schoolId: string; token: string; email?: string; role?: InvitationRole; expires?: string; delivery?: string; warning?: string }; } }
+declare module 'express-session' { interface SessionData { lastStudentSchool?:string; schoolEnrollmentNotice?:string; schoolDomainNotice?:string; invitationReturn?: {path:string;expires:number}; schoolInvitation?: { schoolId: string; token: string; email?: string; role?: InvitationRole; expires?: string; delivery?: string; warning?: string }; } }
 
 const router = Router();
 const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { void fn(req, res).catch(next); };
@@ -71,6 +71,8 @@ router.get('/account/home', run(async (req, res) => {
     if(slug)return res.redirect(303,'/schools?school='+encodeURIComponent(slug));
   }
   const available = memberships.filter(m => m.schools && (m.schools?.status === 'active' || (m.schools.status === 'pending' && m.role === 'admin')));
+  const remembered=available.find(m=>m.role==='student'&&m.schools?.status==='active'&&m.schools.slug===req.session.lastStudentSchool);
+  if(available.length>1&&remembered)return res.redirect(303,schoolLanding(remembered.schools!,remembered.role));
   return res.redirect(303, available.length === 1 ? schoolLanding(available[0].schools!, available[0].role) : '/schools');
 }));
 router.get('/schools', run(async (req, res) => {

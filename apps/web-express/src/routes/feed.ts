@@ -21,7 +21,7 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const { page, sort: sortBy, category, search, scope } = feedFilters(req.query);
     const following = scope === 'following';
-    if (following && !schoolUser(req)) return res.redirect('/notifications');
+    if(following&&!schoolUser(req)){res.setHeader('Cache-Control','private, no-store');return res.render('student-following-signin',{title:'Followed ideas — SuggFeed',following:true});}
     if (following) res.setHeader('Cache-Control','private, no-store');
 
     const dataStarted=performance.now();

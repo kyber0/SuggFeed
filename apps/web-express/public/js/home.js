@@ -269,8 +269,12 @@
             const item = data.data;
             document.getElementById('tr-category').textContent = item.category || 'Feedback';
             const statusEl = document.getElementById('tr-status');
-            statusEl.textContent = (item.status || 'pending').replace('_', ' ');
-            statusEl.className = `status-badge ${(item.status || 'pending').replace('_', '-')}`;
+            statusEl.textContent = item.state?.label || (item.status || 'pending').replace('_', ' ');
+            statusEl.className = 'student-state';
+            statusEl.dataset.tone = item.state?.tone || 'progress';
+            const explanation = document.getElementById('tr-state-detail');
+            if (explanation)
+                explanation.textContent = item.state?.detail || '';
             const submittedAt = typeof item.createdAt === 'string' ? item.createdAt : item.created_at;
             const submittedDate = typeof submittedAt === 'string' ? new Date(submittedAt) : null;
             document.getElementById('tr-date').textContent = submittedDate && Number.isFinite(submittedDate.getTime())

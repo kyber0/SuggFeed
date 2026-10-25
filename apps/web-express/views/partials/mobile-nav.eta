@@ -5,13 +5,13 @@
     <span>Home</span>
   </a>
 
-  <a href="/feed" class="mobile-tab<%= it.currentPath === '/feed' || it.currentPath === '/roadmap' ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/feed' || it.currentPath === '/roadmap' ? 'page' : 'false' %>">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/feed' || it.currentPath === '/roadmap' ? '2.5' : '1.8' %>"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <a href="/feed" class="mobile-tab<%= it.currentPath === '/feed' || it.currentPath === '/roadmap' || /^\/idea\//.test(it.currentPath||'') ? ' mobile-tab--active' : '' %>" aria-current="<%= it.currentPath === '/feed' || it.currentPath === '/roadmap' || /^\/idea\//.test(it.currentPath||'') ? 'page' : 'false' %>">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= it.currentPath === '/feed' || it.currentPath === '/roadmap' || /^\/idea\//.test(it.currentPath||'') ? '2.5' : '1.8' %>"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     <span>Ideas</span>
   </a>
 
-  <a href="/profile" class="mobile-tab<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath)) ? ' mobile-tab--active' : '' %>" aria-current="<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath)) ? 'page' : 'false' %>">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath)) ? '2.5' : '1.8' %>"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  <a href="/profile" class="mobile-tab<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath) || /^\/submission(?:-details)?\//.test(it.currentPath||'')) ? ' mobile-tab--active' : '' %>" aria-current="<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath) || /^\/submission(?:-details)?\//.test(it.currentPath||'')) ? 'page' : 'false' %>">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="<%= (it.supportPage || ['/profile','/notifications','/inbox'].includes(it.currentPath) || /^\/submission(?:-details)?\//.test(it.currentPath||'')) ? '2.5' : '1.8' %>"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     <span>Profile</span>
   </a>
 

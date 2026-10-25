@@ -1,10 +1,11 @@
 <% layout('layout') %>
-<main class="campus-roadmap community-care-page">
- <header class="workspace-heading"><div><p class="workspace-kicker">PRIVATE, NOT PUBLIC</p><h1>School messages</h1><p>Reply to a clarification request without posting a public comment.</p></div><a class="workspace-button" href="/profile">My submissions</a></header>
+<main data-student-inbox="questions" class="campus-roadmap community-care-page">
+ <header class="workspace-heading"><div><p class="workspace-kicker">PRIVATE, NOT PUBLIC</p><h1>Private school questions</h1><p>Reply to a clarification request without posting a public comment.</p></div></header><%~ include('partials/student-profile-nav',{...it,profileSection:'inbox'}) %><%~ include('partials/student-inbox-nav',it) %>
  <details class="care-card inbox-code-panel" <%= it.user ? '' : 'open' %>><summary>Find messages with a tracking code</summary><p>For anonymous submissions, use the code you saved after submitting. Your code is sent in the request body—not stored in this browser or added to the address bar. Signed-in messages load automatically.</p>
   <form id="private-code-form" class="care-form"><label>Private tracking code<input class="workspace-input" name="trackingCode" autocomplete="off" maxlength="35" placeholder="CV-…" required/></label><button class="workspace-button" type="submit">Find messages</button></form>
  </details>
  <% if(!it.user) { %><%~ include('partials/empty-state',{compact:true,icon:'message',heading:'Your conversation with the school',description:'Sign in for messages about your account’s ideas, or enter your private tracking code above for an anonymous submission.',actions:[{label:'Sign in',event:'action-94'}]}) %><% } %>
- <p id="care-message" role="status" aria-live="polite"></p><section id="private-messages" aria-label="Private clarification requests"><% if(it.renderMode==='studio') { %><%~ include('partials/school-studio-examples',{...it,kind:'inbox'}) %><% } %></section>
- <section class="care-card"><h2>Your content reports</h2><p>Reports are private. Staff decisions and removal reasons appear here.</p><div id="my-report-history"></div></section>
+ <nav class="student-question-filters" aria-label="Private question status"><% for(const [view,label] of [['needs-reply','Needs your reply'],['waiting','Reply sent'],['resolved','Resolved'],['all','Latest questions']]) { %><a href="/inbox?view=<%= view %>" data-private-view="<%= view %>" aria-current="<%= (it.inboxView||'needs-reply')===view?'page':'false' %>"><%= label %></a><% } %></nav>
+ <p id="care-message" role="status" aria-live="polite"></p><section id="private-messages" data-inbox-view="<%= it.inboxView||'needs-reply' %>" aria-label="Private clarification requests"><% if(it.renderMode==='studio') { %><%~ include('partials/school-studio-examples',{...it,kind:'inbox'}) %><% } %></section>
+
 </main>
