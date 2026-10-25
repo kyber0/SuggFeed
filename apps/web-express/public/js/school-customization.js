@@ -7,7 +7,7 @@
     const api = window.sfSchoolStudioModel, model = api.create({ configuration: initial.configuration, serverRevision: initial.revision });
     const variant = document.getElementById('studio-variant');
     let sourceSequence = 0;
-    let source = 'draft', published = initial.published, publishedVersion = initial.publishedVersion, lastSavedAt = initial.savedAt, navTab = 'pages', conflict = false, saveFailed = false, reviewRevision = -1;
+    let source = 'draft', published = initial.published, publishedVersion = initial.publishedVersion, lastSavedAt = initial.savedAt, navTab = 'layers', conflict = false, saveFailed = false, reviewRevision = -1;
     let autosaveTimer;
     const frame = document.getElementById('studio-frame'), board = document.getElementById('studio-board'), space = document.getElementById('studio-board-space'), canvas = document.getElementById('studio-canvas-scroll'), loading = document.getElementById('studio-frame-loading');
     const page = document.getElementById('studio-page'), scenario = document.getElementById('studio-scenario'), theme = document.getElementById('studio-theme'), width = document.getElementById('studio-width'), zoom = document.getElementById('studio-zoom');
@@ -87,49 +87,125 @@
         host.dataset[panel + 'Collapsed'] = 'true';
         layout();
     } }
+    const collapsedLayers = new Set();
+    let revealedSelection = '', sidebarPage = '', sidebarTab = '';
+    function layerIcon(kind) { const paths = { page: 'M5 3h10l4 4v14H5zM14 3v5h5', frame: 'M8 3v18M16 3v18M3 8h18M3 16h18', text: 'M4 5h16M12 5v15M8 20h8', component: 'm12 3 9 9-9 9-9-9zM12 3v18M3 12h18', theme: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z', lock: 'M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5z', folder: 'M3 5h7l2 3h9v12H3z' }; const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true'); const path = document.createElementNS(svg.namespaceURI, 'path'); path.setAttribute('d', paths[kind] || paths.component); svg.append(path); return svg; }
     function drawTree() {
-        const query = search.value.toLowerCase();
+        const query = search.value.trim().toLowerCase(), selected = model.getState().selection?.componentId, assets = navTab === 'assets';
         tree.replaceChildren();
         host.dataset.navigationTab = navTab;
         document.querySelectorAll('[data-studio-tab]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.studioTab === navTab)));
-        const nodes = navTab === 'pages' ? Object.entries(SfSchoolDesign.pages).map(([id, p]) => ({ id: 'page.' + id, label: p.label, group: id === 'staff' ? 'Staff experience' : 'Student experience', pages: [id] })) : registry().filter((n) => !(n.id.startsWith('section.') && presentComponents && !presentComponents.has(n.id)));
-        let group = '';
-        let groupRoot = tree;
-        for (const n of nodes.filter((n) => (n.label + ' ' + n.group + ' ' + n.id).toLowerCase().includes(query))) {
-            const scope = navTab === 'pages' ? n.group : n.group === 'workspace' ? 'School-wide' : 'On this screen';
-            if (scope !== group) {
-                groupRoot = tree;
-                if (scope === 'School-wide') {
-                    const disclosure = document.createElement('details'), summary = document.createElement('summary');
-                    disclosure.className = 'studio-global-components';
-                    summary.textContent = 'School-wide settings';
-                    disclosure.open = !!query || registry().some((item) => item.group === 'workspace' && item.id === model.getState().selection?.componentId);
-                    disclosure.append(summary);
-                    tree.append(disclosure);
-                    groupRoot = disclosure;
-                }
-                else {
-                    const heading = document.createElement('h3');
-                    heading.textContent = scope;
-                    heading.className = 'studio-tree-group';
-                    tree.append(heading);
-                }
-                group = scope;
+        document.querySelectorAll('[data-studio-page]').forEach(button => { button.setAttribute('aria-current', button.dataset.studioPage === page.value ? 'page' : 'false'); button.disabled = !allowed; });
+        search.placeholder = assets ? 'Find an asset…' : 'Find a layer…';
+        document.getElementById('studio-search-label').textContent = assets ? 'Find an asset' : 'Find a layer';
+        document.getElementById('studio-tree-title').textContent = assets ? 'School assets' : page.selectedOptions[0].text;
+        document.getElementById('studio-collapse-layers').hidden = assets;
+        const nodes = assets ? ['school.theme', 'school.identity', 'home.hero', 'home.links', 'community.categories', 'submission.instructions', 'progress.labels', 'school.email', 'community.features', 'locked.brand'].map(find).filter(Boolean) : registry().filter((n) => n.group !== 'workspace' && !(n.id.startsWith('section.') && presentComponents && !presentComponents.has(n.id)));
+        const byId = new Map(nodes.map((n) => [n.id, n])), children = new Map(), rootId = 'page.' + page.value, parents = new Map();
+        const sectionParent = { 'home.hero': 'section.home.hero', 'community.categories': page.value === 'submit' ? 'section.submit.categories' : page.value === 'feed' ? 'section.feed.topics' : rootId, 'submission.instructions': 'section.submit.questions', 'progress.labels': page.value === 'idea' ? 'section.idea.progress' : rootId };
+        for (const node of nodes) {
+            let parent = node.id === rootId ? '' : node.id.startsWith('category:') ? 'community.categories' : node.id.startsWith('question:') ? 'submission.instructions' : sectionParent[node.id] || rootId;
+            if (assets)
+                parent = '';
+            else if (!byId.has(parent))
+                parent = rootId === node.id ? '' : rootId;
+            parents.set(node.id, parent);
+            if (!children.has(parent))
+                children.set(parent, []);
+            children.get(parent).push(node);
+        }
+        const reveal = selected !== revealedSelection;
+        if (reveal) {
+            let parent = parents.get(selected);
+            while (parent) {
+                collapsedLayers.delete(parent);
+                parent = parents.get(parent);
+            }
+            revealedSelection = selected;
+        }
+        const matches = (n) => !query || (n.label + ' ' + n.id).toLowerCase().includes(query) || (children.get(n.id) || []).some(matches);
+        let visibleCount = 0;
+        function appendNode(node, list, depth) {
+            if (!matches(node))
+                return;
+            visibleCount++;
+            const item = document.createElement('li'), row = document.createElement('div');
+            row.className = 'studio-layer-row';
+            row.style.setProperty('--layer-depth', String(depth));
+            const descendants = children.get(node.id) || [], hasChildren = descendants.some(matches);
+            let childList;
+            if (hasChildren) {
+                const toggle = document.createElement('button');
+                toggle.type = 'button';
+                toggle.className = 'studio-layer-toggle';
+                toggle.setAttribute('aria-label', 'Expand ' + node.label);
+                const expanded = !!query || !collapsedLayers.has(node.id);
+                toggle.setAttribute('aria-expanded', String(expanded));
+                toggle.append(layerIcon('chevron'));
+                toggle.querySelector('path').setAttribute('d', 'm9 5 7 7-7 7');
+                row.append(toggle);
+                childList = document.createElement('ul');
+                childList.id = 'studio-branch-' + node.id.replace(/[^a-z0-9-]/gi, '-');
+                childList.hidden = !expanded;
+                toggle.setAttribute('aria-controls', childList.id);
+                toggle.setAttribute('aria-label', (expanded ? 'Collapse ' : 'Expand ') + node.label);
+                toggle.addEventListener('click', () => { const open = childList.hidden; childList.hidden = !open; toggle.setAttribute('aria-expanded', String(open)); toggle.setAttribute('aria-label', (open ? 'Collapse ' : 'Expand ') + node.label); if (open)
+                    collapsedLayers.delete(node.id);
+                else
+                    collapsedLayers.add(node.id); });
+            }
+            else {
+                const spacer = document.createElement('span');
+                spacer.className = 'studio-layer-spacer';
+                row.append(spacer);
             }
             const button = document.createElement('button');
             button.type = 'button';
-            button.textContent = n.label;
-            button.dataset.component = n.id;
-            button.setAttribute('aria-pressed', String(navTab === 'pages' ? n.id === 'page.' + page.value : model.getState().selection?.componentId === n.id));
+            button.className = 'studio-layer-select';
+            button.dataset.component = node.id;
+            button.setAttribute('aria-pressed', String(selected === node.id));
+            button.title = node.label;
             button.disabled = !allowed;
-            button.addEventListener('click', () => { select(n.id); if (innerWidth < 1024)
+            const kind = node.id === 'locked.brand' ? 'lock' : node.id === 'school.theme' ? 'theme' : node.group === 'page' ? 'page' : node.group === 'section' ? 'frame' : ['home.hero', 'home.links', 'progress.labels'].includes(node.id) ? 'text' : node.id === 'community.categories' || node.id === 'submission.instructions' ? 'folder' : 'component';
+            button.append(layerIcon(kind));
+            const label = document.createElement('span');
+            label.textContent = node.label;
+            button.append(label);
+            button.addEventListener('click', () => { select(node.id); if (innerWidth < 1024)
                 closePanel(); });
-            groupRoot.append(button);
+            row.append(button);
+            item.append(row);
+            if (childList) {
+                for (const child of descendants)
+                    appendNode(child, childList, depth + 1);
+                item.append(childList);
+            }
+            list.append(item);
         }
-        if (!tree.children.length) {
-            const p = document.createElement('p');
-            p.textContent = 'No matching components in this preview. Try another page or state.';
-            tree.append(p);
+        const list = document.createElement('ul');
+        list.className = 'studio-layer-list';
+        list.setAttribute('aria-label', assets ? 'Shared school assets' : 'Layers in ' + page.selectedOptions[0].text);
+        for (const node of children.get('') || [])
+            appendNode(node, list, 0);
+        tree.append(list);
+        document.getElementById('studio-layer-count').textContent = String(visibleCount);
+        if (sidebarPage !== page.value || sidebarTab !== navTab) {
+            requestAnimationFrame(() => { const active = document.querySelector('[data-studio-page="' + page.value + '"]'), nav = active?.parentElement; if (active && nav && active.getClientRects().length) {
+                const row = active.getBoundingClientRect(), bounds = nav.getBoundingClientRect();
+                if (row.top < bounds.top || row.bottom > bounds.bottom)
+                    nav.scrollTop += row.top - bounds.top - (nav.clientHeight - active.offsetHeight) / 2;
+            } });
+            sidebarPage = page.value;
+            sidebarTab = navTab;
+        }
+        if (reveal)
+            requestAnimationFrame(() => { const active = Array.from(tree.querySelectorAll('[data-component]')).find(button => button.dataset.component === selected); if (active?.getClientRects().length)
+                active.scrollIntoView({ block: 'nearest' }); });
+        if (!visibleCount) {
+            const empty = document.createElement('p');
+            empty.className = 'studio-layer-empty';
+            empty.textContent = assets ? 'No matching assets. Try “theme” or “categories”.' : 'No matching layers on this page.';
+            tree.append(empty);
         }
     }
     function fillVariants() { const chosen = variant.value; variant.replaceChildren(); for (const [value, label] of initial.previewVariants?.[page.value] || [['default', 'Default view']]) {
@@ -157,6 +233,8 @@
             return;
         if (component.pages.length && !component.pages.includes(page.value)) {
             page.value = component.pages[0];
+            fillVariants();
+            view = '';
             navigate(false);
         }
         if (page.value === 'submit') {
@@ -167,7 +245,9 @@
             }
         }
         if (fromFrame) {
-            navTab = 'components';
+            navTab = 'layers';
+            search.value = '';
+            revealedSelection = '';
             document.querySelectorAll('[data-studio-tab]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.studioTab === navTab)));
         }
         model.select({ componentId: id });
@@ -415,6 +495,8 @@
         if (data.type === 'select' && typeof payload.componentId === 'string')
             select(payload.componentId, true);
         if (data.type === 'navigate' && Object.keys(SfSchoolDesign.pages).includes(payload.page)) {
+            navTab = 'layers';
+            search.value = '';
             page.value = payload.page;
             fillVariants();
             if (initial.previewVariants?.[page.value]?.some((item) => item[0] === payload.variant))
@@ -652,14 +734,12 @@
     document.querySelectorAll('[data-studio-source]').forEach(button => button.addEventListener('click', () => void setSource(button.dataset.studioSource)));
     document.getElementById('studio-validation').addEventListener('click', () => { select(inspector.issueComponent?.() || 'school.theme'); openPanel('properties'); document.getElementById('studio-properties-form').reportValidity(); });
     document.getElementById('studio-select-parent').addEventListener('click', selectParent);
-    document.querySelectorAll('[data-studio-tab]').forEach(button => button.addEventListener('click', () => { navTab = button.dataset.studioTab; document.querySelectorAll('[data-studio-tab]').forEach(item => item.setAttribute('aria-pressed', String(item === button))); drawTree(); }));
-    document.querySelectorAll('[data-studio-task]').forEach(button => button.addEventListener('click', () => { const task = button.dataset.studioTask; if (source === 'published')
-        void setSource('draft'); source = 'draft'; host.dataset.source = 'draft'; document.querySelectorAll('[data-studio-source]').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.studioSource === 'draft'))); document.getElementById('studio-properties-form').inert = false; const destination = task === 'home' ? 'home' : task === 'ideas' ? 'feed' : task === 'form' ? 'submit' : page.value; if (task === 'mobile')
-        width.value = '375'; if (page.value !== destination) {
-        page.value = destination;
-        fillVariants();
-        navigate();
-    } navTab = 'components'; select(task === 'identity' ? 'school.identity' : task === 'brand' ? 'school.theme' : task === 'home' ? 'home.hero' : task === 'ideas' ? 'community.categories' : task === 'form' ? 'submission.instructions' : 'page.' + page.value); drawTree(); layout(); }));
+    document.querySelectorAll('[data-studio-tab]').forEach(button => button.addEventListener('click', () => { navTab = button.dataset.studioTab; search.value = ''; document.querySelectorAll('[data-studio-tab]').forEach(item => item.setAttribute('aria-pressed', String(item === button))); drawTree(); }));
+    document.querySelectorAll('[data-studio-page]').forEach(button => button.addEventListener('click', () => { if (!allowed)
+        return; page.value = button.dataset.studioPage; search.value = ''; navTab = 'layers'; fillVariants(); view = ''; navigate(); select('page.' + page.value); if (innerWidth < 1024)
+        closePanel(); }));
+    document.getElementById('studio-collapse-layers').addEventListener('click', () => { for (const node of registry())
+        collapsedLayers.add(node.id); drawTree(); });
     host.addEventListener('input', () => queueMicrotask(() => { syncActions(); if (!validation()) {
         clearTimeout(autosaveTimer);
         pill.textContent = 'Needs correction';
@@ -689,6 +769,7 @@
     inspector.render();
     drawTree();
     navigate(false);
+    select('page.' + page.value);
     setMode(mode);
     syncActions();
 })();

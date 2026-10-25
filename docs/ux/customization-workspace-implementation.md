@@ -2,8 +2,8 @@
 
 ## Delivered
 
-- Task shortcuts for school identity, Home, Ideas, submission and mobile inspection.
-- Separate Pages and Components navigation; only existing per-page sections are listed. School-wide settings remain grouped and searchable.
+- A Figma-style sidebar: collapsible Pages, nested Layers for the current page, and a separate Assets tab for shared school settings. The shortcut-card grid and duplicate page selector were removed.
+- Nested sections, content, categories and questions have distinct icons, expand/collapse controls, search and a visible selection. Canvas selection reveals the matching layer; current-page scrolling stays synchronized. Page-state controls live in preview options. Only existing per-page sections are listed.
 - Real-template previews for 37 page states, including visitor/member Home, Ideas, roadmap views, detail drawer/page, profile, form steps/recovery/receipt and staff queues/work views. Preview interactions use fictional content and cannot submit, publish decisions or invite members.
 - Inspector scope, inherited-value hints, effective content defaults and supported reset controls. Light/dark color samples update alongside the preview; incomplete hex values survive selection changes and block saving until corrected or undone.
 - A preset/question-type change is one undo operation. No custom CSS, arbitrary HTML or free-position layout was introduced.
@@ -48,3 +48,7 @@ No migration, dependency or environment-variable change. Existing per-school edi
 - Some broad plan examples remain outside this bounded release: every management screen, live notification workflows, arbitrary layout editing and full application end-to-end coverage.
 - Reloading or closing a tab while offline can lose unsaved memory; the unload warning and explicit private-copy recovery reduce that risk. No automatic merging of competing drafts.
 - Physical iPhone/Android keyboards, assistive technology and production deployment behavior still need real-device/live checks.
+
+## Sidebar refinement
+
+The follow-up redesign replaces the earlier Pages/Components/task-card arrangement. Desktop uses compact rows and a 256px sidebar; mobile retains the existing modal sheet with larger touch controls. Local Chromium inspection covered page changes, Assets-to-form navigation, collapse/search and 320/375px sheets without page errors or document overflow. The production build and TypeScript checks were repeated. No automated tests or live database checks were run for this refinement.
