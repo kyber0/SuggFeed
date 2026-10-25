@@ -226,7 +226,7 @@ export async function loadComments(submissionId: string): Promise<Comment[]> {
     async () => {
       const { data, error } = await supabase
         .from("comments")
-        .select("id,submission_id,user_id,body,display_name,created_at,parent_id,version,author:profiles!comments_user_id_fkey(id,display_name),submission:submissions!inner(status)")
+        .select("id,submission_id,user_id,body,display_name,created_at,parent_id,version,text_revision,author:profiles!comments_user_id_fkey(id,display_name),submission:submissions!inner(status)")
         .eq("is_hidden",false).in("submission.status",["approved","in_progress","resolved"])
         .eq("submission_id", submissionId)
         .order("created_at", { ascending: true });

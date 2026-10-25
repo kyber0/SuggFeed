@@ -1,5 +1,5 @@
 import {reportSubmission} from '../lib/submission-safety';
-import {commentAction,reportComment,commentReviewQueue,saveComment} from '../lib/comments';
+import {commentAction,reportComment,commentReviewQueue,saveComment,ownCommentUpdates} from '../lib/comments';
 import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
@@ -22,13 +22,25 @@ communityRouter.post('/report', run(async (req,res) => {
   if (!schoolUser(req)) throw new CommunityError(401,'Sign in to report content.');
   const body = req.body.commentId?textField(req.body.body,10,500):typeof req.body.body==='string'?req.body.body:'';
   const data = req.body.commentId ? {commentId:idField(req.body.commentId),body} : {submissionId:idField(req.body.submissionId),body};
-  if(req.body.commentId)return res.json({success:true,...await reportComment(req.body.commentId,body)});
+  if(req.body.commentId)return res.json({success:true,...await reportComment(req.body.commentId,body,req.body.textRevision)});
   return res.json({success:true,...await reportSubmission(data.submissionId,body)});
 }));
 communityRouter.post('/comments/:id/edit',run(async(req,res)=>{
  if(!schoolUser(req))throw new CommunityError(401,'Sign in to edit your own comment.');
  const data=await saveComment({id:req.params.id,body:req.body.body,version:req.body.version});
  return res.json({success:true,data});
+}));
+communityRouter.get('/comments/:id/current',run(async(req,res)=>{
+ if(!schoolUser(req))throw new CommunityError(401,'Sign in to view your comment.');
+ res.json({success:true,data:await commentAction('owner-current',{id:idField(req.params.id)})});
+}));
+communityRouter.get('/comments/mine/:submissionId',run(async(req,res)=>{
+ if(!schoolUser(req))throw new CommunityError(401,'Sign in to view your pending comments.');
+ res.json({success:true,...await ownCommentUpdates(req.params.submissionId)});
+}));
+communityRouter.post('/comments/notices/:id/read',run(async(req,res)=>{
+ if(!schoolUser(req))throw new CommunityError(401,'Sign in required.');
+ await commentAction('read-notice',{id:idField(req.params.id)});res.json({success:true});
 }));
 communityRouter.get('/report-history',run(async(req,res)=>{
   if(!schoolUser(req)) throw new CommunityError(401,'Sign in to see report decisions.');
@@ -44,8 +56,8 @@ communityRouter.post('/staff/:action',run(async(req,res)=>{
   let data: Record<string,unknown>;
   if(action==='comment-review'){
     if(user.role!=='admin')throw new CommunityError(403,'Administrator access required.');
-    if(!['approve','hide','delete'].includes(input.decision)||!Number.isSafeInteger(input.version))throw new CommunityError(400,'Choose a valid comment decision.');
-    await commentAction(input.decision,{id:idField(input.id),version:input.version,body:textField(input.body,10,500)});
+    if(!['approve','hide','delete'].includes(input.decision)||!Number.isSafeInteger(input.version)||!Number.isSafeInteger(input.textRevision)||input.textRevision<1)throw new CommunityError(400,'Choose a valid comment decision.');
+    await commentAction(input.decision,{id:idField(input.id),version:input.version,textRevision:input.textRevision,body:textField(input.body,10,500)});
     return res.json({success:true});
   }
   if(action==='request') data={submissionId:idField(input.submissionId),body:textField(input.body)};
@@ -80,7 +92,7 @@ communityPages.get('/admin/community',run(async(req,res)=>{
   if(!user) return res.redirect('/admin');
   if(!staffRole(user.role)) return res.status(403).render('school-message',{title:'Access denied',message:'Staff access required.'});
   res.setHeader('Cache-Control','private, no-store');
-  res.render('staff-community',{title:'Follow-ups — SuggFeed',activeSection:'community',mergeSelected:req.query.task==='merge' && user.role==='admin',submissionId:typeof req.query.idea==='string' && /^[a-f0-9-]{36}$/i.test(req.query.idea) ? req.query.idea : '',...await staffCommunity(user,req.query),commentQueue:user.role==='admin'?await commentReviewQueue(req.query.commentsPage):{items:[],page:1,count:0},members:await loadStaffMembers()});
+  res.render('staff-community',{title:'Follow-ups — SuggFeed',activeSection:'community',mergeSelected:req.query.task==='merge' && user.role==='admin',submissionId:typeof req.query.idea==='string' && /^[a-f0-9-]{36}$/i.test(req.query.idea) ? req.query.idea : '',...await staffCommunity(user,req.query),commentQueue:user.role==='admin'?await commentReviewQueue(req.query.commentsPage,req.query.commentView):{items:[],page:1,count:0},members:await loadStaffMembers()});
 }));
 communityPages.get('/admin/board',run(async(req,res)=>{
   const user=schoolUser(req);

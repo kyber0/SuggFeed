@@ -222,6 +222,7 @@
           </h3>
         </div>
 
+        <details class="comment-own-pending" id="drawer-comment-pending" data-comment-pending hidden><summary>My pending comments</summary><p data-pending-status role="status"></p><div data-pending-list></div><button type="button" class="workspace-button" data-pending-refresh>Refresh pending comments</button></details>
         <div class="comment-thread-scroll" id="drawer-comments-list">
           <!-- Dynamically populated -->
         </div>
@@ -292,4 +293,4 @@
   </div>
 </aside>
 
-<script defer src="/js/idea-detail-drawer.js?v=20261024-comment-bubbles"></script>
+<script defer src="/js/idea-detail-drawer.js?v=20261025-comment-review"></script>

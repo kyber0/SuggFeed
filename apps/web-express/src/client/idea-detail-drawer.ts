@@ -227,6 +227,7 @@ let sfCurrentIdea = null;
     }
 
     sfRenderDrawerComments(comments);
+    const pending=document.getElementById('drawer-comment-pending');if(pending){pending.dataset.commentPending=String(idea.id);pending.dispatchEvent(new CustomEvent('sf:pending-refresh',{bubbles:true}));}
   }
 
   function sfRenderDrawerComments(comments) {
@@ -305,7 +306,7 @@ let sfCurrentIdea = null;
       <div class="comment-body">${sfEscapeAttribute(String(c.body || ''))}</div></div>
       <details class="comment-menu"><summary aria-label="Comment options"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></summary><div class="comment-menu-items">
         ${c.user_id && c.user_id===document.getElementById('sf-auth-config')?.dataset.user ? `<button type="button" data-edit-comment="${sfEscapeAttribute(String(c.id))}" data-comment-version="${Number(c.version)||1}">Edit comment</button>` : ''}
-        <button type="button" data-report-comment="${sfEscapeAttribute(String(c.id))}">Report comment</button>
+        ${c.user_id && c.user_id===document.getElementById('sf-auth-config')?.dataset.user ? '' : `<button type="button" data-report-comment="${sfEscapeAttribute(String(c.id))}" data-comment-text-revision="${Number(c.text_revision)||1}">Report comment</button>`}
       </div></details>
       <div class="comment-actions"><span class="comment-date">${sfRelTime(c.created_at)}</span><button type="button" class="comment-reply-btn" data-sf-click="reply-drawer" data-reply-id="${sfEscapeAttribute(String(isReply ? c.parent_id || c.id : c.id))}" data-reply-author="${sfEscapeAttribute(author)}">Reply</button></div>
     `;
@@ -456,7 +457,7 @@ let sfCurrentIdea = null;
       if(context!==drawerRequest || sfCurrentIdea?.id!==ideaId)return;
       if(data.data?.status && data.data.status!=='published'){
         input.value='';sfCancelDrawerReply();sfDrawerCommentInputChanged(input);
-        window.sfToast?.('Your comment was saved privately for administrator review.','success');return;
+        document.getElementById('drawer-comment-pending')?.dispatchEvent(new CustomEvent('sf:pending-refresh',{bubbles:true}));window.sfToast?.('Your comment is awaiting school review.','success');return;
       }
       const empty = (document.getElementById('drawer-comment-empty') as HTMLElement);
       if (empty) empty.remove();

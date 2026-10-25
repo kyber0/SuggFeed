@@ -7,7 +7,8 @@ and recommended transformers, plus a bounded Filipino dictionary. No remote
 moderation API or paid service is used. English/Tagalog/Taglish word detection is
 a heuristic; it does not infer intent, threats, sarcasm or every dialect/slang.
 
-`apps/web-express/src/lib/comment-moderation-config.ts` owns both settings:
+`apps/web-express/src/lib/content-safety-config.ts` owns the settings;
+`comment-moderation-config.ts` is its compatibility export:
 
 ```ts
 {mode: 'flag', reportThreshold: 3}
@@ -66,9 +67,8 @@ foreign keys and the audit record. Published replies to hidden parents are shown
 as top-level comments; hidden ancestor text is not sent to public readers.
 
 An owner edit is rechecked before saving. An edit with outstanding reports remains
-private even if its words pass detection. Approval clears the outstanding reports;
-a reporter cannot report that same comment again, including after later edits,
-because the product rule is one report per account per comment.
+private even if its words pass detection. Approval resolves outstanding reports. The revision upgrade below changes
+report uniqueness to one report per account per text revision.
 
 ## Routes
 
@@ -125,3 +125,95 @@ mode, menu visibility, save and Escape cancellation, with no page overflow or
 JavaScript errors in the fictional fixture. Typecheck, focused lint and build
 passed. No automated suite was run for this interface-only follow-up; the
 previously documented full-suite baseline and real-device limitations still apply.
+
+## Revision-aware comment review upgrade — 25 October 2026
+
+Migration `202610250003_comment_review_revisions.sql` was applied transactionally
+to the configured project. The migration registry and columns were re-read;
+the demo school's active queue also completed a read-only database request.
+No hosted comments were created, edited, reported, approved, hidden or deleted.
+
+### Detection
+
+Comment creation/editing uses `assessComment`, which returns the disposition,
+reason (`clear`, `dictionary`, or `detector_unavailable`), rule group IDs and
+version. The original text is retained. `commentWordGroups` in
+`comment-moderation-words.ts` owns the new comment dictionary. Increment
+`commentDictionaryVersion` for a dictionary release. Short words use boundaries;
+ambiguous standalone terms such as Boba/Gaga are omitted, with selected abusive
+phrases included instead. English whitelists remain enabled. Bounded
+letter-by-letter normalization does not concatenate arbitrary complete words.
+
+The legacy `hasProfanity`/`commentVerdict` exports remain unchanged for existing
+callers and the submission safety pipeline. Changing comment rules does not
+change idea submission filtering. No historical profanity sweep is performed.
+Rule groups are review clues, not a confidence score or evidence of intent.
+
+### Revisions and reports
+
+`version` is the concurrency token: edits, new reports and review decisions
+advance it. `text_revision` advances only when saved text actually changes.
+No-op edits do not reopen decisions. Reports store `comment_revision` and have a
+unique school/comment/text-revision/reporter index. Admin approval does not
+make unchanged text reportable again. A genuine author edit does.
+
+Reports against earlier revisions remain identifiable. Editing with unresolved
+reports holds the replacement text until review. Reports cannot target stale
+text revisions, and owners cannot report their own comments. Current school
+membership, existing shared write budgets and community rate limits still apply.
+The report threshold remains server-owned and defaults to three distinct
+reporters. Duplicate reports do not advance the moderation token.
+
+Every review requires both the moderation token and text revision. A new report
+invalidates an already-open review. Review changes, report resolutions, visible
+counts, audit metadata and private author notices commit together.
+
+### Student experience
+
+The idea page and drawer load **My pending comments** through a separate,
+uncached, authenticated owner RPC. Private text never enters the public comment
+API or its cache. The panel shows the latest 50 pending comments on that idea,
+with compact revision controls. Anonymous cookie possession still grants no
+owner editing or private-history access. Preview mode skips private lookups.
+
+Edit conflicts keep the draft. Authors can load the latest saved revision,
+compare it, and deliberately save again. A finalized hidden/deleted comment
+cannot be edited. Successfully published revisions update the visible discussion
+and its local counts. Network errors preserve the editor.
+
+School updates displays the latest 50 private comment-review notices. Notice
+read actions are owner-only. Review explanations are also shown to reporters;
+administrators are explicitly told not to identify reporters in the reason.
+No email or external moderation provider is introduced.
+
+### Admin workflow and retained data
+
+Follow-ups → Comment review has Needs review, Reported and Resolved views.
+Reported and Needs review can overlap: a reported comment may already be held.
+The main navigation badge counts distinct active comments. Resolved hidden
+comments stay out of active work; an admin may reconsider a non-deleted decision.
+Context contains up to 30 reports, 10 retained text revisions and 10 decisions.
+Older audit records remain retained; the UI does not claim these limits are the
+complete history. Detector failures are labeled separately from language matches.
+
+`comment_text_revisions` stores the initial captured text and subsequent saved
+revisions with tenant ownership and no direct client access. Pre-upgrade edits
+cannot be reconstructed. Both new tables cascade when the parent comment is
+removed by retention. Admin Delete clears all revision bodies and leaves the
+existing hidden tombstone so replies and audit references survive.
+`comment_review_notices` stores only decisions/reasons, not comment bodies.
+
+### Deployment and verification limits
+
+Deploy the matching application after the migration. Older application
+instances safely hold writes without the new assessment metadata; old report
+or review screens must refresh to obtain revision fields. Reverting application
+code alone is not a complete rollback: keep the matching database workflow and
+prefer a forward fix rather than dropping reports, snapshots or audit history.
+
+Type checking, focused moderation lint, production compilation and Eta template
+compilation passed for this upgrade. Synthetic mobile/desktop design inspection
+used invented content. Automated tests were not added or run in this turn;
+concurrent write behavior, physical devices and the final hosted deployment
+remain unverified. Detection remains heuristic, with human review required for
+context, quotation, slang and false positives.

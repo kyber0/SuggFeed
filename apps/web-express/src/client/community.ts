@@ -35,13 +35,13 @@
   const fail = (e: Error) => e.name === 'AbortError' ? 'The request timed out. Refresh before retrying a change.' : e.message;
   const reportDialog = document.getElementById('content-report-dialog') as HTMLDialogElement;
   const reportForm = document.getElementById('content-report-form') as HTMLFormElement;
-  let reportTarget: { commentId?: string; submissionId?: string } = {};
+  let reportTarget: { commentId?: string; submissionId?: string; textRevision?: number } = {};
   let reportFocus: HTMLElement | null = null;
   document.addEventListener('click', e => {
     const button = (e.target as HTMLElement).closest<HTMLElement>('[data-report-idea],[data-report-comment]');
     if (!button) return;
     if (!signedIn) { (window as any).openAuthModal?.(); notify('Sign in to send a private report.'); return; }
-    reportTarget = button.dataset.reportComment ? {commentId:button.dataset.reportComment} : {submissionId:button.dataset.reportIdea};
+    reportTarget = button.dataset.reportComment ? {commentId:button.dataset.reportComment,textRevision:Number(button.dataset.commentTextRevision)} : {submissionId:button.dataset.reportIdea};
     reportFocus = button; reportForm.reset();const reason=reportForm.querySelector<HTMLTextAreaElement>('textarea');if(reason){reason.required=!!reportTarget.commentId;reason.minLength=reportTarget.commentId?10:0;reason.placeholder=reportTarget.commentId?'Tell staff what needs review.':'Reason (optional)';} document.getElementById('content-report-message')!.textContent=''; reportDialog.showModal();
   });
   document.getElementById('content-report-cancel')?.addEventListener('click',()=>reportDialog.close());
@@ -128,12 +128,13 @@
         body.updatedAt=source.idea.updated_at;body.targetUpdatedAt=target.idea.updated_at;
         confirmation=`Merge “${source.idea.title}” into “${target.idea.title}”? The source leaves public lists, followers move, and votes stay separate. This publishes your merge reason. This cannot be undone here.`;
       } else if(action==='resolve') confirmation=`${body.resolution==='removed' ? 'Remove content from public view' : 'Keep the reported content'}? Your reason is shown privately to the reporter.`;
-      if(action==='comment-review'){body.version=Number(body.version);confirmation=body.decision==='delete'?'Delete this comment text? Replies and the moderation record are preserved.':body.decision==='hide'?'Hide this comment from public discussion?':'Approve this comment for public discussion?';}
+      if(action==='comment-review'){body.version=Number(body.version);body.textRevision=Number(body.textRevision);confirmation=body.decision==='delete'?'Delete this comment text? Replies and the moderation record are preserved.':body.decision==='hide'?'Hide this comment from public discussion?':'Approve this comment for public discussion?';}
       if(!await window.sfConfirm(confirmation)) return;
-      await request('staff/'+action,body);notify('Saved. Refresh this page to see the updated queue.');form.reset();
+      await request('staff/'+action,body);notify(action==='comment-review'?'Decision saved. The author can see your reason in School updates.':'Saved. Refresh this page to see the updated queue.');form.reset();
       if(action==='close' || action==='resolve' || action==='comment-review') {
+        if(action==='comment-review'){location.reload();return;}
         const card=form.closest('article'),section=card?.closest('section');card?.remove();
-        if(section && !section.querySelector('.care-row'))section.append(sfEmptyState({compact:true,icon:action==='close'?'message':'shield',heading:action==='comment-review'?'No comments need review':action==='resolve'?'No open reports':'No open private questions',description:'You’re all caught up. New follow-ups will appear here.'}));
+        if(section && !section.querySelector('.care-row'))section.append(sfEmptyState({compact:true,icon:action==='close'?'message':'shield',heading:action==='resolve'?'No open reports':'No open private questions',description:'You’re all caught up. New follow-ups will appear here.'}));
       }
     }catch(error){notify(fail(error));}
     finally{button.disabled=false;}

@@ -3748,3 +3748,18 @@ html[data-virtual-keyboard] .am-card .am-handle {flex-shrink:0;}
  .sf-comment>.comment-menu {grid-column:2;grid-row:2;justify-self:end;}
  .sf-comment>.comment-actions {max-width:calc(100% - 44px);}
 }
+/* Private owner feedback remains outside the public comment tree. */
+.comment-own-pending {margin:12px 16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:13px;}
+.comment-own-pending>summary {cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600;color:var(--navy);}
+.comment-own-pending [data-pending-list] {display:grid;gap:12px;}
+.comment-own-pending .comment-card {display:block;padding:12px;border:1px solid var(--line);border-radius:10px;min-width:0;}
+.comment-own-pending small {display:block;color:var(--ink-2);line-height:1.6;}
+.comment-own-pending .comment-body {white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0;}
+.comment-own-pending .workspace-button {min-height:44px;margin-top:8px;}
+.comment-own-pending .comment-editor {margin:8px 0;}
+
+.comment-review-updates article {padding:16px 0;border-top:1px solid var(--line);overflow-wrap:anywhere;}
+.comment-review-updates button {margin-left:12px;min-height:44px;}
+.comment-own-pending [data-edit-conflict] {border-top:1px solid var(--line);margin-top:10px;padding-top:10px;}
+[data-edit-conflict] blockquote {white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.6;}
+@media(max-width:600px){.comment-review-updates button{margin:8px 0;display:block}}

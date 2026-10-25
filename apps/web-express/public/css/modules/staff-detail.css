@@ -124,3 +124,20 @@
 #staff-review-dialog .staff-panel-heading>div {min-width:0;flex:1;}
 #staff-review-dialog .staff-panel-heading .staff-panel-title {margin:0 0 6px;}
 #staff-review-dialog .staff-panel-heading>button {flex:none;}
+/* School-admin comment review uses the same compact hierarchy as staff detail. */
+.comment-review-tabs {display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 8px;}
+.comment-review-tabs a {display:flex;align-items:center;gap:8px;min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;color:var(--ink-2);text-decoration:none;font-size:13px;}
+.comment-review-tabs a[aria-current=page] {background:var(--sky);color:var(--navy);border-color:var(--navy);font-weight:600;}
+.comment-review-tabs span {font-size:11px;font-variant-numeric:tabular-nums;}
+.comment-review-item>header {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.comment-review-item>header>div {display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.comment-review-item small,.comment-review-context {font-size:12px;color:var(--ink-2);}
+.comment-review-item .comment-review-text {padding:16px;margin:14px 0;border:1px solid var(--line);border-radius:12px;background:var(--bg);font-size:14px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;}
+.comment-review-idea {display:inline-flex;margin-top:10px;min-height:44px;align-items:center;font-size:13px;}
+.comment-review-context summary,.comment-review-decision>summary {cursor:pointer;min-height:44px;padding:10px 0;}
+.comment-review-context blockquote {white-space:pre-wrap;overflow-wrap:anywhere;}
+.comment-review-context details {padding-inline:12px;}
+.comment-review-decision {border-top:1px solid var(--line);margin-top:12px;}
+.comment-review-decision>summary {font-weight:600;font-size:13px;color:var(--navy);}
+.comment-review-decision .care-form {margin-top:12px;}
+@media(max-width:600px){.comment-review-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.comment-review-tabs a{justify-content:center;flex-direction:column;gap:4px;padding:10px 6px;font-size:12px}.comment-review-decision .workspace-button{width:100%}.comment-review-item>header{align-items:start}.comment-review-updates button{margin:8px 0;display:block}}

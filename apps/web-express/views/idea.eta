@@ -279,6 +279,7 @@
               </h3>
             </div>
 
+            <details class="comment-own-pending" data-comment-pending="<%= it.submission.id %>" hidden><summary>My pending comments</summary><p data-pending-status role="status"></p><div data-pending-list></div><button type="button" class="workspace-button" data-pending-refresh>Refresh pending comments</button></details>
             <div class="comment-thread-scroll" id="comments-list">
               <%
                 const rootComments = (it.comments || []).filter(c => !c.parent_id);
@@ -309,7 +310,7 @@
                   <div class="comment-card sf-comment" id="comment-<%= c.id %>">
                     <div class="comment-avatar" style="background:<%= cGrad %>" aria-hidden="true"><%= cAuthor[0]?.toUpperCase() %></div>
                     <div class="comment-content"><div class="comment-card-header"><strong class="comment-author-name"><%= cAuthor %></strong><% if (isStaffAuthor) { %><span class="comment-staff-tag">STAFF</span><% } %></div><div class="comment-body"><%= c.body %></div></div>
-                    <details class="comment-menu"><summary aria-label="Comment options"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></summary><div class="comment-menu-items"><% if(it.user?.id && c.user_id===it.user.id) { %><button type="button" data-edit-comment="<%= c.id %>" data-comment-version="<%= c.version || 1 %>">Edit comment</button><% } %><button type="button" data-report-comment="<%= c.id %>">Report comment</button></div></details>
+                    <details class="comment-menu"><summary aria-label="Comment options"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></summary><div class="comment-menu-items"><% if(it.user?.id && c.user_id===it.user.id) { %><button type="button" data-edit-comment="<%= c.id %>" data-comment-version="<%= c.version || 1 %>">Edit comment</button><% } %><% if(!it.user?.id || c.user_id!==it.user.id) { %><button type="button" data-report-comment="<%= c.id %>" data-comment-text-revision="<%= c.text_revision || 1 %>">Report comment</button><% } %></div></details>
                     <div class="comment-actions"><span class="comment-date"><%= cRelTime %></span><button type="button" class="comment-reply-btn" data-reply-id="<%= c.id %>" data-reply-author="<%= cAuthor %>" data-sf-click="action-88">Reply</button></div>
                   </div>
 
@@ -328,7 +329,7 @@
                   <div class="comment-card sf-comment comment-reply-card" id="comment-<%= rc.id %>">
                     <div class="comment-avatar" style="background:<%= rcGrad %>" aria-hidden="true"><%= rcAuthor[0]?.toUpperCase() %></div>
                     <div class="comment-content"><div class="comment-card-header"><strong class="comment-author-name"><%= rcAuthor %></strong><% if (rcIsStaff) { %><span class="comment-staff-tag">STAFF</span><% } %></div><div class="comment-body"><%= rc.body %></div></div>
-                    <details class="comment-menu"><summary aria-label="Comment options"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></summary><div class="comment-menu-items"><% if(it.user?.id && rc.user_id===it.user.id) { %><button type="button" data-edit-comment="<%= rc.id %>" data-comment-version="<%= rc.version || 1 %>">Edit comment</button><% } %><button type="button" data-report-comment="<%= rc.id %>">Report comment</button></div></details>
+                    <details class="comment-menu"><summary aria-label="Comment options"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></summary><div class="comment-menu-items"><% if(it.user?.id && rc.user_id===it.user.id) { %><button type="button" data-edit-comment="<%= rc.id %>" data-comment-version="<%= rc.version || 1 %>">Edit comment</button><% } %><% if(!it.user?.id || rc.user_id!==it.user.id) { %><button type="button" data-report-comment="<%= rc.id %>" data-comment-text-revision="<%= rc.text_revision || 1 %>">Report comment</button><% } %></div></details>
                     <div class="comment-actions"><span class="comment-date"><%= rcRelTime %></span><button type="button" class="comment-reply-btn" data-reply-id="<%= c.id %>" data-reply-author="<%= rcAuthor %>" data-sf-click="action-89">Reply</button></div>
                   </div>
 
@@ -401,4 +402,4 @@
 </main>
 
 <div id="sf-idea-config" hidden data-id="<%= it.submission.id %>" data-status="<%= it.submission.status %>"></div>
-<script defer src="/js/idea.js?v=20261024-comment-bubbles"></script>
+<script defer src="/js/idea.js?v=20261025-comment-review"></script>
