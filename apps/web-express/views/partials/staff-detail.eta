@@ -22,11 +22,11 @@
         <details class="staff-coordination" <%= mode==='work'?'open':'' %>><summary>Assignment &amp; planning <span>Private staff coordination</span></summary><form id="staff-review-form" novalidate>
           <div hidden><label class="workspace-field-label" for="staff-response-template">Legacy response starter</label><select id="staff-response-template" class="workspace-input" disabled><option value="">Use a guided action to explain the decision</option></select></div>
           <fieldset id="staff-review-fields">
-            <legend>Staff coordination</legend>
+            <legend>Staff coordination</legend><p><a id="review-assignment-link" href="/admin/assignments">Ownership, acknowledgement &amp; assignment history →</a></p>
             <input id="review-status" type="hidden"/><p class="staff-footnote">This form saves assignment, priority and target date. Use Next step for decisions and public work changes.</p>
             <p class="workspace-field-hint" id="review-status-hint"></p>
             <div class="staff-review-workflow">
-              <div class="staff-assignee-field"><label class="workspace-field-label" for="review-assignee">Assigned staff</label><button type="button" class="workspace-text-link" id="review-assign-me">Assign to me</button><select id="review-assignee" class="workspace-input"><option value="">Unassigned</option><% for(const staff of it.staffMembers || []) { %><option value="<%= staff.id %>"><%= staff.display_name || 'Unnamed staff' %> · <%= staff.role %></option><% } %></select></div>
+              <div class="staff-assignee-field"><label class="workspace-field-label" for="review-assignee">Assigned staff</label><button type="button" class="workspace-text-link" id="review-assign-me" hidden>Assign to me</button><select id="review-assignee" class="workspace-input" disabled><option value="">Unassigned</option><% for(const staff of it.staffMembers || []) { %><option value="<%= staff.id %>"><%= staff.display_name || 'Unnamed staff' %> · <%= staff.role %></option><% } %></select></div>
               <label>Priority<select id="review-priority" class="workspace-input"><% for(const key of ['low','normal','high','urgent']) { %><option value="<%= key %>"><%= key.charAt(0).toUpperCase()+key.slice(1) %></option><% } %></select></label>
               <label for="review-target-date">Target date · optional<input id="review-target-date" class="workspace-input" type="date" min="2000-01-01" max="2100-12-31" aria-describedby="review-date-error"/><span id="review-date-error" class="staff-field-error" role="status"></span></label>
             </div>

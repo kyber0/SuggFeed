@@ -40,9 +40,9 @@ export async function loadStaffQueue(filters: ReturnType<typeof queueFilters>, s
   return { data: data ?? [], count: count ?? 0 };
 }
 export async function loadStaffMembers() {
-  const { data, error } = await supabaseService
-    .from('profiles')
-    .select('id,display_name,email,role,created_at')
+  let query = supabaseService.from('profiles').select('id,display_name,email,role,created_at');
+  if(requireSchool().role==='moderator')query=query.eq('id',requireSchool().actorId!);
+  const { data, error } = await query
     .in('role', ['admin', 'moderator'])
     .order('role')
     .order('display_name');

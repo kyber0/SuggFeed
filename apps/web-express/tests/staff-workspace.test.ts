@@ -3,13 +3,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
 import staffRouter from '../src/routes/staff-workspace';
-import { supabaseService } from '../src/lib/supabase';
+import { supabaseService,supabasePlatform } from '../src/lib/supabase';
 import { queueFilters, validDate, loadStaffQueue } from '../src/lib/staff-workspace';
 import { sameOriginOnly } from '../src/lib/security';
 
 const id = '00000000-0000-4000-8000-000000000001';
 test('exact submission detail requires staff, validates IDs and excludes submitter and tracking fields', async () => {
-  const original=supabaseService.from, originalRpc=supabaseService.rpc;
+  const original=supabaseService.from, originalRpc=supabaseService.rpc,originalPlatformRpc=supabasePlatform.rpc;
+  supabasePlatform.rpc=(async(name,args)=>{assert.equal(name,'assignment_action');assert.equal(args.p_action,'access');return {data:{allowed:true},error:null};}) as any;
   supabaseService.rpc=(async(name,args)=>{assert.equal(name,'staff_workflow_context');assert.equal(args.p_submission_id,id);return {data:{mode:'guided',paused:false,allowedActions:['approve','decline'],issues:[],canRepair:false},error:null};}) as any;
   let role:string|null=null, missing=false, failed=false;const selections:string[]=[],ids:string[]=[];
   supabaseService.from=((table)=>{assert.equal(table,'staff_submission_queue');return {
@@ -28,7 +29,7 @@ test('exact submission detail requires staff, validates IDs and excludes submitt
     assert.doesNotMatch(selections[0],/\*|user_id|tracking|email/);
     missing=true;assert.equal((await fetch(base+id)).status,404);missing=false;failed=true;
     const unavailable=await fetch(base+id);assert.equal(unavailable.status,503);assert.doesNotMatch(await unavailable.text(),/Database secret/);
-  }finally{supabaseService.from=original;supabaseService.rpc=originalRpc;server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
+  }finally{supabaseService.from=original;supabaseService.rpc=originalRpc;supabasePlatform.rpc=originalPlatformRpc;server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
 });
 test('staff filters normalize untrusted values and dates reject impossible calendar dates', () => {
   assert.deepEqual(queueFilters({status:'private', assignment:id, priority:'super', overdue:true, search:'  library  '}), {status:'pending', assignment:'all', priority:'all', overdue:'false', search:'library'});

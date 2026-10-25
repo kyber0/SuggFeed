@@ -56,6 +56,8 @@ function scopedFrom(client: typeof publicClient, table: string) {
   if (!businessTables.has(relation)) throw new Error('This table is not a school data source.');
   const publicRead = client === publicClient;
   if (publicRead && !['categories','submissions','comments'].includes(relation)) throw new Error('This relation is not public.');
+  const staffViews:Record<string,string>={submissions:'staff_assigned_submissions',staff_submission_queue:'staff_assignment_queue',staff_stale_work:'staff_assignment_stale',staff_internal_notes:'staff_assignment_notes',staff_workflow_history:'staff_assignment_history',idea_clarifications:'staff_assignment_clarifications'};
+  const restrictedView=!publicRead&&school.role==='moderator'&&(school.staffRead||['staff_submission_queue','staff_stale_work','staff_internal_notes','staff_workflow_history'].includes(relation))?staffViews[relation]:undefined;
   const builder = supabasePlatform.from(relation);
   return new Proxy(builder, {
     get(target, property) {
@@ -64,7 +66,10 @@ function scopedFrom(client: typeof publicClient, table: string) {
           if (publicRead && property !== 'select') throw new Error('Public data cannot be modified.');
           if (property === 'update' && args[0] && Object.prototype.hasOwnProperty.call(args[0], 'school_id')) throw new Error('School ownership cannot be changed.');
           if (table === 'profiles' && property !== 'select') throw new Error('Account changes require a verified owner operation.');
-          let query = (target as any)[property](...args).eq('school_id', school.id);
+          const readTarget=property==='select'&&restrictedView?supabasePlatform.from(restrictedView):target;
+          let query = (readTarget as any)[property](...args).eq('school_id', school.id);
+          if(property==='select'&&restrictedView)query=query.contains('assignment_staff_ids',[school.actorId]);
+          if(!publicRead&&school.role==='moderator'&&relation==='reports')query=query.eq('user_id',school.actorId);
           if (publicRead && relation === 'submissions') query=query.in('status',['approved','in_progress','resolved']).eq('safety_state','clear');
           if (!publicRead && relation === 'submissions' && school.role==='moderator') query=query.eq('safety_state','clear');
           if (publicRead && relation === 'categories') query=query.eq('is_active',true);

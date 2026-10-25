@@ -73,6 +73,7 @@ router.get('/reviews', requireStaff, asyncHandler(async (req, res) => {
 router.get(
   "/analytics",
   requireStaff,
+  (req,res,next)=>schoolUser(req)?.role==='admin'?next():res.redirect('/admin/assignments'),
   asyncHandler(async (req: Request, res: Response) => {
     const [counts, analytics] = await Promise.all([
       loadModerationCounts(),

@@ -26,7 +26,8 @@
     "build:animations": "node scripts/build-animations.cjs",
     "lint:moderation": "eslint --config eslint.moderation.config.mjs src/lib/comment-moderation*.ts src/lib/comments.ts src/client/comment-edit.ts src/lib/content-*.ts src/lib/*-rules.ts src/lib/submission-safety.ts src/lib/safety-email.ts src/routes/submission-safety.ts src/client/submission-safety.ts",
     "build:knowledge": "node scripts/build-assistant.cjs",
-    "lint:assistant": "eslint --config eslint.assistant.config.mjs src/lib/assistant/*.ts src/routes/assistant*.ts src/client/assistant*.ts"
+    "lint:assistant": "eslint --config eslint.assistant.config.mjs src/lib/assistant/*.ts src/routes/assistant*.ts src/client/assistant*.ts",
+    "lint:assignments": "eslint --config eslint.assignment.config.mjs src/lib/assignment/*.ts src/routes/assignments.ts src/client/assignments.ts"
   },
   "dependencies": {
     "@google/genai": "2.31.0",

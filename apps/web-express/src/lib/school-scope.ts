@@ -9,6 +9,7 @@ export interface SchoolScope {
   name: string;
   actorId: string | null;
   role: 'student' | 'moderator' | 'admin' | null;
+  staffRead?:boolean;
   customization?:SchoolCustomization;
   customizationVersion?:number;
   contentRevision?:string;

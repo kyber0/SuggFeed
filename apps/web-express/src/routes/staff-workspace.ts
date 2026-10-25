@@ -1,3 +1,4 @@
+import { assignmentAction,AssignmentError } from '../lib/assignment/service';
 import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from 'express';
 import { supabaseService } from '../lib/supabase';
@@ -8,7 +9,7 @@ import {ProgressError} from '../lib/progress';
 import {sanitizeSearch} from '../lib/data';
 
 const router = Router();
-const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { fn(req, res).catch(error=>error instanceof ProgressError?res.status(error.status).json({success:false,error:error.message,code:error.code}):next(error)); };
+const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { (async()=>{if(schoolUser(req)?.role==='moderator'&&req.params.id&&UUID.test(String(req.params.id)))await assignmentAction(schoolUser(req)!.id,'access',{kind:'suggestion',id:req.params.id});return fn(req,res);})().catch(error=>error instanceof AssignmentError?res.status(error.status).json({success:false,error:error.message}):error instanceof ProgressError?res.status(error.status).json({success:false,error:error.message,code:error.code}):next(error)); };
 router.use((req, res, next) => {
   res.setHeader('Cache-Control', 'private, no-store');
   if (!schoolUser(req)) return res.status(401).json({ success: false, error: 'Sign in to the staff portal.' });
@@ -40,7 +41,7 @@ router.get('/submission-search',run(async(req,res)=>{
 router.post('/submissions/:id/actions',run(async(req,res)=>{
   const began=Date.now(),action=WORK_ACTIONS.includes(req.body?.action)?req.body.action:'invalid';
   try{const result=await performAction(req.params.id as string,schoolUser(req)!.id,req.body);console.info(JSON.stringify({event:'workflow_action',action,result:result.replayed?'replayed':'saved',durationMs:Date.now()-began}));return res.json({success:true,...result});}
-  catch(error){console.warn(JSON.stringify({event:'workflow_action',action,result:'failed',code:error instanceof ProgressError?error.code || 'INVALID_ACTION':'UNEXPECTED',durationMs:Date.now()-began}));throw error;}
+  catch(error){console.warn(JSON.stringify({event:'workflow_action',action,result:'failed',code:error instanceof AssignmentError?'ASSIGNMENT_DENIED':error instanceof ProgressError?error.code || 'INVALID_ACTION':'UNEXPECTED',durationMs:Date.now()-began}));throw error;}
 }));
 router.post('/submissions/:id/work-dates',run(async(req,res)=>res.json({success:true,...await repairDates(req.params.id as string,schoolUser(req)!.id,req.body)})));
 router.get('/analytics', run(async (req, res) => {

@@ -299,6 +299,9 @@
         message.classList.remove('is-success');
         document.getElementById('review-dismiss').textContent = 'Cancel';
         document.getElementById('review-title').textContent = item.title;
+        const ownership = document.getElementById('review-assignment-link');
+        if (ownership)
+            ownership.href = sfSchoolPath('/admin/assignments?view=history&kind=suggestion&id=' + encodeURIComponent(item.id));
         document.getElementById('review-description').textContent = item.description;
         document.getElementById('review-meta').textContent = item.category + ' · Received ' + new Date(item.created_at).toLocaleDateString('en-PH', { dateStyle: 'medium' }) + ' · Submission ID: ' + item.id;
         let clarification = document.getElementById('review-clarification-link');

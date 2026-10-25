@@ -24,6 +24,7 @@
   <a class="staff-nav-item<%= activeSection==='community'?' is-current':'' %>" href="/admin/community" aria-current="<%= activeSection==='community'?'page':'false' %>"><%~ icon('care') %> Community</a>
   <% if(it.user?.role==='admin') { %><a class="staff-nav-item" href="/admin/safety"><%~ icon('shield') %> Safety review</a><% } %>
   </nav>
+  <a class="staff-nav-item<%= activeSection==='assignments'?' is-current':'' %>" href="/admin/assignments"><%~ icon('users') %> <%= it.user?.role==='admin'?'Assignment routing':'My assigned items' %></a>
   <p class="workspace-kicker">MANAGEMENT</p><nav aria-label="School management">
   <a class="staff-nav-item<%= activeSection==='analytics'?' is-current':'' %>" href="/admin/analytics"><%~ icon('chart') %> Analytics</a>
   <% if(it.user?.role==='admin') { %>
