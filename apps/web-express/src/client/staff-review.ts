@@ -96,7 +96,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     const names:Record<string,string>={approve:'Approve',decline:'Decline',start:'Start work',update:'Publish update',milestone:'Record milestone',pause:'Pause work',resume:'Resume work',complete:'Complete with evidence',correction:'Correct an update',reopen:'Reopen work',withdraw:'Withdraw public idea'};
     const more=document.createElement('details'),caption=document.createElement('summary');caption.textContent='Other actions';more.className='workflow-secondary';more.append(caption);
     const primary=active.status==='pending'?['approve','decline']:active.status==='approved'?['start']:context.allowedActions.includes('resume')?['resume','complete']:active.status==='in_progress'?['update','complete']:['reopen','correction'];
-    for(const action of context.allowedActions){if(mode==='review'&&(active.status!=='pending'||!['approve','decline'].includes(action))||mode==='work'&&['approve','decline'].includes(action))continue;if(group&&action!==groupAction(active))continue;const button=document.createElement('button');button.type='button';button.className='workspace-button';button.textContent=names[action];button.dataset.workflowAction=action;(primary.includes(action)?actions:more).append(button);}
+    for(const action of context.allowedActions){if(mode==='review'&&(active.status!=='pending'||!['approve','decline'].includes(action))||mode==='work'&&['approve','decline'].includes(action))continue;if(group&&action!==groupAction(active))continue;const button=document.createElement('button');button.type='button';button.className='workspace-button';if(action===primary[0]||group)button.classList.add('workspace-button--primary');if(action==='decline')button.classList.add('staff-action-decline');button.textContent=names[action];button.dataset.workflowAction=action;(primary.includes(action)?actions:more).append(button);}
     if(mode!=='review'&&!group&&context.allowedActions.includes('withdraw')){const merge=document.createElement('a');merge.className='workspace-button';merge.textContent='Merge duplicate';merge.href=sfSchoolPath('/admin/community?section=clarifications&task=merge&idea='+encodeURIComponent(active.id));more.append(merge);}
     if(mode==='review'&&active.status==='pending'){
       const clarify=document.createElement('a');clarify.className='workspace-button';clarify.textContent='Request clarification';clarify.href=sfSchoolPath('/admin/community?section=clarifications&idea='+encodeURIComponent(active.id));actions.append(clarify);
@@ -122,7 +122,10 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
       button.setAttribute('aria-selected',String(selected)); button.tabIndex=selected?0:-1;
       if(selected && focus) button.focus();
     });
+    const changed=dialog.dataset.activePanel!==key;dialog.dataset.activePanel=key;
     dialog.querySelectorAll<HTMLElement>('[role="tabpanel"]').forEach(panel=>{panel.hidden=panel.id!=='review-panel-'+key;});
+    const progressFooter=document.getElementById('staff-progress-footer');if(progressFooter)progressFooter.hidden=key!=='progress';
+    if(changed){const scroll=dialog.querySelector<HTMLElement>('.staff-review-scroll');if(scroll)scroll.scrollTop=0;const panel=document.getElementById('review-panel-'+key);if(panel&&typeof panel.animate==='function'&&!matchMedia('(prefers-reduced-motion: reduce)').matches){(panel.getAnimations?.()||[]).forEach(animation=>animation.cancel());panel.animate([{opacity:.65,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],{duration:200,easing:'cubic-bezier(.22,1,.36,1)'});}}
     updateDraft();
   }
   const tabs=Array.from(dialog.querySelectorAll<HTMLButtonElement>('[data-review-tab]'));
@@ -158,12 +161,14 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     if(mode==='review'){const tab=dialog.querySelector<HTMLButtonElement>('[data-review-tab="progress"]');if(tab)tab.hidden=true;}
     const index=items.findIndex(i=>i.id===item.id);if(index>=0)items[index]=item;
     saved=false; fields.disabled=false; save.disabled=false; save.hidden=false; saveNext.hidden=false; saveNext.disabled=false;
-    save.textContent='Save assignment'; discardWarning.hidden=true; message.textContent=''; message.classList.remove('is-success');
-    document.getElementById('review-dismiss')!.textContent='Cancel';
+    save.textContent='Save planning'; discardWarning.hidden=true; message.textContent=''; message.classList.remove('is-success');
+    document.getElementById('review-dismiss')!.textContent='Close';
     document.getElementById('review-title')!.textContent=item.title;
     const ownership=document.getElementById('review-assignment-link') as HTMLAnchorElement|null;if(ownership)ownership.href=sfSchoolPath('/admin/assignments?view=history&kind=suggestion&id='+encodeURIComponent(item.id));
     document.getElementById('review-description')!.textContent=item.description;
-    document.getElementById('review-meta')!.textContent=item.category+' · Received '+new Date(item.created_at).toLocaleDateString('en-PH',{dateStyle:'medium'})+' · Submission ID: '+item.id;
+    const categoryLabel=document.getElementById('review-category');if(categoryLabel)categoryLabel.textContent=item.category;
+    const received=document.getElementById('review-received') as HTMLTimeElement|null;const receivedDate=new Date(item.created_at);if(received){received.textContent=Number.isFinite(receivedDate.getTime())?'Received '+receivedDate.toLocaleDateString('en-PH',{dateStyle:'medium'}):'Date unavailable';if(Number.isFinite(receivedDate.getTime()))received.dateTime=receivedDate.toISOString();else received.removeAttribute('datetime');}
+    document.getElementById('review-meta')!.textContent=item.category+' · '+(received?.textContent || 'Date unavailable')+' · Submission ID: '+item.id;
     let clarification=document.getElementById('review-clarification-link') as HTMLAnchorElement;
     if(!clarification){clarification=document.createElement('a');clarification.id='review-clarification-link';clarification.textContent='Request private clarification →';document.getElementById('review-meta')!.after(clarification);}
     clarification.href=sfSchoolPath('/admin/community?idea='+encodeURIComponent(item.id));
@@ -339,7 +344,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     } catch(error) {
       message.textContent=error instanceof Error && error.name!=='AbortError' && !(error instanceof TypeError)?error.message:'We could not confirm the save. Your draft is still here. Refresh the queue before retrying.';
     } finally {
-      clearTimeout(timer);busy=false;fields.disabled=saved;save.disabled=saved;saveNext.disabled=saved;save.textContent='Save assignment';
+      clearTimeout(timer);busy=false;fields.disabled=saved;save.disabled=saved;saveNext.disabled=saved;save.textContent='Save planning';
       form.removeAttribute('aria-busy');dialog.querySelectorAll<HTMLButtonElement>('[data-close-review]').forEach(b=>{b.disabled=false;});
       if(nextId)openReview(nextId);else{if(saved)void window.sfStaffProgress?.refresh();message.focus();}
     }
@@ -437,7 +442,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
       const badge=document.getElementById('review-current-status')!;badge.textContent=labels[active.status] || active.status;badge.dataset.status=active.status;
       saved=false;const posting=window.sfStaffProgress?.isBusy() || false;fields.disabled=posting;save.disabled=posting;saveNext.disabled=posting;
       const onProgress=dialog.querySelector('[data-review-tab="progress"]')?.getAttribute('aria-selected')==='true';
-      save.hidden=onProgress;saveNext.hidden=!isQueue || !items.some(i=>i.id===active?.id) || onProgress;document.getElementById('review-dismiss')!.textContent='Cancel';
+      save.hidden=onProgress;saveNext.hidden=!isQueue || !items.some(i=>i.id===active?.id) || onProgress;document.getElementById('review-dismiss')!.textContent='Close';
       updateHint();updateCount();return true;
     },
     confirmed(submission){

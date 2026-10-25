@@ -176,6 +176,10 @@
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'workspace-button';
+            if (action === primary[0] || group)
+                button.classList.add('workspace-button--primary');
+            if (action === 'decline')
+                button.classList.add('staff-action-decline');
             button.textContent = names[action];
             button.dataset.workflowAction = action;
             (primary.includes(action) ? actions : more).append(button);
@@ -233,7 +237,22 @@
             if (selected && focus)
                 button.focus();
         });
+        const changed = dialog.dataset.activePanel !== key;
+        dialog.dataset.activePanel = key;
         dialog.querySelectorAll('[role="tabpanel"]').forEach(panel => { panel.hidden = panel.id !== 'review-panel-' + key; });
+        const progressFooter = document.getElementById('staff-progress-footer');
+        if (progressFooter)
+            progressFooter.hidden = key !== 'progress';
+        if (changed) {
+            const scroll = dialog.querySelector('.staff-review-scroll');
+            if (scroll)
+                scroll.scrollTop = 0;
+            const panel = document.getElementById('review-panel-' + key);
+            if (panel && typeof panel.animate === 'function' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                (panel.getAnimations?.() || []).forEach(animation => animation.cancel());
+                panel.animate([{ opacity: .65, transform: 'translateY(5px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 200, easing: 'cubic-bezier(.22,1,.36,1)' });
+            }
+        }
         updateDraft();
     }
     const tabs = Array.from(dialog.querySelectorAll('[data-review-tab]'));
@@ -293,17 +312,29 @@
         save.hidden = false;
         saveNext.hidden = false;
         saveNext.disabled = false;
-        save.textContent = 'Save assignment';
+        save.textContent = 'Save planning';
         discardWarning.hidden = true;
         message.textContent = '';
         message.classList.remove('is-success');
-        document.getElementById('review-dismiss').textContent = 'Cancel';
+        document.getElementById('review-dismiss').textContent = 'Close';
         document.getElementById('review-title').textContent = item.title;
         const ownership = document.getElementById('review-assignment-link');
         if (ownership)
             ownership.href = sfSchoolPath('/admin/assignments?view=history&kind=suggestion&id=' + encodeURIComponent(item.id));
         document.getElementById('review-description').textContent = item.description;
-        document.getElementById('review-meta').textContent = item.category + ' · Received ' + new Date(item.created_at).toLocaleDateString('en-PH', { dateStyle: 'medium' }) + ' · Submission ID: ' + item.id;
+        const categoryLabel = document.getElementById('review-category');
+        if (categoryLabel)
+            categoryLabel.textContent = item.category;
+        const received = document.getElementById('review-received');
+        const receivedDate = new Date(item.created_at);
+        if (received) {
+            received.textContent = Number.isFinite(receivedDate.getTime()) ? 'Received ' + receivedDate.toLocaleDateString('en-PH', { dateStyle: 'medium' }) : 'Date unavailable';
+            if (Number.isFinite(receivedDate.getTime()))
+                received.dateTime = receivedDate.toISOString();
+            else
+                received.removeAttribute('datetime');
+        }
+        document.getElementById('review-meta').textContent = item.category + ' · ' + (received?.textContent || 'Date unavailable') + ' · Submission ID: ' + item.id;
         let clarification = document.getElementById('review-clarification-link');
         if (!clarification) {
             clarification = document.createElement('a');
@@ -703,7 +734,7 @@
             fields.disabled = saved;
             save.disabled = saved;
             saveNext.disabled = saved;
-            save.textContent = 'Save assignment';
+            save.textContent = 'Save planning';
             form.removeAttribute('aria-busy');
             dialog.querySelectorAll('[data-close-review]').forEach(b => { b.disabled = false; });
             if (nextId)
@@ -870,7 +901,7 @@
             const onProgress = dialog.querySelector('[data-review-tab="progress"]')?.getAttribute('aria-selected') === 'true';
             save.hidden = onProgress;
             saveNext.hidden = !isQueue || !items.some(i => i.id === active?.id) || onProgress;
-            document.getElementById('review-dismiss').textContent = 'Cancel';
+            document.getElementById('review-dismiss').textContent = 'Close';
             updateHint();
             updateCount();
             return true;

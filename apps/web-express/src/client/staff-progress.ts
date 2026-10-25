@@ -113,9 +113,9 @@ interface Window {
     }finally{clearTimeout(timer);}
   }
   function evidenceChanged(){
-    post.disabled=posting || !evidenceReady() || !!workflow && (workflow.paused || !workflow.allowedActions.some(action=>actionKind[action]===kind.value));filePicker.disabled=isBusy() || draftFiles.length>=5 || !!workflow?.paused;
+    post.disabled=loading || !snapshot || fields.disabled || posting || !evidenceReady() || !!workflow && (workflow.paused || !workflow.allowedActions.some(action=>actionKind[action]===kind.value));filePicker.disabled=isBusy() || draftFiles.length>=5 || !!workflow?.paused;
     refresh.disabled=loading || isBusy();
-    (document.getElementById('staff-progress-clear') as HTMLButtonElement).disabled=isBusy();
+    (document.getElementById('staff-progress-clear') as HTMLButtonElement).disabled=isBusy() || loading;
     document.getElementById('staff-progress-evidence-count')!.textContent=draftFiles.length+' / 5 files';
     previewFiles.replaceChildren();
     for(const file of draftFiles){const link=file.evidence && evidenceLink(file.evidence);if(link)previewFiles.append(link);}
@@ -225,17 +225,18 @@ interface Window {
     const isCompleted=kind.value==='completed';
     if(workflow){
       document.getElementById('staff-progress-evidence-title')!.textContent=isCompleted?'Evidence · required for completion':'Evidence · optional';
-      (document.getElementById('staff-progress-advanced') as HTMLDetailsElement).open=true;
+
       if(kind.value==='decline')document.getElementById('staff-progress-audience-hint')!.textContent='This decision is retained for the submitter’s status tracking. It is not published on the public roadmap.';
       if(kind.value==='reopened')document.getElementById('staff-progress-percent-hint')!.textContent='Blank resets current progress to not estimated. Previous completion events remain in history.';
     }
     percent.disabled=staffOnly || isCompleted || ['approve','decline','withdrawn'].includes(kind.value) || (snapshot?.status==='resolved' && kind.value!=='reopened');
+    const percentField=document.getElementById('staff-progress-percent-field');if(percentField)percentField.hidden=percent.disabled;
     percent.querySelector<HTMLOptionElement>('option[value="100"]')!.disabled=!isCompleted;
     if(isCompleted && !staffOnly)percent.value='100';
     notify.disabled=staffOnly;document.getElementById('staff-progress-notify-field')!.hidden=staffOnly;
     document.getElementById('staff-progress-percent-hint')!.textContent=kind.value==='reopened'?'Blank resets current progress to not estimated; previous completion history remains.':staffOnly?'Staff-only updates do not change public progress.':isCompleted?'Completion sets public progress to 100% and clears the paused state.':snapshot?.status==='resolved'?'Completed ideas keep their completion estimate. Reopen the idea to change progress.':'Blank keeps the current estimate. Use increments of 5%.';
     document.getElementById('staff-progress-count')!.textContent=body.value.length+' / 600';
-    document.getElementById('staff-progress-preview-title')!.textContent=staffOnly?'Staff-only preview':'Public preview';
+    document.getElementById('staff-progress-preview-title')!.textContent=kind.value==='decline'?'Decision preview':staffOnly?'Staff-only preview':'Public preview';
     const preview=document.getElementById('staff-progress-preview')!;preview.dataset.visibility=visibility.value;
     document.getElementById('staff-progress-preview-kind')!.textContent=labels[kind.value] || 'Progress update';
     document.getElementById('staff-progress-preview-body')!.textContent=body.value.trim() || 'Your update will appear here before you publish it.';
@@ -243,8 +244,9 @@ interface Window {
     const previewMeta=[date.value?dateText(date.value):'Choose an event date'];
     if((!staffOnly && percent.value && !percent.disabled) || (!staffOnly && isCompleted))previewMeta.push(percent.value+'% complete');
     if(kind.value==='blocked' && blocked.value)previewMeta.push('Blocked: '+reasons[blocked.value]);
-    previewMeta.push(staffOnly?'Staff only':'Posted by the school');
+    previewMeta.push(kind.value==='decline'?'Private decision':staffOnly?'Staff only':'Posted by the school');
     document.getElementById('staff-progress-preview-meta')!.textContent=previewMeta.join(' · ');
+    const readiness=document.getElementById('staff-progress-readiness');if(readiness)readiness.textContent=loading?'Loading current details…':posting?'Saving your update…':!body.value.trim()?'Add a clear explanation to continue.':!evidenceReady()?'Upload or remove pending evidence.':kind.value==='decline'?'Private decision · review before saving':staffOnly?'Staff only · review before saving':'Public update · review before publishing';
     post.textContent=posting?'Saving…':workflow?labels[kind.value] || 'Save action':staffOnly?'Post staff update':kind.value==='correction'?'Publish correction':'Publish update';
     evidenceChanged();host?.changed();
   }
@@ -254,7 +256,7 @@ interface Window {
     summary.textContent=progress+(snapshot.is_blocked?' · Work is blocked':'')+(snapshot.status==='resolved'?' · Completed':'');summary.hidden=false;
   }
   function drawHistory(updates:ProgressEvent[]){
-    history.replaceChildren();document.getElementById('staff-progress-history-limit')!.hidden=updates.length<100;
+    history.replaceChildren();const count=document.getElementById('staff-progress-history-count');if(count)count.textContent=updates.length?String(updates.length):'No updates yet';document.getElementById('staff-progress-history-limit')!.hidden=updates.length<100;
     if(!updates.length){history.append(sfEmptyState({compact:true,icon:'calendar',heading:'The work story starts here',description:'Use the update form to share a verified milestone, blocker, or completed improvement when there is news.'}));return;}
     for(const update of updates){
       const article=document.createElement('article');article.className='staff-progress-event';article.dataset.visibility=update.visibility;
@@ -285,7 +287,7 @@ interface Window {
   async function load(){
     if(!active || isBusy())return;
     controller?.abort();const request=new AbortController();controller=request;const ownGeneration=generation;
-    const timer=setTimeout(()=>request.abort(),20000);loading=true;refresh.disabled=true;fields.disabled=true;
+    const timer=setTimeout(()=>request.abort(),20000);loading=true;refresh.disabled=true;fields.disabled=true;refresh.setAttribute('aria-busy','true');evidenceChanged();
     state.textContent='Loading progress and update history…';history.setAttribute('aria-busy','true');
     try{
       const response=await sfSchoolFetch('/staff/workspace/'+encodeURIComponent(active.id)+'/updates',{headers:{Accept:'application/json'},cache:'no-store',signal:request.signal});
@@ -303,7 +305,7 @@ interface Window {
       state.textContent=!synchronized?'The review has unsaved changes and a newer version is available. Save or discard those changes before posting progress.':!published()?'This idea is not public. Approve it in Review before posting updates to the community.':'';
       fields.disabled=false;
     }catch(error){if(generation===ownGeneration && controller===request)state.textContent=error instanceof Error && error.name!=='AbortError'?error.message:'Progress request timed out. Use Refresh to retry; your draft is safe.';}
-    finally{clearTimeout(timer);if(generation===ownGeneration && controller===request){loading=false;refresh.disabled=false;history.removeAttribute('aria-busy');}}
+    finally{clearTimeout(timer);if(generation===ownGeneration && controller===request){loading=false;refresh.disabled=false;history.removeAttribute('aria-busy');refresh.removeAttribute('aria-busy');updateComposer();}}
   }
   for(const input of [kind,visibility,body,percent,blocked,nextStep,date,notify])input.addEventListener('input',()=>{setMessage('');updateComposer();});
   filePicker.addEventListener('change',()=>{
@@ -366,7 +368,7 @@ interface Window {
   window.sfStaffProgress={
     bind(value){host=value;},
     open(item){generation++;controller?.abort();active=item;workflow=(item as typeof active).workflow;snapshot=undefined;baseline='';history.replaceChildren();summary.hidden=true;fields.disabled=true;setMessage('');resetDraft();void load();},
-    prepareAction(action){prepared=action;if(workflow)setWorkflow(workflow);updateComposer();body.focus();},
+    prepareAction(action){(document.getElementById('staff-progress-advanced') as HTMLDetailsElement).open=['start','complete','reopen'].includes(action);prepared=action;if(workflow)setWorkflow(workflow);updateComposer();body.focus();},
     refresh:load,hasDraft,isBusy,
     focusDraft(){body.focus();},
     close(){generation++;controller?.abort();discardEvidence();draftRequestId=undefined;active=undefined;snapshot=undefined;baseline='';retry=undefined;loading=false;}

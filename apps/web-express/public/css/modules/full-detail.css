@@ -1,17 +1,17 @@
 /* Full-width detail workspaces. Only these two native dialogs are affected. */
 .workspace-dialog#roadmap-dialog,
-.workspace-dialog#staff-review-dialog {
+.workspace-dialog#staff-review-dialog:not([data-detail-mode]) {
   --detail-gutter:max(24px,calc((100vw - 1280px)/2));
   position:fixed; inset:0; margin:0; width:100%; max-width:100%;
   height:100dvh; max-height:100dvh; border:0; border-radius:0;
   background:var(--surface); overflow:hidden;
 }
 .workspace-dialog#roadmap-dialog[open],
-.workspace-dialog#staff-review-dialog[open] { display:flex; flex-direction:column; transform:none; }
+.workspace-dialog#staff-review-dialog:not([data-detail-mode])[open] { display:flex; flex-direction:column; transform:none; }
 .workspace-dialog#roadmap-dialog:not([open]),
-.workspace-dialog#staff-review-dialog:not([open]) { display:none; }
+.workspace-dialog#staff-review-dialog:not([data-detail-mode]):not([open]) { display:none; }
 .workspace-dialog#roadmap-dialog .workspace-dialog-header,
-.workspace-dialog#staff-review-dialog .workspace-dialog-header {
+.workspace-dialog#staff-review-dialog:not([data-detail-mode]) .workspace-dialog-header {
   position:static; flex:none; padding:14px var(--detail-gutter);
   background:var(--surface); border-bottom:1px solid var(--line);
 }
@@ -35,44 +35,44 @@
 .workspace-dialog#roadmap-dialog .roadmap-drawer-footer p { max-width:36ch; }
 
 /* Persistent review heading, tabs and action bar surround one scroll region. */
-.workspace-dialog#staff-review-dialog .workspace-dialog-header { padding:6px var(--detail-gutter); gap:16px; }
-#staff-review-dialog .staff-review-heading-title { display:flex; flex:1; flex-wrap:wrap; gap:4px 10px; align-items:center; min-width:0; }
-#staff-review-dialog #review-title { font-size:18px; margin:0; line-height:1.3; min-width:0; overflow-wrap:anywhere; }
-#staff-review-dialog .workspace-dialog-header > button { flex:none; width:44px; height:44px; min-height:44px; padding:0; }
-#staff-review-dialog .staff-review-heading-title .workspace-status { font-size:11px; flex:none; }
-#staff-review-dialog .staff-review-details { margin:0 var(--detail-gutter); padding:0; border-bottom:1px solid var(--line); font-size:12px; }
-#staff-review-dialog .staff-review-details summary { display:list-item; width:fit-content; min-height:44px; padding:12px 0; box-sizing:border-box; cursor:pointer; color:var(--muted); }
-#staff-review-dialog .staff-review-details :is(p,.staff-review-position) { margin:0 0 8px; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
-#staff-review-dialog #review-clarification-link { min-height:44px; display:inline-flex; align-items:center; font-size:12px; }
-#staff-review-dialog .staff-review-tabs { padding-inline:var(--detail-gutter); gap:28px; overflow-x:auto; }
-#staff-review-dialog .staff-review-tabs button { white-space:nowrap; }
-#staff-review-dialog .staff-review-scroll { background:var(--bg); }
-#staff-review-dialog .staff-review-panel { padding:26px var(--detail-gutter) 40px; }
-#staff-review-dialog #review-panel-decision { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:32px; align-items:start; }
-#staff-review-dialog .staff-review-context { min-width:0; padding:24px; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
-#staff-review-dialog .staff-review-context h3 { margin-top:0; font-size:15px; }
-#staff-review-dialog .staff-review-context .workspace-description { margin-top:14px; max-width:100%; font-size:15px; padding-bottom:18px; }
-#staff-review-dialog .staff-review-context .staff-footnote { margin-top:16px; line-height:1.65; }
-#staff-review-dialog #staff-review-form { min-width:0; padding:24px; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
-#staff-review-dialog #staff-review-form > .workspace-field-label:first-child { margin-top:0; }
-#staff-review-dialog .staff-review-footer { padding:14px var(--detail-gutter) max(16px,env(safe-area-inset-bottom)); }
-#staff-review-dialog .staff-review-footer #review-draft-state { margin-right:auto; }
-#staff-review-dialog .staff-notes-layout,
-#staff-review-dialog .staff-progress-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:32px; align-items:start; margin-top:22px; }
-#staff-review-dialog :is(.staff-notes-layout,.staff-progress-layout) > :is(form,section) { min-width:0; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:16px; }
-#staff-review-dialog .staff-notes-layout .workspace-field-label:first-child { margin-top:0; }
-#staff-review-dialog .staff-progress-layout .staff-progress-history-heading { margin-top:0; }
-#staff-review-dialog .staff-progress-layout > section { margin:0; }
-#staff-review-dialog #review-panel-history .staff-activity-list { max-width:900px; }
-#staff-review-dialog #review-panel-history .staff-panel-heading { max-width:900px; }
-#staff-review-dialog .staff-review-panel[hidden] { display:none; }
+.workspace-dialog#staff-review-dialog:not([data-detail-mode]) .workspace-dialog-header { padding:6px var(--detail-gutter); gap:16px; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-heading-title { display:flex; flex:1; flex-wrap:wrap; gap:4px 10px; align-items:center; min-width:0; }
+#staff-review-dialog:not([data-detail-mode]) #review-title { font-size:18px; margin:0; line-height:1.3; min-width:0; overflow-wrap:anywhere; }
+#staff-review-dialog:not([data-detail-mode]) .workspace-dialog-header > button { flex:none; width:44px; height:44px; min-height:44px; padding:0; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-heading-title .workspace-status { font-size:11px; flex:none; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-details { margin:0 var(--detail-gutter); padding:0; border-bottom:1px solid var(--line); font-size:12px; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-details summary { display:list-item; width:fit-content; min-height:44px; padding:12px 0; box-sizing:border-box; cursor:pointer; color:var(--muted); }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-details :is(p,.staff-review-position) { margin:0 0 8px; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+#staff-review-dialog:not([data-detail-mode]) #review-clarification-link { min-height:44px; display:inline-flex; align-items:center; font-size:12px; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-tabs { padding-inline:var(--detail-gutter); gap:28px; overflow-x:auto; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-tabs button { white-space:nowrap; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-scroll { background:var(--bg); }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-panel { padding:26px var(--detail-gutter) 40px; }
+#staff-review-dialog:not([data-detail-mode]) #review-panel-decision { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:32px; align-items:start; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-context { min-width:0; padding:24px; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-context h3 { margin-top:0; font-size:15px; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-context .workspace-description { margin-top:14px; max-width:100%; font-size:15px; padding-bottom:18px; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-context .staff-footnote { margin-top:16px; line-height:1.65; }
+#staff-review-dialog:not([data-detail-mode]) #staff-review-form { min-width:0; padding:24px; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
+#staff-review-dialog:not([data-detail-mode]) #staff-review-form > .workspace-field-label:first-child { margin-top:0; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-footer { padding:14px var(--detail-gutter) max(16px,env(safe-area-inset-bottom)); }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-footer #review-draft-state { margin-right:auto; }
+#staff-review-dialog:not([data-detail-mode]) .staff-notes-layout,
+#staff-review-dialog:not([data-detail-mode]) .staff-progress-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:32px; align-items:start; margin-top:22px; }
+#staff-review-dialog:not([data-detail-mode]) :is(.staff-notes-layout,.staff-progress-layout) > :is(form,section) { min-width:0; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:16px; }
+#staff-review-dialog:not([data-detail-mode]) .staff-notes-layout .workspace-field-label:first-child { margin-top:0; }
+#staff-review-dialog:not([data-detail-mode]) .staff-progress-layout .staff-progress-history-heading { margin-top:0; }
+#staff-review-dialog:not([data-detail-mode]) .staff-progress-layout > section { margin:0; }
+#staff-review-dialog:not([data-detail-mode]) #review-panel-history .staff-activity-list { max-width:900px; }
+#staff-review-dialog:not([data-detail-mode]) #review-panel-history .staff-panel-heading { max-width:900px; }
+#staff-review-dialog:not([data-detail-mode]) .staff-review-panel[hidden] { display:none; }
 
 @media(max-width:960px) {
-  .workspace-dialog#roadmap-dialog,.workspace-dialog#staff-review-dialog { --detail-gutter:24px; }
+  .workspace-dialog#roadmap-dialog,.workspace-dialog#staff-review-dialog:not([data-detail-mode]) { --detail-gutter:24px; }
   #roadmap-dialog #roadmap-detail-content,
-  #staff-review-dialog #review-panel-decision,
-  #staff-review-dialog .staff-notes-layout,
-  #staff-review-dialog .staff-progress-layout { grid-template-columns:minmax(0,1fr); gap:24px; }
+  #staff-review-dialog:not([data-detail-mode]) #review-panel-decision,
+  #staff-review-dialog:not([data-detail-mode]) .staff-notes-layout,
+  #staff-review-dialog:not([data-detail-mode]) .staff-progress-layout { grid-template-columns:minmax(0,1fr); gap:24px; }
   .workspace-dialog#roadmap-dialog .roadmap-drawer-footer { flex-direction:column; align-items:stretch; gap:10px; }
   .workspace-dialog#roadmap-dialog .roadmap-detail-actions { display:grid; grid-template-columns:1fr 1fr; }
   .workspace-dialog#roadmap-dialog #roadmap-detail-link { grid-column:1 / -1; min-width:0; }
@@ -80,17 +80,17 @@
   .workspace-dialog#roadmap-dialog .roadmap-drawer-footer p { max-width:none; }
 }
 @media(max-width:600px) {
-  .workspace-dialog#roadmap-dialog,.workspace-dialog#staff-review-dialog { --detail-gutter:18px; }
+  .workspace-dialog#roadmap-dialog,.workspace-dialog#staff-review-dialog:not([data-detail-mode]) { --detail-gutter:18px; }
   .workspace-dialog#roadmap-dialog .workspace-dialog-body { padding-top:22px; }
   .workspace-dialog#roadmap-dialog .roadmap-public-history { padding:18px; }
-  #staff-review-dialog .staff-review-context,#staff-review-dialog #staff-review-form,
-  #staff-review-dialog :is(.staff-notes-layout,.staff-progress-layout) > :is(form,section) { padding:18px; }
-  #staff-review-dialog .staff-review-tabs { gap:18px; }
+  #staff-review-dialog:not([data-detail-mode]) .staff-review-context,#staff-review-dialog:not([data-detail-mode]) #staff-review-form,
+  #staff-review-dialog:not([data-detail-mode]) :is(.staff-notes-layout,.staff-progress-layout) > :is(form,section) { padding:18px; }
+  #staff-review-dialog:not([data-detail-mode]) .staff-review-tabs { gap:18px; }
 }
-@media(min-width:961px) and (min-height:700px) { #staff-review-dialog .staff-review-context { position:sticky; top:24px; } }
+@media(min-width:961px) and (min-height:700px) { #staff-review-dialog:not([data-detail-mode]) .staff-review-context { position:sticky; top:24px; } }
 @media(max-height:650px) {
-  #staff-review-dialog .staff-review-heading { padding-top:8px; }
-  #staff-review-dialog .staff-review-heading h2 { font-size:20px; margin:0; }
+  #staff-review-dialog:not([data-detail-mode]) .staff-review-heading { padding-top:8px; }
+  #staff-review-dialog:not([data-detail-mode]) .staff-review-heading h2 { font-size:20px; margin:0; }
 }
 .workflow-guidance { margin-top:20px; padding:16px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
 #workflow-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start; }

@@ -42,6 +42,6 @@
 </div>
 <%~ include('partials/staff-work-detail',{...it,staffMembers:it.members}) %>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
-<script defer src="/js/staff-progress.js?v=20261025-staff-flow"></script>
-<script defer src="/js/staff-review.js?v=20261025-assignment"></script>
+<script defer src="/js/staff-progress.js?v=20261025-detail-polish"></script>
+<script defer src="/js/staff-review.js?v=20261025-detail-polish"></script>
 </main>

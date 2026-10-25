@@ -1,0 +1,126 @@
+/* Focused staff sheets: compact chrome, one scrolling content area, one action bar. */
+#staff-review-dialog[data-detail-mode] {
+  background:var(--surface); border:1px solid var(--line); color:var(--ink);
+  box-shadow:0 24px 80px #0002; padding:0;
+}
+#staff-review-dialog[data-detail-mode=work] {inset:0;width:min(1140px,calc(100% - 48px));height:min(900px,calc(100dvh - 40px));}
+#staff-review-dialog[data-detail-mode=review] {width:min(780px,100%);}
+#staff-review-dialog[data-detail-mode]::backdrop {background:color-mix(in srgb,var(--ink) 28%,transparent);}
+#staff-review-dialog[data-detail-mode] .staff-detail-topbar {display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 22px;border-bottom:1px solid var(--line);background:var(--surface);}
+.staff-detail-location,.staff-detail-topbar-actions {display:flex;align-items:center;gap:12px;min-width:0;}
+.staff-detail-emblem {display:grid;place-items:center;width:34px;height:34px;flex:none;border:1px solid var(--line);border-radius:10px;background:var(--sky);color:var(--navy);}
+#staff-review-dialog .staff-detail-purpose {font-size:13px;font-weight:650;letter-spacing:0;text-transform:none;margin:0;color:var(--ink);}
+#staff-review-dialog .staff-review-position {font-size:11px;margin:3px 0 0;line-height:1.3;}
+.staff-detail-topbar-actions .workspace-icon-button {width:36px;height:36px;min-width:36px;min-height:36px;border-radius:10px;font-size:23px;}
+#staff-review-dialog[data-detail-mode] .staff-review-tabs {padding:6px 22px 0;gap:22px;background:var(--surface);}
+#staff-review-dialog[data-detail-mode] .staff-review-tabs button {font-size:12px;min-height:42px;gap:6px;}
+#staff-review-dialog .staff-review-tabs .workspace-tag {font-size:9px;padding:2px 5px;min-height:0;}
+#staff-review-dialog[data-detail-mode] .staff-review-scroll {flex:1;padding:24px;background:var(--bg);scrollbar-gutter:stable;}
+.staff-detail-intro {margin:0 0 24px;}
+#staff-review-dialog[data-detail-mode] #review-title {font-size:clamp(20px,2vw,27px);line-height:1.35;letter-spacing:-.035em;margin:0 0 10px;font-weight:700;max-width:65ch;}
+.staff-detail-meta {display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;line-height:1.6;color:var(--ink-2);}
+.staff-detail-meta #review-category {font-weight:600;color:var(--navy);}
+#staff-review-dialog[data-detail-mode] .staff-review-details {margin:0 0 0 auto;border:0;border-radius:0;padding:0;font-size:12px;}
+#staff-review-dialog .staff-review-details summary {font-size:12px;min-height:28px;color:var(--ink-2);cursor:pointer;}
+#staff-review-dialog .staff-review-details[open] {width:100%;padding:10px 0;border-top:1px solid var(--line);}
+#staff-review-dialog .staff-review-details p {font-size:11px;overflow-wrap:anywhere;margin:8px 0;}
+#staff-review-dialog .staff-review-details a {font-size:12px;}
+#staff-review-dialog[data-detail-mode] #review-panel-decision {display:grid;grid-template-columns:minmax(0,1.35fr) minmax(250px,1fr);gap:20px;align-items:start;}
+#staff-review-dialog[data-detail-mode=review] #review-panel-decision {grid-template-columns:minmax(0,1fr);}
+.staff-review-context {background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;min-width:0;}
+.staff-section-label,.staff-action-eyebrow {display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin:0 0 14px;}
+#staff-review-dialog .staff-review-context>.workspace-description {font-size:14px;line-height:1.85;margin:0;color:var(--ink);overflow-wrap:anywhere;}
+.staff-action-rail {display:grid;gap:14px;min-width:0;}
+#staff-review-dialog[data-detail-mode] .workflow-guidance {margin:0;padding:20px;border:1px solid color-mix(in srgb,var(--navy) 18%,var(--line));border-radius:16px;background:var(--sky);}
+.staff-action-eyebrow {color:var(--navy);margin-bottom:8px;}
+#staff-review-dialog #workflow-guidance-title {font-size:18px;line-height:1.4;margin:0 0 8px;letter-spacing:-.025em;}
+#staff-review-dialog #workflow-state {font-size:13px;line-height:1.7;color:var(--ink-2);margin:0 0 16px;}
+#staff-review-dialog #workflow-actions {display:flex;gap:8px;flex-wrap:wrap;}
+#staff-review-dialog #workflow-actions>.workspace-button {min-height:42px;font-size:12px;padding:10px 14px;}
+#staff-review-dialog[data-detail-mode=review] #workflow-actions>.workspace-button {flex:1;min-width:130px;}
+#staff-review-dialog .staff-action-decline {color:var(--error);background:var(--surface);}
+#staff-review-dialog .workflow-secondary {width:100%;font-size:12px;}
+#staff-review-dialog .workflow-secondary summary {min-height:36px;display:flex;align-items:center;cursor:pointer;color:var(--ink-2);}
+#staff-review-dialog[data-detail-mode] .staff-coordination {margin:0;padding:16px;background:var(--surface);border-radius:14px;}
+.staff-coordination>summary {font-size:13px;}
+#staff-review-dialog .staff-review-workflow {display:grid;grid-template-columns:minmax(0,1fr);gap:14px;}
+#staff-review-dialog .staff-review-workflow label {font-size:12px;}
+#staff-review-dialog .staff-coordination .staff-footnote {font-size:12px;line-height:1.6;}
+.staff-recorded-decision {margin-top:18px;padding-top:12px;border-top:1px solid var(--line);}
+.staff-recorded-decision>summary {min-height:36px;font-size:12px;font-weight:600;cursor:pointer;}
+.staff-recorded-decision[open]>summary {margin-bottom:12px;}
+#staff-review-dialog .staff-work-facts {background:var(--bg);margin:22px 0 0;padding:16px;gap:18px;border-radius:12px;}
+#staff-review-dialog .staff-work-facts dd {font-size:13px;}
+#staff-review-dialog .staff-panel-heading {align-items:flex-start;gap:12px;margin-bottom:16px;}
+#staff-review-dialog .staff-panel-title {font-size:17px;line-height:1.4;letter-spacing:-.02em;}
+#staff-review-dialog .staff-panel-copy {font-size:13px;line-height:1.6;max-width:65ch;}
+#staff-review-dialog #staff-progress-state:empty {display:none;}
+#staff-review-dialog .staff-progress-summary {border:1px solid var(--line);background:var(--surface);padding:10px 14px;border-radius:10px;font-size:12px;margin:0 0 18px;}
+#staff-review-dialog .staff-progress-layout {display:grid;grid-template-columns:minmax(0,1.35fr) minmax(250px,1fr);gap:20px;align-items:start;}
+#staff-review-dialog[data-detail-mode=review] .staff-progress-layout {display:grid;grid-template-columns:minmax(0,1fr);}
+#staff-review-dialog .staff-progress-form {min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;}
+#staff-review-dialog .staff-progress-legend {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+.staff-compose-step {display:flex;align-items:center;gap:9px;font-size:11px;font-weight:600;color:var(--navy);margin:2px 0 16px;}
+.staff-compose-step span {color:var(--ink);font-size:13px;}
+.staff-compose-step:not(:first-of-type) {margin-top:24px;border-top:1px solid var(--line);padding-top:20px;}
+#staff-review-dialog .staff-progress-grid {gap:14px;margin-bottom:12px;}
+#staff-review-dialog .staff-progress-grid label {font-size:12px;}
+#staff-review-dialog .staff-progress-form .workspace-input {border-radius:10px;font-size:14px;line-height:1.6;}
+#staff-review-dialog #staff-progress-body {min-height:150px;resize:vertical;}
+#staff-review-dialog .staff-note-footer {gap:10px;font-size:11px;line-height:1.5;}
+#staff-review-dialog #staff-progress-count {flex:none;font-variant-numeric:tabular-nums;}
+#staff-review-dialog .staff-progress-form .staff-privacy-hint {background:var(--bg);padding:10px 12px;font-size:12px;border-radius:10px;line-height:1.6;}
+#staff-review-dialog .staff-progress-advanced {border:1px solid var(--line);border-radius:12px;padding:0 14px;margin:18px 0;}
+#staff-review-dialog .staff-progress-advanced summary {padding:13px 0;min-height:44px;cursor:pointer;font-size:13px;}
+#staff-review-dialog .staff-progress-advanced summary span {display:block;font-size:11px;font-weight:400;color:var(--ink-2);margin-top:3px;}
+#staff-review-dialog .staff-progress-advanced[open] {padding-bottom:14px;}
+#staff-review-dialog .staff-progress-evidence {margin-top:20px;padding-top:18px;border-top:1px solid var(--line);}
+#staff-review-dialog .staff-progress-evidence-heading h4 {font-size:13px;}
+#staff-review-dialog .staff-progress-evidence-heading span {font-size:11px;}
+#staff-review-dialog .staff-progress-file-picker {display:block;padding:14px;border:1px dashed var(--line);border-radius:12px;background:var(--bg);font-size:13px;cursor:pointer;}
+#staff-review-dialog .staff-progress-notify {padding:14px 0 0;border-top:1px solid var(--line);font-size:12px;}
+#staff-review-dialog .staff-progress-notify small {font-size:11px;}
+.staff-progress-side {display:grid;gap:14px;min-width:0;}
+#staff-review-dialog .staff-progress-side .staff-progress-preview {margin:0;padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 3px 10px #00000004;}
+#staff-review-dialog .staff-progress-preview-heading {display:block;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--line);}
+#staff-review-dialog .staff-progress-preview-heading h4 {font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;color:var(--ink-2);}
+#staff-review-dialog .staff-progress-preview-heading .workspace-tag {font-size:11px;}
+#staff-review-dialog .staff-progress-preview p {font-size:14px;line-height:1.8;}
+#staff-review-dialog .staff-progress-preview small {font-size:11px;line-height:1.7;}
+#staff-review-dialog .staff-progress-history {margin:0;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:0 18px;}
+#staff-review-dialog .staff-progress-history>summary {min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:600;cursor:pointer;}
+#staff-progress-history-count {font-size:11px;font-weight:400;color:var(--ink-2);}
+#staff-review-dialog .staff-progress-event {padding:14px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:none;font-size:12px;}
+#staff-review-dialog .staff-progress-event-heading strong {font-size:12px;}
+#staff-review-dialog .staff-progress-event p {font-size:13px;line-height:1.7;}
+#staff-review-dialog .staff-notes-layout {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start;}
+#staff-review-dialog #staff-internal-note-form {background:var(--surface);padding:20px;border:1px solid var(--line);border-radius:16px;}
+#staff-review-dialog .staff-activity-list {margin-top:12px;}
+#staff-review-dialog[data-detail-mode] .staff-review-footer {border-top:1px solid var(--line);background:var(--surface);padding:12px 22px;}
+#staff-review-dialog .workspace-dialog-actions {display:flex;align-items:center;gap:8px;margin:0;}
+#staff-review-dialog #review-draft-state {margin-right:auto;font-size:11px;min-width:0;}
+#staff-review-dialog .staff-progress-footer {display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.staff-progress-readiness {font-size:11px;color:var(--ink-2);max-width:160px;line-height:1.5;}
+#staff-review-dialog .workspace-dialog-actions button {min-height:40px;font-size:12px;padding:10px 14px;}
+#staff-review-dialog[data-active-panel=progress] #review-draft-state {display:none;}
+#staff-review-dialog .staff-review-footer>.workspace-message {margin:0 0 10px;font-size:12px;}
+.staff-detail-skeleton {display:none;}
+#staff-review-dialog[data-detail-mode][data-unavailable=true] .staff-review-scroll {display:block!important;}
+#staff-review-dialog[data-unavailable=true] :is(.staff-detail-meta,.staff-review-panel,.staff-progress-footer) {display:none!important;}
+#staff-review-dialog[data-unavailable=true] .staff-detail-skeleton {display:grid;gap:12px;margin-top:26px;}
+.staff-detail-skeleton span {height:12px;border-radius:5px;background:var(--line);opacity:.6;}
+.staff-detail-skeleton span:nth-child(2) {width:90%;}.staff-detail-skeleton span:nth-child(3) {width:65%;}
+@media(max-width:1000px){#staff-review-dialog[data-detail-mode] #review-panel-decision,#staff-review-dialog .staff-progress-layout {grid-template-columns:minmax(0,1fr)}#staff-review-dialog .staff-notes-layout {grid-template-columns:minmax(0,1fr)}.staff-progress-side {grid-template-columns:minmax(0,1fr)}#staff-review-dialog[data-detail-mode=work] {inset:0;width:calc(100% - 32px);}}
+@media(max-width:600px){#staff-review-dialog[data-detail-mode] {width:100%;height:100dvh;max-height:100dvh;max-width:100%;margin:0;border-radius:0;}#staff-review-dialog[data-detail-mode] .staff-detail-topbar {padding:10px 16px;gap:10px;}.staff-detail-emblem {display:none;}.staff-detail-topbar-actions {gap:8px;}.staff-detail-topbar-actions .workspace-icon-button {width:44px;height:44px;}#staff-review-dialog[data-detail-mode] .staff-review-tabs {display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);grid-template-columns:none;gap:4px;padding:4px 12px 0;overflow:visible;}#staff-review-dialog[data-detail-mode] .staff-review-tabs button {font-size:11px;min-width:0;white-space:normal;justify-content:center;padding:9px 3px;line-height:1.4;}#staff-review-dialog .staff-review-tabs .workspace-tag {display:none;}#staff-review-dialog[data-detail-mode] .staff-review-scroll {padding:20px 16px;}#staff-review-dialog[data-detail-mode] #review-title {font-size:21px;}.staff-detail-intro {margin-bottom:20px;}#staff-review-dialog .staff-review-details {margin-left:0;}#staff-review-dialog .staff-review-context,#staff-review-dialog .staff-progress-form {padding:18px;}#staff-review-dialog[data-detail-mode] .staff-review-footer {padding:10px 16px calc(10px + env(safe-area-inset-bottom));}#staff-review-dialog .workspace-dialog-actions {gap:8px;flex-wrap:wrap;}#staff-review-dialog .workspace-dialog-actions button {min-height:44px;padding:10px 12px;}#staff-review-dialog .staff-progress-footer {flex:1;justify-content:flex-end;}.staff-progress-readiness {display:none;}#staff-review-dialog .staff-progress-grid {grid-template-columns:minmax(0,1fr);}#staff-review-dialog .staff-progress-form :is(input,select,textarea) {font-size:16px;}#staff-review-dialog .staff-work-facts {padding:14px;}#staff-review-dialog .workflow-guidance {padding:18px;}#staff-review-dialog .staff-group-review {padding:8px 16px;gap:8px;}#staff-review-dialog .staff-group-review-actions button {min-height:40px;}#staff-review-dialog .staff-group-review-heading {min-width:0;}}
+@media(prefers-reduced-motion:no-preference){#staff-review-dialog .workspace-button {transition:transform .2s ease,opacity .2s ease;}#staff-review-dialog .workspace-button:active:not(:disabled) {transform:translateY(1px);}}
+@media(max-width:600px){#staff-review-dialog[data-active-panel=progress] #review-dismiss{display:none}#staff-review-dialog .staff-progress-footer{width:100%;justify-content:stretch}#staff-review-dialog #staff-progress-post{flex:1;min-width:0;white-space:normal;line-height:1.4}#staff-review-dialog #staff-progress-clear{flex:none}}
+
+#staff-review-dialog[data-detail-mode] {margin:auto;max-width:100%;max-height:100dvh;border-radius:18px;}
+#staff-review-dialog[data-detail-mode] .staff-review-panel {padding:0;}
+#staff-review-dialog[data-detail-mode] .staff-progress-layout {margin-top:0;}
+#staff-review-dialog[data-detail-mode] #staff-progress-kind-hint {min-height:0;margin:8px 0 12px;}
+#staff-review-dialog[data-detail-mode] #staff-progress-kind-hint:empty {display:none;}
+@media(max-width:600px){#staff-review-dialog[data-detail-mode]{margin:0;border-radius:0;}}
+#staff-review-dialog .staff-panel-heading>div {min-width:0;flex:1;}
+#staff-review-dialog .staff-panel-heading .staff-panel-title {margin:0 0 6px;}
+#staff-review-dialog .staff-panel-heading>button {flex:none;}

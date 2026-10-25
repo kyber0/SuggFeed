@@ -24,8 +24,8 @@
   <!-- Styles -->
   <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />
   <% if ((it.currentPath || '').startsWith('/profile')&&!it.supportPage) { %><link rel="stylesheet" href="/css/profile.bundle.css?v=20261025-support" /><% } %>
-  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261025-assignment" /><% } %>
-  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261024-comment-bubbles" />
+  <% if (/^\/(admin|staff)/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/staff.bundle.css?v=20261025-detail-polish" /><% } %>
+  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-detail-polish" />
   <% if (it.platformDashboard || it.accountArea || it.currentPath === '/schools' || /\/admin\/school-settings$/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/platform.bundle.css?v=20261021-platform-insights" /><% } %>
   <% if(it.schoolBase || /customization/.test(it.currentPath || '')) { %><link rel="stylesheet" href="/css/customization.bundle.css?v=20261021-mobile-audit"/><% } %>
   <% if(motionTransitionPage) { %><link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/><% } %>
