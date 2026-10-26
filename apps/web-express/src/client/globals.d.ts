@@ -1,3 +1,4 @@
+/// <reference path="./school-contracts.d.ts" />
 interface AppConfirmationOptions { title?: string; confirmLabel?: string; danger?: boolean; }
 type AuthSession = import("@supabase/supabase-js").Session;
 interface AuthSyncResult { success: boolean; user: { id: string }; }

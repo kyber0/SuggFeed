@@ -4,7 +4,7 @@ import {submissionHash} from '../lib/submission-context';
 import {Router,Request,Response,NextFunction} from 'express';
 import {timingSafeEqual} from 'node:crypto';
 import {supabasePlatform} from '../lib/supabase';
-import {operator} from './schools';
+import {operator} from '../lib/school-authorization';
 import {authorizeSchoolStudio} from '../lib/school-customization-access';
 import previewRouter from './school-customization-preview';
 import {normalizeCustomization,customizationChanges,SCHOOL_PALETTES,SCHOOL_ICONS} from '../lib/school-customization';

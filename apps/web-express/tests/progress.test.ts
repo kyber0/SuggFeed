@@ -122,3 +122,10 @@ test('progress migration encodes atomic publication, replay protection, no priva
   assert.match(sql, /GRANT EXECUTE ON FUNCTION public.post_idea_update\([^;]+\) TO service_role/);
   assert.match(sql, /OLD.status::text = 'resolved'[\s\S]*NEW.progress_percent := NULL/);
 });
+
+ test('progress retains the shared error identity for evidence callers', async () => {
+  const {ProgressError: LeafError}=await import('../src/lib/progress-error');
+  assert.equal(ProgressError,LeafError);
+  const error=new LeafError(409,'Refresh before retrying.','STALE');
+  assert.ok(error instanceof ProgressError);assert.equal(error.status,409);assert.equal(error.code,'STALE');
+ });

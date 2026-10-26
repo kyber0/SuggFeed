@@ -1,5 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { operator } from './schools';
+import { operator } from '../lib/school-authorization';
 import { supabasePlatform as db } from '../lib/supabase';
 import { schoolApplicationsConfigured } from '../lib/school-onboarding';
 import { uuid, platformQuery, platformUrl, platformReturn, platformSaved, platformChrome, platformRecovery, platformPanel, platformReview, platformSchool } from '../lib/platform-dashboard';

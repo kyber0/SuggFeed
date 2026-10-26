@@ -24,3 +24,9 @@ __pycache__/
 
 # Generated package-manager cache; never commit local dependency databases.
 .pnpm-store/
+
+# Browser declarations generated from shared TypeScript contracts.
+/apps/web-express/src/client/school-contracts.d.ts
+# Classic compiler intermediates; templates load the combined contract assets.
+/apps/web-express/public/js/school-colors-dom.js
+/apps/web-express/public/js/school-design-dom.js

@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import { randomUUID } from 'node:crypto';
 import { supabase, supabaseService } from './supabase';
 import { UUID } from './staff-workspace';
-import { ProgressError } from './progress';
+import { ProgressError } from './progress-error';
 import { currentSchool } from './school-scope';
 import { forEachActiveSchool } from './school-jobs';
 

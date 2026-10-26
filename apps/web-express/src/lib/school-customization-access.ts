@@ -1,6 +1,6 @@
 import type {Request,Response} from 'express';
 import {supabasePlatform} from './supabase';
-import {schoolAdmin} from '../routes/schools';
+import {schoolAdmin} from './school-authorization';
 export async function authorizeSchoolStudio(req:Request,res:Response){
  const context=await schoolAdmin(req,res);if(!context)return null;
  const [result,grant]=await Promise.all([supabasePlatform.rpc('get_school_customization',{p_school:context.school.id,p_actor:context.user.id}),supabasePlatform.from('school_customization_state').select('editing_enabled').eq('school_id',context.school.id).maybeSingle()]);

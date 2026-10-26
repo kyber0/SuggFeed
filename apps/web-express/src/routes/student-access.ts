@@ -1,5 +1,5 @@
 import {Router,type Request,type Response,type NextFunction} from 'express';
-import {schoolAdmin,confirmedAccount} from './schools';
+import {schoolAdmin,confirmedAccount} from '../lib/school-authorization';
 import {supabasePlatform} from '../lib/supabase';
 import {schoolLanding} from '../lib/navigation-context';
 import {platformAuthority} from '../lib/navigation-context';

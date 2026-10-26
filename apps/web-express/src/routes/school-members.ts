@@ -1,5 +1,5 @@
 import {Router,type Request,type Response,type NextFunction} from 'express';
-import {schoolAdmin} from './schools';
+import {schoolAdmin} from '../lib/school-authorization';
 import {supabasePlatform} from '../lib/supabase';
 const router=Router();
 const run=(fn:(req:Request,res:Response)=>Promise<unknown>)=>(req:Request,res:Response,next:NextFunction)=>{void fn(req,res).catch(next);};

@@ -1,3 +1,5 @@
+import { ProgressError } from './progress-error';
+export { ProgressError } from './progress-error';
 import { supabase, supabaseService } from './supabase';
 import { UUID, validDate } from './staff-workspace';
 import { EvidenceFile, listPublicEvidence, listStaffEvidence } from './progress-evidence';
@@ -15,9 +17,6 @@ export interface PublicProgress {
   blocked_reason: string | null; next_step: string | null; occurred_on: string;
   office_label: string; created_at: string;
   files: EvidenceFile[];
-}
-export class ProgressError extends Error {
-  constructor(public readonly status: number, message: string,public readonly code?:string) { super(message); this.name = 'ProgressError'; }
 }
 export function manilaToday(now = new Date()): string {
   return new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
