@@ -1,0 +1,12 @@
+
+> suggfeed-express@2.0.0 typecheck
+> npm run build:knowledge && tsc -p tsconfig.json --noEmit && tsc -p tsconfig.sw.json --noEmit && tsc -p tsconfig.client.json --noEmit && npm run typecheck:client:strict && tsc -p tsconfig.api.json && tsc -p tsconfig.tests.json
+
+
+> suggfeed-express@2.0.0 build:knowledge
+> node scripts/build-assistant.cjs
+
+
+> suggfeed-express@2.0.0 typecheck:client:strict
+> tsc -p tsconfig.client.strict.json
+

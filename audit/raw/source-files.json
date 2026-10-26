@@ -1,0 +1,1758 @@
+[
+  {
+    "file": "apps/web-express/api/index.ts",
+    "lines": 40
+  },
+  {
+    "file": "apps/web-express/public/css/modules/admin.css",
+    "lines": 372
+  },
+  {
+    "file": "apps/web-express/public/css/modules/animations.css",
+    "lines": 28
+  },
+  {
+    "file": "apps/web-express/public/css/modules/assistant.css",
+    "lines": 69
+  },
+  {
+    "file": "apps/web-express/public/css/modules/auth.css",
+    "lines": 557
+  },
+  {
+    "file": "apps/web-express/public/css/modules/branding.css",
+    "lines": 14
+  },
+  {
+    "file": "apps/web-express/public/css/modules/comments.css",
+    "lines": 66
+  },
+  {
+    "file": "apps/web-express/public/css/modules/community.css",
+    "lines": 127
+  },
+  {
+    "file": "apps/web-express/public/css/modules/components.css",
+    "lines": 1081
+  },
+  {
+    "file": "apps/web-express/public/css/modules/controls.css",
+    "lines": 36
+  },
+  {
+    "file": "apps/web-express/public/css/modules/customization.css",
+    "lines": 28
+  },
+  {
+    "file": "apps/web-express/public/css/modules/empty-states.css",
+    "lines": 65
+  },
+  {
+    "file": "apps/web-express/public/css/modules/experience.css",
+    "lines": 140
+  },
+  {
+    "file": "apps/web-express/public/css/modules/feed.css",
+    "lines": 1249
+  },
+  {
+    "file": "apps/web-express/public/css/modules/file-upload.css",
+    "lines": 18
+  },
+  {
+    "file": "apps/web-express/public/css/modules/full-detail.css",
+    "lines": 143
+  },
+  {
+    "file": "apps/web-express/public/css/modules/idea-page.css",
+    "lines": 41
+  },
+  {
+    "file": "apps/web-express/public/css/modules/idea.css",
+    "lines": 2167
+  },
+  {
+    "file": "apps/web-express/public/css/modules/interaction-feedback.css",
+    "lines": 61
+  },
+  {
+    "file": "apps/web-express/public/css/modules/interactions.css",
+    "lines": 42
+  },
+  {
+    "file": "apps/web-express/public/css/modules/landing-ideas.css",
+    "lines": 46
+  },
+  {
+    "file": "apps/web-express/public/css/modules/mobile-type.css",
+    "lines": 44
+  },
+  {
+    "file": "apps/web-express/public/css/modules/overview.css",
+    "lines": 81
+  },
+  {
+    "file": "apps/web-express/public/css/modules/pages.css",
+    "lines": 2258
+  },
+  {
+    "file": "apps/web-express/public/css/modules/persistence.css",
+    "lines": 78
+  },
+  {
+    "file": "apps/web-express/public/css/modules/platform.css",
+    "lines": 1299
+  },
+  {
+    "file": "apps/web-express/public/css/modules/profile.css",
+    "lines": 1018
+  },
+  {
+    "file": "apps/web-express/public/css/modules/reset.css",
+    "lines": 33
+  },
+  {
+    "file": "apps/web-express/public/css/modules/responsive-primitives.css",
+    "lines": 83
+  },
+  {
+    "file": "apps/web-express/public/css/modules/responsive.css",
+    "lines": 309
+  },
+  {
+    "file": "apps/web-express/public/css/modules/roadmap.css",
+    "lines": 894
+  },
+  {
+    "file": "apps/web-express/public/css/modules/school-design.css",
+    "lines": 58
+  },
+  {
+    "file": "apps/web-express/public/css/modules/school-studio-workflow.css",
+    "lines": 32
+  },
+  {
+    "file": "apps/web-express/public/css/modules/school-studio.css",
+    "lines": 147
+  },
+  {
+    "file": "apps/web-express/public/css/modules/staff-detail.css",
+    "lines": 144
+  },
+  {
+    "file": "apps/web-express/public/css/modules/staff-flow.css",
+    "lines": 19
+  },
+  {
+    "file": "apps/web-express/public/css/modules/staff-portal.css",
+    "lines": 193
+  },
+  {
+    "file": "apps/web-express/public/css/modules/student-experience.css",
+    "lines": 95
+  },
+  {
+    "file": "apps/web-express/public/css/modules/submit.css",
+    "lines": 1623
+  },
+  {
+    "file": "apps/web-express/public/css/modules/system-ux.css",
+    "lines": 47
+  },
+  {
+    "file": "apps/web-express/public/css/modules/tokens.css",
+    "lines": 150
+  },
+  {
+    "file": "apps/web-express/public/css/modules/ui-polish.css",
+    "lines": 218
+  },
+  {
+    "file": "apps/web-express/public/css/modules/workspace.css",
+    "lines": 77
+  },
+  {
+    "file": "apps/web-express/scripts/build-animations.cjs",
+    "lines": 6
+  },
+  {
+    "file": "apps/web-express/scripts/build-assistant.cjs",
+    "lines": 18
+  },
+  {
+    "file": "apps/web-express/scripts/build-brand-assets.ts",
+    "lines": 36
+  },
+  {
+    "file": "apps/web-express/scripts/build-styles.cjs",
+    "lines": 19
+  },
+  {
+    "file": "apps/web-express/scripts/build-vendor.cjs",
+    "lines": 17
+  },
+  {
+    "file": "apps/web-express/scripts/check-motion.cjs",
+    "lines": 132
+  },
+  {
+    "file": "apps/web-express/scripts/check-release.ts",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/scripts/eval-assistant.ts",
+    "lines": 8
+  },
+  {
+    "file": "apps/web-express/scripts/ui-surface-inventory.cjs",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/scripts/verify-hosted-isolation.cjs",
+    "lines": 39
+  },
+  {
+    "file": "apps/web-express/src/client/account-security.ts",
+    "lines": 91
+  },
+  {
+    "file": "apps/web-express/src/client/activity.ts",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/src/client/admin-analytics.ts",
+    "lines": 150
+  },
+  {
+    "file": "apps/web-express/src/client/admin-overview.ts",
+    "lines": 66
+  },
+  {
+    "file": "apps/web-express/src/client/admin-staff.ts",
+    "lines": 284
+  },
+  {
+    "file": "apps/web-express/src/client/animations/config.ts",
+    "lines": 12
+  },
+  {
+    "file": "apps/web-express/src/client/animations/controller.ts",
+    "lines": 32
+  },
+  {
+    "file": "apps/web-express/src/client/animations/cursor.ts",
+    "lines": 23
+  },
+  {
+    "file": "apps/web-express/src/client/animations/home-motion.ts",
+    "lines": 59
+  },
+  {
+    "file": "apps/web-express/src/client/animations/magnetic-button.ts",
+    "lines": 23
+  },
+  {
+    "file": "apps/web-express/src/client/animations/marquee.ts",
+    "lines": 34
+  },
+  {
+    "file": "apps/web-express/src/client/animations/page-transition.ts",
+    "lines": 16
+  },
+  {
+    "file": "apps/web-express/src/client/animations/reveal.ts",
+    "lines": 25
+  },
+  {
+    "file": "apps/web-express/src/client/animations/smooth-scroll.ts",
+    "lines": 27
+  },
+  {
+    "file": "apps/web-express/src/client/animations/split-text.ts",
+    "lines": 16
+  },
+  {
+    "file": "apps/web-express/src/client/animations/stagger.ts",
+    "lines": 4
+  },
+  {
+    "file": "apps/web-express/src/client/assignments.ts",
+    "lines": 24
+  },
+  {
+    "file": "apps/web-express/src/client/assistant-admin.ts",
+    "lines": 11
+  },
+  {
+    "file": "apps/web-express/src/client/assistant-documents.ts",
+    "lines": 18
+  },
+  {
+    "file": "apps/web-express/src/client/assistant-knowledge.ts",
+    "lines": 22
+  },
+  {
+    "file": "apps/web-express/src/client/assistant.ts",
+    "lines": 49
+  },
+  {
+    "file": "apps/web-express/src/client/auth-callback.ts",
+    "lines": 185
+  },
+  {
+    "file": "apps/web-express/src/client/auth-confirm.ts",
+    "lines": 27
+  },
+  {
+    "file": "apps/web-express/src/client/auth-modal.ts",
+    "lines": 327
+  },
+  {
+    "file": "apps/web-express/src/client/auth.ts",
+    "lines": 130
+  },
+  {
+    "file": "apps/web-express/src/client/comment-edit.ts",
+    "lines": 110
+  },
+  {
+    "file": "apps/web-express/src/client/community.ts",
+    "lines": 170
+  },
+  {
+    "file": "apps/web-express/src/client/confirmation.ts",
+    "lines": 42
+  },
+  {
+    "file": "apps/web-express/src/client/controls.ts",
+    "lines": 63
+  },
+  {
+    "file": "apps/web-express/src/client/empty-state.ts",
+    "lines": 19
+  },
+  {
+    "file": "apps/web-express/src/client/engagement.ts",
+    "lines": 74
+  },
+  {
+    "file": "apps/web-express/src/client/events.ts",
+    "lines": 154
+  },
+  {
+    "file": "apps/web-express/src/client/feed.ts",
+    "lines": 447
+  },
+  {
+    "file": "apps/web-express/src/client/file-upload.ts",
+    "lines": 38
+  },
+  {
+    "file": "apps/web-express/src/client/globals.d.ts",
+    "lines": 116
+  },
+  {
+    "file": "apps/web-express/src/client/header.ts",
+    "lines": 25
+  },
+  {
+    "file": "apps/web-express/src/client/home.ts",
+    "lines": 405
+  },
+  {
+    "file": "apps/web-express/src/client/idea-detail-drawer.ts",
+    "lines": 547
+  },
+  {
+    "file": "apps/web-express/src/client/idea.ts",
+    "lines": 233
+  },
+  {
+    "file": "apps/web-express/src/client/interaction-feedback.ts",
+    "lines": 75
+  },
+  {
+    "file": "apps/web-express/src/client/invitations.ts",
+    "lines": 28
+  },
+  {
+    "file": "apps/web-express/src/client/navigation-cache.ts",
+    "lines": 75
+  },
+  {
+    "file": "apps/web-express/src/client/navigation.ts",
+    "lines": 157
+  },
+  {
+    "file": "apps/web-express/src/client/notifications.ts",
+    "lines": 87
+  },
+  {
+    "file": "apps/web-express/src/client/platform-dashboard.ts",
+    "lines": 38
+  },
+  {
+    "file": "apps/web-express/src/client/preferences.ts",
+    "lines": 22
+  },
+  {
+    "file": "apps/web-express/src/client/profile.ts",
+    "lines": 114
+  },
+  {
+    "file": "apps/web-express/src/client/public-history.ts",
+    "lines": 35
+  },
+  {
+    "file": "apps/web-express/src/client/responsive.ts",
+    "lines": 40
+  },
+  {
+    "file": "apps/web-express/src/client/roadmap-timeline.ts",
+    "lines": 159
+  },
+  {
+    "file": "apps/web-express/src/client/roadmap-views.ts",
+    "lines": 27
+  },
+  {
+    "file": "apps/web-express/src/client/roadmap.ts",
+    "lines": 450
+  },
+  {
+    "file": "apps/web-express/src/client/saved-searches.ts",
+    "lines": 177
+  },
+  {
+    "file": "apps/web-express/src/client/school-colors.ts",
+    "lines": 16
+  },
+  {
+    "file": "apps/web-express/src/client/school-context.ts",
+    "lines": 77
+  },
+  {
+    "file": "apps/web-express/src/client/school-customization.ts",
+    "lines": 134
+  },
+  {
+    "file": "apps/web-express/src/client/school-design.ts",
+    "lines": 51
+  },
+  {
+    "file": "apps/web-express/src/client/school-studio-content.ts",
+    "lines": 22
+  },
+  {
+    "file": "apps/web-express/src/client/school-studio-frame.ts",
+    "lines": 130
+  },
+  {
+    "file": "apps/web-express/src/client/school-studio-inspector.ts",
+    "lines": 92
+  },
+  {
+    "file": "apps/web-express/src/client/school-studio-model.ts",
+    "lines": 33
+  },
+  {
+    "file": "apps/web-express/src/client/school-studio-tools.ts",
+    "lines": 18
+  },
+  {
+    "file": "apps/web-express/src/client/school-submission.ts",
+    "lines": 63
+  },
+  {
+    "file": "apps/web-express/src/client/school-ui.ts",
+    "lines": 15
+  },
+  {
+    "file": "apps/web-express/src/client/scroll-reveal.ts",
+    "lines": 3
+  },
+  {
+    "file": "apps/web-express/src/client/staff-login.ts",
+    "lines": 57
+  },
+  {
+    "file": "apps/web-express/src/client/staff-portal.ts",
+    "lines": 20
+  },
+  {
+    "file": "apps/web-express/src/client/staff-progress.ts",
+    "lines": 377
+  },
+  {
+    "file": "apps/web-express/src/client/staff-review.ts",
+    "lines": 518
+  },
+  {
+    "file": "apps/web-express/src/client/staff-tools.ts",
+    "lines": 416
+  },
+  {
+    "file": "apps/web-express/src/client/student-access.ts",
+    "lines": 25
+  },
+  {
+    "file": "apps/web-express/src/client/student-experience.ts",
+    "lines": 17
+  },
+  {
+    "file": "apps/web-express/src/client/submission-recovery.ts",
+    "lines": 181
+  },
+  {
+    "file": "apps/web-express/src/client/submission-safety.ts",
+    "lines": 15
+  },
+  {
+    "file": "apps/web-express/src/client/submission-storage.ts",
+    "lines": 60
+  },
+  {
+    "file": "apps/web-express/src/client/submit-panel.ts",
+    "lines": 490
+  },
+  {
+    "file": "apps/web-express/src/client/system-ux.ts",
+    "lines": 35
+  },
+  {
+    "file": "apps/web-express/src/client/theme-init.ts",
+    "lines": 11
+  },
+  {
+    "file": "apps/web-express/src/client/theme.ts",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/src/client/toast.ts",
+    "lines": 93
+  },
+  {
+    "file": "apps/web-express/src/lib/analytics.ts",
+    "lines": 34
+  },
+  {
+    "file": "apps/web-express/src/lib/assignment/service.ts",
+    "lines": 11
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/actions.ts",
+    "lines": 44
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/cache.ts",
+    "lines": 6
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/config.ts",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/documents.ts",
+    "lines": 31
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/feedback.ts",
+    "lines": 5
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/knowledge.ts",
+    "lines": 6
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/limits.ts",
+    "lines": 7
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/log.ts",
+    "lines": 7
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/normalize.ts",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/prompt.ts",
+    "lines": 6
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/provider.ts",
+    "lines": 28
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/school-knowledge.ts",
+    "lines": 24
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/service.ts",
+    "lines": 37
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/sources.ts",
+    "lines": 15
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/store.ts",
+    "lines": 9
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/tools.ts",
+    "lines": 4
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/topics.ts",
+    "lines": 4
+  },
+  {
+    "file": "apps/web-express/src/lib/assistant/types.ts",
+    "lines": 6
+  },
+  {
+    "file": "apps/web-express/src/lib/auth-assurance.ts",
+    "lines": 46
+  },
+  {
+    "file": "apps/web-express/src/lib/auth-email-template.ts",
+    "lines": 5
+  },
+  {
+    "file": "apps/web-express/src/lib/category-rules.ts",
+    "lines": 9
+  },
+  {
+    "file": "apps/web-express/src/lib/comment-moderation-config.ts",
+    "lines": 4
+  },
+  {
+    "file": "apps/web-express/src/lib/comment-moderation-words.ts",
+    "lines": 25
+  },
+  {
+    "file": "apps/web-express/src/lib/comment-moderation.ts",
+    "lines": 52
+  },
+  {
+    "file": "apps/web-express/src/lib/comments.ts",
+    "lines": 32
+  },
+  {
+    "file": "apps/web-express/src/lib/community.ts",
+    "lines": 135
+  },
+  {
+    "file": "apps/web-express/src/lib/content-moderation.ts",
+    "lines": 26
+  },
+  {
+    "file": "apps/web-express/src/lib/content-safety-config.ts",
+    "lines": 9
+  },
+  {
+    "file": "apps/web-express/src/lib/data.ts",
+    "lines": 358
+  },
+  {
+    "file": "apps/web-express/src/lib/digest-email.ts",
+    "lines": 50
+  },
+  {
+    "file": "apps/web-express/src/lib/digest-preferences.ts",
+    "lines": 20
+  },
+  {
+    "file": "apps/web-express/src/lib/digests.ts",
+    "lines": 111
+  },
+  {
+    "file": "apps/web-express/src/lib/engagement.ts",
+    "lines": 59
+  },
+  {
+    "file": "apps/web-express/src/lib/feed-account.ts",
+    "lines": 63
+  },
+  {
+    "file": "apps/web-express/src/lib/feed-filters.ts",
+    "lines": 18
+  },
+  {
+    "file": "apps/web-express/src/lib/identity.ts",
+    "lines": 68
+  },
+  {
+    "file": "apps/web-express/src/lib/invitation-email.ts",
+    "lines": 37
+  },
+  {
+    "file": "apps/web-express/src/lib/legal.ts",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/src/lib/navigation-context.ts",
+    "lines": 37
+  },
+  {
+    "file": "apps/web-express/src/lib/navigation-data.ts",
+    "lines": 60
+  },
+  {
+    "file": "apps/web-express/src/lib/platform-dashboard.ts",
+    "lines": 149
+  },
+  {
+    "file": "apps/web-express/src/lib/progress-evidence.ts",
+    "lines": 228
+  },
+  {
+    "file": "apps/web-express/src/lib/progress.ts",
+    "lines": 121
+  },
+  {
+    "file": "apps/web-express/src/lib/read-budget.ts",
+    "lines": 39
+  },
+  {
+    "file": "apps/web-express/src/lib/release-readiness.ts",
+    "lines": 38
+  },
+  {
+    "file": "apps/web-express/src/lib/request-path.ts",
+    "lines": 5
+  },
+  {
+    "file": "apps/web-express/src/lib/roadmap.ts",
+    "lines": 257
+  },
+  {
+    "file": "apps/web-express/src/lib/safety-email.ts",
+    "lines": 22
+  },
+  {
+    "file": "apps/web-express/src/lib/school-colors.ts",
+    "lines": 3
+  },
+  {
+    "file": "apps/web-express/src/lib/school-context.ts",
+    "lines": 60
+  },
+  {
+    "file": "apps/web-express/src/lib/school-customization-access.ts",
+    "lines": 13
+  },
+  {
+    "file": "apps/web-express/src/lib/school-customization.ts",
+    "lines": 65
+  },
+  {
+    "file": "apps/web-express/src/lib/school-design.ts",
+    "lines": 7
+  },
+  {
+    "file": "apps/web-express/src/lib/school-domains.ts",
+    "lines": 18
+  },
+  {
+    "file": "apps/web-express/src/lib/school-enrollment.ts",
+    "lines": 16
+  },
+  {
+    "file": "apps/web-express/src/lib/school-images.ts",
+    "lines": 30
+  },
+  {
+    "file": "apps/web-express/src/lib/school-jobs.ts",
+    "lines": 19
+  },
+  {
+    "file": "apps/web-express/src/lib/school-onboarding.ts",
+    "lines": 26
+  },
+  {
+    "file": "apps/web-express/src/lib/school-path.ts",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/src/lib/school-preview-model.ts",
+    "lines": 43
+  },
+  {
+    "file": "apps/web-express/src/lib/school-scope.ts",
+    "lines": 30
+  },
+  {
+    "file": "apps/web-express/src/lib/security.ts",
+    "lines": 27
+  },
+  {
+    "file": "apps/web-express/src/lib/session-store.ts",
+    "lines": 64
+  },
+  {
+    "file": "apps/web-express/src/lib/shared-rate-limit.ts",
+    "lines": 50
+  },
+  {
+    "file": "apps/web-express/src/lib/staff-board.ts",
+    "lines": 152
+  },
+  {
+    "file": "apps/web-express/src/lib/staff-workspace.ts",
+    "lines": 103
+  },
+  {
+    "file": "apps/web-express/src/lib/student-experience.ts",
+    "lines": 32
+  },
+  {
+    "file": "apps/web-express/src/lib/submission-context.ts",
+    "lines": 20
+  },
+  {
+    "file": "apps/web-express/src/lib/submission-safety.ts",
+    "lines": 12
+  },
+  {
+    "file": "apps/web-express/src/lib/supabase.ts",
+    "lines": 109
+  },
+  {
+    "file": "apps/web-express/src/lib/urgent-rules.ts",
+    "lines": 11
+  },
+  {
+    "file": "apps/web-express/src/lib/workflow.ts",
+    "lines": 47
+  },
+  {
+    "file": "apps/web-express/src/routes/account-security.ts",
+    "lines": 16
+  },
+  {
+    "file": "apps/web-express/src/routes/admin.ts",
+    "lines": 115
+  },
+  {
+    "file": "apps/web-express/src/routes/api.ts",
+    "lines": 388
+  },
+  {
+    "file": "apps/web-express/src/routes/assignments.ts",
+    "lines": 49
+  },
+  {
+    "file": "apps/web-express/src/routes/assistant-admin.ts",
+    "lines": 35
+  },
+  {
+    "file": "apps/web-express/src/routes/assistant.ts",
+    "lines": 20
+  },
+  {
+    "file": "apps/web-express/src/routes/auth.ts",
+    "lines": 70
+  },
+  {
+    "file": "apps/web-express/src/routes/community.ts",
+    "lines": 135
+  },
+  {
+    "file": "apps/web-express/src/routes/digests.ts",
+    "lines": 34
+  },
+  {
+    "file": "apps/web-express/src/routes/engagement.ts",
+    "lines": 81
+  },
+  {
+    "file": "apps/web-express/src/routes/feed.ts",
+    "lines": 58
+  },
+  {
+    "file": "apps/web-express/src/routes/home.ts",
+    "lines": 53
+  },
+  {
+    "file": "apps/web-express/src/routes/idea.ts",
+    "lines": 47
+  },
+  {
+    "file": "apps/web-express/src/routes/legal.ts",
+    "lines": 23
+  },
+  {
+    "file": "apps/web-express/src/routes/notifications.ts",
+    "lines": 20
+  },
+  {
+    "file": "apps/web-express/src/routes/platform-dashboard.ts",
+    "lines": 104
+  },
+  {
+    "file": "apps/web-express/src/routes/profile.ts",
+    "lines": 141
+  },
+  {
+    "file": "apps/web-express/src/routes/progress-evidence.ts",
+    "lines": 48
+  },
+  {
+    "file": "apps/web-express/src/routes/progress.ts",
+    "lines": 35
+  },
+  {
+    "file": "apps/web-express/src/routes/public-history.ts",
+    "lines": 18
+  },
+  {
+    "file": "apps/web-express/src/routes/roadmap.ts",
+    "lines": 47
+  },
+  {
+    "file": "apps/web-express/src/routes/saved-searches.ts",
+    "lines": 52
+  },
+  {
+    "file": "apps/web-express/src/routes/school-branding.ts",
+    "lines": 8
+  },
+  {
+    "file": "apps/web-express/src/routes/school-customization-preview.ts",
+    "lines": 43
+  },
+  {
+    "file": "apps/web-express/src/routes/school-customization.ts",
+    "lines": 73
+  },
+  {
+    "file": "apps/web-express/src/routes/school-members.ts",
+    "lines": 43
+  },
+  {
+    "file": "apps/web-express/src/routes/school-submissions.ts",
+    "lines": 36
+  },
+  {
+    "file": "apps/web-express/src/routes/schools.ts",
+    "lines": 352
+  },
+  {
+    "file": "apps/web-express/src/routes/security-maintenance.ts",
+    "lines": 25
+  },
+  {
+    "file": "apps/web-express/src/routes/staff-workspace.ts",
+    "lines": 146
+  },
+  {
+    "file": "apps/web-express/src/routes/student-access.ts",
+    "lines": 50
+  },
+  {
+    "file": "apps/web-express/src/routes/submission-safety.ts",
+    "lines": 25
+  },
+  {
+    "file": "apps/web-express/src/server.ts",
+    "lines": 374
+  },
+  {
+    "file": "apps/web-express/src/sw.ts",
+    "lines": 210
+  },
+  {
+    "file": "apps/web-express/src/types/index.ts",
+    "lines": 73
+  },
+  {
+    "file": "apps/web-express/views/403.eta",
+    "lines": 9
+  },
+  {
+    "file": "apps/web-express/views/404.eta",
+    "lines": 14
+  },
+  {
+    "file": "apps/web-express/views/500.eta",
+    "lines": 13
+  },
+  {
+    "file": "apps/web-express/views/account-security.eta",
+    "lines": 29
+  },
+  {
+    "file": "apps/web-express/views/admin-analytics.eta",
+    "lines": 218
+  },
+  {
+    "file": "apps/web-express/views/admin-overview.eta",
+    "lines": 15
+  },
+  {
+    "file": "apps/web-express/views/admin-staff.eta",
+    "lines": 196
+  },
+  {
+    "file": "apps/web-express/views/admin.eta",
+    "lines": 83
+  },
+  {
+    "file": "apps/web-express/views/assignments.eta",
+    "lines": 21
+  },
+  {
+    "file": "apps/web-express/views/assistant-admin.eta",
+    "lines": 1
+  },
+  {
+    "file": "apps/web-express/views/assistant.eta",
+    "lines": 17
+  },
+  {
+    "file": "apps/web-express/views/auth-callback.eta",
+    "lines": 36
+  },
+  {
+    "file": "apps/web-express/views/auth-confirm.eta",
+    "lines": 13
+  },
+  {
+    "file": "apps/web-express/views/digest-unsubscribe.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/feed.eta",
+    "lines": 129
+  },
+  {
+    "file": "apps/web-express/views/home.eta",
+    "lines": 134
+  },
+  {
+    "file": "apps/web-express/views/idea.eta",
+    "lines": 406
+  },
+  {
+    "file": "apps/web-express/views/layout.eta",
+    "lines": 101
+  },
+  {
+    "file": "apps/web-express/views/notifications.eta",
+    "lines": 44
+  },
+  {
+    "file": "apps/web-express/views/partials/admin-overview.eta",
+    "lines": 44
+  },
+  {
+    "file": "apps/web-express/views/partials/assistant-admin-panel.eta",
+    "lines": 1
+  },
+  {
+    "file": "apps/web-express/views/partials/assistant-chat.eta",
+    "lines": 17
+  },
+  {
+    "file": "apps/web-express/views/partials/assistant-documents.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/partials/assistant-school-editor.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/partials/assistant-widget.eta",
+    "lines": 5
+  },
+  {
+    "file": "apps/web-express/views/partials/auth-modal.eta",
+    "lines": 152
+  },
+  {
+    "file": "apps/web-express/views/partials/confirmation.eta",
+    "lines": 8
+  },
+  {
+    "file": "apps/web-express/views/partials/customization-category.eta",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/views/partials/customization-question.eta",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/views/partials/empty-state.eta",
+    "lines": 11
+  },
+  {
+    "file": "apps/web-express/views/partials/feed-card.eta",
+    "lines": 62
+  },
+  {
+    "file": "apps/web-express/views/partials/feed-filter-dialog.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/partials/feed-page.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/partials/header.eta",
+    "lines": 79
+  },
+  {
+    "file": "apps/web-express/views/partials/home-journey.eta",
+    "lines": 6
+  },
+  {
+    "file": "apps/web-express/views/partials/home-story.eta",
+    "lines": 14
+  },
+  {
+    "file": "apps/web-express/views/partials/idea-detail-drawer.eta",
+    "lines": 297
+  },
+  {
+    "file": "apps/web-express/views/partials/idea-navigation.eta",
+    "lines": 6
+  },
+  {
+    "file": "apps/web-express/views/partials/mobile-nav.eta",
+    "lines": 19
+  },
+  {
+    "file": "apps/web-express/views/partials/navigation-skeleton.eta",
+    "lines": 51
+  },
+  {
+    "file": "apps/web-express/views/partials/platform-activity.eta",
+    "lines": 3
+  },
+  {
+    "file": "apps/web-express/views/partials/platform-editor-access.eta",
+    "lines": 34
+  },
+  {
+    "file": "apps/web-express/views/partials/platform-grant.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/partials/platform-overview.eta",
+    "lines": 19
+  },
+  {
+    "file": "apps/web-express/views/partials/platform-pagination.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/partials/platform-review-detail.eta",
+    "lines": 16
+  },
+  {
+    "file": "apps/web-express/views/partials/platform-shell-end.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/partials/platform-shell-start.eta",
+    "lines": 7
+  },
+  {
+    "file": "apps/web-express/views/partials/report-dialog.eta",
+    "lines": 4
+  },
+  {
+    "file": "apps/web-express/views/partials/school-custom-questions.eta",
+    "lines": 8
+  },
+  {
+    "file": "apps/web-express/views/partials/school-domains.eta",
+    "lines": 17
+  },
+  {
+    "file": "apps/web-express/views/partials/school-enrollment.eta",
+    "lines": 22
+  },
+  {
+    "file": "apps/web-express/views/partials/school-student-options.eta",
+    "lines": 12
+  },
+  {
+    "file": "apps/web-express/views/partials/school-studio-examples.eta",
+    "lines": 10
+  },
+  {
+    "file": "apps/web-express/views/partials/school-welcome.eta",
+    "lines": 12
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-assignment-item.eta",
+    "lines": 6
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-board-filters.eta",
+    "lines": 14
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-board-lane.eta",
+    "lines": 27
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-calendar.eta",
+    "lines": 5
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-comment-review.eta",
+    "lines": 21
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-detail.eta",
+    "lines": 60
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-progress.eta",
+    "lines": 50
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-review.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-safety-tabs.eta",
+    "lines": 1
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-section-tabs.eta",
+    "lines": 5
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-sidebar.eta",
+    "lines": 45
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-work-detail.eta",
+    "lines": 2
+  },
+  {
+    "file": "apps/web-express/views/partials/staff-work-header.eta",
+    "lines": 5
+  },
+  {
+    "file": "apps/web-express/views/partials/student-home-brief.eta",
+    "lines": 1
+  },
+  {
+    "file": "apps/web-express/views/partials/student-inbox-nav.eta",
+    "lines": 1
+  },
+  {
+    "file": "apps/web-express/views/partials/student-profile-nav.eta",
+    "lines": 3
+  },
+  {
+    "file": "apps/web-express/views/partials/submission-picker.eta",
+    "lines": 7
+  },
+  {
+    "file": "apps/web-express/views/partials/submit-panel.eta",
+    "lines": 342
+  },
+  {
+    "file": "apps/web-express/views/partials/toast.eta",
+    "lines": 4
+  },
+  {
+    "file": "apps/web-express/views/partials/work-record.eta",
+    "lines": 27
+  },
+  {
+    "file": "apps/web-express/views/partials/workspace-icons.eta",
+    "lines": 27
+  },
+  {
+    "file": "apps/web-express/views/platform-school.eta",
+    "lines": 15
+  },
+  {
+    "file": "apps/web-express/views/platform-schools.eta",
+    "lines": 22
+  },
+  {
+    "file": "apps/web-express/views/privacy.eta",
+    "lines": 65
+  },
+  {
+    "file": "apps/web-express/views/private-inbox.eta",
+    "lines": 12
+  },
+  {
+    "file": "apps/web-express/views/profile.eta",
+    "lines": 358
+  },
+  {
+    "file": "apps/web-express/views/roadmap.eta",
+    "lines": 408
+  },
+  {
+    "file": "apps/web-express/views/school-customization-reviews.eta",
+    "lines": 5
+  },
+  {
+    "file": "apps/web-express/views/school-customization.eta",
+    "lines": 33
+  },
+  {
+    "file": "apps/web-express/views/school-directory.eta",
+    "lines": 22
+  },
+  {
+    "file": "apps/web-express/views/school-form-responses.eta",
+    "lines": 4
+  },
+  {
+    "file": "apps/web-express/views/school-invitation.eta",
+    "lines": 18
+  },
+  {
+    "file": "apps/web-express/views/school-invitations.eta",
+    "lines": 24
+  },
+  {
+    "file": "apps/web-express/views/school-member-action.eta",
+    "lines": 13
+  },
+  {
+    "file": "apps/web-express/views/school-members.eta",
+    "lines": 19
+  },
+  {
+    "file": "apps/web-express/views/school-message.eta",
+    "lines": 16
+  },
+  {
+    "file": "apps/web-express/views/school-notice.eta",
+    "lines": 3
+  },
+  {
+    "file": "apps/web-express/views/school-settings.eta",
+    "lines": 37
+  },
+  {
+    "file": "apps/web-express/views/school-status.eta",
+    "lines": 19
+  },
+  {
+    "file": "apps/web-express/views/school-student-access.eta",
+    "lines": 28
+  },
+  {
+    "file": "apps/web-express/views/staff-board.eta",
+    "lines": 46
+  },
+  {
+    "file": "apps/web-express/views/staff-comment-review.eta",
+    "lines": 3
+  },
+  {
+    "file": "apps/web-express/views/staff-community.eta",
+    "lines": 28
+  },
+  {
+    "file": "apps/web-express/views/staff-login.eta",
+    "lines": 17
+  },
+  {
+    "file": "apps/web-express/views/student-following-signin.eta",
+    "lines": 3
+  },
+  {
+    "file": "apps/web-express/views/submission-owner-edit.eta",
+    "lines": 3
+  },
+  {
+    "file": "apps/web-express/views/submission-safety.eta",
+    "lines": 15
+  },
+  {
+    "file": "apps/web-express/views/submission-status.eta",
+    "lines": 1
+  },
+  {
+    "file": "apps/web-express/views/terms.eta",
+    "lines": 30
+  },
+  {
+    "file": "supabase/functions/_shared/notifications.test.ts",
+    "lines": 129
+  },
+  {
+    "file": "supabase/functions/_shared/notifications.ts",
+    "lines": 314
+  },
+  {
+    "file": "supabase/functions/_shared/retired-push.ts",
+    "lines": 21
+  },
+  {
+    "file": "supabase/functions/_shared/retired-school-endpoint.test.ts",
+    "lines": 17
+  },
+  {
+    "file": "supabase/functions/_shared/retired-school-endpoint.ts",
+    "lines": 10
+  },
+  {
+    "file": "supabase/functions/_shared/security.test.ts",
+    "lines": 131
+  },
+  {
+    "file": "supabase/functions/_shared/security.ts",
+    "lines": 110
+  },
+  {
+    "file": "supabase/functions/add-comment/index.ts",
+    "lines": 4
+  },
+  {
+    "file": "supabase/functions/archive-old-submissions/index.ts",
+    "lines": 4
+  },
+  {
+    "file": "supabase/functions/get-attachments/index.ts",
+    "lines": 4
+  },
+  {
+    "file": "supabase/functions/invite-staff/index.ts",
+    "lines": 4
+  },
+  {
+    "file": "supabase/functions/lookup-by-tracking-code/index.ts",
+    "lines": 4
+  },
+  {
+    "file": "supabase/functions/my-activity/index.ts",
+    "lines": 4
+  },
+  {
+    "file": "supabase/functions/register-push-token/index.ts",
+    "lines": 6
+  },
+  {
+    "file": "supabase/functions/review-submission/index.ts",
+    "lines": 4
+  },
+  {
+    "file": "supabase/functions/submit-feedback/index.ts",
+    "lines": 4
+  },
+  {
+    "file": "supabase/functions/vote-submission/index.ts",
+    "lines": 4
+  },
+  {
+    "file": "supabase/migrations/202608200001_initial_schema.sql",
+    "lines": 22
+  },
+  {
+    "file": "supabase/migrations/202608200002_security_and_operations.sql",
+    "lines": 84
+  },
+  {
+    "file": "supabase/migrations/202608200003_comments.sql",
+    "lines": 37
+  },
+  {
+    "file": "supabase/migrations/202608220001_attachment_rls.sql",
+    "lines": 11
+  },
+  {
+    "file": "supabase/migrations/202608220002_create_storage_bucket.sql",
+    "lines": 14
+  },
+  {
+    "file": "supabase/migrations/202608220003_storage_rls.sql",
+    "lines": 2
+  },
+  {
+    "file": "supabase/migrations/202609270001_comment_threads_and_mod.sql",
+    "lines": 8
+  },
+  {
+    "file": "supabase/migrations/202609270002_staff_comment_moderation_rls.sql",
+    "lines": 19
+  },
+  {
+    "file": "supabase/migrations/202609270003_feed_performance_indexes.sql",
+    "lines": 20
+  },
+  {
+    "file": "supabase/migrations/202609280001_security_operations_fix.sql",
+    "lines": 125
+  },
+  {
+    "file": "supabase/migrations/202609280002_fix_vote_counting_and_profiles.sql",
+    "lines": 10
+  },
+  {
+    "file": "supabase/migrations/202609280003_restore_vote_counts.sql",
+    "lines": 8
+  },
+  {
+    "file": "supabase/migrations/202609280004_user_bookmarks_reports_shares.sql",
+    "lines": 157
+  },
+  {
+    "file": "supabase/migrations/202609280005_fix_report_comment_overload.sql",
+    "lines": 33
+  },
+  {
+    "file": "supabase/migrations/202609280006_anonymous_vote_device_tracking.sql",
+    "lines": 30
+  },
+  {
+    "file": "supabase/migrations/202609280007_anonymous_submission_device_tracking.sql",
+    "lines": 11
+  },
+  {
+    "file": "supabase/migrations/202609280008_allow_direct_sql_role_changes.sql",
+    "lines": 20
+  },
+  {
+    "file": "supabase/migrations/202609280009_performance_indexes.sql",
+    "lines": 34
+  },
+  {
+    "file": "supabase/migrations/202609280010_comment_count_column.sql",
+    "lines": 36
+  },
+  {
+    "file": "supabase/migrations/202609280011_profiles_email_and_student_search.sql",
+    "lines": 82
+  },
+  {
+    "file": "supabase/migrations/202609280012_check_user_rpc.sql",
+    "lines": 53
+  },
+  {
+    "file": "supabase/migrations/202609280013_promote_daabante_admin.sql",
+    "lines": 5
+  },
+  {
+    "file": "supabase/migrations/202610100001_web_sessions.sql",
+    "lines": 12
+  },
+  {
+    "file": "supabase/migrations/202610100002_staff_feedback.sql",
+    "lines": 32
+  },
+  {
+    "file": "supabase/migrations/202610100003_staff_workspace.sql",
+    "lines": 116
+  },
+  {
+    "file": "supabase/migrations/202610110001_roadmap_resolved_at.sql",
+    "lines": 107
+  },
+  {
+    "file": "supabase/migrations/202610110002_roadmap_consistency.sql",
+    "lines": 145
+  },
+  {
+    "file": "supabase/migrations/202610110003_public_progress.sql",
+    "lines": 203
+  },
+  {
+    "file": "supabase/migrations/202610110004_progress_evidence.sql",
+    "lines": 158
+  },
+  {
+    "file": "supabase/migrations/202610110005_roadmap_engagement.sql",
+    "lines": 151
+  },
+  {
+    "file": "supabase/migrations/202610120006_progress_evidence_hardening.sql",
+    "lines": 131
+  },
+  {
+    "file": "supabase/migrations/202610120007_engagement_consistency.sql",
+    "lines": 81
+  },
+  {
+    "file": "supabase/migrations/202610120008_community_workflows.sql",
+    "lines": 181
+  },
+  {
+    "file": "supabase/migrations/202610120009_weekly_digests.sql",
+    "lines": 36
+  },
+  {
+    "file": "supabase/migrations/202610130010_guided_workflows.sql",
+    "lines": 465
+  },
+  {
+    "file": "supabase/migrations/202610130011_student_saved_searches.sql",
+    "lines": 43
+  },
+  {
+    "file": "supabase/migrations/202610130012_submission_receipts.sql",
+    "lines": 61
+  },
+  {
+    "file": "supabase/migrations/202610130013_digest_controls.sql",
+    "lines": 24
+  },
+  {
+    "file": "supabase/migrations/202610130014_public_submission_history.sql",
+    "lines": 20
+  },
+  {
+    "file": "supabase/migrations/202610130015_nonretryable_application_conflicts.sql",
+    "lines": 37
+  },
+  {
+    "file": "supabase/migrations/202610160001_school_registry.sql",
+    "lines": 160
+  },
+  {
+    "file": "supabase/migrations/202610160002_tenant_isolation.sql",
+    "lines": 293
+  },
+  {
+    "file": "supabase/migrations/202610160003_school_onboarding.sql",
+    "lines": 141
+  },
+  {
+    "file": "supabase/migrations/202610160004_shared_request_budgets.sql",
+    "lines": 43
+  },
+  {
+    "file": "supabase/migrations/202610170001_school_release_evidence.sql",
+    "lines": 19
+  },
+  {
+    "file": "supabase/migrations/202610180001_school_invitations.sql",
+    "lines": 84
+  },
+  {
+    "file": "supabase/migrations/202610180002_school_email_domains.sql",
+    "lines": 93
+  },
+  {
+    "file": "supabase/migrations/202610180003_school_enrollment_rosters.sql",
+    "lines": 96
+  },
+  {
+    "file": "supabase/migrations/202610180004_school_customization.sql",
+    "lines": 213
+  },
+  {
+    "file": "supabase/migrations/202610180005_customized_submissions.sql",
+    "lines": 122
+  },
+  {
+    "file": "supabase/migrations/202610180006_school_policy_drafts.sql",
+    "lines": 56
+  },
+  {
+    "file": "supabase/migrations/202610180007_customization_cleanup.sql",
+    "lines": 44
+  },
+  {
+    "file": "supabase/migrations/202610180008_school_digest_customization.sql",
+    "lines": 13
+  },
+  {
+    "file": "supabase/migrations/202610180009_customization_review_integrity.sql",
+    "lines": 13
+  },
+  {
+    "file": "supabase/migrations/202610200001_security_remediation.sql",
+    "lines": 77
+  },
+  {
+    "file": "supabase/migrations/202610200002_school_custom_colors.sql",
+    "lines": 46
+  },
+  {
+    "file": "supabase/migrations/202610210001_school_visual_design.sql",
+    "lines": 56
+  },
+  {
+    "file": "supabase/migrations/202610210002_school_component_styles.sql",
+    "lines": 29
+  },
+  {
+    "file": "supabase/migrations/202610210003_school_status_management.sql",
+    "lines": 38
+  },
+  {
+    "file": "supabase/migrations/202610210004_school_student_joining.sql",
+    "lines": 167
+  },
+  {
+    "file": "supabase/migrations/202610210005_school_member_restrictions.sql",
+    "lines": 58
+  },
+  {
+    "file": "supabase/migrations/202610210006_platform_overview_analytics.sql",
+    "lines": 22
+  },
+  {
+    "file": "supabase/migrations/202610210007_school_cursor_colors.sql",
+    "lines": 16
+  },
+  {
+    "file": "supabase/migrations/202610240001_comment_moderation.sql",
+    "lines": 135
+  },
+  {
+    "file": "supabase/migrations/202610240002_submission_safety.sql",
+    "lines": 300
+  },
+  {
+    "file": "supabase/migrations/202610240003_safety_report_compatibility.sql",
+    "lines": 16
+  },
+  {
+    "file": "supabase/migrations/202610240004_information_assistant.sql",
+    "lines": 90
+  },
+  {
+    "file": "supabase/migrations/202610240005_school_assistant_knowledge.sql",
+    "lines": 73
+  },
+  {
+    "file": "supabase/migrations/202610240006_grounded_assistant_documents.sql",
+    "lines": 63
+  },
+  {
+    "file": "supabase/migrations/202610240007_assistant_response_window.sql",
+    "lines": 10
+  },
+  {
+    "file": "supabase/migrations/202610250001_staff_assignment.sql",
+    "lines": 395
+  },
+  {
+    "file": "supabase/migrations/202610250002_urgent_assignment_sla.sql",
+    "lines": 19
+  },
+  {
+    "file": "supabase/migrations/202610250003_comment_review_revisions.sql",
+    "lines": 185
+  },
+  {
+    "file": "supabase/migrations/202610250004_platform_workspace.sql",
+    "lines": 53
+  },
+  {
+    "file": "supabase/migrations/202610260001_staff_work_board.sql",
+    "lines": 18
+  },
+  {
+    "file": "supabase/migrations/202610260002_staff_work_team_metadata.sql",
+    "lines": 27
+  }
+]

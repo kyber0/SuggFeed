@@ -1,0 +1,4 @@
+
+> suggfeed-express@2.0.0 lint:animations
+> eslint --config eslint.motion.config.mjs src/client/animations
+

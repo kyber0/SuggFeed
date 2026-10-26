@@ -1,0 +1,8 @@
+
+  🚀 SuggFeed (Express + Eta + TS) → http://localhost:31337
+
+GET /account/home 303 11.971 ms
+GET /schools 200 8.289 ms
+GET /health - - ms
+[shutdown] Received SIGTERM — draining connections…
+[shutdown] HTTP server closed. Exiting.

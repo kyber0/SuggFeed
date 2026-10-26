@@ -1,0 +1,1 @@
+{"workspaces":{"apps/web-express":{"entry":["src/server.ts","api/index.ts","src/client/**/*.ts","src/sw.ts","scripts/**/*.{ts,cjs}","tests/**/*.test.ts"],"project":["src/**/*.ts","api/**/*.ts","scripts/**/*.{ts,cjs}","tests/**/*.ts"]}}}

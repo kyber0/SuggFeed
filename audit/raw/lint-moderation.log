@@ -1,0 +1,4 @@
+
+> suggfeed-express@2.0.0 lint:moderation
+> eslint --config eslint.moderation.config.mjs src/lib/comment-moderation*.ts src/lib/comments.ts src/client/comment-edit.ts src/lib/content-*.ts src/lib/*-rules.ts src/lib/submission-safety.ts src/lib/safety-email.ts src/routes/submission-safety.ts src/client/submission-safety.ts
+

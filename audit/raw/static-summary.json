@@ -1,0 +1,89 @@
+{
+  "modules": 204,
+  "functions": 3021,
+  "cycles": [
+    [
+      "apps/web-express/src/lib/progress-evidence.ts",
+      "apps/web-express/src/lib/progress.ts"
+    ]
+  ],
+  "classicBrowserScripts": 80,
+  "highComplexity": 82,
+  "deepNesting": 68,
+  "largeFunctions": 60,
+  "largeFiles": 14,
+  "topHotspots": [
+    {
+      "file": "apps/web-express/src/server.ts",
+      "changes": 33,
+      "max": 15,
+      "lines": 374
+    },
+    {
+      "file": "apps/web-express/src/client/staff-tools.ts",
+      "changes": 18,
+      "max": 82,
+      "lines": 416
+    },
+    {
+      "file": "apps/web-express/src/routes/schools.ts",
+      "changes": 24,
+      "max": 24,
+      "lines": 352
+    },
+    {
+      "file": "apps/web-express/src/routes/api.ts",
+      "changes": 18,
+      "max": 51,
+      "lines": 388
+    },
+    {
+      "file": "apps/web-express/src/client/feed.ts",
+      "changes": 15,
+      "max": 34,
+      "lines": 447
+    },
+    {
+      "file": "apps/web-express/src/client/idea-detail-drawer.ts",
+      "changes": 16,
+      "max": 27,
+      "lines": 547
+    },
+    {
+      "file": "apps/web-express/src/routes/school-customization-preview.ts",
+      "changes": 18,
+      "max": 15,
+      "lines": 43
+    },
+    {
+      "file": "apps/web-express/src/client/staff-review.ts",
+      "changes": 13,
+      "max": 43,
+      "lines": 518
+    },
+    {
+      "file": "apps/web-express/src/client/school-customization.ts",
+      "changes": 12,
+      "max": 57,
+      "lines": 134
+    },
+    {
+      "file": "apps/web-express/src/routes/community.ts",
+      "changes": 16,
+      "max": 20,
+      "lines": 135
+    },
+    {
+      "file": "apps/web-express/src/client/community.ts",
+      "changes": 15,
+      "max": 24,
+      "lines": 170
+    },
+    {
+      "file": "apps/web-express/src/client/submit-panel.ts",
+      "changes": 14,
+      "max": 30,
+      "lines": 490
+    }
+  ]
+}

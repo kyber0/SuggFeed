@@ -1,0 +1,36 @@
+
+> suggfeed-express@2.0.0 build
+> npm run build:knowledge && npm run build:server && npm run build:sw && npm run build:client && tsc -p tsconfig.api.json
+
+
+> suggfeed-express@2.0.0 build:knowledge
+> node scripts/build-assistant.cjs
+
+
+> suggfeed-express@2.0.0 build:server
+> tsc -p tsconfig.json
+
+
+> suggfeed-express@2.0.0 build:sw
+> tsc -p tsconfig.sw.json
+
+
+> suggfeed-express@2.0.0 build:client
+> npm run build:styles && npm run build:vendor && npm run typecheck:client:strict && tsc -p tsconfig.client.json && npm run build:animations
+
+
+> suggfeed-express@2.0.0 build:styles
+> node scripts/build-styles.cjs
+
+
+> suggfeed-express@2.0.0 build:vendor
+> node scripts/build-vendor.cjs
+
+
+> suggfeed-express@2.0.0 typecheck:client:strict
+> tsc -p tsconfig.client.strict.json
+
+
+> suggfeed-express@2.0.0 build:animations
+> node scripts/build-animations.cjs
+

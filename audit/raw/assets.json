@@ -1,0 +1,682 @@
+[
+  {
+    "file": "apps/web-express/public/css/base.bundle.css",
+    "bytes": 269978,
+    "gzipBytes": 43955
+  },
+  {
+    "file": "apps/web-express/public/js/vendor/supabase.js",
+    "bytes": 211907,
+    "gzipBytes": 54172
+  },
+  {
+    "file": "apps/web-express/public/css/enhancements.bundle.css",
+    "bytes": 186823,
+    "gzipBytes": 35381
+  },
+  {
+    "file": "apps/web-express/public/css/staff.bundle.css",
+    "bytes": 102169,
+    "gzipBytes": 17246
+  },
+  {
+    "file": "apps/web-express/public/css/platform.bundle.css",
+    "bytes": 86054,
+    "gzipBytes": 14552
+  },
+  {
+    "file": "apps/web-express/public/css/modules/platform.css",
+    "bytes": 77095,
+    "gzipBytes": 12926
+  },
+  {
+    "file": "apps/web-express/public/js/school-customization.js",
+    "bytes": 62350,
+    "gzipBytes": 14259
+  },
+  {
+    "file": "apps/web-express/public/css/modules/idea.css",
+    "bytes": 60394,
+    "gzipBytes": 10420
+  },
+  {
+    "file": "apps/web-express/public/js/staff-review.js",
+    "bytes": 60089,
+    "gzipBytes": 13528
+  },
+  {
+    "file": "apps/web-express/public/js/staff-tools.js",
+    "bytes": 57841,
+    "gzipBytes": 12518
+  },
+  {
+    "file": "apps/web-express/public/css/modules/pages.css",
+    "bytes": 54980,
+    "gzipBytes": 10108
+  },
+  {
+    "file": "apps/web-express/public/css/modules/feed.css",
+    "bytes": 50543,
+    "gzipBytes": 9721
+  },
+  {
+    "file": "apps/web-express/public/css/modules/components.css",
+    "bytes": 50136,
+    "gzipBytes": 7780
+  },
+  {
+    "file": "apps/web-express/public/js/school-studio-inspector.js",
+    "bytes": 46078,
+    "gzipBytes": 11028
+  },
+  {
+    "file": "apps/web-express/public/js/animations.js",
+    "bytes": 43279,
+    "gzipBytes": 9646
+  },
+  {
+    "file": "apps/web-express/public/js/staff-progress.js",
+    "bytes": 42110,
+    "gzipBytes": 9651
+  },
+  {
+    "file": "apps/web-express/public/css/school-studio.css",
+    "bytes": 41536,
+    "gzipBytes": 8014
+  },
+  {
+    "file": "apps/web-express/public/css/modules/admin.css",
+    "bytes": 38955,
+    "gzipBytes": 7335
+  },
+  {
+    "file": "apps/web-express/public/js/school-studio-frame.js",
+    "bytes": 38260,
+    "gzipBytes": 8809
+  },
+  {
+    "file": "apps/web-express/public/css/modules/roadmap.css",
+    "bytes": 36344,
+    "gzipBytes": 7076
+  },
+  {
+    "file": "apps/web-express/public/css/student.bundle.css",
+    "bytes": 34642,
+    "gzipBytes": 6508
+  },
+  {
+    "file": "apps/web-express/public/js/controls.js",
+    "bytes": 34275,
+    "gzipBytes": 7641
+  },
+  {
+    "file": "apps/web-express/public/js/idea-detail-drawer.js",
+    "bytes": 33542,
+    "gzipBytes": 8206
+  },
+  {
+    "file": "apps/web-express/public/css/modules/submit.css",
+    "bytes": 33274,
+    "gzipBytes": 6016
+  },
+  {
+    "file": "apps/web-express/public/js/feed.js",
+    "bytes": 30262,
+    "gzipBytes": 7107
+  },
+  {
+    "file": "apps/web-express/public/css/modules/assistant.css",
+    "bytes": 28758,
+    "gzipBytes": 5988
+  },
+  {
+    "file": "apps/web-express/public/js/roadmap.js",
+    "bytes": 28743,
+    "gzipBytes": 6824
+  },
+  {
+    "file": "apps/web-express/public/js/submit-panel.js",
+    "bytes": 26858,
+    "gzipBytes": 5647
+  },
+  {
+    "file": "apps/web-express/public/css/modules/school-studio.css",
+    "bytes": 25625,
+    "gzipBytes": 5484
+  },
+  {
+    "file": "apps/web-express/public/js/community.js",
+    "bytes": 25315,
+    "gzipBytes": 6126
+  },
+  {
+    "file": "apps/web-express/public/css/profile.bundle.css",
+    "bytes": 24492,
+    "gzipBytes": 4710
+  },
+  {
+    "file": "apps/web-express/public/css/modules/profile.css",
+    "bytes": 24447,
+    "gzipBytes": 4671
+  },
+  {
+    "file": "apps/web-express/public/css/modules/responsive.css",
+    "bytes": 23761,
+    "gzipBytes": 5337
+  },
+  {
+    "file": "apps/web-express/public/css/modules/staff-portal.css",
+    "bytes": 22844,
+    "gzipBytes": 4467
+  },
+  {
+    "file": "apps/web-express/public/js/submission-recovery.js",
+    "bytes": 21802,
+    "gzipBytes": 5448
+  },
+  {
+    "file": "apps/web-express/public/js/assistant.js",
+    "bytes": 20894,
+    "gzipBytes": 5738
+  },
+  {
+    "file": "apps/web-express/public/css/modules/landing-ideas.css",
+    "bytes": 20441,
+    "gzipBytes": 4281
+  },
+  {
+    "file": "apps/web-express/public/js/home.js",
+    "bytes": 19939,
+    "gzipBytes": 4943
+  },
+  {
+    "file": "apps/web-express/public/js/saved-searches.js",
+    "bytes": 18221,
+    "gzipBytes": 4775
+  },
+  {
+    "file": "apps/web-express/public/css/modules/ui-polish.css",
+    "bytes": 17814,
+    "gzipBytes": 4398
+  },
+  {
+    "file": "apps/web-express/public/css/modules/staff-detail.css",
+    "bytes": 17723,
+    "gzipBytes": 3397
+  },
+  {
+    "file": "apps/web-express/public/js/vendor/lenis.js",
+    "bytes": 17685,
+    "gzipBytes": 5014
+  },
+  {
+    "file": "apps/web-express/public/js/comment-edit.js",
+    "bytes": 17390,
+    "gzipBytes": 4175
+  },
+  {
+    "file": "apps/web-express/public/js/auth-modal.js",
+    "bytes": 17180,
+    "gzipBytes": 3129
+  },
+  {
+    "file": "apps/web-express/public/js/auth-callback.js",
+    "bytes": 16227,
+    "gzipBytes": 3738
+  },
+  {
+    "file": "apps/web-express/public/css/modules/school-studio-workflow.css",
+    "bytes": 15865,
+    "gzipBytes": 3472
+  },
+  {
+    "file": "apps/web-express/public/js/school-submission.js",
+    "bytes": 15774,
+    "gzipBytes": 4231
+  },
+  {
+    "file": "apps/web-express/public/js/school-design.js",
+    "bytes": 15517,
+    "gzipBytes": 4858
+  },
+  {
+    "file": "apps/web-express/public/js/admin-staff.js",
+    "bytes": 15108,
+    "gzipBytes": 3600
+  },
+  {
+    "file": "apps/web-express/public/js/events.js",
+    "bytes": 15088,
+    "gzipBytes": 2089
+  },
+  {
+    "file": "apps/web-express/public/css/modules/auth.css",
+    "bytes": 14959,
+    "gzipBytes": 3046
+  },
+  {
+    "file": "apps/web-express/public/css/modules/student-experience.css",
+    "bytes": 14155,
+    "gzipBytes": 3011
+  },
+  {
+    "file": "apps/web-express/public/js/idea.js",
+    "bytes": 14011,
+    "gzipBytes": 4083
+  },
+  {
+    "file": "apps/web-express/public/js/profile.js",
+    "bytes": 13769,
+    "gzipBytes": 3893
+  },
+  {
+    "file": "apps/web-express/public/css/modules/staff-flow.css",
+    "bytes": 13685,
+    "gzipBytes": 2994
+  },
+  {
+    "file": "apps/web-express/public/css/modules/full-detail.css",
+    "bytes": 13320,
+    "gzipBytes": 2727
+  },
+  {
+    "file": "apps/web-express/public/js/navigation.js",
+    "bytes": 12694,
+    "gzipBytes": 3462
+  },
+  {
+    "file": "apps/web-express/public/css/modules/community.css",
+    "bytes": 12123,
+    "gzipBytes": 3081
+  },
+  {
+    "file": "apps/web-express/public/js/animations/home-motion.js",
+    "bytes": 11066,
+    "gzipBytes": 2962
+  },
+  {
+    "file": "apps/web-express/public/css/customization.bundle.css",
+    "bytes": 10999,
+    "gzipBytes": 2794
+  },
+  {
+    "file": "apps/web-express/public/css/modules/customization.css",
+    "bytes": 10954,
+    "gzipBytes": 2763
+  },
+  {
+    "file": "apps/web-express/public/js/roadmap-timeline.js",
+    "bytes": 10930,
+    "gzipBytes": 3171
+  },
+  {
+    "file": "apps/web-express/public/js/file-upload.js",
+    "bytes": 10154,
+    "gzipBytes": 2915
+  },
+  {
+    "file": "apps/web-express/public/js/assistant-knowledge.js",
+    "bytes": 9942,
+    "gzipBytes": 2910
+  },
+  {
+    "file": "apps/web-express/public/css/modules/experience.css",
+    "bytes": 9836,
+    "gzipBytes": 2912
+  },
+  {
+    "file": "apps/web-express/public/js/notifications.js",
+    "bytes": 9772,
+    "gzipBytes": 2650
+  },
+  {
+    "file": "apps/web-express/public/css/modules/overview.css",
+    "bytes": 8913,
+    "gzipBytes": 2238
+  },
+  {
+    "file": "apps/web-express/public/sw.js",
+    "bytes": 8816,
+    "gzipBytes": 2796
+  },
+  {
+    "file": "apps/web-express/public/js/school-studio-model.js",
+    "bytes": 8781,
+    "gzipBytes": 2470
+  },
+  {
+    "file": "apps/web-express/public/js/assistant-documents.js",
+    "bytes": 8584,
+    "gzipBytes": 2549
+  },
+  {
+    "file": "apps/web-express/public/css/modules/workspace.css",
+    "bytes": 8480,
+    "gzipBytes": 2293
+  },
+  {
+    "file": "apps/web-express/public/css/modules/school-design.css",
+    "bytes": 8477,
+    "gzipBytes": 1761
+  },
+  {
+    "file": "apps/web-express/public/css/modules/controls.css",
+    "bytes": 8431,
+    "gzipBytes": 2216
+  },
+  {
+    "file": "apps/web-express/public/js/account-security.js",
+    "bytes": 8245,
+    "gzipBytes": 2212
+  },
+  {
+    "file": "apps/web-express/public/js/school-studio-tools.js",
+    "bytes": 7970,
+    "gzipBytes": 2599
+  },
+  {
+    "file": "apps/web-express/public/css/modules/comments.css",
+    "bytes": 7710,
+    "gzipBytes": 2003
+  },
+  {
+    "file": "apps/web-express/public/css/modules/persistence.css",
+    "bytes": 7263,
+    "gzipBytes": 1804
+  },
+  {
+    "file": "apps/web-express/public/js/auth.js",
+    "bytes": 7108,
+    "gzipBytes": 2211
+  },
+  {
+    "file": "apps/web-express/public/js/admin-analytics.js",
+    "bytes": 7025,
+    "gzipBytes": 2329
+  },
+  {
+    "file": "apps/web-express/public/css/modules/interaction-feedback.css",
+    "bytes": 6987,
+    "gzipBytes": 1969
+  },
+  {
+    "file": "apps/web-express/public/js/interaction-feedback.js",
+    "bytes": 6841,
+    "gzipBytes": 1984
+  },
+  {
+    "file": "apps/web-express/public/js/assistant-admin.js",
+    "bytes": 6533,
+    "gzipBytes": 2064
+  },
+  {
+    "file": "apps/web-express/public/js/submission-storage.js",
+    "bytes": 6447,
+    "gzipBytes": 1874
+  },
+  {
+    "file": "apps/web-express/public/css/modules/responsive-primitives.css",
+    "bytes": 6207,
+    "gzipBytes": 1798
+  },
+  {
+    "file": "apps/web-express/public/js/toast.js",
+    "bytes": 6132,
+    "gzipBytes": 1992
+  },
+  {
+    "file": "apps/web-express/public/js/animations/marquee.js",
+    "bytes": 6095,
+    "gzipBytes": 1793
+  },
+  {
+    "file": "apps/web-express/public/js/engagement.js",
+    "bytes": 5951,
+    "gzipBytes": 1594
+  },
+  {
+    "file": "apps/web-express/public/js/assignments.js",
+    "bytes": 5825,
+    "gzipBytes": 1938
+  },
+  {
+    "file": "apps/web-express/public/js/submission-safety.js",
+    "bytes": 5216,
+    "gzipBytes": 1576
+  },
+  {
+    "file": "apps/web-express/public/js/admin-overview.js",
+    "bytes": 4960,
+    "gzipBytes": 1619
+  },
+  {
+    "file": "apps/web-express/public/css/modules/interactions.css",
+    "bytes": 4886,
+    "gzipBytes": 1190
+  },
+  {
+    "file": "apps/web-express/public/css/modules/tokens.css",
+    "bytes": 4805,
+    "gzipBytes": 1652
+  },
+  {
+    "file": "apps/web-express/public/css/modules/empty-states.css",
+    "bytes": 4775,
+    "gzipBytes": 1585
+  },
+  {
+    "file": "apps/web-express/public/js/school-context.js",
+    "bytes": 4600,
+    "gzipBytes": 1676
+  },
+  {
+    "file": "apps/web-express/public/js/public-history.js",
+    "bytes": 4310,
+    "gzipBytes": 1537
+  },
+  {
+    "file": "apps/web-express/public/js/auth-confirm.js",
+    "bytes": 4242,
+    "gzipBytes": 1425
+  },
+  {
+    "file": "apps/web-express/public/js/animations/reveal.js",
+    "bytes": 4183,
+    "gzipBytes": 1435
+  },
+  {
+    "file": "apps/web-express/public/js/animations/controller.js",
+    "bytes": 4169,
+    "gzipBytes": 1377
+  },
+  {
+    "file": "apps/web-express/public/js/navigation-cache.js",
+    "bytes": 4075,
+    "gzipBytes": 1419
+  },
+  {
+    "file": "apps/web-express/public/css/modules/system-ux.css",
+    "bytes": 4030,
+    "gzipBytes": 1557
+  },
+  {
+    "file": "apps/web-express/public/js/school-studio-content.js",
+    "bytes": 4017,
+    "gzipBytes": 1191
+  },
+  {
+    "file": "apps/web-express/public/js/animations/magnetic-button.js",
+    "bytes": 3821,
+    "gzipBytes": 1237
+  },
+  {
+    "file": "apps/web-express/public/js/animations/split-text.js",
+    "bytes": 3734,
+    "gzipBytes": 1213
+  },
+  {
+    "file": "apps/web-express/public/css/modules/idea-page.css",
+    "bytes": 3560,
+    "gzipBytes": 1093
+  },
+  {
+    "file": "apps/web-express/public/js/animations/smooth-scroll.js",
+    "bytes": 3204,
+    "gzipBytes": 1175
+  },
+  {
+    "file": "apps/web-express/public/js/animations/cursor.js",
+    "bytes": 3196,
+    "gzipBytes": 1127
+  },
+  {
+    "file": "apps/web-express/public/js/platform-dashboard.js",
+    "bytes": 3042,
+    "gzipBytes": 1104
+  },
+  {
+    "file": "apps/web-express/public/css/modules/animations.css",
+    "bytes": 2961,
+    "gzipBytes": 1157
+  },
+  {
+    "file": "apps/web-express/public/css/styles.css",
+    "bytes": 2906,
+    "gzipBytes": 977
+  },
+  {
+    "file": "apps/web-express/public/css/modules/mobile-type.css",
+    "bytes": 2901,
+    "gzipBytes": 884
+  },
+  {
+    "file": "apps/web-express/public/js/staff-login.js",
+    "bytes": 2866,
+    "gzipBytes": 949
+  },
+  {
+    "file": "apps/web-express/public/js/student-access.js",
+    "bytes": 2796,
+    "gzipBytes": 1036
+  },
+  {
+    "file": "apps/web-express/public/js/staff-portal.js",
+    "bytes": 2762,
+    "gzipBytes": 1130
+  },
+  {
+    "file": "apps/web-express/public/js/system-ux.js",
+    "bytes": 2646,
+    "gzipBytes": 983
+  },
+  {
+    "file": "apps/web-express/public/css/modules/reset.css",
+    "bytes": 2645,
+    "gzipBytes": 668
+  },
+  {
+    "file": "apps/web-express/public/js/responsive.js",
+    "bytes": 2577,
+    "gzipBytes": 868
+  },
+  {
+    "file": "apps/web-express/public/js/school-colors.js",
+    "bytes": 2404,
+    "gzipBytes": 1087
+  },
+  {
+    "file": "apps/web-express/public/js/roadmap-views.js",
+    "bytes": 2371,
+    "gzipBytes": 855
+  },
+  {
+    "file": "apps/web-express/public/js/invitations.js",
+    "bytes": 2305,
+    "gzipBytes": 853
+  },
+  {
+    "file": "apps/web-express/public/js/animations/page-transition.js",
+    "bytes": 2220,
+    "gzipBytes": 868
+  },
+  {
+    "file": "apps/web-express/public/css/modules/file-upload.css",
+    "bytes": 2158,
+    "gzipBytes": 880
+  },
+  {
+    "file": "apps/web-express/public/js/confirmation.js",
+    "bytes": 2084,
+    "gzipBytes": 748
+  },
+  {
+    "file": "apps/web-express/public/js/school-ui.js",
+    "bytes": 2032,
+    "gzipBytes": 846
+  },
+  {
+    "file": "apps/web-express/public/js/empty-state.js",
+    "bytes": 1516,
+    "gzipBytes": 575
+  },
+  {
+    "file": "apps/web-express/public/js/student-experience.js",
+    "bytes": 1463,
+    "gzipBytes": 658
+  },
+  {
+    "file": "apps/web-express/public/css/submission-safety.css",
+    "bytes": 1380,
+    "gzipBytes": 599
+  },
+  {
+    "file": "apps/web-express/public/js/header.js",
+    "bytes": 1337,
+    "gzipBytes": 419
+  },
+  {
+    "file": "apps/web-express/public/js/preferences.js",
+    "bytes": 1306,
+    "gzipBytes": 567
+  },
+  {
+    "file": "apps/web-express/public/js/animations/config.js",
+    "bytes": 1277,
+    "gzipBytes": 665
+  },
+  {
+    "file": "apps/web-express/public/css/motion-transitions.css",
+    "bytes": 975,
+    "gzipBytes": 399
+  },
+  {
+    "file": "apps/web-express/public/js/activity.js",
+    "bytes": 951,
+    "gzipBytes": 550
+  },
+  {
+    "file": "apps/web-express/public/css/modules/branding.css",
+    "bytes": 814,
+    "gzipBytes": 384
+  },
+  {
+    "file": "apps/web-express/public/js/theme-init.js",
+    "bytes": 801,
+    "gzipBytes": 349
+  },
+  {
+    "file": "apps/web-express/public/js/theme.js",
+    "bytes": 473,
+    "gzipBytes": 278
+  },
+  {
+    "file": "apps/web-express/public/js/animations/stagger.js",
+    "bytes": 255,
+    "gzipBytes": 170
+  },
+  {
+    "file": "apps/web-express/public/js/scroll-reveal.js",
+    "bytes": 184,
+    "gzipBytes": 167
+  }
+]

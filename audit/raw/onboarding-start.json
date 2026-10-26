@@ -1,0 +1,16 @@
+{
+  "node": "v22.23.4",
+  "responses": [
+    {
+      "path": "/account/home",
+      "status": 200
+    },
+    {
+      "path": "/health",
+      "errorType": "TimeoutError",
+      "deadlineSeconds": 3,
+      "note": "synthetic database unavailable; no live credentials used"
+    }
+  ],
+  "externalAccess": "blocked; synthetic credentials only"
+}

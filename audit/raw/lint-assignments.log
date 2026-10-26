@@ -1,0 +1,4 @@
+
+> suggfeed-express@2.0.0 lint:assignments
+> eslint --config eslint.assignment.config.mjs src/lib/assignment/*.ts src/routes/assignments.ts src/client/assignments.ts
+

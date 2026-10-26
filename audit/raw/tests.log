@@ -1,0 +1,1712 @@
+
+> suggfeed-express@2.0.0 test
+> npm run build:knowledge && npm run build:client && tsc -p tsconfig.tests.json && node -r ts-node/register/transpile-only --test tests/*.test.ts
+
+
+> suggfeed-express@2.0.0 build:knowledge
+> node scripts/build-assistant.cjs
+
+
+> suggfeed-express@2.0.0 build:client
+> npm run build:styles && npm run build:vendor && npm run typecheck:client:strict && tsc -p tsconfig.client.json && npm run build:animations
+
+
+> suggfeed-express@2.0.0 build:styles
+> node scripts/build-styles.cjs
+
+
+> suggfeed-express@2.0.0 build:vendor
+> node scripts/build-vendor.cjs
+
+
+> suggfeed-express@2.0.0 typecheck:client:strict
+> tsc -p tsconfig.client.strict.json
+
+
+> suggfeed-express@2.0.0 build:animations
+> node scripts/build-animations.cjs
+
+✔ MFA setup requires an explicit action and renders secrets only as image/text (10.543216ms)
+✔ existing verified authenticator is challenged without enrollment or removal (2.983692ms)
+✔ invalid and stale codes do not save a server session; retries use fresh challenges (2.098653ms)
+✔ unfinished setup removal is explicit and restricted to its own unverified factor (8.97444ms)
+✔ server session must save before navigation and failures keep the security page open (13.482071ms)
+✔ MFA completion rejects external and malformed return destinations (4.725488ms)
+✔ analytics normalizes filters and keeps every aggregate inside the chosen snapshot scope (4.105868ms)
+✔ analytics 90 days and available history include older data, zero results stay honest (20.670067ms)
+✔ animation stagger is bounded to five siblings (3.59475ms)
+✔ page transitions reject authentication, downloads and cross-origin destinations (1.32523ms)
+✔ every motion effect is registered once and finite timings stay bounded (2.537721ms)
+✔ retired archive cannot reach data for missing, weak, mismatched or previously valid scheduler secrets (78.678158ms)
+✔ retired archive preflight remains available and GET cannot trigger retention (11.438231ms)
+✔ assignment API binds school/actor, rejects guests and cross-origin writes, and preserves DB denials (63.483635ms)
+﹣ real PostgreSQL: concurrent inserts respect capacity and concurrent jobs notify once (0.92584ms) # SKIP
+✔ assignment database: routing, capacity, availability, urgent fallback, reports, audit, escalation and permissions (6675.506268ms)
+✔ reviewed help answers cover real routes without publishing placeholders (12.281548ms)
+✔ matches English and Taglish questions and keeps original prose out of safe topics (4.151045ms)
+✔ sensitive, unrelated and instruction-changing questions never select an answer (0.136205ms)
+✔ generated public offline FAQ omits school-only entries and widget assets exist (0.396025ms)
+✔ school Help links preserve scope while the public offline FAQ stays global (0.306751ms)
+✔ app overview handles natural paraphrases and school facts never use another scope (1.35795ms)
+✔ assistant storage isolates school cache, versions, log reads and own-request ratings (5653.860349ms)
+✔ global admin boundaries, provider caps and retention hold without superuser function privileges (2988.104899ms)
+✔ documents are bounded, plain-text and preserve stable identities (2.19705ms)
+✔ retrieval and generated answers use only supplied source IDs (2.33005ms)
+✔ file extraction accepts readable text and rejects binary and oversized uploads (2.290821ms)
+✔ published documents and approved settings are scoped, immutable and revision controlled (6284.241112ms)
+✔ grounded service cites only current sources, refuses invented citations and does not cache generated prose (11.171974ms)
+Warning: Invalid PDF header version: broken
+✔ a bounded PDF worker extracts readable text without executing document content (308.469852ms)
+✔ domain-only questions are allowed while personal email input is blocked (0.378748ms)
+✔ model discovery selects available stable Flash variants and never silently selects Pro or preview (1.076907ms)
+school_knowledge_unavailable
+✔ help endpoint validates direct input, ignores caller scope and denies student admin access (82.318921ms)
+✔ school FAQ routes require admin MFA, preserve revisions and publish the saved draft only (56.61541ms)
+✔ school FAQ validator requires reviewed translations and prevents app overrides (6.276303ms)
+school_knowledge_unavailable
+✔ school drafts, publication, history and runtime answers are scoped and versioned (3703.671479ms)
+✔ failed school lookup keeps general help but never resurrects stale school facts (0.682044ms)
+assistant_provider_unavailable
+✔ validated help, safe topic logging, cache, quota and provider fallback use reviewed answers only (28.140041ms)
+✔ tool registry exposes no private-record functions (1.38533ms)
+✔ identity derives assurance only from the exact provider-verified session token (1.917008ms)
+✔ assurance decoder fails closed and reads only the verified token assurance claim (1.502336ms)
+✔ security return destinations reject redirects, path confusion and unscoped pages (0.815404ms)
+✔ privileged access ignores spoofed headers, body and session assurance (1.598359ms)
+✔ mixed-case staff pages and API routes require the same verified MFA (0.773391ms)
+✔ Google requests PKCE callback on custom domain (6.290615ms)
+✔ duplicate sync events produce one POST; auth event itself does not reload (1.315204ms)
+✔ cookie persistence failure does not navigate or reload (1.247433ms)
+✔ failed session response does not navigate (5.697454ms)
+✔ navigation stays on current origin and logout clears both sessions (2.13806ms)
+✔ PKCE and implicit recovery show password forms without syncing or navigating (7.548173ms)
+✔ password validation and update happen before server session sync (1.312631ms)
+✔ password rejection and account changes cannot create a server session (1.490458ms)
+✔ cookie failures after a successful update do not report password failure (0.871198ms)
+✔ recovery resumes after reload only with a recent marker for the same session (1.403958ms)
+✔ OAuth keeps its return page; expired recovery links never use existing sign-in (2.182587ms)
+✔ password recovery codes verify the recovery type before exposing the reset form (1.016757ms)
+✔ invalid, expired and reused recovery codes cannot reuse an existing session (0.782414ms)
+✔ OAuth rejects unscoped, auth, and external callback return destinations (2.998392ms)
+✔ OAuth provider failures explain the category without exposing raw provider data (2.02467ms)
+✔ email confirmation in a new tab restores the server-held invitation destination (1.48542ms)
+✔ session survives a different server instance; payload encrypted and cookie HTTP-only (70.578185ms)
+✔ cross-site login, logout and writes are rejected; malformed referer does not crash (10.317596ms)
+✔ session sync rejects non-JSON and invalid tokens (6.466663ms)
+✔ permissions come from DB and revoked staff roles take effect immediately (37.229988ms)
+✔ permission lookup failures fail closed without leaking internals (28.158674ms)
+✔ logout deletes shared session so another instance no longer recognizes it (32.455077ms)
+✔ expired sessions are removed and altered encrypted payloads are rejected (22.3841ms)
+✔ moderation endpoint commits staff note and status through the transactional RPC (28.394517ms)
+✔ student cannot moderate even if their auth metadata says admin (36.924949ms)
+✔ global profile admin does not grant a school moderator role (26.841355ms)
+✔ switching invitation accounts returns to that invitation and rejects external return addresses (55.011445ms)
+✔ worker compiler emits the classic-script logo cache change, rather than silently skipping a module (2607.089277ms)
+✔ the Express app retains the supplied transparent monogram and correctly sized installation icons (46.094783ms)
+✔ navigation stays text-only while staff, auth, offline and email branding retain the supplied asset (0.95875ms)
+✔ direct API creation and editing cannot request published status to bypass detection (90.273335ms)
+✔ moderated comments enforce isolation, ownership, report uniqueness, review roles and visible counts (3419.031831ms)
+✔ the migration applies after the complete current schema under the migration role (2855.32955ms)
+✔ clean: Please improve library seating. (7.339291ms)
+✔ clean: Salamat po, magandang suggestion ito. (0.561232ms)
+✔ clean: Scunthorpe class assistance and constitution (0.736876ms)
+✔ clean: Nagbabago ang kalagayan ng paaralan. (0.551368ms)
+✔ clean: tanglaw at pagkakaisa (0.514693ms)
+✔ clean:  (0.074352ms)
+✔ clean:     (0.123655ms)
+✔ detect: fuck you (0.143365ms)
+✔ detect: shit happens (0.270015ms)
+✔ detect: gago ka talaga (0.236405ms)
+✔ detect: putang ina mo (0.121472ms)
+✔ detect: tangina naman (0.105899ms)
+✔ detect: b0b0 ka (0.092379ms)
+✔ detect: p@kyu ka (0.221723ms)
+✔ detect: gagoooo ka (0.313771ms)
+✔ detect: f.u.c.k you (0.242885ms)
+✔ detect: f!u!c!k you (0.151848ms)
+✔ detect: g/a/g/o ka (0.178097ms)
+✔ detect: p u t a n g i n a (0.321403ms)
+✔ detect: b.o.b.o (0.212369ms)
+✔ detect: ｇａｇｏ (0.188203ms)
+✔ detect: ga​go (0.26651ms)
+✔ mode and detector failure are safe (1.780694ms)
+✖ server service moderates creation and edits before persistence and owns report threshold (10.698704ms)
+✔ community input validation rejects malformed capabilities and identifiers (2.559553ms)
+✔ private workflows enforce ownership, hide moderated content, and preserve duplicate records (2984.543251ms)
+✔ community readers retain ownership, public visibility, staff guards and explicit field sets (8.113352ms)
+✔ community routes enforce staff roles, ignore caller identity and reject cross-origin writes (86.755939ms)
+✔ clean submission  (1.531129ms)
+✔ clean submission Thank you, salamat sa inyong tulong. (7.459851ms)
+✔ clean submission Scunthorpe classroom assistance (0.633712ms)
+✔ clean submission Nagbabago ang paaralan. (0.520081ms)
+✔ flag submission fuck this idea (0.33333ms)
+✔ flag submission gago ka talaga (0.178538ms)
+✔ flag submission b0b0 (0.142774ms)
+✔ flag submission gagoooo (0.237246ms)
+✔ flag submission p u t a n g i n a (0.277276ms)
+✔ flag submission f.u.c.k (0.20021ms)
+✔ submission mode is configurable and overlong detector input is held safely (0.325018ms)
+✔ urgent review signal May binubully sa classroom. (0.611839ms)
+✔ urgent review signal Papatayin daw niya ako. (0.449755ms)
+✔ urgent review signal I want to die. (0.737527ms)
+✔ urgent review signal Hinipuan ako sa hallway. (0.228093ms)
+✔ urgent review signal A self-harm awareness campaign. (0.428884ms)
+✔ no urgent signal  (0.092689ms)
+✔ no urgent signal Please add shaded seating. (0.363125ms)
+✔ no urgent signal Salamat po sa bagong library. (0.069023ms)
+✔ urgent overrides reject, custom answers are scanned and category matches only active choices (3.457873ms)
+✔ a fresh shared content revision cannot reuse stale ideas, comments or feed rows (1.820243ms)
+✔ digest capabilities only authorize unsubscribe; delivery is disabled without full configuration (3.412805ms)
+✔ weekly claims are once per account per week and client-private (3342.884137ms)
+✔ digest delivery uses verified email, current consent and public filters; network uncertainty never triggers a second send (5.225658ms)
+✔ digest delivery rechecks pause and chosen kinds immediately before sending (4.738577ms)
+✔ unsubscribe capabilities require the issuing school and reject legacy account-only signatures (0.534773ms)
+✔ a job completion outage is counted and does not prevent completing the next job (1.449227ms)
+✔ real PostgreSQL migrations maintain seed totals, duplicate vote idempotency and Edge toggle counts (3132.308473ms)
+✔ real fanout is opt-in, transaction-local, deduplicated, and excludes private/deleted or withdrawn updates (2140.350556ms)
+✔ real database denies client engagement access and arbitrary-user RPC calls (2236.86232ms)
+✔ notification cursor validates shape, UUID, timestamp and query-injection characters (2.571252ms)
+✔ notification loader scopes account and visibility, keyset-paginates, and excludes private response fields (0.806672ms)
+✔ follow reads verify public idea first and scope account identity (0.373781ms)
+✔ engagement routes enforce session identity, CSRF, payloads, private caching and scoped read marking (136.215053ms)
+✔ Express vote routes use one database RPC and never accept a browser-supplied account ID (69.082011ms)
+✔ delegated vote handles a nested icon and does not open the enclosing idea card (2.865694ms)
+✔ keyboard binding opens dynamically loaded idea cards (1.031089ms)
+✔ focusing either comment input reveals its own composer without inline JavaScript (1.077268ms)
+✔ modified clicks preserve native browser navigation (1.696838ms)
+✔ every declarative template action has a registered event handler (26.078607ms)
+✖ feed search waits for submission and sorting preserves the applied search (9.051194ms)
+✖ loading more uses the applied filters even when the search input has a draft (1.736949ms)
+✖ failed loading preserves existing ideas and retries the same page (1.337499ms)
+✖ failed support can be retried without recording a false vote or sending duplicate requests (1.44449ms)
+✖ loaded feed cards escape content and expose native title links without duplicate card actions (1.130879ms)
+✖ 3-dot kebab menu toggles open and closed on click and closes on Escape (1.832021ms)
+✖ concurrent account bookmarks preserve both confirmed changes in either response order (1.269506ms)
+✔ account menu supports Escape, focus return and leaving the disclosure by keyboard (2.275678ms)
+✔ the hosted isolation probe passes locally and rolls back every synthetic row and gate change (3334.920313ms)
+✔ release evidence is required and application roles cannot sign off their own isolation (2507.248257ms)
+✔ branded invitation email includes school, access, expiry, safe links and an escaped text alternative (21.387742ms)
+✔ invitation transport distinguishes provider acceptance, rejection and uncertainty without duplicate retries (7.200435ms)
+✔ all legacy Edge entrypoints retire before constructing service clients or parsing request bodies (230.931122ms)
+✔ retired Next client is absent from the active repository (0.244106ms)
+✔ design tokens enforce neutral card borders and semantic tokens (1.122666ms)
+✔ hero and header contain no radial or linear gradients (0.648284ms)
+✔ idea and post cards have no spinning conic borders, spotlights, or colored outlines (0.589495ms)
+✔ buttons use gradient tokens not raw conic or decorative multi-stop gradients (0.416054ms)
+✔ compiled bundles contain no conic gradients or shiny card sweeps (1.873794ms)
+✔ school landing is deterministic for role and lifecycle and return URLs cannot escape scope (1.497399ms)
+✔ verified platform accounts cannot enter school pages or write school APIs; failures never downgrade to member (0.781334ms)
+✖ platform and account layouts omit client actions while members retain their own school navigation (20.43438ms)
+GET / 302 31.117 ms
+[error] GET /: Error
+GET / 503 19.490 ms
+[error] GET /auth/session: Error
+GET /auth/session 503 1.238 ms
+✔ signed-in session outage renders a safe 503 page before normal template locals exist (3105.879694ms)
+✔ real HTTP submit replays a lost response, recovers code, and rejects account changes and cross-origin writes (3112.492515ms)
+✔ search rename uses the verified account, never the request owner field (13.351482ms)
+Error: No default engine was specified and no extension was provided.
+    at new View (/tmp/suggfeed-animation-main/node_modules/.pnpm/express@4.22.3/node_modules/express/lib/view.js:61:11)
+    at app.render (/tmp/suggfeed-animation-main/node_modules/.pnpm/express@4.22.3/node_modules/express/lib/application.js:587:12)
+    at ServerResponse.render (/tmp/suggfeed-animation-main/node_modules/.pnpm/express@4.22.3/node_modules/express/lib/response.js:1049:7)
+    at /tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/src/routes/digests.ts:21:7
+    at Layer.handle [as handle_request] (/tmp/suggfeed-animation-main/node_modules/.pnpm/express@4.22.3/node_modules/express/lib/router/layer.js:95:5)
+    at next (/tmp/suggfeed-animation-main/node_modules/.pnpm/express@4.22.3/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/tmp/suggfeed-animation-main/node_modules/.pnpm/express@4.22.3/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/tmp/suggfeed-animation-main/node_modules/.pnpm/express@4.22.3/node_modules/express/lib/router/layer.js:95:5)
+    at /tmp/suggfeed-animation-main/node_modules/.pnpm/express@4.22.3/node_modules/express/lib/router/index.js:284:15
+    at router.process_params (/tmp/suggfeed-animation-main/node_modules/.pnpm/express@4.22.3/node_modules/express/lib/router/index.js:346:12)
+✔ unsubscribe HTML write redirects 303 to a GET without the private token (20.780812ms)
+✔ public filter parsing ignores capabilities, rejects malformed values, and bounds paging (2.303982ms)
+✔ digest pause and selected types are validated without changing omitted legacy fields (0.628665ms)
+✔ saved searches enforce ten per owner, private access and public-only filter schema (3582.734933ms)
+✔ submission receipts replay once, bind content and owner, and preserve deletion tombstones (2172.630135ms)
+✔ anonymous recovery code requires the same private device and account context (3.071543ms)
+✔ public status history excludes notes and identities and disappears with publication (2626.301387ms)
+✔ paused accounts are not claimed and expired receipts cannot create another submission (2249.262276ms)
+✔ tracking capabilities and query values are absent from request logs (0.680602ms)
+✔ strict preference/theme integration tolerates missing, malformed and unavailable storage (13.947478ms)
+✔ profile pages isolate account reads, continue beyond 200 and reject invalid input (79.625989ms)
+✔ actual evidence SQL enforces staff roles, quota and request/file reservation replay (3340.77375ms)
+✔ actual progress publication is atomic with evidence; pending files roll back projection and published files cannot be removed (2370.118647ms)
+✔ actual public file reads exclude private events and unpublished parents; authorization rechecks current staff role (2518.631902ms)
+✔ actual cleanup waits for outstanding signed-upload capabilities, preserves published final objects and remains retryable (2278.058292ms)
+✔ actual grants deny browser roles all upload mutation/read-path RPCs and base-table access (2338.555939ms)
+✔ evidence validates fixed types, 10MB size, image descriptions and display-only filenames (2.393144ms)
+✔ trusted image finalization strips metadata, bounds dimensions, and rejects spoofed/incomplete files (333.569791ms)
+✔ reservation only signs an opaque source path; finalize validates before ready, replay never overwrites final objects (10.405729ms)
+✔ public evidence whitelists metadata, quarantines PDFs, and signs authorized images briefly (0.874874ms)
+✔ cleanup only finishes successfully removed objects and retries failed deletions (0.529516ms)
+✔ evidence routes require staff mutations, same-origin requests, UUIDs and a configured cleanup secret (177.354974ms)
+✔ cleanup refuses another school path and continues after a thrown storage failure (0.664869ms)
+✔ evidence signing rejects another school and only the demo school can use preserved legacy paths (4.7212ms)
+✔ progress validates audience, text, estimate steps, blocked reasons, and the Manila calendar (13.48259ms)
+✔ public progress uses a database-filtered RPC and additionally whitelists response fields (1.247163ms)
+✔ staff history scopes one submission, excludes deleted events, and has a bounded stable order (0.489766ms)
+✔ progress routes protect identity, roles, CSRF, UUIDs, payloads, and stale-write errors (99.11917ms)
+✔ progress migration encodes atomic publication, replay protection, no private projection, and restricted public reads (0.704128ms)
+✔ read budget rejects across instances before downstream session work and fails closed (6.182175ms)
+✔ cron bearer requires an independent strong exact secret (0.231407ms)
+✔ legal configuration rejects malformed mailboxes and has no invented fallback (2.293996ms)
+✔ notice rendering escapes operator identity and accurately handles missing contact (14.280119ms)
+✔ configuration checks reject insecure origins and never report secret values (0.655795ms)
+✔ release CLI stays blocked for shared SaaS even with complete configuration and does not print secrets (3093.192473ms)
+GET /js/events.js 200 21.206 ms
+GET /privacy 200 23.325 ms
+✔ actual app sends restrictive script, framing and unused-capability headers (109.911441ms)
+✖ Tree native button can collapse and reopen repeatedly without duplicate keyboard handlers (11.027173ms)
+✔ roadmap layout changes are real links with independent page-one URLs (0.764478ms)
+✖ idea drawer hides stale actions on failure and retries without adding browser history (3.06971ms)
+✔ roadmap paginates each public stage independently and counts matches across all pages (43.983403ms)
+✔ shared roadmap links load only public stages and expose only public fields (1.133583ms)
+✔ tree category totals are exact independently of bounded previews and stage board pages (3.89513ms)
+✔ tree category drill-down paginates eight items while preserving exact category counts (1.402517ms)
+✔ completed outcomes use their own twenty-item pagination even with hundreds of planned ideas (6.184929ms)
+✔ completion provenance and public progress are explicit while inferred dates remain approximate (0.498238ms)
+✔ completed month grouping follows Manila boundaries and newest months first (0.809776ms)
+✔ Other views supports arrow navigation, Home/End and Escape with focus restoration (2.60289ms)
+✔ Other views closes on outside clicks and focus, without closing for its own links (0.99191ms)
+✔ school paths retain global auth/assets/chooser routes and preserve explicit school destinations (69.633629ms)
+✔ school fetch scopes relative and absolute requests, rejects cross-school requests, and bypasses browser caching (4.700621ms)
+✔ school and actor namespaces never restore legacy, other school, or other account state (1.923108ms)
+✔ leaving a school aborts in-flight requests and restored pages revalidate before revealing content (1.441675ms)
+✔ service worker never intercepts school pages or school APIs (1.237939ms)
+✔ school cancellation still reaches response body parsing after headers arrive (2.625043ms)
+✔ unsubscribe HTTP capabilities only update the issuing school, regardless of forged body scope (52.77943ms)
+✔ cron pages active registry schools, uses isolated system scopes, and continues after school failure (4.139708ms)
+✔ cron registry failure is not reported as a successful empty run (0.663306ms)
+✔ onboarding verifies email, bounds shared application abuse, and never activates on approval (2440.103398ms)
+✔ settings enforce A/B membership, optimistic versioning, history and renewed policy review (1743.754225ms)
+✔ hashed invitations bind confirmed email and live inviter authority, reject expiry and replay (2005.425187ms)
+✔ application configuration and instance IP limits fail closed (0.989957ms)
+✔ complete historical migration chain supports pending onboarding, reviewed activation and school defaults (2561.728356ms)
+✔ invitation management scopes history, blocks duplicates, hides tokens, and enforces revocation (1807.429263ms)
+✖ directory and settings render functional forms, pending workspace and private policy (55.744113ms)
+✔ verified application uses only session actor, redirects after success and rejects missing business setup (29.29204ms)
+✖ global admin role grants no platform operator or other school authority (4.465628ms)
+✔ onboarding mutations reject cross-origin requests before processing (3.695551ms)
+✖ privileged onboarding requires verified MFA before reading or mutating (2.465173ms)
+✖ super admin dashboard shows school setup blockers, scoped actions and dashboard recovery links (3.705856ms)
+✖ dashboard pages schools and applications independently and only loads policies for visible schools (14.277686ms)
+✖ dashboard denies school admins and unverified operators before loading school records (2.592624ms)
+✔ a reviewed school still honors a database activation rejection and keeps the operator on the dashboard (5.923418ms)
+✖ account home honors role landing and platform settings remain inside the platform shell (28.883546ms)
+✔ rejected policy edits retain input while readiness reflects only persisted settings (25.397319ms)
+✔ only the reserved fictional demo can activate without real-school business configuration (43.715099ms)
+✔ invitation acceptance preserves form origin without exposing the token path in referrers (37.073148ms)
+✔ dedicated invitation manager explains roles, keeps validation input, and creates email-bound links for all roles (73.612674ms)
+✔ invitation acceptance explains wrong accounts and continues directly into the school (33.584598ms)
+✔ email invitations use the branded transport and record provider acceptance without sending a real email (15.659272ms)
+✔ school registry fails closed: no self-provisioning, global role inheritance or premature activation (2523.634019ms)
+✔ two-school membership policy prevents cross-school access, protects last admin and respects revocation (1854.652171ms)
+✔ registry migration preserves the existing demo workflows and grants no operator automatically (1804.094012ms)
+✔ request-local school scopes and caches stay isolated through overlapping promises and invalidation (10.516366ms)
+✔ scoped builders stamp/filter ownership, reject school changes, and route RPC through verified gateway (1.205751ms)
+✔ rendered school paths scope business links without rewriting assets, text or another school (0.577788ms)
+✔ school middleware ignores legacy roles, fails closed for private/unreviewed schools and preserves unsubscribe (2.621167ms)
+✔ school total counts stay private even when a caller was allowed to read the school (119.082024ms)
+✔ tracking uses school-scoped hashed capabilities and never exposes private staff notes or UUID lookup (0.879291ms)
+{"event":"security_maintenance","removed":10000,"more":true,"batches":10,"complete":false}
+{"event":"security_maintenance","removed":1002,"more":false,"batches":2,"complete":true}
+{"event":"security_maintenance","removed":0,"batches":0,"complete":false}
+✔ session cron bounds catch-up work and explicitly reports incomplete cleanup (2.975119ms)
+✔ full migration chain versions public caches, preserves rows and restricts maintenance (2855.186774ms)
+✔ service-only RPC enforces fixed windows, bounded counters and safe parameter clamps (2180.505912ms)
+✔ abandoned identities are pruned in bounded batches while active rows survive (1658.486429ms)
+✔ auth budget is shared by separate server instances; school invitation paths do not create keys (70.633057ms)
+✔ account budget spans IPs, trusted school has its own budget, and write/auth remain separate (58.306005ms)
+✔ GET, HEAD, OPTIONS and static requests never consume shared budgets (34.264044ms)
+✔ missing configuration, provider failures and malformed responses fail closed without exposing details (34.210944ms)
+✖ work-board paging replaces only one lane and keeps filters and other stage pages in the URL (13.066256ms)
+✖ modified pagination clicks keep native navigation behavior and do not fetch a lane (4.290214ms)
+✖ selection survives lane paging and bulk assignment keeps the original optimistic version (3.271271ms)
+✖ failed page fetch keeps existing cards and offers a retry without full navigation (6.503814ms)
+✖ an incomplete response cannot partly replace the requested lane or lose its selection (3.553045ms)
+✖ native Go forms update only their stage page while preserving other lane state (3.879446ms)
+✖ newly paged stage menus open a guided form without writing or changing the card (6.274368ms)
+✖ clear selection resets retained selections and delegated checkboxes enforce the 25-item cap (3.827607ms)
+✖ paging is blocked while a confirmed mutation is outstanding (3.348357ms)
+✖ dragging a newly paged card opens completion and leaves the existing stage unchanged (3.088296ms)
+✔ work-board filters strictly normalize search, size, sort and independent lane pages (2.211808ms)
+✖ work-board fetches exact per-stage counts and filters before bounded stable pagination without a global cutoff (3.89514ms)
+✔ work-board clamps stale lane pages and re-queries only the affected lane (0.403817ms)
+✔ work-board recovers a PostgREST invalid-range response using a lane-only count and clamped fetch (0.314433ms)
+✔ work-board re-clamps when rows disappear during the clamped fetch (0.336145ms)
+✔ work-board handles a second invalid range while clamping and returns a consistent lane (0.282625ms)
+✔ work-board returns a clean empty lane after an invalid range recount reaches zero (0.264508ms)
+✔ work-board bounds repeated concurrent deletion retries instead of returning page 7 of 3 (0.686543ms)
+✔ work-board JSON and page routes enforce staff access, no-store and normalized independent filters (67.104585ms)
+✔ progress drafts render as text and retries reuse an idempotency key until the post is confirmed (28.565992ms)
+✔ a conflict retains the draft and explicit refresh uses the current review version; unsaved review blocks posting (4.810747ms)
+✔ staff-only progress never sends public estimates or follower notifications (3.506986ms)
+✔ image evidence requires a description and shares the final post idempotency key without deleting published files (5.305541ms)
+✔ selected evidence blocks publication and rejects unsupported, oversized and excess files (2.987634ms)
+✔ lost reservation and finalize replies safely retry the same file rather than reserving a duplicate (3.230379ms)
+✔ clearing an unpublished evidence draft cancels reservations and never persists student content locally (3.103849ms)
+✖ shared review opens exact IDs with fresh data and supports delegated cards after pagination (1.592415ms)
+✖ late and closed detail responses cannot replace the active submission; close restores focus (0.338399ms)
+✖ unavailable details show retry without stale controls; retry recovers the same ID (0.227802ms)
+✖ direct links load IDs outside the current page and drafts block replacement (0.241543ms)
+✖ workboard background opens the drawer but drag gestures and embedded controls do not (0.256336ms)
+✔ exact submission detail requires staff, validates IDs and excludes submitter and tracking fields (54.42075ms)
+✔ staff filters normalize untrusted values and dates reject impossible calendar dates (0.475104ms)
+✔ workflow queue filters run against the private view before pagination (0.734733ms)
+✔ staff endpoints enforce roles, CSRF, review validation, conflicts, private notes, and view ownership (38.032791ms)
+✔ root commands and workspace configuration target the active Express app (1.820234ms)
+✔ aggregate commands delegate to Express without a second build orchestrator (0.260461ms)
+✔ strict browser cohort stays enforced by development, build and typecheck (0.331949ms)
+✔ final idea button reaches the delegated submit handler and displays the backend result (13.194838ms)
+✔ submission backend failure restores the button and retains the idea with visible feedback (2.570291ms)
+✔ checked creation preserves receipts, holds unsafe text and charges quotas only once (3107.902586ms)
+✔ reports are unique, threshold hiding preserves workflow and review is admin-only (2794.885653ms)
+✔ urgent records stay private, alert admins with metadata only and never alert the submitter (2431.186938ms)
+✔ database similarity is school-scoped and never returns flagged or unpublished suggestions (2326.658582ms)
+✔ owner edits are scoped, versioned and stop as soon as staff review starts (2608.390338ms)
+✔ admin analytics and append-only audit preserve previous values without leaking private content (2293.045179ms)
+✔ anonymous owner editing needs the original receipt and urgency cannot be cleared by editing (2491.111187ms)
+✔ status notifications go only to the named owner and preserve progress stages (2134.591347ms)
+✔ safety migration runs without superuser and returns schema creation privileges (2188.145498ms)
+✔ administrators can browse clean items for manual category overrides without exposing the queue (2794.569902ms)
+✔ legacy report RPC delegates to the protected safety service during web rollout (2208.655392ms)
+✔ direct owner edits are scanned server-side and ignore caller verdict, policy and identity (64.758327ms)
+✔ all Eta templates compile, including authenticated staff view (59.947491ms)
+✔ mobile tabs omit staff and header-only hiding preserves workspace links (0.695274ms)
+✔ callback failure shows a retry message and does not navigate (2.746926ms)
+✔ all real migrations preserve demo rows, assign every owner, constrain ancestry and keep activation locked (2835.465398ms)
+✔ legacy REST/RPC grants fail closed, global admin sees only self and cannot change authority (2742.305113ms)
+✔ membership authorizes staff, revocation/suspension/global roles/forged actors never do (2124.75837ms)
+✔ all public read projections and aggregates exclude the other school and private fields (2098.589538ms)
+✔ composite parent/account constraints prevent cross-school service writes and ownership transfer (2068.771763ms)
+✔ receipt/idempotency/search/preferences/digest keys are local to a school (2208.465346ms)
+✔ evidence reservation/finalization/reads/cleanup preserve tenant paths and deny resource swaps (2193.2538ms)
+✔ community, follow/vote/notification and staff saves cannot affect another school; mixed batch is atomic (1966.27698ms)
+✔ workflow posts/snapshots/dates and notification trigger read only their school (2044.181055ms)
+✔ signed members retain intentional anonymity and cannot impersonate any other account (1983.147901ms)
+✔ guided actions and date repair succeed atomically with school-local operation IDs (2235.713918ms)
+✔ legacy staff review succeeds with membership assignees and denies cross-school assignees (1854.456443ms)
+✔ revoked memberships are excluded from digest claims and follower notification fanout (1739.869498ms)
+✔ combined isolation/onboarding migration gates public access on current approved publication settings (1750.855991ms)
+✔ tenant page queries use a school-prefixed index with representative synthetic rows (2266.673828ms)
+✔ migration ownership transfer works without superuser or RLS bypass privileges (1790.774874ms)
+✔ bookmark/share upserts match scoped conflict keys and reject a foreign-school parent (1797.126599ms)
+✔ roadmap and staff filter toolbars neutralize stacked label spacing and match control heights (1.334625ms)
+✖ calendar arrows share the scale control row and Manage work removes stacked label offsets (4.898398ms)
+✔ Other views marks the selected view and retains native filtered navigation links (14.643475ms)
+✔ main student and staff screens render the shared keyboard navigation and correct current-page cue (77.635043ms)
+✔ notifications prioritize the update stream and keep preferences available as native disclosure (2.741658ms)
+✔ private messages keep the tracking-code form intact but do not dominate signed-in messages (2.03728ms)
+✖ workboard and care render one shared review drawer with exact-ID opening controls (6.340904ms)
+✔ full-width detail workspaces separate context from history and editing without duplicating controls (11.39191ms)
+✖ new account and staff menu entries have decorative SVGs backed by the shared sprite (3.632295ms)
+✖ staff review heading groups title/status and metadata/clarification into two compact rows (4.697246ms)
+✔ shared secondary text tokens meet normal-text contrast on main light and dark surfaces (0.508194ms)
+✖ school layout identifies the active school and shows settings only for school administrators (2.509779ms)
+✔ work timeline uses Manila calendar months, recorded starts and separate school estimates (17.944403ms)
+✔ work timeline clips long-running work and does not invent future or inverted work ranges (0.690937ms)
+✔ timeline has independent twenty-item pagination without forcing completed status (1.625722ms)
+✔ guided actions reject legacy bypasses, unauthorized and invalid transitions; replay is idempotent (2417.648975ms)
+✔ new completion requires ready evidence bound to the same request and idea; reopen is admin only (1817.868007ms)
+✔ historical dates require private administrator verification, permit old dates and do not rewrite events (1818.028073ms)
+✔ enforcement prevents moderator report withdrawals and merging; admins preserve withdrawal history (1671.932894ms)
+✔ all five database states reject every unavailable guided action without side effects (1902.525526ms)
+✔ dashboard counts include every status, independent of the displayed page (2.250826ms)
+✔ staff search is applied before pagination and existing response notes are loaded (0.775928ms)
+✔ roadmap includes planned, active, and completed ideas but excludes private statuses (0.49851ms)
+✖ staff and roadmap render populated, empty, and login screens (72.32859ms)
+✖ compact work-board rendering exposes bounded stage pages, native controls and independent pagination links (58.507093ms)
+ℹ tests 363
+ℹ suites 0
+ℹ pass 321
+ℹ fail 41
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 96257.382549
+
+✖ failing tests:
+
+test at tests/comment-service.test.ts:44:22
+✖ server service moderates creation and edits before persistence and owns report threshold (10.698704ms)
+  Error: Refresh the discussion before reporting.
+      at reportComment (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/src/lib/comments.ts:21:63)
+      at /tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/comment-service.test.ts:20:23
+      at async TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/comment-service.test.ts:12:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    status: 400
+  }
+
+test at tests/feed.test.ts:102:22
+✖ feed search waits for submission and sorting preserves the applied search (9.051194ms)
+  evalmachine.<anonymous>:19
+      panes.forEach(selector => document.querySelector(selector)?.addEventListener('scroll', () => {
+                                         ^
+  
+  TypeError: document.querySelector is not a function
+      at evalmachine.<anonymous>:19:40
+      at Array.forEach (<anonymous>)
+      at evalmachine.<anonymous>:19:11
+      at evalmachine.<anonymous>:577:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at browser (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:87:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:96:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+
+test at tests/feed.test.ts:121:22
+✖ loading more uses the applied filters even when the search input has a draft (1.736949ms)
+  evalmachine.<anonymous>:19
+      panes.forEach(selector => document.querySelector(selector)?.addEventListener('scroll', () => {
+                                         ^
+  
+  TypeError: document.querySelector is not a function
+      at evalmachine.<anonymous>:19:40
+      at Array.forEach (<anonymous>)
+      at evalmachine.<anonymous>:19:11
+      at evalmachine.<anonymous>:577:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at browser (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:87:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:117:43)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+
+test at tests/feed.test.ts:134:22
+✖ failed loading preserves existing ideas and retries the same page (1.337499ms)
+  evalmachine.<anonymous>:19
+      panes.forEach(selector => document.querySelector(selector)?.addEventListener('scroll', () => {
+                                         ^
+  
+  TypeError: document.querySelector is not a function
+      at evalmachine.<anonymous>:19:40
+      at Array.forEach (<anonymous>)
+      at evalmachine.<anonymous>:19:11
+      at evalmachine.<anonymous>:577:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at browser (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:87:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:132:36)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+
+test at tests/feed.test.ts:164:22
+✖ failed support can be retried without recording a false vote or sending duplicate requests (1.44449ms)
+  evalmachine.<anonymous>:19
+      panes.forEach(selector => document.querySelector(selector)?.addEventListener('scroll', () => {
+                                         ^
+  
+  TypeError: document.querySelector is not a function
+      at evalmachine.<anonymous>:19:40
+      at Array.forEach (<anonymous>)
+      at evalmachine.<anonymous>:19:11
+      at evalmachine.<anonymous>:577:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at browser (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:87:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:165:19)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+
+test at tests/feed.test.ts:191:22
+✖ loaded feed cards escape content and expose native title links without duplicate card actions (1.130879ms)
+  evalmachine.<anonymous>:19
+      panes.forEach(selector => document.querySelector(selector)?.addEventListener('scroll', () => {
+                                         ^
+  
+  TypeError: document.querySelector is not a function
+      at evalmachine.<anonymous>:19:40
+      at Array.forEach (<anonymous>)
+      at evalmachine.<anonymous>:19:11
+      at evalmachine.<anonymous>:577:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at browser (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:87:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:192:22)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+
+test at tests/feed.test.ts:209:22
+✖ 3-dot kebab menu toggles open and closed on click and closes on Escape (1.832021ms)
+  evalmachine.<anonymous>:19
+      panes.forEach(selector => document.querySelector(selector)?.addEventListener('scroll', () => {
+                                         ^
+  
+  TypeError: document.querySelector is not a function
+      at evalmachine.<anonymous>:19:40
+      at Array.forEach (<anonymous>)
+      at evalmachine.<anonymous>:19:11
+      at evalmachine.<anonymous>:577:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:282:6)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+
+test at tests/feed.test.ts:320:22
+✖ concurrent account bookmarks preserve both confirmed changes in either response order (1.269506ms)
+  evalmachine.<anonymous>:19
+      panes.forEach(selector => document.querySelector(selector)?.addEventListener('scroll', () => {
+                                         ^
+  
+  TypeError: document.querySelector is not a function
+      at evalmachine.<anonymous>:19:40
+      at Array.forEach (<anonymous>)
+      at evalmachine.<anonymous>:19:11
+      at evalmachine.<anonymous>:577:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at browser (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:87:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/feed.test.ts:324:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+
+test at tests/navigation-context.test.ts:63:22
+✖ platform and account layouts omit client actions while members retain their own school navigation (20.43438ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /My profile/. Input:
+  
+  '<!DOCTYPE html>\n' +
+    '<html lang="en" data-theme="light" data-sf-transitions>\n' +
+    '<head>\n' +
+    '  <meta charset="UTF-8" />\n' +
+    '  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />\n' +
+    '  <meta name="description" content="Share campus feedback and follow submission progress on SuggFeed." />\n' +
+    '  <title>SuggFeed</title>\n' +
+    '\n' +
+    '  <meta name="school-base" content="/s/school-a" />\n' +
+    '  <meta name="school-id" content="" />\n' +
+    '  <meta name="school-actor" content="member" />\n' +
+    '  <script src="/js/school-context.js?v=20261025-help-scope"></script>\n' +
+    '\n' +
+    '  <!-- PWA / Icons -->\n' +
+    '  <link rel="icon" href="/branding/favicon.ico" sizes="any" />\n' +
+    '  <link rel="icon" href="/branding/icon-32.png" sizes="32x32" type="image/png" />\n' +
+    '  <link rel="apple-touch-icon" href="/branding/icon-180.png" />\n' +
+    '  <link rel="manifest" href="/manifest.json?v=20261013-sf" />\n' +
+    '  <meta name="theme-color" content="#0b3857" />\n' +
+    '\n' +
+    '  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />\n' +
+    '\n' +
+    '  <!-- Styles -->\n' +
+    '  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />\n' +
+    '      <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-landing-ideas" />\n' +
+    '    <link rel="stylesheet" href="/css/customization.bundle.css?v=20261021-mobile-audit"/>  <link rel="stylesheet" href="/css/student.bundle.css?v=20261025-landing-ideas"/><script defer src="/js/student-experience.js?v=20261025-student-flow"></script>  <link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/>  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>\n' +
+    '  <script defer src="/js/interaction-feedback.js?v=20261022-pending-reset"></script>\n' +
+    '  <script defer src="/js/events.js?v=20261018-customization"></script>\n' +
+    '\n' +
+    '  <script src="/js/preferences.js?v=20261016-school-isolation"></script>\n' +
+    '  <script defer src="/js/school-colors.js?v=20261020-studio-colors"></script>\n' +
+    '  <!-- Theme init (before render to prevent flash) -->\n' +
+    '  <script src="/js/theme-init.js?v=20261016-school-isolation"></script>\n' +
+    '\n' +
+    '  <!-- Supabase (client-side auth) -->\n' +
+    '  <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>\n' +
+    '  <link rel="stylesheet" href="/css/modules/controls.css?v=20261024-controls"/>\n' +
+    '  <script defer src="/js/controls.js?v=20261024-controls"></script>\n' +
+    '  <link rel="stylesheet" href="/css/submission-safety.css?v=20261024"/>\n' +
+    '</head>\n' +
+    '<body class="sf-feed-workspace  ">\n' +
+    '<a class="system-skip-link" href="#page-content">Skip to page content</a>\n' +
+    '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="workspace-sprite">\n' +
+    '  <symbol id="ws-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>\n' +
+    '  <symbol id="ws-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M18 17a7 7 0 0 1-12 1l-2-3"/></symbol>\n' +
+    '  <symbol id="ws-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>\n' +
+    '  <symbol id="ws-export" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6"/></symbol>\n' +
+    '  <symbol id="ws-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 14h5l2 3h2l2-3h5M8 8h8"/></symbol>\n' +
+    '  <symbol id="ws-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-16v16"/></symbol>\n' +
+    '  <symbol id="ws-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>\n' +
+    '  <symbol id="ws-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>\n' +
+    '  <symbol id="ws-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>\n' +
+    '  <symbol id="ws-crown" viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/></symbol>\n' +
+    '  <symbol id="ws-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>\n' +
+    '  <symbol id="ws-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></symbol>\n' +
+    '  <symbol id="ws-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>\n' +
+    '  <symbol id="ws-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>\n' +
+    '  <symbol id="ws-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>\n' +
+    '  <symbol id="ws-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>\n' +
+    '  <symbol id="ws-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM7 8h10M7 12h6"/></symbol>\n' +
+    '  <symbol id="ws-care" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>\n' +
+    '  <symbol id="ws-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>\n' +
+    '  <symbol id="ws-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></symbol>\n' +
+    '  <symbol id="ws-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>\n' +
+    '  <symbol id="ws-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>\n' +
+    '  <symbol id="ws-merge" viewBox="0 0 24 24"><path d="M6 21v-5c0-4 12-4 12-8V3M18 21V3m-4 4 4-4 4 4"/></symbol>\n' +
+    '  <symbol id="ws-signout" viewBox="0 0 24 24"><path d="M9 21H4V3h5M10 12h11m-4-4 4 4-4 4"/></symbol>\n' +
+    '<symbol id="ws-book" viewBox="0 0 24 24"><path d="M12 4v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol><symbol id="ws-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h1m6 0h1M8 10h1m6 0h1M8 14h1m6 0h1"/></symbol><symbol id="ws-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></symbol></svg>\n' +
+    '<div id="sf-auth-config" hidden data-url="" data-key="" data-user="member"></div>\n' +
+    '\n' +
+    '<!-- Individual notifications choose polite or urgent announcements. -->\n' +
+    '<div id="toast-container" class="toast-region" role="region" aria-label="Notifications"></div>\n' +
+    '<script defer src="/js/toast.js?v=20261016-school-isolation"></script>\n' +
+    '<dialog id="sf-confirm-dialog" class="app-confirm-dialog sf-bottom-sheet" aria-labelledby="sf-confirm-title" aria-describedby="sf-confirm-message">\n' +
+    '  <div class="app-confirm-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5m0 3h.01M12 3 2 21h20Z"/></svg></div>\n' +
+    '  <h2 id="sf-confirm-title">Confirm this change</h2>\n' +
+    '  <p id="sf-confirm-message"></p>\n' +
+    '  <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>\n' +
+    '</dialog>\n' +
+    '<script defer src="/js/confirmation.js?v=20261016-school-isolation"></script>\n' +
+    '<script defer src="/js/empty-state.js?v=20261018-empty-states"></script>\n' +
+    '<script defer src="/js/activity.js?v=20261016-school-isolation"></script>\n' +
+    '<header class="site-header">\n' +
+    '  <a class="brand" href="/" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>\n' +
+    '  <span class="header-school-identity school-context-identity"><strong>Your school</strong></span>  <nav aria-label="Primary navigation">\n' +
+    '          <a href="/" class="nav-link-hide-mobile" aria-current="false">Home</a>\n' +
+    '      <a href="/feed" class="nav-link-hide-mobile active" aria-current="page">Ideas</a>\n' +
+    '      <a href="/profile" class="nav-link-hide-mobile">Profile</a>\n' +
+    '          \n' +
+    '          <!-- Authenticated: avatar chip with dropdown -->\n' +
+    '      <div class="header-user-menu">\n' +
+    '        <button class="avatar-chip" id="header-avatar-btn" aria-label="Open account menu" aria-controls="header-dropdown" aria-haspopup="true" aria-expanded="false">\n' +
+    '                      <div class="avatar-circle">U</div>\n' +
+    '                    <span>Account</span>\n' +
+    '          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>\n' +
+    '        </button>\n' +
+    '        <div class="dropdown-menu" id="header-dropdown" hidden>\n' +
+    '          <div class="dropdown-user-header">\n' +
+    '            <div class="dropdown-user-name">Account</div>\n' +
+    '                      </div>\n' +
+    '          <div class="divider"></div>\n' +
+    '                    <a href="/profile" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-user"></use></svg> Profile</a>\n' +
+    '          <a href="/notifications" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-bell"></use></svg> School updates</a>\n' +
+    '          <a href="/feed?scope=following" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-bookmark"></use></svg> Following</a>\n' +
+    '          <a href="/inbox" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-message"></use></svg> Private school messages</a>\n' +
+    '                                        <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n' +
+    '          <div class="divider"></div>\n' +
+    '          <form action="/auth/signout" method="POST" class="dropdown-form">\n' +
+    '            <button type="submit" class="danger dropdown-signout-btn">\n' +
+    '              <svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-signout'... 86844 more characters
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/navigation-context.test.ts:42:55)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!DOCTYPE html>\n<html lang="en" data-theme="light" data-sf-transitions>\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />\n  <meta name="description" content="Share campus feedback and follow submission progress on SuggFeed." />\n  <title>SuggFeed</title>\n\n  <meta name="school-base" content="/s/school-a" />\n  <meta name="school-id" content="" />\n  <meta name="school-actor" content="member" />\n  <script src="/js/school-context.js?v=20261025-help-scope"></script>\n\n  <!-- PWA / Icons -->\n  <link rel="icon" href="/branding/favicon.ico" sizes="any" />\n  <link rel="icon" href="/branding/icon-32.png" sizes="32x32" type="image/png" />\n  <link rel="apple-touch-icon" href="/branding/icon-180.png" />\n  <link rel="manifest" href="/manifest.json?v=20261013-sf" />\n  <meta name="theme-color" content="#0b3857" />\n\n  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />\n\n  <!-- Styles -->\n  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />\n      <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-landing-ideas" />\n    <link rel="stylesheet" href="/css/customization.bundle.css?v=20261021-mobile-audit"/>  <link rel="stylesheet" href="/css/student.bundle.css?v=20261025-landing-ideas"/><script defer src="/js/student-experience.js?v=20261025-student-flow"></script>  <link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/>  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>\n  <script defer src="/js/interaction-feedback.js?v=20261022-pending-reset"></script>\n  <script defer src="/js/events.js?v=20261018-customization"></script>\n\n  <script src="/js/preferences.js?v=20261016-school-isolation"></script>\n  <script defer src="/js/school-colors.js?v=20261020-studio-colors"></script>\n  <!-- Theme init (before render to prevent flash) -->\n  <script src="/js/theme-init.js?v=20261016-school-isolation"></script>\n\n  <!-- Supabase (client-side auth) -->\n  <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>\n  <link rel="stylesheet" href="/css/modules/controls.css?v=20261024-controls"/>\n  <script defer src="/js/controls.js?v=20261024-controls"></script>\n  <link rel="stylesheet" href="/css/submission-safety.css?v=20261024"/>\n</head>\n<body class="sf-feed-workspace  ">\n<a class="system-skip-link" href="#page-content">Skip to page content</a>\n<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="workspace-sprite">\n  <symbol id="ws-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>\n  <symbol id="ws-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M18 17a7 7 0 0 1-12 1l-2-3"/></symbol>\n  <symbol id="ws-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>\n  <symbol id="ws-export" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6"/></symbol>\n  <symbol id="ws-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 14h5l2 3h2l2-3h5M8 8h8"/></symbol>\n  <symbol id="ws-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-16v16"/></symbol>\n  <symbol id="ws-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>\n  <symbol id="ws-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>\n  <symbol id="ws-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>\n  <symbol id="ws-crown" viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/></symbol>\n  <symbol id="ws-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>\n  <symbol id="ws-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></symbol>\n  <symbol id="ws-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>\n  <symbol id="ws-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>\n  <symbol id="ws-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>\n  <symbol id="ws-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>\n  <symbol id="ws-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM7 8h10M7 12h6"/></symbol>\n  <symbol id="ws-care" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>\n  <symbol id="ws-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>\n  <symbol id="ws-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></symbol>\n  <symbol id="ws-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>\n  <symbol id="ws-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>\n  <symbol id="ws-merge" viewBox="0 0 24 24"><path d="M6 21v-5c0-4 12-4 12-8V3M18 21V3m-4 4 4-4 4 4"/></symbol>\n  <symbol id="ws-signout" viewBox="0 0 24 24"><path d="M9 21H4V3h5M10 12h11m-4-4 4 4-4 4"/></symbol>\n<symbol id="ws-book" viewBox="0 0 24 24"><path d="M12 4v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol><symbol id="ws-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h1m6 0h1M8 10h1m6 0h1M8 14h1m6 0h1"/></symbol><symbol id="ws-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></symbol></svg>\n<div id="sf-auth-config" hidden data-url="" data-key="" data-user="member"></div>\n\n<!-- Individual notifications choose polite or urgent announcements. -->\n<div id="toast-container" class="toast-region" role="region" aria-label="Notifications"></div>\n<script defer src="/js/toast.js?v=20261016-school-isolation"></script>\n<dialog id="sf-confirm-dialog" class="app-confirm-dialog sf-bottom-sheet" aria-labelledby="sf-confirm-title" aria-describedby="sf-confirm-message">\n  <div class="app-confirm-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5m0 3h.01M12 3 2 21h20Z"/></svg></div>\n  <h2 id="sf-confirm-title">Confirm this change</h2>\n  <p id="sf-confirm-message"></p>\n  <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>\n</dialog>\n<script defer src="/js/confirmation.js?v=20261016-school-isolation"></script>\n<script defer src="/js/empty-state.js?v=20261018-empty-states"></script>\n<script defer src="/js/activity.js?v=20261016-school-isolation"></script>\n<header class="site-header">\n  <a class="brand" href="/" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>\n  <span class="header-school-identity school-context-identity"><strong>Your school</strong></span>  <nav aria-label="Primary navigation">\n          <a href="/" class="nav-link-hide-mobile" aria-current="false">Home</a>\n      <a href="/feed" class="nav-link-hide-mobile active" aria-current="page">Ideas</a>\n      <a href="/profile" class="nav-link-hide-mobile">Profile</a>\n          \n          <!-- Authenticated: avatar chip with dropdown -->\n      <div class="header-user-menu">\n        <button class="avatar-chip" id="header-avatar-btn" aria-label="Open account menu" aria-controls="header-dropdown" aria-haspopup="true" aria-expanded="false">\n                      <div class="avatar-circle">U</div>\n                    <span>Account</span>\n          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>\n        </button>\n        <div class="dropdown-menu" id="header-dropdown" hidden>\n          <div class="dropdown-user-header">\n            <div class="dropdown-user-name">Account</div>\n                      </div>\n          <div class="divider"></div>\n                    <a href="/profile" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-user"></use></svg> Profile</a>\n          <a href="/notifications" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-bell"></use></svg> School updates</a>\n          <a href="/feed?scope=following" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-bookmark"></use></svg> Following</a>\n          <a href="/inbox" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-message"></use></svg> Private school messages</a>\n                                        <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n          <div class="divider"></div>\n          <form action="/auth/signout" method="POST" class="dropdown-form">\n            <button type="submit" class="danger dropdown-signout-btn">\n              <svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-signout'... 86844 more characters,
+    expected: /My profile/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/roadmap-interactions.test.ts:11:22
+✖ Tree native button can collapse and reopen repeatedly without duplicate keyboard handlers (11.027173ms)
+  evalmachine.<anonymous>:29
+      const calendarSection = document.querySelector('.roadmap-work-timeline');
+                                       ^
+  
+  TypeError: document.querySelector is not a function
+      at evalmachine.<anonymous>:29:38
+      at evalmachine.<anonymous>:503:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/roadmap-interactions.test.ts:20:6)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+
+test at tests/roadmap-interactions.test.ts:45:22
+✖ idea drawer hides stale actions on failure and retries without adding browser history (3.06971ms)
+  evalmachine.<anonymous>:29
+      const calendarSection = document.querySelector('.roadmap-work-timeline');
+                                       ^
+  
+  TypeError: document.querySelector is not a function
+      at evalmachine.<anonymous>:29:38
+      at evalmachine.<anonymous>:503:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/roadmap-interactions.test.ts:66:6)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+
+test at tests/school-onboarding-http.test.ts:92:22
+✖ directory and settings render functional forms, pending workspace and private policy (55.744113ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 200
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/school-onboarding-http.test.ts:63:80)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/school-onboarding-http.test.ts:124:22
+✖ global admin role grants no platform operator or other school authority (4.465628ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 403
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/school-onboarding-http.test.ts:73:62)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/school-onboarding-http.test.ts:144:22
+✖ privileged onboarding requires verified MFA before reading or mutating (2.465173ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 303
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/school-onboarding-http.test.ts:86:9)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 303,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/school-onboarding-http.test.ts:154:22
+✖ super admin dashboard shows school setup blockers, scoped actions and dashboard recovery links (3.705856ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/school-onboarding-http.test.ts:95:9)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/school-onboarding-http.test.ts:189:22
+✖ dashboard pages schools and applications independently and only loads policies for visible schools (14.277686ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/school-onboarding-http.test.ts:120:97)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/school-onboarding-http.test.ts:223:22
+✖ dashboard denies school admins and unverified operators before loading school records (2.592624ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 403
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/school-onboarding-http.test.ts:136:97)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/school-onboarding-http.test.ts:250:22
+✖ account home honors role landing and platform settings remain inside the platform shell (28.883546ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/school-onboarding-http.test.ts:158:119)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/staff-board-client.test.ts:255:22
+✖ work-board paging replaces only one lane and keeps filters and other stage pages in the URL (13.066256ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:168:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+
+test at tests/staff-board-client.test.ts:266:22
+✖ modified pagination clicks keep native navigation behavior and do not fetch a lane (4.290214ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:180:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+
+test at tests/staff-board-client.test.ts:273:22
+✖ selection survives lane paging and bulk assignment keeps the original optimistic version (3.271271ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:188:33)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+
+test at tests/staff-board-client.test.ts:286:22
+✖ failed page fetch keeps existing cards and offers a retry without full navigation (6.503814ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:202:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+
+test at tests/staff-board-client.test.ts:300:22
+✖ an incomplete response cannot partly replace the requested lane or lose its selection (3.553045ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:216:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+
+test at tests/staff-board-client.test.ts:310:22
+✖ native Go forms update only their stage page while preserving other lane state (3.879446ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:226:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+
+test at tests/staff-board-client.test.ts:318:22
+✖ newly paged stage menus open a guided form without writing or changing the card (6.274368ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:235:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+
+test at tests/staff-board-client.test.ts:334:22
+✖ clear selection resets retained selections and delegated checkboxes enforce the 25-item cap (3.827607ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:248:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+
+test at tests/staff-board-client.test.ts:352:22
+✖ paging is blocked while a confirmed mutation is outstanding (3.348357ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:262:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+
+test at tests/staff-board-client.test.ts:365:22
+✖ dragging a newly paged card opens completion and leaves the existing stage unchanged (3.088296ms)
+  evalmachine.<anonymous>:698
+          groupStage.addEventListener('change', () => { groupMove.disabled = busy || loading || !groupStage.value; });
+                     ^
+  
+  TypeError: Cannot read properties of null (reading 'addEventListener')
+      at evalmachine.<anonymous>:698:20
+      at evalmachine.<anonymous>:930:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:139:6)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board-client.test.ts:272:13)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+
+test at tests/staff-board.test.ts:71:22
+✖ work-board fetches exact per-stage counts and filters before bounded stable pagination without a global cutoff (3.89514ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   'or',
+  +   'title.ilike."%library%",description.ilike."%library%"'
+  -   'eq',
+  -   'status',
+  -   'pending'
+    ]
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-board.test.ts:82:14)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'or', 'title.ilike."%library%",description.ilike."%library%"' ],
+    expected: [ 'eq', 'status', 'pending' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/staff-review-client.test.ts:71:22
+✖ shared review opens exact IDs with fresh data and supports delegated cards after pagination (1.592415ms)
+  TypeError: Cannot set properties of undefined (setting 'hidden')
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:35:42)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:49:11)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+
+test at tests/staff-review-client.test.ts:86:22
+✖ late and closed detail responses cannot replace the active submission; close restores focus (0.338399ms)
+  TypeError: Cannot set properties of undefined (setting 'hidden')
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:35:42)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:58:11)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/staff-review-client.test.ts:101:22
+✖ unavailable details show retry without stale controls; retry recovers the same ID (0.227802ms)
+  TypeError: Cannot set properties of undefined (setting 'hidden')
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:35:42)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:66:11)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+
+test at tests/staff-review-client.test.ts:115:22
+✖ direct links load IDs outside the current page and drafts block replacement (0.241543ms)
+  TypeError: Cannot set properties of undefined (setting 'hidden')
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:35:42)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:73:11)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+
+test at tests/staff-review-client.test.ts:124:22
+✖ workboard background opens the drawer but drag gestures and embedded controls do not (0.256336ms)
+  TypeError: Cannot set properties of undefined (setting 'hidden')
+      at harness (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:35:42)
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/staff-review-client.test.ts:78:11)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+
+test at tests/ui-experience.test.ts:17:22
+✖ calendar arrows share the scale control row and Manage work removes stacked label offsets (4.898398ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /\.timeline-controls \{display:grid;grid-template-columns:minmax\(140px,1fr\) 44px 44px;gap:8px;align-items:end;/. Input:
+  
+  '.community-care-page { max-width: 1200px; margin-inline: auto; }\n' +
+    '.care-card { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:24px; margin:20px 0; scroll-margin-top:140px; }\n' +
+    '.care-card h2 { margin:0 0 12px; font-size:1.25rem; }\n' +
+    '.care-card p,.care-row span { line-height:1.65; }\n' +
+    '.care-form { display:grid; gap:14px; }\n' +
+    '.care-form label { display:grid; gap:7px; font-weight:600; }\n' +
+    '.care-form textarea { min-height:100px; resize:vertical; }\n' +
+    '.care-form button { justify-self:start; }\n' +
+    '.care-row { border-top:1px solid var(--line); padding:18px 0; overflow-wrap:anywhere; }\n' +
+    '.care-row>a { display:block; font-weight:600; }\n' +
+    '.care-row blockquote { margin:12px 0; padding:12px; border-left:3px solid #3885a6; background:var(--bg-2); white-space:pre-wrap; }\n' +
+    '#content-report-dialog { max-width:520px; padding:24px; }\n' +
+    '#similar-public-ideas a { display:block; padding:8px 0; }\n' +
+    '#similar-public-ideas { font-size:.85rem; line-height:1.5; }\n' +
+    '.care-guidance { font-size:.85rem; line-height:1.6; padding:12px; background:var(--bg-2); border-radius:10px; }\n' +
+    '.care-report { border:0; background:none; color:var(--text-secondary,#526378); font:inherit; padding:8px; text-decoration:underline; cursor:pointer; }\n' +
+    '.post-footer>.care-report {order:10;min-height:44px;margin-left:auto;font-size:12px;}\n' +
+    '@media(max-width:430px){.post-footer>.care-report {grid-column:1/-1;justify-self:end;}}\n' +
+    '@media(max-width:600px) { .care-card {padding:18px;} .community-care-page {padding-inline:16px;} }\n' +
+    '@media(prefers-reduced-motion:no-preference) { .workspace-button,.care-report {transition:background-color .15s ease,box-shadow .15s ease;} .workspace-button:active {transform:translateY(1px);} .vote-success {animation:support-confirm .28s ease;} @keyframes support-confirm {50%{transform:scale(1.06)}} }\n' +
+    '.work-timeline-scroll.is-panning {cursor:grabbing;user-select:none;}\n' +
+    '.staff-board-main {padding:24px clamp(18px,2vw,36px);}\n' +
+    '.staff-board-help {margin-top:20px;padding:0 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);}\n' +
+    '.staff-board-help summary {min-height:44px;padding:12px 0;font-size:13px;font-weight:600;cursor:pointer;}\n' +
+    '.staff-board-help p {margin:0 0 16px;font-size:13px;line-height:1.65;color:var(--ink-2);}\n' +
+    '.visually-hidden {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}\n' +
+    '.staff-board-main .workspace-heading {margin-bottom:16px;}\n' +
+    '.staff-board-main .workspace-heading h1 {font-size:32px;}\n' +
+    '.staff-board-main .workspace-heading p {font-size:13px;line-height:1.6;}\n' +
+    '.staff-board-toolbar {display:flex;align-items:end;gap:12px;flex-wrap:wrap;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);}\n' +
+    '.staff-board-toolbar label {display:grid;gap:8px;margin-bottom:0;font-size:12px;color:var(--ink-2);}\n' +
+    '.staff-board-search {flex:1;min-width:180px;}\n' +
+    '.staff-board-toolbar .workspace-input {min-height:44px;padding:10px 12px;font-size:14px;}\n' +
+    '.staff-board-toolbar .workspace-button {min-height:44px;padding:10px 18px;font-size:14px;}\n' +
+    '.staff-board-caption {display:flex;justify-content:space-between;gap:12px;margin:12px 0 10px;}\n' +
+    '.staff-board-caption p {font-size:12px;color:var(--muted);margin:0;}\n' +
+    '.staff-board-caption p:first-child {color:var(--ink-2);font-weight:600;}\n' +
+    '.staff-board-feedback {display:flex;gap:12px;align-items:center;}\n' +
+    '.staff-board-feedback p:empty {display:none;}\n' +
+    '.staff-board-feedback p {margin:0 0 10px;font-size:12px;}\n' +
+    '.staff-board-selection {margin:0 0 10px!important;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--sky);align-items:center!important;gap:10px!important;}\n' +
+    '.staff-board-selection strong {font-size:13px;margin-right:auto;}\n' +
+    '.staff-board-selection .workspace-input {min-height:44px;padding:10px 12px;font-size:14px;max-width:240px;}\n' +
+    '.staff-board-selection .workspace-button {min-height:44px;padding:10px 14px;font-size:13px;}\n' +
+    '.staff-board-selection .workspace-text-link {min-height:44px;font-size:13px;}\n' +
+    '.staff-flow-board {display:grid;grid-template-columns:repeat(3,minmax(300px,1fr));gap:16px;overflow-x:auto;padding:0 0 4px;scrollbar-width:thin;}\n' +
+    '.staff-flow-lane {display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:640px;min-width:0;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;scroll-margin-top:100px;}\n' +
+    '.staff-lane-heading {position:relative;padding:16px;border-top:3px solid var(--lane-accent,var(--navy));border-bottom:1px solid var(--line);border-radius:12px 12px 0 0;background:var(--bg-2);z-index:4;}\n' +
+    '.staff-flow-lane[data-drop-stage="in_progress"] {--lane-accent:var(--text-link);}\n' +
+    '.staff-flow-lane[data-drop-stage="resolved"] {--lane-accent:var(--success);}\n' +
+    '.staff-lane-heading h2 {display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:16px;margin:0;line-height:1.5;}\n' +
+    '.staff-lane-count {padding:4px 8px;border-radius:6px;background:var(--surface);font-size:12px;font-variant-numeric:tabular-nums;}\n' +
+    '.staff-lane-heading p {font-size:12px;color:var(--muted);margin:3px 0 0;font-variant-numeric:tabular-nums;}\n' +
+    '.staff-lane-cards {padding:12px;min-width:0;}\n' +
+    '.staff-lane-cards::-webkit-scrollbar {width:6px;}\n' +
+    '.staff-flow-board::-webkit-scrollbar {height:6px;}\n' +
+    '.staff-lane-cards::-webkit-scrollbar-thumb,.staff-flow-board::-webkit-scrollbar-thumb {background:var(--line-2);border-radius:8px;}\n' +
+    '.staff-lane-cards::-webkit-scrollbar-track,.staff-flow-board::-webkit-scrollbar-track {background:transparent;}\n' +
+    '[data-theme=dark] .staff-board-main {color-scheme:dark;}\n' +
+    '.staff-flow-card {display:grid;gap:8px;padding:12px 16px;margin-bottom:12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;cursor:grab;}\n' +
+    '.staff-flow-card:last-child {margin-bottom:0;}\n' +
+    '.staff-flow-card:hover {border-color:var(--muted-2);box-shadow:var(--shadow-sm);}\n' +
+    '.staff-flow-card:has(input:checked) {border-color:var(--navy-2);box-shadow:inset 3px 0 var(--navy-2);}\n' +
+    '.staff-card-top {display:flex;align-items:center;gap:5px;min-width:0;}\n' +
+    '.staff-card-select {display:flex;align-items:center;justify-content:center;width:44px;height:44px;flex-shrink:0;cursor:pointer;}\n' +
+    '.staff-card-select input {accent-color:var(--navy);cursor:pointer;}\n' +
+    '.staff-card-category {font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}\n' +
+    '.staff-card-priority {font-size:11px;color:var(--warn);font-weight:700;margin-left:auto;text-transform:uppercase;}\n' +
+    '.staff-card-priority[data-priority=urgent] {color:var(--error);}\n' +
+    '.staff-flow-card h3 {font-size:15px;line-height:1.5;margin:0;}\n' +
+    '.staff-flow-card h3 a {display:block;overflow-wrap:anywhere;color:var(--ink);}\n' +
+    '.staff-flow-card h3 a:hover {text-decoration:underline;text-underline-offset:3px;}\n' +
+    '.staff-card-bottom {display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0;}\n' +
+    '.staff-card-assignee {font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}\n' +
+    '.staff-card-move {flex-shrink:0;max-width:100%;}\n' +
+    '.staff-card-move summary {cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--ink-2);padding:3px 5px;border-radius:5px;}\n' +
+    '.staff-card-move summary::-webkit-details-marker {display:none;}\n' +
+    '.staff-card-move summary:hover {background:var(--bg-2);}\n' +
+    '.staff-card-move label {display:grid;gap:6px;margin-top:6px;}\n' +
+    '.staff-card-move label>span {font-size:11px;}\n' +
+    '.staff-card-move select {padding:10px;font-size:14px;min-height:44px;}\n' +
+    '.staff-card-bottom:has(details[open]) {flex-wrap:wrap;}\n' +
+    '.staff-card-move[open] {width:100%;}\n' +
+    '.staff-lane-empty {display:grid;place-items:center;padding:30px 8px;text-align:center;color:var(--muted);}\n' +
+    '.staff-lane-empty>span {font-size:20px;}\n' +
+    '.staff-lane-empty p {font-size:13px;line-height:1.6;margin-top:8px;}\n' +
+    '.staff-lane-pagination {display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding:12px;background:var(--bg-2);border-radius:0 0 12px 12px;}\n' +
+    '.staff-lane-pagination>a,.staff-lane-pagination>span {display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border-radius:5px;font-size:20px;border:1px solid var(--line);background:var(--surface);color:var(--ink);}\n' +
+    '.staff-lane-pagination>span[aria-disabled] {opacity:.4;}\n' +
+    '.staff-lane-pagination>a:hover {border-color:var(--navy-2);background:var(--sky);}\n' +
+    '.staff-lane-pagination a[aria-disabled=true] {opacity:.4;cursor:wait;}\n' +
+    '.staff-lane-pagination form {display:flex;align-items:center;gap:3px;min-width:0;}\n' +
+    '.staff-page-input {appearance:textfield;width:48px;min-width:0;height:44px;border:1px solid var(--line);border-radius:5px;text-align:center;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;padding:6px;}\n' +
+    '.staff-page-input::-webkit-inner-spin-button {appearance:none;}\n' +
+    '.staff-page-total {font-size:12px;color:var(--muted);white-space:nowrap;}\n' +
+    '.staff-lane-pagination button {min-height:44px;min-width:36px;font-size:12px;border:0;border-radius:5px;background:var(--surface);color:var(--ink);cursor:pointer;padding:4px;}\n' +
+    '.staff-flow-lane[aria-busy=true] .staff-lane-cards {opacity:.6;}\n' +
+    '.staff-board-safety {margin:16px 0 0;font-size:12px;color:var(--muted);line-height:1.5;}\n' +
+    '/* Let the page carry vertical scrolling; the board only scrolls sideways on narrow screens. */\n' +
+    '@media(min-width:1200px) {\n' +
+    ' .staff-board-main .workspace-heading {align-items:center;}\n' +
+    ' .staff-flow-board {grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;}\n' +
+    ' .staff-lane-heading {position:sticky;top:64px;}\n' +
+    ' .staff-lane-pagination {position:sticky;bottom:12px;z-index:3;box-shadow:0 -4px 12px rgba(16,42,67,.06);}\n' +
+    '}\n' +
+    '.staff-flow-lane {position:relative;}\n' +
+    '.staff-flow-card[data-dragging="true"] {opacity:.4;border-style:dashed;box-shadow:none;}\n' +
+    '.staff-flow-board.is-dragging .staff-flow-lane[data-drop-label] {border-style:dashed;border-color:var(--navy);}\n' +
+    '.staff-flow-board .staff-flow-lane.is-drop-target {border-style:solid;border-color:var(--navy);background:var(--sky);bo'... 2123 more characters
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/ui-experience.test.ts:15:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '.community-care-page { max-width: 1200px; margin-inline: auto; }\n.care-card { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:24px; margin:20px 0; scroll-margin-top:140px; }\n.care-card h2 { margin:0 0 12px; font-size:1.25rem; }\n.care-card p,.care-row span { line-height:1.65; }\n.care-form { display:grid; gap:14px; }\n.care-form label { display:grid; gap:7px; font-weight:600; }\n.care-form textarea { min-height:100px; resize:vertical; }\n.care-form button { justify-self:start; }\n.care-row { border-top:1px solid var(--line); padding:18px 0; overflow-wrap:anywhere; }\n.care-row>a { display:block; font-weight:600; }\n.care-row blockquote { margin:12px 0; padding:12px; border-left:3px solid #3885a6; background:var(--bg-2); white-space:pre-wrap; }\n#content-report-dialog { max-width:520px; padding:24px; }\n#similar-public-ideas a { display:block; padding:8px 0; }\n#similar-public-ideas { font-size:.85rem; line-height:1.5; }\n.care-guidance { font-size:.85rem; line-height:1.6; padding:12px; background:var(--bg-2); border-radius:10px; }\n.care-report { border:0; background:none; color:var(--text-secondary,#526378); font:inherit; padding:8px; text-decoration:underline; cursor:pointer; }\n.post-footer>.care-report {order:10;min-height:44px;margin-left:auto;font-size:12px;}\n@media(max-width:430px){.post-footer>.care-report {grid-column:1/-1;justify-self:end;}}\n@media(max-width:600px) { .care-card {padding:18px;} .community-care-page {padding-inline:16px;} }\n@media(prefers-reduced-motion:no-preference) { .workspace-button,.care-report {transition:background-color .15s ease,box-shadow .15s ease;} .workspace-button:active {transform:translateY(1px);} .vote-success {animation:support-confirm .28s ease;} @keyframes support-confirm {50%{transform:scale(1.06)}} }\n.work-timeline-scroll.is-panning {cursor:grabbing;user-select:none;}\n.staff-board-main {padding:24px clamp(18px,2vw,36px);}\n.staff-board-help {margin-top:20px;padding:0 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);}\n.staff-board-help summary {min-height:44px;padding:12px 0;font-size:13px;font-weight:600;cursor:pointer;}\n.staff-board-help p {margin:0 0 16px;font-size:13px;line-height:1.65;color:var(--ink-2);}\n.visually-hidden {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}\n.staff-board-main .workspace-heading {margin-bottom:16px;}\n.staff-board-main .workspace-heading h1 {font-size:32px;}\n.staff-board-main .workspace-heading p {font-size:13px;line-height:1.6;}\n.staff-board-toolbar {display:flex;align-items:end;gap:12px;flex-wrap:wrap;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);}\n.staff-board-toolbar label {display:grid;gap:8px;margin-bottom:0;font-size:12px;color:var(--ink-2);}\n.staff-board-search {flex:1;min-width:180px;}\n.staff-board-toolbar .workspace-input {min-height:44px;padding:10px 12px;font-size:14px;}\n.staff-board-toolbar .workspace-button {min-height:44px;padding:10px 18px;font-size:14px;}\n.staff-board-caption {display:flex;justify-content:space-between;gap:12px;margin:12px 0 10px;}\n.staff-board-caption p {font-size:12px;color:var(--muted);margin:0;}\n.staff-board-caption p:first-child {color:var(--ink-2);font-weight:600;}\n.staff-board-feedback {display:flex;gap:12px;align-items:center;}\n.staff-board-feedback p:empty {display:none;}\n.staff-board-feedback p {margin:0 0 10px;font-size:12px;}\n.staff-board-selection {margin:0 0 10px!important;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--sky);align-items:center!important;gap:10px!important;}\n.staff-board-selection strong {font-size:13px;margin-right:auto;}\n.staff-board-selection .workspace-input {min-height:44px;padding:10px 12px;font-size:14px;max-width:240px;}\n.staff-board-selection .workspace-button {min-height:44px;padding:10px 14px;font-size:13px;}\n.staff-board-selection .workspace-text-link {min-height:44px;font-size:13px;}\n.staff-flow-board {display:grid;grid-template-columns:repeat(3,minmax(300px,1fr));gap:16px;overflow-x:auto;padding:0 0 4px;scrollbar-width:thin;}\n.staff-flow-lane {display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:640px;min-width:0;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;scroll-margin-top:100px;}\n.staff-lane-heading {position:relative;padding:16px;border-top:3px solid var(--lane-accent,var(--navy));border-bottom:1px solid var(--line);border-radius:12px 12px 0 0;background:var(--bg-2);z-index:4;}\n.staff-flow-lane[data-drop-stage="in_progress"] {--lane-accent:var(--text-link);}\n.staff-flow-lane[data-drop-stage="resolved"] {--lane-accent:var(--success);}\n.staff-lane-heading h2 {display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:16px;margin:0;line-height:1.5;}\n.staff-lane-count {padding:4px 8px;border-radius:6px;background:var(--surface);font-size:12px;font-variant-numeric:tabular-nums;}\n.staff-lane-heading p {font-size:12px;color:var(--muted);margin:3px 0 0;font-variant-numeric:tabular-nums;}\n.staff-lane-cards {padding:12px;min-width:0;}\n.staff-lane-cards::-webkit-scrollbar {width:6px;}\n.staff-flow-board::-webkit-scrollbar {height:6px;}\n.staff-lane-cards::-webkit-scrollbar-thumb,.staff-flow-board::-webkit-scrollbar-thumb {background:var(--line-2);border-radius:8px;}\n.staff-lane-cards::-webkit-scrollbar-track,.staff-flow-board::-webkit-scrollbar-track {background:transparent;}\n[data-theme=dark] .staff-board-main {color-scheme:dark;}\n.staff-flow-card {display:grid;gap:8px;padding:12px 16px;margin-bottom:12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;cursor:grab;}\n.staff-flow-card:last-child {margin-bottom:0;}\n.staff-flow-card:hover {border-color:var(--muted-2);box-shadow:var(--shadow-sm);}\n.staff-flow-card:has(input:checked) {border-color:var(--navy-2);box-shadow:inset 3px 0 var(--navy-2);}\n.staff-card-top {display:flex;align-items:center;gap:5px;min-width:0;}\n.staff-card-select {display:flex;align-items:center;justify-content:center;width:44px;height:44px;flex-shrink:0;cursor:pointer;}\n.staff-card-select input {accent-color:var(--navy);cursor:pointer;}\n.staff-card-category {font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}\n.staff-card-priority {font-size:11px;color:var(--warn);font-weight:700;margin-left:auto;text-transform:uppercase;}\n.staff-card-priority[data-priority=urgent] {color:var(--error);}\n.staff-flow-card h3 {font-size:15px;line-height:1.5;margin:0;}\n.staff-flow-card h3 a {display:block;overflow-wrap:anywhere;color:var(--ink);}\n.staff-flow-card h3 a:hover {text-decoration:underline;text-underline-offset:3px;}\n.staff-card-bottom {display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0;}\n.staff-card-assignee {font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}\n.staff-card-move {flex-shrink:0;max-width:100%;}\n.staff-card-move summary {cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--ink-2);padding:3px 5px;border-radius:5px;}\n.staff-card-move summary::-webkit-details-marker {display:none;}\n.staff-card-move summary:hover {background:var(--bg-2);}\n.staff-card-move label {display:grid;gap:6px;margin-top:6px;}\n.staff-card-move label>span {font-size:11px;}\n.staff-card-move select {padding:10px;font-size:14px;min-height:44px;}\n.staff-card-bottom:has(details[open]) {flex-wrap:wrap;}\n.staff-card-move[open] {width:100%;}\n.staff-lane-empty {display:grid;place-items:center;padding:30px 8px;text-align:center;color:var(--muted);}\n.staff-lane-empty>span {font-size:20px;}\n.staff-lane-empty p {font-size:13px;line-height:1.6;margin-top:8px;}\n.staff-lane-pagination {display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding:12px;background:var(--bg-2);border-radius:0 0 12px 12px;}\n.staff-lane-pagination>a,.staff-lane-pagination>span {display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border-radius:5px;font-size:20px;border:1px solid var(--line);background:var(--surface);color:var(--ink);}\n.staff-lane-pagination>span[aria-disabled] {opacity:.4;}\n.staff-lane-pagination>a:hover {border-color:var(--navy-2);background:var(--sky);}\n.staff-lane-pagination a[aria-disabled=true] {opacity:.4;cursor:wait;}\n.staff-lane-pagination form {display:flex;align-items:center;gap:3px;min-width:0;}\n.staff-page-input {appearance:textfield;width:48px;min-width:0;height:44px;border:1px solid var(--line);border-radius:5px;text-align:center;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;padding:6px;}\n.staff-page-input::-webkit-inner-spin-button {appearance:none;}\n.staff-page-total {font-size:12px;color:var(--muted);white-space:nowrap;}\n.staff-lane-pagination button {min-height:44px;min-width:36px;font-size:12px;border:0;border-radius:5px;background:var(--surface);color:var(--ink);cursor:pointer;padding:4px;}\n.staff-flow-lane[aria-busy=true] .staff-lane-cards {opacity:.6;}\n.staff-board-safety {margin:16px 0 0;font-size:12px;color:var(--muted);line-height:1.5;}\n/* Let the page carry vertical scrolling; the board only scrolls sideways on narrow screens. */\n@media(min-width:1200px) {\n .staff-board-main .workspace-heading {align-items:center;}\n .staff-flow-board {grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;}\n .staff-lane-heading {position:sticky;top:64px;}\n .staff-lane-pagination {position:sticky;bottom:12px;z-index:3;box-shadow:0 -4px 12px rgba(16,42,67,.06);}\n}\n.staff-flow-lane {position:relative;}\n.staff-flow-card[data-dragging="true"] {opacity:.4;border-style:dashed;box-shadow:none;}\n.staff-flow-board.is-dragging .staff-flow-lane[data-drop-label] {border-style:dashed;border-color:var(--navy);}\n.staff-flow-board .staff-flow-lane.is-drop-target {border-style:solid;border-color:var(--navy);background:var(--sky);bo'... 2123 more characters,
+    expected: /\.timeline-controls \{display:grid;grid-template-columns:minmax\(140px,1fr\) 44px 44px;gap:8px;align-items:end;/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/ui-experience.test.ts:74:22
+✖ workboard and care render one shared review drawer with exact-ID opening controls (6.340904ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /href="\/admin\?idea=[^"]+" data-review=/. Input:
+  
+  '<!DOCTYPE html>\n' +
+    '<html lang="en" data-theme="light" data-sf-transitions>\n' +
+    '<head>\n' +
+    '  <meta charset="UTF-8" />\n' +
+    '  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />\n' +
+    '  <meta name="description" content="Share campus feedback and follow submission progress on SuggFeed." />\n' +
+    '  <title>SuggFeed</title>\n' +
+    '\n' +
+    '  <meta name="school-base" content="" />\n' +
+    '  <meta name="school-id" content="" />\n' +
+    '  <meta name="school-actor" content="00000000-0000-4000-8000-000000000010" />\n' +
+    '  <script src="/js/school-context.js?v=20261025-help-scope"></script>\n' +
+    '\n' +
+    '  <!-- PWA / Icons -->\n' +
+    '  <link rel="icon" href="/branding/favicon.ico" sizes="any" />\n' +
+    '  <link rel="icon" href="/branding/icon-32.png" sizes="32x32" type="image/png" />\n' +
+    '  <link rel="apple-touch-icon" href="/branding/icon-180.png" />\n' +
+    '  <link rel="manifest" href="/manifest.json?v=20261013-sf" />\n' +
+    '  <meta name="theme-color" content="#0b3857" />\n' +
+    '\n' +
+    '  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />\n' +
+    '\n' +
+    '  <!-- Styles -->\n' +
+    '  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />\n' +
+    '    <link rel="stylesheet" href="/css/staff.bundle.css?v=20261026-max-lazy" />  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-landing-ideas" />\n' +
+    '        <link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/>  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>\n' +
+    '  <script defer src="/js/interaction-feedback.js?v=20261022-pending-reset"></script>\n' +
+    '  <script defer src="/js/events.js?v=20261018-customization"></script>\n' +
+    '\n' +
+    '  <script src="/js/preferences.js?v=20261016-school-isolation"></script>\n' +
+    '  <script defer src="/js/school-colors.js?v=20261020-studio-colors"></script>\n' +
+    '  <!-- Theme init (before render to prevent flash) -->\n' +
+    '  <script src="/js/theme-init.js?v=20261016-school-isolation"></script>\n' +
+    '\n' +
+    '  <!-- Supabase (client-side auth) -->\n' +
+    '  <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>\n' +
+    '  <link rel="stylesheet" href="/css/modules/controls.css?v=20261024-controls"/>\n' +
+    '  <script defer src="/js/controls.js?v=20261024-controls"></script>\n' +
+    '  <link rel="stylesheet" href="/css/submission-safety.css?v=20261024"/>\n' +
+    '</head>\n' +
+    '<body class=" ">\n' +
+    '<a class="system-skip-link" href="#page-content">Skip to page content</a>\n' +
+    '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="workspace-sprite">\n' +
+    '  <symbol id="ws-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>\n' +
+    '  <symbol id="ws-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M18 17a7 7 0 0 1-12 1l-2-3"/></symbol>\n' +
+    '  <symbol id="ws-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>\n' +
+    '  <symbol id="ws-export" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6"/></symbol>\n' +
+    '  <symbol id="ws-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 14h5l2 3h2l2-3h5M8 8h8"/></symbol>\n' +
+    '  <symbol id="ws-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-16v16"/></symbol>\n' +
+    '  <symbol id="ws-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>\n' +
+    '  <symbol id="ws-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>\n' +
+    '  <symbol id="ws-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>\n' +
+    '  <symbol id="ws-crown" viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/></symbol>\n' +
+    '  <symbol id="ws-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>\n' +
+    '  <symbol id="ws-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></symbol>\n' +
+    '  <symbol id="ws-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>\n' +
+    '  <symbol id="ws-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>\n' +
+    '  <symbol id="ws-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>\n' +
+    '  <symbol id="ws-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>\n' +
+    '  <symbol id="ws-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM7 8h10M7 12h6"/></symbol>\n' +
+    '  <symbol id="ws-care" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>\n' +
+    '  <symbol id="ws-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>\n' +
+    '  <symbol id="ws-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></symbol>\n' +
+    '  <symbol id="ws-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>\n' +
+    '  <symbol id="ws-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>\n' +
+    '  <symbol id="ws-merge" viewBox="0 0 24 24"><path d="M6 21v-5c0-4 12-4 12-8V3M18 21V3m-4 4 4-4 4 4"/></symbol>\n' +
+    '  <symbol id="ws-signout" viewBox="0 0 24 24"><path d="M9 21H4V3h5M10 12h11m-4-4 4 4-4 4"/></symbol>\n' +
+    '<symbol id="ws-book" viewBox="0 0 24 24"><path d="M12 4v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol><symbol id="ws-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h1m6 0h1M8 10h1m6 0h1M8 14h1m6 0h1"/></symbol><symbol id="ws-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></symbol></svg>\n' +
+    '<div id="sf-auth-config" hidden data-url="" data-key="" data-user="00000000-0000-4000-8000-000000000010"></div>\n' +
+    '\n' +
+    '<!-- Individual notifications choose polite or urgent announcements. -->\n' +
+    '<div id="toast-container" class="toast-region" role="region" aria-label="Notifications"></div>\n' +
+    '<script defer src="/js/toast.js?v=20261016-school-isolation"></script>\n' +
+    '<dialog id="sf-confirm-dialog" class="app-confirm-dialog sf-bottom-sheet" aria-labelledby="sf-confirm-title" aria-describedby="sf-confirm-message">\n' +
+    '  <div class="app-confirm-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5m0 3h.01M12 3 2 21h20Z"/></svg></div>\n' +
+    '  <h2 id="sf-confirm-title">Confirm this change</h2>\n' +
+    '  <p id="sf-confirm-message"></p>\n' +
+    '  <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>\n' +
+    '</dialog>\n' +
+    '<script defer src="/js/confirmation.js?v=20261016-school-isolation"></script>\n' +
+    '<script defer src="/js/empty-state.js?v=20261018-empty-states"></script>\n' +
+    '<script defer src="/js/activity.js?v=20261016-school-isolation"></script>\n' +
+    '<header class="site-header">\n' +
+    '  <a class="brand" href="/account/home" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>\n' +
+    '    <nav aria-label="Primary navigation">\n' +
+    '          <a href="/admin" class="nav-link-hide-mobile">School administration</a><a href="/" class="nav-link-hide-mobile">View school community</a>\n' +
+    '    \n' +
+    '          <!-- Authenticated: avatar chip with dropdown -->\n' +
+    '      <div class="header-user-menu">\n' +
+    '        <button class="avatar-chip" id="header-avatar-btn" aria-label="Open account menu" aria-controls="header-dropdown" aria-haspopup="true" aria-expanded="false">\n' +
+    '                      <div class="avatar-circle">A</div>\n' +
+    '                    <span>Alex</span>\n' +
+    '          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>\n' +
+    '        </button>\n' +
+    '        <div class="dropdown-menu" id="header-dropdown" hidden>\n' +
+    '          <div class="dropdown-user-header">\n' +
+    '            <div class="dropdown-user-name">Alex Reyes</div>\n' +
+    '                      </div>\n' +
+    '          <div class="divider"></div>\n' +
+    '                    <a href="/admin" class="dropdown-link dropdown-link--staff"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> School administration</a>          <a href="/" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-users"></use></svg> View school community</a>          <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n' +
+    '          <div class="divider"></div>\n' +
+    '          <form action="/auth/signout" method="POST" class="dropdown-form">\n' +
+    '            <button type="submit" class="danger dropdown-signout-btn">\n' +
+    '              <svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-signout"></use></svg>              Sign out\n' +
+    '            </button>\n' +
+    '          </form>\n' +
+    '        </div>\n' +
+    '      </div>\n' +
+    '    \n' +
+    '    <div class="header-divider"></div>\n' +
+    '\n' +
+    '    <!-- Theme toggle -->\n' +
+    '    <button class="btn-ghost theme-toggle-btn" data-sf-click="action-95" aria-label="Toggle theme" title="Toggle theme">\n' +
+    '      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.4'... 147705 more characters
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/ui-experience.test.ts:64:55)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!DOCTYPE html>\n<html lang="en" data-theme="light" data-sf-transitions>\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />\n  <meta name="description" content="Share campus feedback and follow submission progress on SuggFeed." />\n  <title>SuggFeed</title>\n\n  <meta name="school-base" content="" />\n  <meta name="school-id" content="" />\n  <meta name="school-actor" content="00000000-0000-4000-8000-000000000010" />\n  <script src="/js/school-context.js?v=20261025-help-scope"></script>\n\n  <!-- PWA / Icons -->\n  <link rel="icon" href="/branding/favicon.ico" sizes="any" />\n  <link rel="icon" href="/branding/icon-32.png" sizes="32x32" type="image/png" />\n  <link rel="apple-touch-icon" href="/branding/icon-180.png" />\n  <link rel="manifest" href="/manifest.json?v=20261013-sf" />\n  <meta name="theme-color" content="#0b3857" />\n\n  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />\n\n  <!-- Styles -->\n  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />\n    <link rel="stylesheet" href="/css/staff.bundle.css?v=20261026-max-lazy" />  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-landing-ideas" />\n        <link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/>  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>\n  <script defer src="/js/interaction-feedback.js?v=20261022-pending-reset"></script>\n  <script defer src="/js/events.js?v=20261018-customization"></script>\n\n  <script src="/js/preferences.js?v=20261016-school-isolation"></script>\n  <script defer src="/js/school-colors.js?v=20261020-studio-colors"></script>\n  <!-- Theme init (before render to prevent flash) -->\n  <script src="/js/theme-init.js?v=20261016-school-isolation"></script>\n\n  <!-- Supabase (client-side auth) -->\n  <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>\n  <link rel="stylesheet" href="/css/modules/controls.css?v=20261024-controls"/>\n  <script defer src="/js/controls.js?v=20261024-controls"></script>\n  <link rel="stylesheet" href="/css/submission-safety.css?v=20261024"/>\n</head>\n<body class=" ">\n<a class="system-skip-link" href="#page-content">Skip to page content</a>\n<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="workspace-sprite">\n  <symbol id="ws-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>\n  <symbol id="ws-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M18 17a7 7 0 0 1-12 1l-2-3"/></symbol>\n  <symbol id="ws-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>\n  <symbol id="ws-export" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6"/></symbol>\n  <symbol id="ws-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 14h5l2 3h2l2-3h5M8 8h8"/></symbol>\n  <symbol id="ws-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-16v16"/></symbol>\n  <symbol id="ws-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>\n  <symbol id="ws-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>\n  <symbol id="ws-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>\n  <symbol id="ws-crown" viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/></symbol>\n  <symbol id="ws-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>\n  <symbol id="ws-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></symbol>\n  <symbol id="ws-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>\n  <symbol id="ws-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>\n  <symbol id="ws-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>\n  <symbol id="ws-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>\n  <symbol id="ws-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM7 8h10M7 12h6"/></symbol>\n  <symbol id="ws-care" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>\n  <symbol id="ws-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>\n  <symbol id="ws-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></symbol>\n  <symbol id="ws-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>\n  <symbol id="ws-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>\n  <symbol id="ws-merge" viewBox="0 0 24 24"><path d="M6 21v-5c0-4 12-4 12-8V3M18 21V3m-4 4 4-4 4 4"/></symbol>\n  <symbol id="ws-signout" viewBox="0 0 24 24"><path d="M9 21H4V3h5M10 12h11m-4-4 4 4-4 4"/></symbol>\n<symbol id="ws-book" viewBox="0 0 24 24"><path d="M12 4v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol><symbol id="ws-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h1m6 0h1M8 10h1m6 0h1M8 14h1m6 0h1"/></symbol><symbol id="ws-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></symbol></svg>\n<div id="sf-auth-config" hidden data-url="" data-key="" data-user="00000000-0000-4000-8000-000000000010"></div>\n\n<!-- Individual notifications choose polite or urgent announcements. -->\n<div id="toast-container" class="toast-region" role="region" aria-label="Notifications"></div>\n<script defer src="/js/toast.js?v=20261016-school-isolation"></script>\n<dialog id="sf-confirm-dialog" class="app-confirm-dialog sf-bottom-sheet" aria-labelledby="sf-confirm-title" aria-describedby="sf-confirm-message">\n  <div class="app-confirm-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5m0 3h.01M12 3 2 21h20Z"/></svg></div>\n  <h2 id="sf-confirm-title">Confirm this change</h2>\n  <p id="sf-confirm-message"></p>\n  <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>\n</dialog>\n<script defer src="/js/confirmation.js?v=20261016-school-isolation"></script>\n<script defer src="/js/empty-state.js?v=20261018-empty-states"></script>\n<script defer src="/js/activity.js?v=20261016-school-isolation"></script>\n<header class="site-header">\n  <a class="brand" href="/account/home" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>\n    <nav aria-label="Primary navigation">\n          <a href="/admin" class="nav-link-hide-mobile">School administration</a><a href="/" class="nav-link-hide-mobile">View school community</a>\n    \n          <!-- Authenticated: avatar chip with dropdown -->\n      <div class="header-user-menu">\n        <button class="avatar-chip" id="header-avatar-btn" aria-label="Open account menu" aria-controls="header-dropdown" aria-haspopup="true" aria-expanded="false">\n                      <div class="avatar-circle">A</div>\n                    <span>Alex</span>\n          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>\n        </button>\n        <div class="dropdown-menu" id="header-dropdown" hidden>\n          <div class="dropdown-user-header">\n            <div class="dropdown-user-name">Alex Reyes</div>\n                      </div>\n          <div class="divider"></div>\n                    <a href="/admin" class="dropdown-link dropdown-link--staff"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> School administration</a>          <a href="/" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-users"></use></svg> View school community</a>          <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n          <div class="divider"></div>\n          <form action="/auth/signout" method="POST" class="dropdown-form">\n            <button type="submit" class="danger dropdown-signout-btn">\n              <svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-signout"></use></svg>              Sign out\n            </button>\n          </form>\n        </div>\n      </div>\n    \n    <div class="header-divider"></div>\n\n    <!-- Theme toggle -->\n    <button class="btn-ghost theme-toggle-btn" data-sf-click="action-95" aria-label="Toggle theme" title="Toggle theme">\n      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.4'... 147705 more characters,
+    expected: /href="\/admin\?idea=[^"]+" data-review=/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/ui-experience.test.ts:97:22
+✖ new account and staff menu entries have decorative SVGs backed by the shared sprite (3.632295ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /<a href="\/schools"[^>]*>\s*<svg[^>]*aria-hidden="true"[^>]*><use href="#ws-/. Input:
+  
+  '<div class="dropdown-menu" id="header-dropdown" hidden>\n' +
+    '          <div class="dropdown-user-header">\n' +
+    '            <div class="dropdown-user-name">Alex Reyes</div>\n' +
+    '                      </div>\n' +
+    '          <div class="divider"></div>\n' +
+    '                    <a href="/admin" class="dropdown-link dropdown-link--staff"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> School administration</a>          <a href="/" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-users"></use></svg> View school community</a>          <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n' +
+    '          <div class="divider"></div>\n' +
+    '          <form action="/auth/signout"'
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/ui-experience.test.ts:82:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<div class="dropdown-menu" id="header-dropdown" hidden>\n          <div class="dropdown-user-header">\n            <div class="dropdown-user-name">Alex Reyes</div>\n                      </div>\n          <div class="divider"></div>\n                    <a href="/admin" class="dropdown-link dropdown-link--staff"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> School administration</a>          <a href="/" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-users"></use></svg> View school community</a>          <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n          <div class="divider"></div>\n          <form action="/auth/signout"',
+    expected: /<a href="\/schools"[^>]*>\s*<svg[^>]*aria-hidden="true"[^>]*><use href="#ws-/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/ui-experience.test.ts:116:22
+✖ staff review heading groups title/status and metadata/clarification into two compact rows (4.697246ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /class="staff-review-heading-title"><h2 id="review-title"><\/h2><span class="workspace-status" id="review-current-status"/. Input:
+  
+  '<!DOCTYPE html>\n' +
+    '<html lang="en" data-theme="light" data-sf-transitions>\n' +
+    '<head>\n' +
+    '  <meta charset="UTF-8" />\n' +
+    '  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />\n' +
+    '  <meta name="description" content="Share campus feedback and follow submission progress on SuggFeed." />\n' +
+    '  <title>SuggFeed</title>\n' +
+    '\n' +
+    '  <meta name="school-base" content="" />\n' +
+    '  <meta name="school-id" content="" />\n' +
+    '  <meta name="school-actor" content="00000000-0000-4000-8000-000000000010" />\n' +
+    '  <script src="/js/school-context.js?v=20261025-help-scope"></script>\n' +
+    '\n' +
+    '  <!-- PWA / Icons -->\n' +
+    '  <link rel="icon" href="/branding/favicon.ico" sizes="any" />\n' +
+    '  <link rel="icon" href="/branding/icon-32.png" sizes="32x32" type="image/png" />\n' +
+    '  <link rel="apple-touch-icon" href="/branding/icon-180.png" />\n' +
+    '  <link rel="manifest" href="/manifest.json?v=20261013-sf" />\n' +
+    '  <meta name="theme-color" content="#0b3857" />\n' +
+    '\n' +
+    '  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />\n' +
+    '\n' +
+    '  <!-- Styles -->\n' +
+    '  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />\n' +
+    '    <link rel="stylesheet" href="/css/staff.bundle.css?v=20261026-max-lazy" />  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-landing-ideas" />\n' +
+    '        <link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/>  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>\n' +
+    '  <script defer src="/js/interaction-feedback.js?v=20261022-pending-reset"></script>\n' +
+    '  <script defer src="/js/events.js?v=20261018-customization"></script>\n' +
+    '\n' +
+    '  <script src="/js/preferences.js?v=20261016-school-isolation"></script>\n' +
+    '  <script defer src="/js/school-colors.js?v=20261020-studio-colors"></script>\n' +
+    '  <!-- Theme init (before render to prevent flash) -->\n' +
+    '  <script src="/js/theme-init.js?v=20261016-school-isolation"></script>\n' +
+    '\n' +
+    '  <!-- Supabase (client-side auth) -->\n' +
+    '  <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>\n' +
+    '  <link rel="stylesheet" href="/css/modules/controls.css?v=20261024-controls"/>\n' +
+    '  <script defer src="/js/controls.js?v=20261024-controls"></script>\n' +
+    '  <link rel="stylesheet" href="/css/submission-safety.css?v=20261024"/>\n' +
+    '</head>\n' +
+    '<body class=" ">\n' +
+    '<a class="system-skip-link" href="#page-content">Skip to page content</a>\n' +
+    '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="workspace-sprite">\n' +
+    '  <symbol id="ws-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>\n' +
+    '  <symbol id="ws-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M18 17a7 7 0 0 1-12 1l-2-3"/></symbol>\n' +
+    '  <symbol id="ws-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>\n' +
+    '  <symbol id="ws-export" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6"/></symbol>\n' +
+    '  <symbol id="ws-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 14h5l2 3h2l2-3h5M8 8h8"/></symbol>\n' +
+    '  <symbol id="ws-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-16v16"/></symbol>\n' +
+    '  <symbol id="ws-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>\n' +
+    '  <symbol id="ws-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>\n' +
+    '  <symbol id="ws-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>\n' +
+    '  <symbol id="ws-crown" viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/></symbol>\n' +
+    '  <symbol id="ws-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>\n' +
+    '  <symbol id="ws-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></symbol>\n' +
+    '  <symbol id="ws-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>\n' +
+    '  <symbol id="ws-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>\n' +
+    '  <symbol id="ws-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>\n' +
+    '  <symbol id="ws-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>\n' +
+    '  <symbol id="ws-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM7 8h10M7 12h6"/></symbol>\n' +
+    '  <symbol id="ws-care" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>\n' +
+    '  <symbol id="ws-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>\n' +
+    '  <symbol id="ws-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></symbol>\n' +
+    '  <symbol id="ws-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>\n' +
+    '  <symbol id="ws-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>\n' +
+    '  <symbol id="ws-merge" viewBox="0 0 24 24"><path d="M6 21v-5c0-4 12-4 12-8V3M18 21V3m-4 4 4-4 4 4"/></symbol>\n' +
+    '  <symbol id="ws-signout" viewBox="0 0 24 24"><path d="M9 21H4V3h5M10 12h11m-4-4 4 4-4 4"/></symbol>\n' +
+    '<symbol id="ws-book" viewBox="0 0 24 24"><path d="M12 4v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol><symbol id="ws-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h1m6 0h1M8 10h1m6 0h1M8 14h1m6 0h1"/></symbol><symbol id="ws-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></symbol></svg>\n' +
+    '<div id="sf-auth-config" hidden data-url="" data-key="" data-user="00000000-0000-4000-8000-000000000010"></div>\n' +
+    '\n' +
+    '<!-- Individual notifications choose polite or urgent announcements. -->\n' +
+    '<div id="toast-container" class="toast-region" role="region" aria-label="Notifications"></div>\n' +
+    '<script defer src="/js/toast.js?v=20261016-school-isolation"></script>\n' +
+    '<dialog id="sf-confirm-dialog" class="app-confirm-dialog sf-bottom-sheet" aria-labelledby="sf-confirm-title" aria-describedby="sf-confirm-message">\n' +
+    '  <div class="app-confirm-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5m0 3h.01M12 3 2 21h20Z"/></svg></div>\n' +
+    '  <h2 id="sf-confirm-title">Confirm this change</h2>\n' +
+    '  <p id="sf-confirm-message"></p>\n' +
+    '  <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>\n' +
+    '</dialog>\n' +
+    '<script defer src="/js/confirmation.js?v=20261016-school-isolation"></script>\n' +
+    '<script defer src="/js/empty-state.js?v=20261018-empty-states"></script>\n' +
+    '<script defer src="/js/activity.js?v=20261016-school-isolation"></script>\n' +
+    '<header class="site-header">\n' +
+    '  <a class="brand" href="/account/home" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>\n' +
+    '    <nav aria-label="Primary navigation">\n' +
+    '          <a href="/admin" class="nav-link-hide-mobile">School administration</a><a href="/" class="nav-link-hide-mobile">View school community</a>\n' +
+    '    \n' +
+    '          <!-- Authenticated: avatar chip with dropdown -->\n' +
+    '      <div class="header-user-menu">\n' +
+    '        <button class="avatar-chip" id="header-avatar-btn" aria-label="Open account menu" aria-controls="header-dropdown" aria-haspopup="true" aria-expanded="false">\n' +
+    '                      <div class="avatar-circle">A</div>\n' +
+    '                    <span>Alex</span>\n' +
+    '          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>\n' +
+    '        </button>\n' +
+    '        <div class="dropdown-menu" id="header-dropdown" hidden>\n' +
+    '          <div class="dropdown-user-header">\n' +
+    '            <div class="dropdown-user-name">Alex Reyes</div>\n' +
+    '                      </div>\n' +
+    '          <div class="divider"></div>\n' +
+    '                    <a href="/admin" class="dropdown-link dropdown-link--staff"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> School administration</a>          <a href="/" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-users"></use></svg> View school community</a>          <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n' +
+    '          <div class="divider"></div>\n' +
+    '          <form action="/auth/signout" method="POST" class="dropdown-form">\n' +
+    '            <button type="submit" class="danger dropdown-signout-btn">\n' +
+    '              <svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-signout"></use></svg>              Sign out\n' +
+    '            </button>\n' +
+    '          </form>\n' +
+    '        </div>\n' +
+    '      </div>\n' +
+    '    \n' +
+    '    <div class="header-divider"></div>\n' +
+    '\n' +
+    '    <!-- Theme toggle -->\n' +
+    '    <button class="btn-ghost theme-toggle-btn" data-sf-click="action-95" aria-label="Toggle theme" title="Toggle theme">\n' +
+    '      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.4'... 147705 more characters
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/ui-experience.test.ts:93:44)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!DOCTYPE html>\n<html lang="en" data-theme="light" data-sf-transitions>\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />\n  <meta name="description" content="Share campus feedback and follow submission progress on SuggFeed." />\n  <title>SuggFeed</title>\n\n  <meta name="school-base" content="" />\n  <meta name="school-id" content="" />\n  <meta name="school-actor" content="00000000-0000-4000-8000-000000000010" />\n  <script src="/js/school-context.js?v=20261025-help-scope"></script>\n\n  <!-- PWA / Icons -->\n  <link rel="icon" href="/branding/favicon.ico" sizes="any" />\n  <link rel="icon" href="/branding/icon-32.png" sizes="32x32" type="image/png" />\n  <link rel="apple-touch-icon" href="/branding/icon-180.png" />\n  <link rel="manifest" href="/manifest.json?v=20261013-sf" />\n  <meta name="theme-color" content="#0b3857" />\n\n  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />\n\n  <!-- Styles -->\n  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />\n    <link rel="stylesheet" href="/css/staff.bundle.css?v=20261026-max-lazy" />  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-landing-ideas" />\n        <link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/>  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>\n  <script defer src="/js/interaction-feedback.js?v=20261022-pending-reset"></script>\n  <script defer src="/js/events.js?v=20261018-customization"></script>\n\n  <script src="/js/preferences.js?v=20261016-school-isolation"></script>\n  <script defer src="/js/school-colors.js?v=20261020-studio-colors"></script>\n  <!-- Theme init (before render to prevent flash) -->\n  <script src="/js/theme-init.js?v=20261016-school-isolation"></script>\n\n  <!-- Supabase (client-side auth) -->\n  <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>\n  <link rel="stylesheet" href="/css/modules/controls.css?v=20261024-controls"/>\n  <script defer src="/js/controls.js?v=20261024-controls"></script>\n  <link rel="stylesheet" href="/css/submission-safety.css?v=20261024"/>\n</head>\n<body class=" ">\n<a class="system-skip-link" href="#page-content">Skip to page content</a>\n<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="workspace-sprite">\n  <symbol id="ws-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>\n  <symbol id="ws-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M18 17a7 7 0 0 1-12 1l-2-3"/></symbol>\n  <symbol id="ws-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>\n  <symbol id="ws-export" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6"/></symbol>\n  <symbol id="ws-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 14h5l2 3h2l2-3h5M8 8h8"/></symbol>\n  <symbol id="ws-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-16v16"/></symbol>\n  <symbol id="ws-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>\n  <symbol id="ws-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>\n  <symbol id="ws-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>\n  <symbol id="ws-crown" viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/></symbol>\n  <symbol id="ws-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>\n  <symbol id="ws-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></symbol>\n  <symbol id="ws-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>\n  <symbol id="ws-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>\n  <symbol id="ws-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>\n  <symbol id="ws-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>\n  <symbol id="ws-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM7 8h10M7 12h6"/></symbol>\n  <symbol id="ws-care" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>\n  <symbol id="ws-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>\n  <symbol id="ws-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></symbol>\n  <symbol id="ws-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>\n  <symbol id="ws-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>\n  <symbol id="ws-merge" viewBox="0 0 24 24"><path d="M6 21v-5c0-4 12-4 12-8V3M18 21V3m-4 4 4-4 4 4"/></symbol>\n  <symbol id="ws-signout" viewBox="0 0 24 24"><path d="M9 21H4V3h5M10 12h11m-4-4 4 4-4 4"/></symbol>\n<symbol id="ws-book" viewBox="0 0 24 24"><path d="M12 4v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol><symbol id="ws-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h1m6 0h1M8 10h1m6 0h1M8 14h1m6 0h1"/></symbol><symbol id="ws-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></symbol></svg>\n<div id="sf-auth-config" hidden data-url="" data-key="" data-user="00000000-0000-4000-8000-000000000010"></div>\n\n<!-- Individual notifications choose polite or urgent announcements. -->\n<div id="toast-container" class="toast-region" role="region" aria-label="Notifications"></div>\n<script defer src="/js/toast.js?v=20261016-school-isolation"></script>\n<dialog id="sf-confirm-dialog" class="app-confirm-dialog sf-bottom-sheet" aria-labelledby="sf-confirm-title" aria-describedby="sf-confirm-message">\n  <div class="app-confirm-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5m0 3h.01M12 3 2 21h20Z"/></svg></div>\n  <h2 id="sf-confirm-title">Confirm this change</h2>\n  <p id="sf-confirm-message"></p>\n  <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>\n</dialog>\n<script defer src="/js/confirmation.js?v=20261016-school-isolation"></script>\n<script defer src="/js/empty-state.js?v=20261018-empty-states"></script>\n<script defer src="/js/activity.js?v=20261016-school-isolation"></script>\n<header class="site-header">\n  <a class="brand" href="/account/home" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>\n    <nav aria-label="Primary navigation">\n          <a href="/admin" class="nav-link-hide-mobile">School administration</a><a href="/" class="nav-link-hide-mobile">View school community</a>\n    \n          <!-- Authenticated: avatar chip with dropdown -->\n      <div class="header-user-menu">\n        <button class="avatar-chip" id="header-avatar-btn" aria-label="Open account menu" aria-controls="header-dropdown" aria-haspopup="true" aria-expanded="false">\n                      <div class="avatar-circle">A</div>\n                    <span>Alex</span>\n          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>\n        </button>\n        <div class="dropdown-menu" id="header-dropdown" hidden>\n          <div class="dropdown-user-header">\n            <div class="dropdown-user-name">Alex Reyes</div>\n                      </div>\n          <div class="divider"></div>\n                    <a href="/admin" class="dropdown-link dropdown-link--staff"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> School administration</a>          <a href="/" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-users"></use></svg> View school community</a>          <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n          <div class="divider"></div>\n          <form action="/auth/signout" method="POST" class="dropdown-form">\n            <button type="submit" class="danger dropdown-signout-btn">\n              <svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-signout"></use></svg>              Sign out\n            </button>\n          </form>\n        </div>\n      </div>\n    \n    <div class="header-divider"></div>\n\n    <!-- Theme toggle -->\n    <button class="btn-ghost theme-toggle-btn" data-sf-click="action-95" aria-label="Toggle theme" title="Toggle theme">\n      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.4'... 147705 more characters,
+    expected: /class="staff-review-heading-title"><h2 id="review-title"><\/h2><span class="workspace-status" id="review-current-status"/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/ui-experience.test.ts:141:22
+✖ school layout identifies the active school and shows settings only for school administrators (2.509779ms)
+  TypeError: Cannot read properties of null (reading '0')
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/ui-experience.test.ts:115:123)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+
+test at tests/workspace.test.ts:9:22
+✖ staff and roadmap render populated, empty, and login screens (72.32859ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Review submissions/. Input:
+  
+  '<!DOCTYPE html>\n' +
+    '<html lang="en" data-theme="light" data-sf-transitions>\n' +
+    '<head>\n' +
+    '  <meta charset="UTF-8" />\n' +
+    '  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />\n' +
+    '  <meta name="description" content="Share campus feedback and follow submission progress on SuggFeed." />\n' +
+    '  <title>SuggFeed</title>\n' +
+    '\n' +
+    '  <meta name="school-base" content="" />\n' +
+    '  <meta name="school-id" content="" />\n' +
+    '  <meta name="school-actor" content="00000000-0000-4000-8000-000000000010" />\n' +
+    '  <script src="/js/school-context.js?v=20261025-help-scope"></script>\n' +
+    '\n' +
+    '  <!-- PWA / Icons -->\n' +
+    '  <link rel="icon" href="/branding/favicon.ico" sizes="any" />\n' +
+    '  <link rel="icon" href="/branding/icon-32.png" sizes="32x32" type="image/png" />\n' +
+    '  <link rel="apple-touch-icon" href="/branding/icon-180.png" />\n' +
+    '  <link rel="manifest" href="/manifest.json?v=20261013-sf" />\n' +
+    '  <meta name="theme-color" content="#0b3857" />\n' +
+    '\n' +
+    '  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />\n' +
+    '\n' +
+    '  <!-- Styles -->\n' +
+    '  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />\n' +
+    '    <link rel="stylesheet" href="/css/staff.bundle.css?v=20261026-max-lazy" />  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-landing-ideas" />\n' +
+    '        <link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/>  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>\n' +
+    '  <script defer src="/js/interaction-feedback.js?v=20261022-pending-reset"></script>\n' +
+    '  <script defer src="/js/events.js?v=20261018-customization"></script>\n' +
+    '\n' +
+    '  <script src="/js/preferences.js?v=20261016-school-isolation"></script>\n' +
+    '  <script defer src="/js/school-colors.js?v=20261020-studio-colors"></script>\n' +
+    '  <!-- Theme init (before render to prevent flash) -->\n' +
+    '  <script src="/js/theme-init.js?v=20261016-school-isolation"></script>\n' +
+    '\n' +
+    '  <!-- Supabase (client-side auth) -->\n' +
+    '  <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>\n' +
+    '  <link rel="stylesheet" href="/css/modules/controls.css?v=20261024-controls"/>\n' +
+    '  <script defer src="/js/controls.js?v=20261024-controls"></script>\n' +
+    '  <link rel="stylesheet" href="/css/submission-safety.css?v=20261024"/>\n' +
+    '</head>\n' +
+    '<body class=" ">\n' +
+    '<a class="system-skip-link" href="#page-content">Skip to page content</a>\n' +
+    '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="workspace-sprite">\n' +
+    '  <symbol id="ws-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>\n' +
+    '  <symbol id="ws-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M18 17a7 7 0 0 1-12 1l-2-3"/></symbol>\n' +
+    '  <symbol id="ws-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>\n' +
+    '  <symbol id="ws-export" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6"/></symbol>\n' +
+    '  <symbol id="ws-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 14h5l2 3h2l2-3h5M8 8h8"/></symbol>\n' +
+    '  <symbol id="ws-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-16v16"/></symbol>\n' +
+    '  <symbol id="ws-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>\n' +
+    '  <symbol id="ws-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>\n' +
+    '  <symbol id="ws-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>\n' +
+    '  <symbol id="ws-crown" viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/></symbol>\n' +
+    '  <symbol id="ws-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>\n' +
+    '  <symbol id="ws-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></symbol>\n' +
+    '  <symbol id="ws-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>\n' +
+    '  <symbol id="ws-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>\n' +
+    '  <symbol id="ws-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>\n' +
+    '  <symbol id="ws-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>\n' +
+    '  <symbol id="ws-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM7 8h10M7 12h6"/></symbol>\n' +
+    '  <symbol id="ws-care" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>\n' +
+    '  <symbol id="ws-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>\n' +
+    '  <symbol id="ws-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></symbol>\n' +
+    '  <symbol id="ws-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>\n' +
+    '  <symbol id="ws-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>\n' +
+    '  <symbol id="ws-merge" viewBox="0 0 24 24"><path d="M6 21v-5c0-4 12-4 12-8V3M18 21V3m-4 4 4-4 4 4"/></symbol>\n' +
+    '  <symbol id="ws-signout" viewBox="0 0 24 24"><path d="M9 21H4V3h5M10 12h11m-4-4 4 4-4 4"/></symbol>\n' +
+    '<symbol id="ws-book" viewBox="0 0 24 24"><path d="M12 4v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol><symbol id="ws-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h1m6 0h1M8 10h1m6 0h1M8 14h1m6 0h1"/></symbol><symbol id="ws-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></symbol></svg>\n' +
+    '<div id="sf-auth-config" hidden data-url="" data-key="" data-user="00000000-0000-4000-8000-000000000010"></div>\n' +
+    '\n' +
+    '<!-- Individual notifications choose polite or urgent announcements. -->\n' +
+    '<div id="toast-container" class="toast-region" role="region" aria-label="Notifications"></div>\n' +
+    '<script defer src="/js/toast.js?v=20261016-school-isolation"></script>\n' +
+    '<dialog id="sf-confirm-dialog" class="app-confirm-dialog sf-bottom-sheet" aria-labelledby="sf-confirm-title" aria-describedby="sf-confirm-message">\n' +
+    '  <div class="app-confirm-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5m0 3h.01M12 3 2 21h20Z"/></svg></div>\n' +
+    '  <h2 id="sf-confirm-title">Confirm this change</h2>\n' +
+    '  <p id="sf-confirm-message"></p>\n' +
+    '  <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>\n' +
+    '</dialog>\n' +
+    '<script defer src="/js/confirmation.js?v=20261016-school-isolation"></script>\n' +
+    '<script defer src="/js/empty-state.js?v=20261018-empty-states"></script>\n' +
+    '<script defer src="/js/activity.js?v=20261016-school-isolation"></script>\n' +
+    '<header class="site-header">\n' +
+    '  <a class="brand" href="/account/home" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>\n' +
+    '    <nav aria-label="Primary navigation">\n' +
+    '          <a href="/admin" class="nav-link-hide-mobile">School administration</a><a href="/" class="nav-link-hide-mobile">View school community</a>\n' +
+    '    \n' +
+    '          <!-- Authenticated: avatar chip with dropdown -->\n' +
+    '      <div class="header-user-menu">\n' +
+    '        <button class="avatar-chip" id="header-avatar-btn" aria-label="Open account menu" aria-controls="header-dropdown" aria-haspopup="true" aria-expanded="false">\n' +
+    '                      <div class="avatar-circle">A</div>\n' +
+    '                    <span>Alex</span>\n' +
+    '          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>\n' +
+    '        </button>\n' +
+    '        <div class="dropdown-menu" id="header-dropdown" hidden>\n' +
+    '          <div class="dropdown-user-header">\n' +
+    '            <div class="dropdown-user-name">Alex Reyes</div>\n' +
+    '                      </div>\n' +
+    '          <div class="divider"></div>\n' +
+    '                    <a href="/admin" class="dropdown-link dropdown-link--staff"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> School administration</a>          <a href="/" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-users"></use></svg> View school community</a>          <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n' +
+    '          <div class="divider"></div>\n' +
+    '          <form action="/auth/signout" method="POST" class="dropdown-form">\n' +
+    '            <button type="submit" class="danger dropdown-signout-btn">\n' +
+    '              <svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-signout"></use></svg>              Sign out\n' +
+    '            </button>\n' +
+    '          </form>\n' +
+    '        </div>\n' +
+    '      </div>\n' +
+    '    \n' +
+    '    <div class="header-divider"></div>\n' +
+    '\n' +
+    '    <!-- Theme toggle -->\n' +
+    '    <button class="btn-ghost theme-toggle-btn" data-sf-click="action-95" aria-label="Toggle theme" title="Toggle theme">\n' +
+    '      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.4'... 127773 more characters
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/workspace.test.ts:17:12)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!DOCTYPE html>\n<html lang="en" data-theme="light" data-sf-transitions>\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />\n  <meta name="description" content="Share campus feedback and follow submission progress on SuggFeed." />\n  <title>SuggFeed</title>\n\n  <meta name="school-base" content="" />\n  <meta name="school-id" content="" />\n  <meta name="school-actor" content="00000000-0000-4000-8000-000000000010" />\n  <script src="/js/school-context.js?v=20261025-help-scope"></script>\n\n  <!-- PWA / Icons -->\n  <link rel="icon" href="/branding/favicon.ico" sizes="any" />\n  <link rel="icon" href="/branding/icon-32.png" sizes="32x32" type="image/png" />\n  <link rel="apple-touch-icon" href="/branding/icon-180.png" />\n  <link rel="manifest" href="/manifest.json?v=20261013-sf" />\n  <meta name="theme-color" content="#0b3857" />\n\n  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />\n\n  <!-- Styles -->\n  <link rel="stylesheet" href="/css/base.bundle.css?v=20261022-continuous-thread" />\n    <link rel="stylesheet" href="/css/staff.bundle.css?v=20261026-max-lazy" />  <link rel="stylesheet" href="/css/enhancements.bundle.css?v=20261025-landing-ideas" />\n        <link rel="stylesheet" href="/css/motion-transitions.css?v=20261020-motion"/>  <link rel="stylesheet" href="/css/modules/interaction-feedback.css?v=20261022-compact-group"/>\n  <script defer src="/js/interaction-feedback.js?v=20261022-pending-reset"></script>\n  <script defer src="/js/events.js?v=20261018-customization"></script>\n\n  <script src="/js/preferences.js?v=20261016-school-isolation"></script>\n  <script defer src="/js/school-colors.js?v=20261020-studio-colors"></script>\n  <!-- Theme init (before render to prevent flash) -->\n  <script src="/js/theme-init.js?v=20261016-school-isolation"></script>\n\n  <!-- Supabase (client-side auth) -->\n  <script defer src="/js/vendor/supabase.js?v=20261016-school-isolation"></script>\n  <link rel="stylesheet" href="/css/modules/controls.css?v=20261024-controls"/>\n  <script defer src="/js/controls.js?v=20261024-controls"></script>\n  <link rel="stylesheet" href="/css/submission-safety.css?v=20261024"/>\n</head>\n<body class=" ">\n<a class="system-skip-link" href="#page-content">Skip to page content</a>\n<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="workspace-sprite">\n  <symbol id="ws-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>\n  <symbol id="ws-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M18 17a7 7 0 0 1-12 1l-2-3"/></symbol>\n  <symbol id="ws-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>\n  <symbol id="ws-export" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6"/></symbol>\n  <symbol id="ws-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 14h5l2 3h2l2-3h5M8 8h8"/></symbol>\n  <symbol id="ws-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-16v16"/></symbol>\n  <symbol id="ws-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>\n  <symbol id="ws-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>\n  <symbol id="ws-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>\n  <symbol id="ws-crown" viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/></symbol>\n  <symbol id="ws-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>\n  <symbol id="ws-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></symbol>\n  <symbol id="ws-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>\n  <symbol id="ws-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>\n  <symbol id="ws-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>\n  <symbol id="ws-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>\n  <symbol id="ws-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM7 8h10M7 12h6"/></symbol>\n  <symbol id="ws-care" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>\n  <symbol id="ws-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>\n  <symbol id="ws-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></symbol>\n  <symbol id="ws-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>\n  <symbol id="ws-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>\n  <symbol id="ws-merge" viewBox="0 0 24 24"><path d="M6 21v-5c0-4 12-4 12-8V3M18 21V3m-4 4 4-4 4 4"/></symbol>\n  <symbol id="ws-signout" viewBox="0 0 24 24"><path d="M9 21H4V3h5M10 12h11m-4-4 4 4-4 4"/></symbol>\n<symbol id="ws-book" viewBox="0 0 24 24"><path d="M12 4v16M3 4h5a4 4 0 0 1 4 2 4 4 0 0 1 4-2h5v15h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3z"/></symbol><symbol id="ws-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h1m6 0h1M8 10h1m6 0h1M8 14h1m6 0h1"/></symbol><symbol id="ws-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><path d="M2 12h20"/></symbol></svg>\n<div id="sf-auth-config" hidden data-url="" data-key="" data-user="00000000-0000-4000-8000-000000000010"></div>\n\n<!-- Individual notifications choose polite or urgent announcements. -->\n<div id="toast-container" class="toast-region" role="region" aria-label="Notifications"></div>\n<script defer src="/js/toast.js?v=20261016-school-isolation"></script>\n<dialog id="sf-confirm-dialog" class="app-confirm-dialog sf-bottom-sheet" aria-labelledby="sf-confirm-title" aria-describedby="sf-confirm-message">\n  <div class="app-confirm-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5m0 3h.01M12 3 2 21h20Z"/></svg></div>\n  <h2 id="sf-confirm-title">Confirm this change</h2>\n  <p id="sf-confirm-message"></p>\n  <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" data-confirm-cancel autofocus>Cancel</button><button type="button" class="app-confirm-accept" data-confirm-accept>Continue</button></div>\n</dialog>\n<script defer src="/js/confirmation.js?v=20261016-school-isolation"></script>\n<script defer src="/js/empty-state.js?v=20261018-empty-states"></script>\n<script defer src="/js/activity.js?v=20261016-school-isolation"></script>\n<header class="site-header">\n  <a class="brand" href="/account/home" aria-label="SuggFeed home"><span class="sf-wordmark">Sugg<span>Feed</span></span></a>\n    <nav aria-label="Primary navigation">\n          <a href="/admin" class="nav-link-hide-mobile">School administration</a><a href="/" class="nav-link-hide-mobile">View school community</a>\n    \n          <!-- Authenticated: avatar chip with dropdown -->\n      <div class="header-user-menu">\n        <button class="avatar-chip" id="header-avatar-btn" aria-label="Open account menu" aria-controls="header-dropdown" aria-haspopup="true" aria-expanded="false">\n                      <div class="avatar-circle">A</div>\n                    <span>Alex</span>\n          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>\n        </button>\n        <div class="dropdown-menu" id="header-dropdown" hidden>\n          <div class="dropdown-user-header">\n            <div class="dropdown-user-name">Alex Reyes</div>\n                      </div>\n          <div class="divider"></div>\n                    <a href="/admin" class="dropdown-link dropdown-link--staff"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> School administration</a>          <a href="/" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-users"></use></svg> View school community</a>          <a href="/profile/help" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-care"></use></svg> Help &amp; support</a>          <a href="/account/security" class="dropdown-link"><svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-shield"></use></svg> Account security</a>\n          <div class="divider"></div>\n          <form action="/auth/signout" method="POST" class="dropdown-form">\n            <button type="submit" class="danger dropdown-signout-btn">\n              <svg class="workspace-svg" aria-hidden="true" focusable="false"><use href="#ws-signout"></use></svg>              Sign out\n            </button>\n          </form>\n        </div>\n      </div>\n    \n    <div class="header-divider"></div>\n\n    <!-- Theme toggle -->\n    <button class="btn-ghost theme-toggle-btn" data-sf-click="action-95" aria-label="Toggle theme" title="Toggle theme">\n      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.4'... 127773 more characters,
+    expected: /Review submissions/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/workspace.test.ts:75:22
+✖ compact work-board rendering exposes bounded stage pages, native controls and independent pagination links (58.507093ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '/admin/work'
+  - '/admin/board'
+            ^
+  
+      at TestContext.<anonymous> (/tmp/suggfeed-animation-main/audit/snapshot/apps/web-express/tests/workspace.test.ts:100:14)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '/admin/work',
+    expected: '/admin/board',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /tmp/suggfeed-animation-main/audit/snapshot/apps/web-express
+npm error workspace suggfeed-express@2.0.0
+npm error location /tmp/suggfeed-animation-main/audit/snapshot/apps/web-express
+npm error command failed
+npm error command sh -c npm run build:knowledge && npm run build:client && tsc -p tsconfig.tests.json && node -r ts-node/register/transpile-only --test tests/*.test.ts

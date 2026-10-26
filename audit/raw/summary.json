@@ -1,0 +1,35 @@
+{
+  "revision": "6da6fc938ad1b5539138ba717728ff372bc8a40d",
+  "modules": 204,
+  "functions": 3021,
+  "sourceLines": 15511,
+  "any": 399,
+  "casts": 1018,
+  "emptyCatch": 40,
+  "tsIgnore": 0,
+  "ccOver20": 82,
+  "cognitiveOver15": 129,
+  "nestingOver3": 68,
+  "lengthOver60": 60,
+  "paramsOver5": 5,
+  "filesOver300": 14,
+  "classicBrowserFiles": 80,
+  "runtimeCycles": [
+    [
+      "apps/web-express/src/lib/progress-evidence.ts",
+      "apps/web-express/src/lib/progress.ts"
+    ]
+  ],
+  "duplication": {
+    "lines": 25526,
+    "tokens": 596957,
+    "sources": 294,
+    "clones": 54,
+    "duplicatedLines": 605,
+    "duplicatedTokens": 12865,
+    "percentage": 2.37,
+    "percentageTokens": 2.16,
+    "newDuplicatedLines": 0,
+    "newClones": 0
+  }
+}

@@ -1,0 +1,4 @@
+
+> suggfeed-express@2.0.0 lint:assistant
+> eslint --config eslint.assistant.config.mjs src/lib/assistant/*.ts src/routes/assistant*.ts src/client/assistant*.ts
+

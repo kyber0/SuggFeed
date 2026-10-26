@@ -1,0 +1,22 @@
+ WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v24.19.0","pnpm":"9.15.0"})
+apps/web-express                         |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v24.19.0","pnpm":"9.15.0"})
+Scope: all 2 workspace projects
+(node:974270) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +269
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 269, reused 0, downloaded 38, added 38
+Progress: resolved 269, reused 0, downloaded 94, added 91
+Progress: resolved 269, reused 0, downloaded 144, added 143
+Progress: resolved 269, reused 0, downloaded 199, added 199
+Progress: resolved 269, reused 0, downloaded 254, added 254
+Progress: resolved 269, reused 0, downloaded 269, added 269, done
+.../node_modules/protobufjs postinstall$ node scripts/postinstall
+.../node_modules/protobufjs postinstall: Done
+.../node_modules/@google/genai preinstall$ echo 'preinstall: no-op'
+.../node_modules/@google/genai preinstall: preinstall: no-op
+.../node_modules/@google/genai preinstall: Done
+
+Done in 5.8s

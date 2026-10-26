@@ -1,0 +1,20 @@
+[
+  {
+    "name": "typecheck",
+    "command": "npm run typecheck",
+    "exit": 0,
+    "seconds": 14.46
+  },
+  {
+    "name": "tests",
+    "command": "npm test",
+    "exit": 1,
+    "seconds": 120.46
+  },
+  {
+    "name": "build",
+    "command": "npm run build",
+    "exit": 0,
+    "seconds": 10.86
+  }
+]

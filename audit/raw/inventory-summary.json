@@ -1,0 +1,10 @@
+{
+  "files": 295,
+  "actions": {
+    "keep": 266,
+    "split": 22,
+    "merge": 4,
+    "delete": 1,
+    "move": 2
+  }
+}

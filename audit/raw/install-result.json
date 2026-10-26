@@ -1,0 +1,6 @@
+{
+  "command": "corepack pnpm install --frozen-lockfile --store-dir <audit/pnpm-store>",
+  "isolated": true,
+  "exit": 0,
+  "seconds": 6.01
+}

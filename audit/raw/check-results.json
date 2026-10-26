@@ -1,0 +1,44 @@
+[
+  {
+    "name": "typecheck",
+    "command": "npm run typecheck",
+    "exit": 0,
+    "seconds": 12.83
+  },
+  {
+    "name": "lint-animations",
+    "command": "npm run lint:animations",
+    "exit": 0,
+    "seconds": 0.92
+  },
+  {
+    "name": "lint-moderation",
+    "command": "npm run lint:moderation",
+    "exit": 0,
+    "seconds": 0.77
+  },
+  {
+    "name": "lint-assistant",
+    "command": "npm run lint:assistant",
+    "exit": 0,
+    "seconds": 0.92
+  },
+  {
+    "name": "lint-assignments",
+    "command": "npm run lint:assignments",
+    "exit": 0,
+    "seconds": 0.67
+  },
+  {
+    "name": "tests",
+    "command": "npm test",
+    "exit": 1,
+    "seconds": 119.51
+  },
+  {
+    "name": "build",
+    "command": "npm run build",
+    "exit": 0,
+    "seconds": 9.93
+  }
+]
