@@ -1,0 +1,13 @@
+{
+  "image": "postgres@sha256:d81f7b51697014367236d07ec58b54153fc28f828b72bf247fe5c7487520bcb0",
+  "hostedWrites": false,
+  "portsPublished": false,
+  "migrationReplay": "passed",
+  "concurrency": "passed",
+  "restoredTables": 84,
+  "restore": "passed",
+  "authorization": "passed",
+  "containerRemoved": true,
+  "seconds": 16.75,
+  "scope": "Synthetic schemas restored within the same PostgreSQL cluster; managed Supabase auth/storage and global role recovery not certified."
+}

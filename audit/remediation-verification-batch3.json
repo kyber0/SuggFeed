@@ -1,0 +1,64 @@
+{
+  "runtime": "22.23.4",
+  "checks": [
+    {
+      "check": "runtime",
+      "exit": 0,
+      "seconds": 0.01
+    },
+    {
+      "check": "audit",
+      "exit": 0,
+      "seconds": 0.41
+    },
+    {
+      "check": "lint:animations",
+      "exit": 0,
+      "seconds": 0.72
+    },
+    {
+      "check": "lint:moderation",
+      "exit": 0,
+      "seconds": 0.72
+    },
+    {
+      "check": "lint:assistant",
+      "exit": 0,
+      "seconds": 0.87
+    },
+    {
+      "check": "lint:assignments",
+      "exit": 0,
+      "seconds": 0.62
+    },
+    {
+      "check": "typecheck",
+      "exit": 0,
+      "seconds": 14.04
+    },
+    {
+      "check": "build",
+      "exit": 0,
+      "seconds": 10.58
+    },
+    {
+      "check": "tests",
+      "exit": 0,
+      "seconds": 87.64
+    }
+  ],
+  "tests": {
+    "tests": 365,
+    "pass": 364,
+    "fail": 0,
+    "skipped": 1
+  },
+  "failedNames": [],
+  "authorizationExtraction": "Bodies verified byte-for-byte unchanged from original routes/schools.ts; imports redirected to leaf service and original route exports retained.",
+  "scope": "Clean npm deployment dependency tree; synthetic service credentials and external fetch block. Disposable local SQL tests run; hosted data untouched.",
+  "skip": "Real PostgreSQL Docker concurrency fixture not configured.",
+  "pnpmRuntime": "Lock-only frozen validation and audit performed previously; complete pnpm install/test not repeated.",
+  "hostedWrites": false,
+  "deployed": false,
+  "committed": false
+}

@@ -1,0 +1,256 @@
+{
+  "scope": "Selected refactored functions only; not a whole-code quality or coverage claim",
+  "baseline": {
+    "inspectorRender": {
+      "cyclomatic": 122,
+      "cognitive": 153,
+      "nesting": 14
+    },
+    "boardNavigate": {
+      "auditCyclomatic": 82,
+      "auditCognitive": 91,
+      "immediateBeforeCognitive": 88
+    },
+    "progressComposer": {
+      "cyclomatic": 47,
+      "cognitive": 76
+    }
+  },
+  "currentAst": [
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "name": "selectionMarkup",
+      "start": 14,
+      "end": 93,
+      "column": 3,
+      "lines": 80,
+      "parameters": 1,
+      "cyclomatic": 44,
+      "nesting": 3,
+      "nodes": 1007
+    },
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "name": "groupProperties",
+      "start": 94,
+      "end": 110,
+      "column": 3,
+      "lines": 17,
+      "parameters": 1,
+      "cyclomatic": 31,
+      "nesting": 7,
+      "nodes": 409
+    },
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "name": "annotateProperties",
+      "start": 111,
+      "end": 113,
+      "column": 3,
+      "lines": 3,
+      "parameters": 1,
+      "cyclomatic": 23,
+      "nesting": 5,
+      "nodes": 298
+    },
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "name": "restoreFocus",
+      "start": 114,
+      "end": 117,
+      "column": 3,
+      "lines": 4,
+      "parameters": 1,
+      "cyclomatic": 10,
+      "nesting": 4,
+      "nodes": 114
+    },
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "name": "render",
+      "start": 118,
+      "end": 134,
+      "column": 3,
+      "lines": 17,
+      "parameters": 0,
+      "cyclomatic": 18,
+      "nesting": 3,
+      "nodes": 407
+    },
+    {
+      "file": "apps/web-express/src/client/staff-progress.ts",
+      "name": "renderComposerPreview",
+      "start": 214,
+      "end": 226,
+      "column": 3,
+      "lines": 13,
+      "parameters": 2,
+      "cyclomatic": 22,
+      "nesting": 7,
+      "nodes": 300
+    },
+    {
+      "file": "apps/web-express/src/client/staff-progress.ts",
+      "name": "updateComposer",
+      "start": 227,
+      "end": 255,
+      "column": 3,
+      "lines": 29,
+      "parameters": 0,
+      "cyclomatic": 26,
+      "nesting": 4,
+      "nodes": 430
+    },
+    {
+      "file": "apps/web-express/src/client/staff-progress.ts",
+      "name": "parseProgressReply",
+      "start": 328,
+      "end": 337,
+      "column": 3,
+      "lines": 10,
+      "parameters": 1,
+      "cyclomatic": 9,
+      "nesting": 2,
+      "nodes": 85
+    },
+    {
+      "file": "apps/web-express/src/client/staff-progress.ts",
+      "name": "validatePost",
+      "start": 338,
+      "end": 350,
+      "column": 3,
+      "lines": 13,
+      "parameters": 1,
+      "cyclomatic": 16,
+      "nesting": 1,
+      "nodes": 200
+    },
+    {
+      "file": "apps/web-express/src/client/staff-tools.ts",
+      "name": "parseBoardPage",
+      "start": 83,
+      "end": 97,
+      "column": 3,
+      "lines": 15,
+      "parameters": 3,
+      "cyclomatic": 14,
+      "nesting": 2,
+      "nodes": 268
+    },
+    {
+      "file": "apps/web-express/src/client/staff-tools.ts",
+      "name": "installBoardPage",
+      "start": 98,
+      "end": 137,
+      "column": 3,
+      "lines": 40,
+      "parameters": 5,
+      "cyclomatic": 45,
+      "nesting": 4,
+      "nodes": 855
+    },
+    {
+      "file": "apps/web-express/src/client/staff-tools.ts",
+      "name": "navigate",
+      "start": 138,
+      "end": 154,
+      "column": 3,
+      "lines": 17,
+      "parameters": 5,
+      "cyclomatic": 23,
+      "nesting": 3,
+      "nodes": 420
+    }
+  ],
+  "currentCognitive": [
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "phase": "after",
+      "name": "selectionMarkup",
+      "line": 14,
+      "score": 53
+    },
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "phase": "after",
+      "name": "groupProperties",
+      "line": 94,
+      "score": 36
+    },
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "phase": "after",
+      "name": "annotateProperties",
+      "line": 111,
+      "score": 30
+    },
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "phase": "after",
+      "name": "restoreFocus",
+      "line": 114,
+      "score": 15
+    },
+    {
+      "file": "apps/web-express/src/client/school-studio-inspector.ts",
+      "phase": "after",
+      "name": "render",
+      "line": 118,
+      "score": 18
+    },
+    {
+      "file": "apps/web-express/src/client/staff-tools.ts",
+      "phase": "after",
+      "name": "parseBoardPage",
+      "line": 83,
+      "score": 10
+    },
+    {
+      "file": "apps/web-express/src/client/staff-tools.ts",
+      "phase": "after",
+      "name": "installBoardPage",
+      "line": 98,
+      "score": 56
+    },
+    {
+      "file": "apps/web-express/src/client/staff-tools.ts",
+      "phase": "after",
+      "name": "navigate",
+      "line": 138,
+      "score": 22
+    },
+    {
+      "file": "apps/web-express/src/client/staff-progress.ts",
+      "phase": "after",
+      "name": "renderComposerPreview",
+      "line": 214,
+      "score": 40
+    },
+    {
+      "file": "apps/web-express/src/client/staff-progress.ts",
+      "phase": "after",
+      "name": "updateComposer",
+      "line": 227,
+      "score": 36
+    },
+    {
+      "file": "apps/web-express/src/client/staff-progress.ts",
+      "phase": "after",
+      "name": "parseProgressReply",
+      "line": 328,
+      "score": 7
+    },
+    {
+      "file": "apps/web-express/src/client/staff-progress.ts",
+      "phase": "after",
+      "name": "validatePost",
+      "line": 338,
+      "score": 11
+    }
+  ],
+  "runtimeImportCycles": [],
+  "limitations": [
+    "Complex extracted helpers remain.",
+    "Classic browser globals and SQL calls are not captured by the static import graph."
+  ]
+}

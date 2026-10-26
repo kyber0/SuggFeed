@@ -1,0 +1,232 @@
+{
+  "date": "2026-10-26",
+  "baseRevision": "bfa1ac7",
+  "runtime": "Node 22.23.4",
+  "scope": "Current local remediation source; no hosted deployment/data mutation",
+  "npm": {
+    "commands": [
+      "npm ci --workspaces=false --include=dev --ignore-scripts",
+      "npm audit --workspaces=false --json",
+      "npm run lint:animations",
+      "npm run lint:moderation",
+      "npm run lint:assistant",
+      "npm run lint:assignments",
+      "npm run typecheck",
+      "npm run build",
+      "npm test"
+    ],
+    "checks": [
+      {
+        "check": "runtime",
+        "exit": 0,
+        "seconds": 0.01
+      },
+      {
+        "check": "audit",
+        "exit": 0,
+        "seconds": 0.42
+      },
+      {
+        "check": "lint:animations",
+        "exit": 0,
+        "seconds": 0.73
+      },
+      {
+        "check": "lint:moderation",
+        "exit": 0,
+        "seconds": 0.72
+      },
+      {
+        "check": "lint:assistant",
+        "exit": 0,
+        "seconds": 0.92
+      },
+      {
+        "check": "lint:assignments",
+        "exit": 0,
+        "seconds": 0.62
+      },
+      {
+        "check": "typecheck",
+        "exit": 0,
+        "seconds": 17.15
+      },
+      {
+        "check": "build",
+        "exit": 0,
+        "seconds": 12.92
+      },
+      {
+        "check": "tests",
+        "exit": 0,
+        "seconds": 97.28
+      }
+    ],
+    "tests": {
+      "tests": 390,
+      "pass": 389,
+      "fail": 0,
+      "skipped": 1
+    },
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "installationRuntime": "Host Node 24.19.0 with install scripts disabled; all verification commands ran on target Node 22.23.4"
+  },
+  "pnpm": {
+    "installation": "Fresh frozen pnpm 9.15.0 installation, ignore-scripts; existing dependency tree not reused",
+    "checks": [
+      {
+        "check": "runtime",
+        "exit": 0,
+        "seconds": 0.01
+      },
+      {
+        "check": "audit",
+        "exit": 0,
+        "seconds": 0.47
+      },
+      {
+        "check": "lint:animations",
+        "exit": 0,
+        "seconds": 1.53
+      },
+      {
+        "check": "lint:moderation",
+        "exit": 0,
+        "seconds": 1.07
+      },
+      {
+        "check": "lint:assistant",
+        "exit": 0,
+        "seconds": 1.17
+      },
+      {
+        "check": "lint:assignments",
+        "exit": 0,
+        "seconds": 1.02
+      },
+      {
+        "check": "typecheck",
+        "exit": 0,
+        "seconds": 20.85
+      },
+      {
+        "check": "build",
+        "exit": 0,
+        "seconds": 14.05
+      },
+      {
+        "check": "tests",
+        "exit": 0,
+        "seconds": 100.71
+      }
+    ],
+    "tests": {
+      "tests": 390,
+      "pass": 389,
+      "fail": 0,
+      "skipped": 1
+    },
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0
+    }
+  },
+  "cleanBootstrap": "Removed dist, public/js and generated browser declarations before each typecheck/build/test sequence",
+  "externalServiceFetches": "Blocked; synthetic service configuration only",
+  "browser": {
+    "contracts": [
+      {
+        "width": 320,
+        "mode": "light",
+        "passed": true
+      },
+      {
+        "width": 320,
+        "mode": "dark",
+        "passed": true
+      },
+      {
+        "width": 375,
+        "mode": "light",
+        "passed": true
+      },
+      {
+        "width": 375,
+        "mode": "dark",
+        "passed": true
+      },
+      {
+        "width": 768,
+        "mode": "light",
+        "passed": true
+      },
+      {
+        "width": 768,
+        "mode": "dark",
+        "passed": true
+      },
+      {
+        "width": 1440,
+        "mode": "light",
+        "passed": true
+      },
+      {
+        "width": 1440,
+        "mode": "dark",
+        "passed": true
+      }
+    ],
+    "inspector": {
+      "cases": 144,
+      "passed": true,
+      "recorded": false
+    },
+    "preRefactorInspector": {
+      "cases": 144,
+      "passed": true,
+      "recorded": false
+    },
+    "consoleErrorLogsEmpty": true
+  },
+  "postgres": {
+    "image": "postgres@sha256:d81f7b51697014367236d07ec58b54153fc28f828b72bf247fe5c7487520bcb0",
+    "hostedWrites": false,
+    "portsPublished": false,
+    "migrationReplay": "passed",
+    "concurrency": "passed",
+    "restoredTables": 84,
+    "restore": "passed",
+    "authorization": "passed",
+    "containerRemoved": true,
+    "seconds": 16.75,
+    "scope": "Synthetic schemas restored within the same PostgreSQL cluster; managed Supabase auth/storage and global role recovery not certified."
+  },
+  "boundaries": {
+    "command": "node apps/web-express/scripts/check-boundaries.cjs --strict",
+    "exit": 0,
+    "findings": 0
+  },
+  "diffCheck": {
+    "command": "git diff --check",
+    "exit": 0
+  },
+  "remaining": [
+    "Complex browser helpers/shared state remain.",
+    "Static graph excludes classic globals and SQL calls.",
+    "No whole-app coverage percentage or approved license policy.",
+    "Auth template external/manual ownership unknown; retained.",
+    "Hosted branch protection unavailable: API Forbidden.",
+    "Hosted deployment gates, alerts, backups, managed auth/storage recovery and production SLOs unverified.",
+    "No hosted deployment/rollback drill performed."
+  ]
+}

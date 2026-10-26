@@ -1,0 +1,99 @@
+{
+  "runtime": "22.23.4",
+  "checks": [
+    {
+      "check": "runtime",
+      "exit": 0,
+      "seconds": 0.01
+    },
+    {
+      "check": "audit",
+      "exit": 0,
+      "seconds": 0.47
+    },
+    {
+      "check": "lint:animations",
+      "exit": 0,
+      "seconds": 0.93
+    },
+    {
+      "check": "lint:moderation",
+      "exit": 0,
+      "seconds": 0.67
+    },
+    {
+      "check": "lint:assistant",
+      "exit": 0,
+      "seconds": 0.82
+    },
+    {
+      "check": "lint:assignments",
+      "exit": 0,
+      "seconds": 0.62
+    },
+    {
+      "check": "typecheck",
+      "exit": 0,
+      "seconds": 13.74
+    },
+    {
+      "check": "build",
+      "exit": 0,
+      "seconds": 10.35
+    }
+  ],
+  "fullTests": {
+    "tests": 364,
+    "pass": 325,
+    "fail": 38,
+    "skipped": 1
+  },
+  "targetedTests": {
+    "tests": 15,
+    "pass": 15,
+    "fail": 0
+  },
+  "failedNames": [
+    "feed search waits for submission and sorting preserves the applied search",
+    "loading more uses the applied filters even when the search input has a draft",
+    "failed loading preserves existing ideas and retries the same page",
+    "failed support can be retried without recording a false vote or sending duplicate requests",
+    "loaded feed cards escape content and expose native title links without duplicate card actions",
+    "platform and account layouts omit client actions while members retain their own school navigation",
+    "Tree native button can collapse and reopen repeatedly without duplicate keyboard handlers",
+    "idea drawer hides stale actions on failure and retries without adding browser history",
+    "directory and settings render functional forms, pending workspace and private policy",
+    "global admin role grants no platform operator or other school authority",
+    "privileged onboarding requires verified MFA before reading or mutating",
+    "super admin dashboard shows school setup blockers, scoped actions and dashboard recovery links",
+    "dashboard pages schools and applications independently and only loads policies for visible schools",
+    "dashboard denies school admins and unverified operators before loading school records",
+    "account home honors role landing and platform settings remain inside the platform shell",
+    "work-board paging replaces only one lane and keeps filters and other stage pages in the URL",
+    "modified pagination clicks keep native navigation behavior and do not fetch a lane",
+    "selection survives lane paging and bulk assignment keeps the original optimistic version",
+    "failed page fetch keeps existing cards and offers a retry without full navigation",
+    "an incomplete response cannot partly replace the requested lane or lose its selection",
+    "native Go forms update only their stage page while preserving other lane state",
+    "newly paged stage menus open a guided form without writing or changing the card",
+    "clear selection resets retained selections and delegated checkboxes enforce the 25-item cap",
+    "paging is blocked while a confirmed mutation is outstanding",
+    "dragging a newly paged card opens completion and leaves the existing stage unchanged",
+    "work-board fetches exact per-stage counts and filters before bounded stable pagination without a global cutoff",
+    "shared review opens exact IDs with fresh data and supports delegated cards after pagination",
+    "late and closed detail responses cannot replace the active submission; close restores focus",
+    "unavailable details show retry without stale controls; retry recovers the same ID",
+    "direct links load IDs outside the current page and drafts block replacement",
+    "workboard background opens the drawer but drag gestures and embedded controls do not",
+    "calendar arrows share the scale control row and Manage work removes stacked label offsets",
+    "workboard and care render one shared review drawer with exact-ID opening controls",
+    "new account and staff menu entries have decorative SVGs backed by the shared sprite",
+    "staff review heading groups title/status and metadata/clarification into two compact rows",
+    "school layout identifies the active school and shows settings only for school administrators",
+    "staff and roadmap render populated, empty, and login screens",
+    "compact work-board rendering exposes bounded stage pages, native controls and independent pagination links"
+  ],
+  "incompleteAttempt": "Earlier isolated copy lacked root migration fixtures; excluded from these counts. Corrected complete repository fixture run reported here.",
+  "hostedWrites": false,
+  "deployed": false
+}
