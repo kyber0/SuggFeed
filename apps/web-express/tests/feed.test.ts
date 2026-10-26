@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import {Eta} from 'eta';
 
 class FeedElement {
   dataset: Record<string, string> = {};
@@ -36,7 +37,7 @@ class FeedElement {
   blur() {}
 }
 
-function browser(fetchResponse: (url: string, options: any) => Promise<any> = async () => ({ ok: true, json: async () => ({ success: true, feed: [], hasMore: false, totalCount: 1 }) }), signedIn=false) {
+function browser(fetchResponse: (url: string, options: any) => Promise<any> = async () => ({ ok: true, json: async () => ({ success: true, feed: [], hasMore: false, totalCount: 1, cardsHtml: '' }) }), signedIn=false) {
   const nodes = new Map<string, FeedElement>();
   if(signedIn){nodes.set('sf-auth-config',new FeedElement({user:'member'}));nodes.set('sf-feed-account-state',new FeedElement({user:'member',bookmarks:'[]'}));}
   const config = new FeedElement({ sort: 'all', category: 'Learning', search: 'library', page: '1', hasMore: 'true' });
@@ -67,23 +68,29 @@ function browser(fetchResponse: (url: string, options: any) => Promise<any> = as
   const toasts: string[] = [];
   const window: Record<string, any> = {
     location: { href: 'https://www.suggfeed.me/feed?category=Learning&search=library', origin: 'https://www.suggfeed.me', search: '?category=Learning&search=library' },
+    addEventListener() {},
     setTimeout, clearTimeout, sfToast: (message: string) => toasts.push(message),
   };
   const context = {
-    window, URL, URLSearchParams, AbortController, AbortSignal, setTimeout, clearTimeout,
+    window, CustomEvent, URL, URLSearchParams, AbortController, AbortSignal, setTimeout, clearTimeout,
     localStorage: { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) },
     sfToast: (message: string) => toasts.push(message),
     navigator: {},
     document: {
       getElementById: (id: string) => nodes.get(id) ?? null,
-      querySelectorAll: (selector: string) => selector === '.action-like[data-id]' ? [support] : [],
+      querySelector: () => null,
+      querySelectorAll: (selector: string) => selector === '.action-like[data-id]' ? [support] : selector === '.post-card[data-idea-id]' ? container.children : [],
       addEventListener() {},
+      dispatchEvent() {},
       activeElement: null,
+      createElement: () => ({content: {querySelectorAll: () => []}, set innerHTML(value: string) { assert.equal(value, '', 'This fixture only supports empty pagination markup'); }}),
       createDocumentFragment: () => new FeedElement(),
     },
     fetch: async (url: string, options: any) => { calls.push({ url, options }); return fetchResponse(url, options); },
   };
   Object.assign(context, { sfSchoolPath: (value: string) => value, sfSchoolKey: (value: string) => value, ...('fetch' in context ? { sfSchoolFetch: context.fetch } : {}) });
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/engagement.js'), 'utf8'), context);
+  Object.assign(context,{location:window.location,sfRememberVote:window.sfRememberVote});
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/feed.js'), 'utf8'), context);
   function input(value: string) {
     search.value = value;
@@ -133,7 +140,7 @@ test('failed loading preserves existing ideas and retries the same page', async 
     attempts += 1;
     return attempts === 1
       ? { ok: false, status: 503 }
-      : { ok: true, json: async () => ({ success: true, feed: [], hasMore: false, totalCount: 1 }) };
+      : { ok: true, json: async () => ({ success: true, feed: [], hasMore: false, totalCount: 1, cardsHtml: '' }) };
   });
   const loader = nodes.get('feed-loader')!;
   const container = nodes.get('feed-posts-container')!;
@@ -159,24 +166,24 @@ test('failed loading preserves existing ideas and retries the same page', async 
   assert.doesNotMatch(nodes.get('feed-load-status')!.textContent, /could not load/i);
 });
 
-test('failed support can be retried without recording a false vote or sending duplicate requests', async () => {
+test('rate-limited support can be retried without recording a false vote or sending duplicate requests', async () => {
   let resolveResponse!: (value: any) => void;
   let succeeded = false;
   const runtime = browser(async () => succeeded
-    ? { ok: true, json: async () => ({ success: true, vote_count: 8 }) }
+    ? { ok: true, json: async () => ({ success: true, voted:true, vote_count: 8 }) }
     : new Promise(resolve => { resolveResponse = resolve; }));
   const first = runtime.window.sfVoteFeed('idea-one', runtime.support);
   assert.equal(runtime.support.disabled, true);
   await runtime.window.sfVoteFeed('idea-one', runtime.support);
   assert.equal(runtime.calls.length, 1, 'Rapid repeat clicks must share the pending request');
-  resolveResponse({ ok: false, status: 503 });
+  resolveResponse({ ok: false, status: 429 });
   await first;
   assert.equal(runtime.support.disabled, false);
   assert.equal(runtime.support.classList.contains('active'), false);
   assert.equal(runtime.support.attributes.get('aria-pressed'), 'false');
   assert.equal(runtime.count.textContent, '7');
   assert.equal(runtime.storage.has('sf_voted_ideas'), false);
-  assert.match(runtime.toasts.at(-1)!, /try again/i);
+  assert.match(runtime.toasts.at(-1)!, /try supporting this idea again/i);
 
   succeeded = true;
   await runtime.window.sfVoteFeed('idea-one', runtime.support);
@@ -189,12 +196,12 @@ test('failed support can be retried without recording a false vote or sending du
 });
 
 test('loaded feed cards escape content and expose native title links without duplicate card actions', () => {
-  const { window } = browser();
-  const html: string = window.sfCreatePostCardHtml({
+  const eta=new Eta({views:path.resolve(__dirname,'../views')});
+  const html: string = eta.render('partials/feed-card',{item:{
     id: 'idea-"<unsafe>', title: '<img src=x onerror=alert(1)>', description: '<script>alert(1)</script>',
     status: 'resolved', categories: { name: '<img>' }, author: { display_name: 'Student <script>' },
     created_at: '2026-10-01T08:00:00Z', vote_count: 50, comment_count: 2,
-  });
+  },votedIds:[],voteStateKnown:true});
   assert.doesNotMatch(html, /<script>|<img\b|onfocus=/);
   assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
   assert.match(html, /href="\/idea\/idea-%22%3Cunsafe%3E"/);
@@ -253,6 +260,7 @@ test('3-dot kebab menu toggles open and closed on click and closes on Escape', (
   wrap.children.push(btn, dropdown);
 
   const doc = {
+    querySelector() { return null; },
     addEventListener(type: string, listener: (e: any) => void, opts?: any) {
       const list = docListeners.get(type) ?? [];
       list.push({ listener, capture: !!(opts && (opts === true || opts.capture)) });
@@ -271,7 +279,7 @@ test('3-dot kebab menu toggles open and closed on click and closes on Escape', (
   };
 
   const context = {
-    window: { location: { href: 'http://localhost/feed', origin: 'http://localhost', search: '' }, getComputedStyle: () => ({ display: 'block' }), sfToast: true },
+    window: { addEventListener() {}, location: { href: 'http://localhost/feed', origin: 'http://localhost', search: '' }, getComputedStyle: () => ({ display: 'block' }), sfToast: true },
     document: doc,
     URL, URLSearchParams, AbortController, setTimeout, clearTimeout,
     localStorage: { getItem: () => null, setItem: () => {} },
@@ -328,4 +336,18 @@ test('concurrent account bookmarks preserve both confirmed changes in either res
   await Promise.all([first,second]);
   assert.deepEqual([...app.window.sfGetSavedSet()].sort(),['first','second']);
  }
+});
+
+
+test('ambiguous support failures require reconciliation instead of a duplicate write',async()=>{
+ const runtime=browser(async()=>({ok:false,status:503}));let refreshes=0;
+ runtime.window.location.reload=()=>{refreshes++;};
+ await runtime.window.sfVoteFeed('idea-one',runtime.support);
+ assert.equal(runtime.support.dataset.supportUnknown,'true');
+ assert.equal(runtime.support.attributes.has('aria-pressed'),false);
+ assert.equal(runtime.count.textContent,'—');
+ assert.equal(runtime.storage.has('sf_voted_ideas'),false);
+ assert.match(runtime.toasts.at(-1)!,/refresh to check/i);
+ await runtime.window.sfVoteFeed('idea-one',runtime.support);
+ assert.equal(refreshes,1);assert.equal(runtime.calls.length,1);
 });

@@ -18,6 +18,7 @@ function harness(initial=''){
     removeAttribute(name:string){this.attributes.delete(name);}
     querySelectorAll(selector:string){return selector==='[data-review-tab]'?tabs:selector==='[role="tabpanel"]'?panels:[];}
     querySelector(selector:string){return selector==='.staff-review-scroll'?scroll:selector==='[data-review-tab="progress"]'?tabs[1]:null;}
+    getClientRects(){return this.isConnected?[{}]:[];}
     focus(){this.focused=true;}
     showModal(){this.open=true;}
     close(){this.open=false;for(const fn of this.events.get('close')||[])fn();}
@@ -27,16 +28,16 @@ function harness(initial=''){
     reportValidity(){return true;}
     closest(selector:string){return selector==='[data-review]' && this.dataset.review?this:null;}
   }
-  const template=fs.readFileSync(path.join(__dirname,'../views/partials/staff-review.eta'),'utf8');
+  const template=fs.readFileSync(path.join(__dirname,'../views/partials/staff-detail.eta'),'utf8');
   for(const match of template.matchAll(/id="([\w-]+)"/g))nodes.set(match[1],new Element());
   nodes.set('staff-current-user',{textContent:'{}'});nodes.set('staff-tools-message',new Element());
   const scroll=new Element(),tabs=['decision','progress','notes','history'].map(key=>Object.assign(new Element(),{dataset:{reviewTab:key}}));
   const panels=tabs.map(tab=>Object.assign(new Element(),{id:'review-panel-'+tab.dataset.reviewTab}));
   nodes.get('review-retry-detail').hidden=true;
   const document:any={activeElement:new Element(),getElementById:(key:string)=>nodes.get(key),querySelector:()=>null,querySelectorAll:()=>[],addEventListener:(name:string,fn:Function)=>listeners.set(name,[...(listeners.get(name)||[]),fn]),createElement:()=>new Element(),createElementNS:()=>new Element()};
-  const window:any={location:{href:'https://www.suggfeed.me/admin/board'+initial,pathname:initial?'/admin':'/admin/board'},addEventListener(){},getSelection:()=>null};
+  const window:any={scrollTo(){},location:{href:'https://www.suggfeed.me/admin/board'+initial,pathname:initial?'/admin':'/admin/board'},addEventListener(){},getSelection:()=>null};
   vm.runInNewContext(['empty-state','staff-review'].map(file=>fs.readFileSync(path.join(__dirname,'../public/js/'+file+'.js'),'utf8')).join('\n'),{
-    sfSchoolPath: (value:string)=>value, sfSchoolRoute:(value:string)=>value, document,window,HTMLElement:Element,URL,AbortController,setTimeout,clearTimeout,
+    scrollX:0,scrollY:0,location:window.location, sfSchoolPath: (value:string)=>value, sfSchoolRoute:(value:string)=>value, document,window,HTMLElement:Element,URL,AbortController,setTimeout,clearTimeout,
     sfSchoolFetch:(url:string,options:any)=>url.endsWith('/activity')?Promise.resolve({ok:true,json:async()=>({success:true,history:[],notes:[],transitions:[]})}):new Promise(resolve=>pending.push({url,signal:options.signal,resolve})),
   });
   const flush=async()=>{await new Promise<void>(resolve=>setImmediate(resolve));};

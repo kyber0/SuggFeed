@@ -12,7 +12,7 @@
   return '/admin/work?'+values.toString()+(stage?'#board-lane-'+stage:'');
  };
  const pageFields=stage=>Array.from(new URLSearchParams(urlFor('',1).split('?')[1]).entries()).filter(([key])=>key!==stage+'Page');
- const meta={filters:{...filters,presentation,month:it.calendar?.month,calendarPage:it.calendar?.page},totalCount:it.totalCount,lanes:it.lanes.map(({items,...lane})=>lane)};
+ const meta={windowLimit:it.windowLimit,filters:{...filters,presentation,month:it.calendar?.month,calendarPage:it.calendar?.page},totalCount:it.totalCount,lanes:it.lanes.map(({items,...lane})=>lane)};
 %>
 <main class="staff-workspace"><%~ include('partials/staff-sidebar',it) %><div class="staff-main staff-board-main">
  <%~ include('partials/staff-work-header',{...it,urlFor,presentation}) %>
@@ -29,18 +29,18 @@
  <p class="visually-hidden" id="staff-drag-status" role="status" aria-live="polite"></p>
  <label class="staff-mobile-stage" <%= presentation!=='board'?'hidden':'' %>>Stage<select class="workspace-input" id="staff-mobile-stage"><% for(const lane of it.lanes) { %><option value="<%= lane.status %>"><%= lane.label %> · <%= lane.count %></option><% } %></select></label>
  <section class="staff-flow-board" id="staff-flow-board" data-presentation="<%= presentation %>" <%= presentation==='calendar'?'hidden':'' %> aria-label="Submission stages">
-  <% for(const lane of it.lanes) { %><%~ include('partials/staff-board-lane',{lane,urlFor,pageFields,canAssign:it.user?.role==='admin',filtered:!!(filters.search||filters.assignment!=='all'||filters.priority!=='all'||filters.overdue)}) %><% } %>
+  <% for(const lane of it.lanes) { %><%~ include('partials/staff-board-lane',{lane,windowLimit:it.windowLimit,urlFor,pageFields,canAssign:it.user?.role==='admin',filtered:!!(filters.search||filters.assignment!=='all'||filters.priority!=='all'||filters.overdue)}) %><% } %>
  </section>
  <div id="staff-calendar"><% if(it.calendar) { %><%~ include('partials/staff-calendar',{...it,urlFor}) %><% } %></div>
  <p class="staff-board-safety">Move opens a review form; nothing changes until you save. Needs review and Declined submissions are now in <a href="/admin/reviews">Review ideas</a>. Existing links and idea IDs still work.</p>
- <details class="staff-board-help"><summary>Board controls and recovery</summary><p>Use Move on a selected card to review the selected group with a keyboard, or drag a selected card with a pointer. Scroll within a column to load its next batch. Each column keeps up to 72 cards in the current window; use pagination to continue beyond it. Each stage pages independently. Selection can include other pages and is kept only during this visit. Drag a selected card to review moves for the selected group, one idea at a time. A destination must support every selected idea. Dragging an unselected card moves only that idea.</p><p>Assignments save together: if any selected version changed, none are saved. After a timeout, refresh to confirm before retrying. Published history is corrected with a new update; merges require an operator to review the audit for recovery.</p></details>
+ <details class="staff-board-help"><summary>Board controls and recovery</summary><p>Use Move on a selected card to review the selected group with a keyboard, or drag a selected card with a pointer. Scroll within a column to load its next batch. Each column keeps up to <%= it.windowLimit %> cards in the current window; use pagination to continue beyond it. Each stage pages independently. Selection can include other pages and is kept only during this visit. Drag a selected card to review moves for the selected group, one idea at a time. A destination must support every selected idea. Dragging an unselected card moves only that idea.</p><p>Assignments save together: if any selected version changed, none are saved. After a timeout, refresh to confirm before retrying. Published history is corrected with a new update; merges require an operator to review the audit for recovery.</p></details>
  <script id="staff-board-data" type="application/json"><%~ JSON.stringify(it.items).replace(/</g,'\\u003c') %></script>
  <script id="staff-board-meta" type="application/json"><%~ JSON.stringify(meta).replace(/</g,'\\u003c') %></script>
- <script defer src="/js/staff-tools.js?v=20261026-max-lazy"></script>
+ <script defer src="/js/staff-tools.js?v=20261026-audit-remediation"></script>
 </div>
 <% if(it.user?.role==='admin') { %><dialog id="staff-board-assignment" class="staff-board-assignment-dialog" aria-labelledby="board-assignment-title"><header><div><h2 id="board-assignment-title">Assign an owner</h2><p id="board-assignment-idea"></p></div><button class="workspace-button" type="button" data-close-board-assignment aria-label="Close assignment">×</button></header><form id="staff-board-assignment-form" class="assignment-form" method="post" action="/admin/assignments/action"><label class="assignment-wide">Staff member<select class="workspace-input" name="person" required><option value="">Choose a staff member</option><% for(const member of it.members) { %><option value="<%= member.id %>" data-role="<%= member.role %>"><%= member.display_name||'Staff member' %></option><% } %></select></label><label class="assignment-wide">Reason<textarea class="workspace-input" name="note" rows="3" minlength="3" maxlength="500" required placeholder="Why is this ownership changing?"></textarea></label><p class="staff-footnote assignment-wide">The existing team stays assigned. This changes ownership only; it does not move the idea or publish a response.</p><p id="board-assignment-message" class="assignment-wide" role="status" aria-live="polite"></p><button class="workspace-button workspace-button--primary" type="submit">Save owner</button><button class="workspace-button" type="button" data-close-board-assignment>Cancel</button></form></dialog><% } %>
 <%~ include('partials/staff-work-detail',{...it,staffMembers:it.members}) %>
 <script id="staff-current-user" type="application/json"><%~ JSON.stringify({id:it.user?.id || ''}).replace(/</g,'\\u003c') %></script>
-<script defer src="/js/staff-progress.js?v=20261025-detail-polish"></script>
+<script defer src="/js/staff-progress.js?v=20261026-audit-remediation"></script>
 <script defer src="/js/staff-review.js?v=20261026-max-lazy"></script>
 </main>

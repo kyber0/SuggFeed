@@ -2,7 +2,7 @@ import { withTestSchool } from './support/school-context';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import { BOARD_STAGES, boardFilters, loadStaffBoard } from '../src/lib/staff-board';
+import { BOARD_STAGES, BOARD_WINDOW_LIMIT, boardFilters, loadStaffBoard } from '../src/lib/staff-board';
 import { communityPages, communityRouter } from '../src/routes/community';
 import { supabaseService } from '../src/lib/supabase';
 
@@ -79,10 +79,11 @@ test('work-board fetches exact per-stage counts and filters before bounded stabl
     assert.equal(mock.queries.length, 5);
     for (const query of mock.queries) {
       assert.deepEqual(query.calls[0], ['select', '*', { count: 'exact', head: false }]);
-      assert.deepEqual(query.calls[1], ['eq', 'status', query.status]);
-      assert.deepEqual(query.calls[2], ['or', 'title.ilike."%library%",description.ilike."%library%"']);
-      assert.deepEqual(query.calls[3], ['order', 'created_at', { ascending: false }]);
-      assert.deepEqual(query.calls[4], ['order', 'id', { ascending: false }]);
+      assert.ok(query.calls.some(call=>JSON.stringify(call)===JSON.stringify(['eq','status',query.status])));
+      assert.ok(query.calls.some(call=>JSON.stringify(call)===JSON.stringify(['or','title.ilike."%library%",description.ilike."%library%"'])));
+      assert.deepEqual(query.calls.filter(call=>call[0]==='order'), [
+        ['order', 'created_at', { ascending: false }], ['order', 'id', { ascending: false }],
+      ]);
       assert.equal(query.calls.at(-1)?.[0], 'range');
       assert.ok(query.end! - query.start! < 6);
     }
@@ -220,4 +221,15 @@ test('work-board JSON and page routes enforce staff access, no-store and normali
     server.closeAllConnections();
     await new Promise<void>(resolve => server.close(() => resolve()));
   }
+});
+
+test('work-board clamps direct oversized lazy windows to the shared server limit',async()=>{
+ const mock=mockBoard({approved:200});
+ try {
+  const filters=boardFilters({approvedLoaded:'999'});
+  assert.equal(filters.windows?.approved,BOARD_WINDOW_LIMIT);
+  const result=await loadStaffBoard(filters);
+  assert.equal(result.windowLimit,BOARD_WINDOW_LIMIT);
+  assert.equal(result.lanes.find(lane=>lane.status==='approved')?.items.length,BOARD_WINDOW_LIMIT);
+ } finally {mock.restore();}
 });

@@ -105,7 +105,7 @@
         }
     }
     function sfNavigate() {
-        _appliedSearch = searchInput?.value.trim() ?? _appliedSearch;
+        // Sort/category navigation keeps the query applied to this result set.
         const url = new URL(sfSchoolPath('/feed'), window.location.origin);
         url.searchParams.set('sort', _currentSort);
         if (_currentCat !== 'All')

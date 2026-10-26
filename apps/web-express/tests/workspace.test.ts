@@ -14,11 +14,11 @@ test('staff and roadmap render populated, empty, and login screens', async () =>
       return response.text();
     };
     const staff = await get('/admin');
-    assert.match(staff, /Review submissions/);
+    assert.match(staff, /Review ideas/);
     assert.match(staff, /page=2/);
     assert.match(staff, /staff-review-dialog/);
     assert.match(staff, /href="\/admin\/analytics"/);
-    assert.match(staff, /href="\/admin\/staff"/);
+    assert.match(staff, /href="\/admin\/members"/);
     const sidebarMatch = staff.match(/<aside class="staff-sidebar"[\s\S]*?<\/aside>/);
     assert.ok(sidebarMatch);
     assert.doesNotMatch(sidebarMatch[0], /href="\/roadmap"/);
@@ -48,7 +48,7 @@ test('staff and roadmap render populated, empty, and login screens', async () =>
     assert.match(feed, /Community ideas/);
     assert.match(feed, /id="feed-search-form"/);
     assert.equal((feed.match(/<article class="post-card"/g) || []).length, 15);
-    const feedMain = feed.match(/<main class="community-feed-main"[\s\S]*?<\/main>/)![0];
+    const feedMain = feed.match(/<main\b[^>]*class="community-feed-main"[^>]*>[\s\S]*?<\/main>/)![0];
     assert.doesNotMatch(feedMain, /role="feed"|role="tablist"|@anon|>Trending</);
     assert.match(await get('/feed?search=no-such-idea'), /No ideas match your search/);
     assert.match(await get('/feed?empty=1'), /The next great idea could be yours/);
@@ -59,8 +59,8 @@ test('staff and roadmap render populated, empty, and login screens', async () =>
     assert.equal(secondPage.feed.length, 15);
     assert.equal(secondPage.hasMore, true);
     assert.match(await get('/admin/board'),/Assign selected/);
-    assert.match(await get('/admin/community'),/Content reports/);
-    assert.match(await get('/inbox'),/School messages/);
+    assert.match(await get('/admin/community'),/<h1>Community<\/h1>/);
+    assert.match(await get('/inbox'),/<h1>Private school questions<\/h1>/);
     assert.match(await get('/notifications'),/Notification preferences/);
   } finally {
     server.closeAllConnections();
@@ -97,7 +97,7 @@ test('compact work-board rendering exposes bounded stage pages, native controls 
     for (const anchor of approvedNext) {
       const href = anchor.match(/href="([^"]+)"/)![1].replace(/&amp;|&#38;/g, '&');
       const target = new URL(href, 'https://www.suggfeed.me');
-      assert.equal(target.pathname, '/admin/board');
+      assert.equal(target.pathname, '/admin/work');
       assert.equal(target.searchParams.has('pendingPage'),false);
       assert.equal(target.searchParams.get('sort'), 'newest');
       assert.equal(target.searchParams.get('pageSize'), '6');

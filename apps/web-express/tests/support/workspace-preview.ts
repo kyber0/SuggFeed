@@ -5,7 +5,7 @@ import express from 'express';
 import path from 'node:path';
 import { Eta } from 'eta';
 import { queueFilters } from '../../src/lib/staff-workspace';
-import { boardFilters, BOARD_STAGES, WORK_STAGES } from '../../src/lib/staff-board';
+import { boardFilters, BOARD_STAGES, WORK_STAGES, BOARD_WINDOW_LIMIT } from '../../src/lib/staff-board';
 import { roadmapFilters, groupTreeByCategory, groupTimelineByMonth, formatManilaDate, buildWorkTimeline } from '../../src/lib/roadmap';
 
 export function createWorkspacePreview() {
@@ -50,7 +50,7 @@ export function createWorkspacePreview() {
    return {...stage,count,page,pageCount,from:count?(page-1)*filters.pageSize+1:0,to:count?Math.min(page*filters.pageSize,count):0,hasPrevious:page>1,hasNext:page<pageCount,items:rows};
   });
   const pages=Object.fromEntries(lanes.map(lane=>[lane.status,lane.page]));
-  res.send(eta.render('staff-board',{currentPath:'/admin/board',activeSection:'board',user:{id:staffId,display_name:'Alex Reyes',full_name:'Alex Reyes',role:'admin'},items:lanes.flatMap(lane=>lane.items),lanes,filters:{...filters,pages},totalCount:lanes.reduce((sum,lane)=>sum+lane.count,0),members:[{id:staffId,display_name:'Alex Reyes'}]}));
+  res.send(eta.render('staff-board',{windowLimit:BOARD_WINDOW_LIMIT,currentPath:'/admin/board',activeSection:'board',user:{id:staffId,display_name:'Alex Reyes',full_name:'Alex Reyes',role:'admin'},items:lanes.flatMap(lane=>lane.items),lanes,filters:{...filters,pages},totalCount:lanes.reduce((sum,lane)=>sum+lane.count,0),members:[{id:staffId,display_name:'Alex Reyes'}]}));
  });
  app.get('/admin/community',(_req,res)=>res.send(eta.render('staff-community',{currentPath:'/admin/community',activeSection:'community',user:{id:staffId,display_name:'Alex Reyes',full_name:'Alex Reyes',role:'admin'},alerts:items.slice(0,3).map(s=>({id:s.id,title:s.title,reason:'No public update for 30 days'})),coverage:'Local visual fixtures only; no live database writes.',requests:privateRequests.map(r=>({...r,submission:{title:r.title}})),reports:[{id:'60000000-0000-4000-8000-000000000001',reason:'Contains a student name and phone number.',comment:{body:'[Preview of a reported comment]'}}],members:[{id:staffId,display_name:'Alex Reyes'}]})));
  app.post('/api/community/staff/bulk_assign',(_req,res)=>res.json({success:true}));

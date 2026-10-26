@@ -7,6 +7,7 @@ import type { Server } from 'node:http';
 import { supabasePlatform } from '../src/lib/supabase';
 import { sameOriginOnly } from '../src/lib/security';
 import schools from '../src/routes/schools';
+import platformDashboard from '../src/routes/platform-dashboard';
 import '../src/types';
 
 const original={from:supabasePlatform.from,rpc:supabasePlatform.rpc,getUser:supabasePlatform.auth.getUser,name:process.env.PLATFORM_OPERATOR_NAME,email:process.env.PRIVACY_CONTACT_EMAIL,resend:process.env.RESEND_API_KEY,sender:process.env.RESEND_FROM_EMAIL,origin:process.env.APP_ORIGIN};
@@ -20,7 +21,7 @@ let reads:{table:string;filters:Record<string,any>;start?:number;end?:number}[]=
 before(async()=>{
  delete process.env.RESEND_API_KEY;
  process.env.PLATFORM_OPERATOR_NAME='Test Business';process.env.PRIVACY_CONTACT_EMAIL='privacy@example.test';
- supabasePlatform.rpc=(async(name:string,args:any)=>{calls.push({name,args});return {data:name==='school_student_access_options'?{confirmed:true,roster:[],discover:[],requests:[]}:name==='get_school_enrollment'?{mode:'email',version:0,emails:[]}:name==='school_email_join_options'?[]:name==='school_account_memberships'?(['user-a','operator'].includes(args.p_actor)?[{school_id:'school-a',role:'admin',status:'active',eligible:true,schools:school}]:[]):name==='platform_operator_active'?args.p_actor==='operator':name==='school_release_status'?{isolation_verified:false}:name==='list_school_member_invitations'?[]:name==='create_school_member_invitation'?{id:'30000000-0000-4000-8000-000000000001',expires_at:'2026-10-20T00:00:00Z'}:name==='school_invitation_preview'?{school_name:'School A',school_slug:'school-a',role:'student',state:'pending',recipient:'a•••@example.test',email_matches:args.p_actor==='user-a',expires_at:'2026-10-20T00:00:00Z',can_enter:false}:'school-a',error:null};}) as any;
+ supabasePlatform.rpc=(async(name:string,args:any)=>{calls.push({name,args});return {data:['school_published_configuration','platform_insights'].includes(name)?null:name==='platform_review_queue'?{items:applicationRows.slice(args.p_page*20,args.p_page*20+20),total:applicationRows.length}:name==='platform_activity'?{items:[],hasMore:false}:name==='platform_dashboard_counts'?{}:name==='school_student_access_options'?{confirmed:true,roster:[],discover:[],requests:[]}:name==='get_school_enrollment'?{mode:'email',version:0,emails:[]}:name==='school_email_join_options'?[]:name==='school_account_memberships'?(['user-a','operator'].includes(args.p_actor)?[{school_id:'school-a',role:'admin',status:'active',eligible:true,schools:school}]:[]):name==='platform_operator_active'?args.p_actor==='operator':name==='school_release_status'?{isolation_verified:false}:name==='list_school_member_invitations'?[]:name==='create_school_member_invitation'?{id:'30000000-0000-4000-8000-000000000001',expires_at:'2026-10-20T00:00:00Z'}:name==='school_invitation_preview'?{school_name:'School A',school_slug:'school-a',role:'student',state:'pending',recipient:'a•••@example.test',email_matches:args.p_actor==='user-a',expires_at:'2026-10-20T00:00:00Z',can_enter:false}:'school-a',error:null};}) as any;
  supabasePlatform.auth.getUser=(async(token:string)=>({data:{user:{id:token.replace('unverified:',''),email:'account@example.test',email_confirmed_at:token.startsWith('unverified:')?null:'2026-10-01'}},error:null})) as any;
  supabasePlatform.from=((table:string)=>{
   const filters:Record<string,any>={};
@@ -31,7 +32,7 @@ before(async()=>{
    if(filters.school_ids)rows=rows.filter(row=>filters.school_ids.includes(row.school_id));
    return read.start===undefined?rows:rows.slice(read.start,(read.end??read.start)+1);
   };
-  const query:any={select(){return query;},eq(key:string,value:any){filters[key]=value;return query;},in(key:string,values:any[]){if(key==='school_id')filters.school_ids=values;return query;},ilike(key:string,value:string){filters[key+'_pattern']=value;return query;},not(){return query;},order(){return query;},limit(){return query;},range(start:number,end:number){read.start=start;read.end=end;return query;},async maybeSingle(){return {data:data()[0]||null,error:null};},then(resolve:any,reject:any){return Promise.resolve({data:data(),error:null}).then(resolve,reject);}};
+  const query:any={select(){return query;},eq(key:string,value:any){filters[key]=value;return query;},in(key:string,values:any[]){if(key==='school_id')filters.school_ids=values;return query;},ilike(key:string,value:string){filters[key+'_pattern']=value;return query;},neq(key:string,value:any){filters[key+'_not']=value;return query;},not(){return query;},order(){return query;},limit(){return query;},range(start:number,end:number){read.start=start;read.end=end;return query;},async maybeSingle(){return {data:data()[0]||null,error:null};},then(resolve:any,reject:any){return Promise.resolve({data:data(),count:table==='schools'?schoolRows.length:applicationRows.length,error:null}).then(resolve,reject);}};
   return query;
  }) as any;
  const app=express();app.use(express.urlencoded({extended:false}));app.use(sameOriginOnly);
@@ -44,7 +45,7 @@ before(async()=>{
   res.locals.authAssurance=req.get('x-test-aal')==='aal1'?'aal1':'aal2'; // verified-identity fixture only
   res.locals.user=req.session.user;res.locals.currentPath=req.path;next();
  });
- app.use(schools);app.use((_error:any,_req:any,res:any,_next:any)=>res.status(500).send('Unexpected failure'));
+ app.use(platformDashboard);app.use(schools);app.use((error:any,_req:any,res:any,_next:any)=>res.status(error.status||500).send('Unexpected failure'));
  server=await new Promise<Server>(resolve=>{const listening=app.listen(0,'127.0.0.1',()=>resolve(listening));});
  origin='http://127.0.0.1:'+(server.address() as any).port;
 });
@@ -73,7 +74,7 @@ test('global admin role grants no platform operator or other school authority',a
  const denied=await fetch(origin+'/platform/schools');assert.equal(denied.status,403);
  const crossSchool=await fetch(origin+'/s/school-a/admin/school-settings',{headers:{'x-user':'user-b'}});assert.equal(crossSchool.status,403);
  const operatorDirectory=await fetch(origin+'/schools',{redirect:'manual',headers:{'x-user':'operator'}});assert.equal(operatorDirectory.status,303);assert.equal(operatorDirectory.headers.get('location'),'/platform/schools');
- const platform=await fetch(origin+'/platform/schools',{headers:{'x-user':'operator'}});assert.equal(platform.status,200);assert.match(await platform.text(),/School policy review/);
+ const platform=await fetch(origin+'/platform/schools',{headers:{'x-user':'operator'}});assert.equal(platform.status,200);assert.match(await platform.text(),/Platform overview/);
  const invalidPage=await fetch(origin+'/platform/schools?page=-1',{headers:{'x-user':'operator'}});assert.equal(invalidPage.status,400);
 });
 test('onboarding mutations reject cross-origin requests before processing',async()=>{
@@ -92,12 +93,12 @@ test('privileged onboarding requires verified MFA before reading or mutating',as
 test('super admin dashboard shows school setup blockers, scoped actions and dashboard recovery links',async()=>{
  calls=[];reads=[];
  const response=await fetch(origin+'/platform/schools',{headers:{'x-user':'operator'}});
- assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');
+ assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');
  const html=await response.text();
- assert.match(html,/Super admin workspace/);assert.match(html,/Platform overview/);assert.match(html,/School directory/);
- assert.match(html,/Authenticator verified for this visit/);
- assert.match(html,/href="\/platform\/schools\/school-a\/settings"/);
- assert.match(html,/<button[^>]+disabled[^>]*>Request activation<\/button>/);
+ assert.match(html,/Super admin workspace/);assert.match(html,/Platform overview/);assert.match(html,/section=schools/);
+ assert.match(html,/Platform operator/);assert.match(html,/Platform isolation sign-off is pending/);
+ assert.match(html,/section=setup/);
+ assert.doesNotMatch(html,/<form[^>]*action="[^"]*\/activate"/);
  assert.doesNotMatch(html,/class="mobile-tab-bar"/);
  assert.match(html,/platform\.bundle\.css/);
  assert.equal(calls.some(call=>call.name==='manage_school_status'),false);
@@ -112,22 +113,27 @@ test('super admin dashboard shows school setup blockers, scoped actions and dash
  }finally{schoolRows=[school];process.env.PLATFORM_OPERATOR_NAME='Test Business';}
 });
 
-test('dashboard pages schools and applications independently and only loads policies for visible schools',async()=>{
+test('dashboard sections page bounded lists independently without loading unrelated policy data',async()=>{
  schoolRows=Array.from({length:25},(_,index)=>({...school,id:'school-'+index,slug:'school-'+index,name:index===0?'<script>unsafe</script>':'School '+index}));
- applicationRows=Array.from({length:13},(_,index)=>({id:'application-'+index,slug:'application-'+index,name:'Application '+index,contact_name:'Representative',contact_email:'school@example.test',authority_statement:'Institutional authority statement.'}));
- policyRows=[{...policy,school_id:'school-0'},{...policy,school_id:'school-24'}];reads=[];
+ applicationRows=Array.from({length:23},(_,index)=>({id:'application-'+index,name:'Application '+index,submitted_at:'2026-10-01T00:00:00Z'}));
+ reads=[];calls=[];
  try{
-  const response=await fetch(origin+'/platform/schools',{headers:{'x-user':'operator'}});assert.equal(response.status,200);
+  const response=await fetch(origin+'/platform/schools?section=schools',{headers:{'x-user':'operator'}});assert.equal(response.status,200);
   const html=await response.text();
-  assert.match(html,/school-23/);assert.doesNotMatch(html,/school-24/);assert.match(html,/application-11/);assert.doesNotMatch(html,/application-12/);
-  assert.match(html,/page=1&amp;applicationPage=0#schools/);assert.match(html,/page=0&amp;applicationPage=1#applications/);
+  assert.match(html,/school-19/);assert.doesNotMatch(html,/school-20/);assert.doesNotMatch(html,/application-0/);
+  assert.match(html,/section=schools&amp;reviewType=applications&amp;page=1/);
   assert.doesNotMatch(html,/<script>unsafe<\/script>/);assert.match(html,/&lt;script&gt;unsafe/);
-  const policies=reads.find(read=>read.table==='school_settings')!;
-  assert.equal(policies.filters.school_ids.length,24);assert.equal(policies.filters.school_ids.includes('school-24'),false);
-  assert.deepEqual(reads.filter(read=>read.start!==undefined).map(read=>[read.table,read.start,read.end]),[['schools',0,24],['school_applications',0,12]]);
-  const second=await fetch(origin+'/platform/schools?page=1&applicationPage=0',{headers:{'x-user':'operator'}});const secondHtml=await second.text();
-  assert.match(secondHtml,/school-24/);assert.match(secondHtml,/Version 2/);assert.doesNotMatch(secondHtml,/id="school-school-0"/);
-  assert.equal((await fetch(origin+'/platform/schools?applicationPage=-1',{headers:{'x-user':'operator'}})).status,400);
+  assert.deepEqual(reads.filter(read=>read.start!==undefined).map(read=>[read.table,read.start,read.end]),[['schools',0,19]]);
+  assert.equal(reads.some(read=>read.table==='school_settings'),false);
+  assert.equal(calls.some(call=>call.name==='platform_review_queue'),false);
+  const second=await fetch(origin+'/platform/schools?section=schools&page=1',{headers:{'x-user':'operator'}});assert.equal(second.status,200);
+  const secondHtml=await second.text();assert.match(secondHtml,/school-24/);assert.doesNotMatch(secondHtml,/\/s\/school-0</);
+  reads=[];calls=[];
+  const queue=await fetch(origin+'/platform/schools?section=reviews&reviewType=applications&page=1',{headers:{'x-user':'operator'}});assert.equal(queue.status,200);
+  const queueHtml=await queue.text();assert.match(queueHtml,/Application 20/);assert.doesNotMatch(queueHtml,/>Application 0</);
+  assert.ok(calls.some(call=>call.name==='platform_review_queue'&&call.args.p_actor==='operator'&&call.args.p_page===1));
+  assert.equal(reads.length,0);
+  assert.equal((await fetch(origin+'/platform/schools?section=schools&page=-1',{headers:{'x-user':'operator'}})).status,400);
  }finally{schoolRows=[school];applicationRows=[];policyRows=[policy];}
 });
 
@@ -155,7 +161,7 @@ test('account home honors role landing and platform settings remain inside the p
  const settings=await fetch(origin+'/platform/schools/school-a/settings',{headers:{'x-user':'operator'}});assert.equal(settings.status,200);const html=await settings.text();
  assert.match(html,/action="\/platform\/schools\/school-a\/settings"/);assert.doesNotMatch(html,/class="mobile-tab-bar"/);assert.match(html,/href="\/platform\/schools\/school-a\/invitations"/);
  const denied=await fetch(origin+'/platform/schools/school-a/settings');assert.equal(denied.status,403);
- const filters=await fetch(origin+'/platform/schools?q=School&status=pending',{headers:{'x-user':'operator'}});assert.equal(filters.status,200);assert.ok(reads.some(r=>r.filters.name_pattern==='%School%'&&r.filters.status==='pending'));
+ const filters=await fetch(origin+'/platform/schools?section=schools&q=School&status=pending',{headers:{'x-user':'operator'}});assert.equal(filters.status,200);assert.ok(reads.some(r=>r.filters.name_pattern==='%School%'&&r.filters.status==='pending'));
 });
 
 test('rejected policy edits retain input while readiness reflects only persisted settings',async()=>{

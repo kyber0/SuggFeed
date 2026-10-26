@@ -12,6 +12,7 @@ export const BOARD_STAGES = [
 
 export type BoardStage = typeof BOARD_STAGES[number]['status'];
 export const WORK_STAGES = BOARD_STAGES.filter(stage => !['pending','rejected'].includes(stage.status));
+export const BOARD_WINDOW_LIMIT = 72;
 export type BoardPageSize = 6 | 12 | 24;
 export interface BoardFilters {
   assignment?:'all'|'mine'|'team'|'unassigned';
@@ -39,7 +40,7 @@ export interface BoardLane {
 }
 
 // Keep range offsets within PostgreSQL's integer range, even for malformed URLs.
-const MAX_PAGE = Math.floor((2_147_483_647 - 72) / 24);
+const MAX_PAGE = Math.floor((2_147_483_647 - BOARD_WINDOW_LIMIT) / 24);
 function pageNumber(value: unknown): number {
   if (typeof value !== 'string' || !/^\d+$/.test(value)) return 1;
   const parsed = Number(value);
@@ -49,7 +50,7 @@ function pageNumber(value: unknown): number {
 export function boardFilters(query: Record<string, unknown>): BoardFilters {
   const pages = Object.fromEntries(BOARD_STAGES.map(stage => [stage.status, pageNumber(query[`${stage.status}Page`])])) as Record<BoardStage, number>;
   const pageSize:BoardPageSize=query.pageSize==='12'?12:query.pageSize==='24'?24:6;
-  const windows=Object.fromEntries(BOARD_STAGES.flatMap(({status})=>{const value=query[status+'Loaded'];return typeof value==='string'&&/^\d{1,3}$/.test(value)&&Number(value)>pageSize?[[status,Math.min(72,Math.ceil(Number(value)/pageSize)*pageSize)]]:[];}));
+  const windows=Object.fromEntries(BOARD_STAGES.flatMap(({status})=>{const value=query[status+'Loaded'];return typeof value==='string'&&/^\d{1,3}$/.test(value)&&Number(value)>pageSize?[[status,Math.min(BOARD_WINDOW_LIMIT,Math.ceil(Number(value)/pageSize)*pageSize)]]:[];}));
   return {
     ...(Object.keys(windows).length?{windows}:{}),
     assignment:query.assignment==='mine'||query.assignment==='team'||query.assignment==='unassigned'?query.assignment:'all',
@@ -83,7 +84,7 @@ function stageQuery(status:BoardStage,filters:BoardFilters,head=false){return bo
 async function loadLane(stage: typeof BOARD_STAGES[number], filters: BoardFilters): Promise<BoardLane> {
   let page = filters.pages[stage.status];
   const ascending = filters.sort === 'oldest';
-  const windowSize=Math.min(72,Math.max(filters.pageSize,filters.windows?.[stage.status]||filters.pageSize));
+  const windowSize=Math.min(BOARD_WINDOW_LIMIT,Math.max(filters.pageSize,filters.windows?.[stage.status]||filters.pageSize));
   const fetchPage = (page: number) => stageQuery(stage.status, filters)
     .order('created_at', { ascending })
     .order('id', { ascending })
@@ -126,6 +127,7 @@ export async function loadStaffBoard(filters: BoardFilters, stages: ReadonlyArra
   const lanes = await Promise.all(stages.map(stage => loadLane(stage, filters)));
   const pages = Object.fromEntries(lanes.map(lane => [lane.status, lane.page])) as Record<BoardStage, number>;
   return {
+    windowLimit: BOARD_WINDOW_LIMIT,
     items: lanes.flatMap(lane => lane.items),
     lanes,
     filters: { ...filters, pages },

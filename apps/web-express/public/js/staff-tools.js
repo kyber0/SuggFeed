@@ -167,6 +167,115 @@
             }
             document.getElementById('staff-selection-count').textContent = `${selected.size} selected${selected.size > visible ? ' · ' + (selected.size - visible) + ' on other pages' : ''} · maximum 25`;
         }
+        async function parseBoardPage(response, stage, lazy) {
+            if (!response.ok)
+                throw new Error(response.status === 401 || response.status === 403 ? 'Sign in again to continue using the staff board.' : 'The page could not load. Your current cards and selection are unchanged.');
+            let fresh, snapshot, nextItems;
+            if (lazy && stage) {
+                const payload = await response.json();
+                if (!payload.success || payload.lane?.status !== stage || !Array.isArray(payload.items))
+                    throw new Error('The next cards could not load. Retry loading.');
+                fresh = new DOMParser().parseFromString(payload.html, 'text/html');
+                nextItems = payload.items;
+                snapshot = { ...meta, filters: { ...meta.filters, pages: { ...meta.filters.pages, [stage]: payload.lane.page }, windows: { ...meta.filters.windows, ...payload.filters.windows } }, lanes: meta.lanes.map(lane => lane.status === stage ? payload.lane : lane), totalCount: meta.totalCount - (meta.lanes.find(lane => lane.status === stage)?.count || 0) + payload.lane.count };
+            }
+            else {
+                fresh = new DOMParser().parseFromString(await response.text(), 'text/html');
+                const freshData = fresh.getElementById('staff-board-data'), freshMeta = fresh.getElementById('staff-board-meta');
+                if (!freshData || !freshMeta)
+                    throw new Error('Your staff session may have expired. Sign in again; your current board has not been replaced.');
+                snapshot = JSON.parse(freshMeta.textContent || '{}');
+                nextItems = JSON.parse(freshData.textContent || '[]');
+            }
+            return { fresh, snapshot, nextItems };
+        }
+        function installBoardPage(loaded, stage, lazy, target, push) {
+            const { fresh, snapshot, nextItems } = loaded;
+            const freshControls = fresh.getElementById('staff-board-controls'), currentControls = document.getElementById('staff-board-controls');
+            if (!lazy && (!freshControls || !currentControls))
+                throw new Error('The filter response was incomplete. Retry loading.');
+            const laneScroll = new Map(Array.from(board.querySelectorAll('[data-drop-stage]')).map(lane => [lane.dataset.dropStage, lane.querySelector('.staff-lane-cards')?.scrollTop || 0]));
+            const boardScroll = board.scrollLeft;
+            const freshCalendar = fresh.getElementById('staff-calendar'), calendar = document.getElementById('staff-calendar');
+            if (!lazy && calendar && !freshCalendar)
+                throw new Error('The calendar response was incomplete. Refresh to retry.');
+            const filtersChanged = ['assignment', 'priority', 'overdue', 'search', 'sort', 'pageSize'].some(key => snapshot.filters[key] !== meta.filters[key]);
+            const replacementStages = Object.keys(labels).filter(key => !stage || key === stage || snapshot.filters.pages[key] !== meta.filters.pages[key]);
+            // Validate every replacement before touching the existing board. A failed
+            // response cannot partially erase cards or silently discard bulk selection.
+            for (const key of (lazy && stage ? [stage] : Object.keys(labels)))
+                if (!fresh.querySelector(`[data-drop-stage="${key}"]`))
+                    throw new Error('The page was incomplete. Retry loading; your current cards are still here.');
+            if (calendar && freshCalendar)
+                calendar.replaceChildren(...Array.from(freshCalendar.childNodes));
+            for (const key of (lazy && stage ? [stage] : Object.keys(labels))) {
+                const oldLane = board.querySelector(`[data-drop-stage="${key}"]`), newLane = fresh.querySelector(`[data-drop-stage="${key}"]`);
+                if (replacementStages.includes(key)) {
+                    oldLane?.replaceWith(newLane);
+                }
+                else {
+                    for (const selector of ['.staff-lane-heading', '.staff-lane-pagination']) {
+                        const old = oldLane?.querySelector(selector), current = newLane.querySelector(selector);
+                        if (old && current)
+                            old.replaceChildren(...Array.from(current.childNodes));
+                    }
+                }
+            }
+            for (const [stage, top] of laneScroll) {
+                const cards = board.querySelector(`[data-drop-stage="${stage}"] .staff-lane-cards`);
+                if (cards)
+                    cards.scrollTop = top;
+            }
+            board.scrollLeft = boardScroll;
+            if (!stage && currentControls && freshControls) {
+                currentControls.replaceChildren(...Array.from(freshControls.childNodes));
+                const tabs = document.querySelector('.staff-work-views'), newTabs = fresh.querySelector('.staff-work-views');
+                if (tabs && newTabs)
+                    tabs.replaceChildren(...Array.from(newTabs.childNodes));
+            }
+            const changedStages = new Set(replacementStages);
+            items = new Map([...Array.from(items.values()).filter(item => !changedStages.has(item.status)), ...nextItems.filter(item => changedStages.has(item.status))].map(item => [item.id, item]));
+            if (!lazy)
+                failedLazyStages.clear();
+            else if (stage)
+                failedLazyStages.delete(stage);
+            if (filtersChanged)
+                selected.clear();
+            // Keep selection-time versions so paging cannot silently accept unseen changes.
+            meta = snapshot;
+            boardData.textContent = JSON.stringify(Array.from(items.values()));
+            metaData.textContent = JSON.stringify(meta);
+            document.getElementById('staff-board-summary').textContent = meta.filters.presentation === 'calendar' ? fresh.getElementById('staff-board-summary')?.textContent || 'Calendar refreshed.' : `${items.size} shown · ${meta.totalCount.toLocaleString()} matching submissions`;
+            const mobile = document.getElementById('staff-mobile-stage');
+            if (mobile)
+                for (const option of Array.from(mobile.options)) {
+                    const lane = meta.lanes.find(lane => lane.status === option.value);
+                    if (lane)
+                        option.textContent = lane.label + ' · ' + lane.count;
+                }
+            selectionState();
+            const canonical = urlFor(stage, stage ? meta.filters.pages[stage] : undefined);
+            if (!stage && /^#board-lane-(approved|in_progress|resolved)$/.test(target.hash))
+                canonical.hash = target.hash;
+            syncStage(canonical.hash);
+            const openIdea = new URL(location.href).searchParams.get('idea');
+            if (document.getElementById('staff-review-dialog')?.hasAttribute('open') && openIdea)
+                canonical.searchParams.set('idea', openIdea);
+            if (push)
+                window.history.pushState(null, '', canonical.href);
+            else
+                window.history.replaceState(null, '', canonical.href);
+            if (stage && !lazy) {
+                board.querySelector(`[data-drop-stage="${stage}"]`)?.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
+                const heading = board.querySelector(`#board-title-${stage}`);
+                heading?.focus({ preventScroll: true });
+                const lane = meta.lanes.find(l => l.status === stage);
+                tell(`${lane.label}: ${lane.from}–${lane.to} of ${lane.count}. Page ${lane.page} of ${lane.pageCount}. Selection retained.`);
+            }
+            else
+                tell(lazy && stage ? `${labels[stage]}: ${snapshot.lanes.find(lane => lane.status === stage)?.from}–${snapshot.lanes.find(lane => lane.status === stage)?.to} of ${snapshot.lanes.find(lane => lane.status === stage)?.count}. More cards loaded.` : 'Work board refreshed.');
+            return true;
+        }
         async function navigate(stage, rawUrl, push = true, internal = false, lazy = false) {
             if (loading || (busy && !internal))
                 return false;
@@ -185,111 +294,8 @@
             const request = new AbortController(), timer = setTimeout(() => request.abort(), 15000);
             try {
                 const response = await sfSchoolFetch(sfSchoolRoute(target.pathname) + target.search, { headers: { Accept: 'text/html' }, cache: 'no-store', signal: request.signal });
-                if (!response.ok)
-                    throw new Error(response.status === 401 || response.status === 403 ? 'Sign in again to continue using the staff board.' : 'The page could not load. Your current cards and selection are unchanged.');
-                let fresh, snapshot, nextItems;
-                if (lazy && stage) {
-                    const payload = await response.json();
-                    if (!payload.success || payload.lane?.status !== stage || !Array.isArray(payload.items))
-                        throw new Error('The next cards could not load. Retry loading.');
-                    fresh = new DOMParser().parseFromString(payload.html, 'text/html');
-                    nextItems = payload.items;
-                    snapshot = { ...meta, filters: { ...meta.filters, pages: { ...meta.filters.pages, [stage]: payload.lane.page }, windows: { ...meta.filters.windows, ...payload.filters.windows } }, lanes: meta.lanes.map(lane => lane.status === stage ? payload.lane : lane), totalCount: meta.totalCount - (meta.lanes.find(lane => lane.status === stage)?.count || 0) + payload.lane.count };
-                }
-                else {
-                    fresh = new DOMParser().parseFromString(await response.text(), 'text/html');
-                    const freshData = fresh.getElementById('staff-board-data'), freshMeta = fresh.getElementById('staff-board-meta');
-                    if (!freshData || !freshMeta)
-                        throw new Error('Your staff session may have expired. Sign in again; your current board has not been replaced.');
-                    snapshot = JSON.parse(freshMeta.textContent || '{}');
-                    nextItems = JSON.parse(freshData.textContent || '[]');
-                }
-                const freshControls = fresh.getElementById('staff-board-controls'), currentControls = document.getElementById('staff-board-controls');
-                if (!lazy && (!freshControls || !currentControls))
-                    throw new Error('The filter response was incomplete. Retry loading.');
-                const laneScroll = new Map(Array.from(board.querySelectorAll('[data-drop-stage]')).map(lane => [lane.dataset.dropStage, lane.querySelector('.staff-lane-cards')?.scrollTop || 0]));
-                const boardScroll = board.scrollLeft;
-                const freshCalendar = fresh.getElementById('staff-calendar'), calendar = document.getElementById('staff-calendar');
-                if (!lazy && calendar && !freshCalendar)
-                    throw new Error('The calendar response was incomplete. Refresh to retry.');
-                const filtersChanged = ['assignment', 'priority', 'overdue', 'search', 'sort', 'pageSize'].some(key => snapshot.filters[key] !== meta.filters[key]);
-                const replacementStages = Object.keys(labels).filter(key => !stage || key === stage || snapshot.filters.pages[key] !== meta.filters.pages[key]);
-                // Validate every replacement before touching the existing board. A failed
-                // response cannot partially erase cards or silently discard bulk selection.
-                for (const key of (lazy && stage ? [stage] : Object.keys(labels)))
-                    if (!fresh.querySelector(`[data-drop-stage="${key}"]`))
-                        throw new Error('The page was incomplete. Retry loading; your current cards are still here.');
-                if (calendar && freshCalendar)
-                    calendar.replaceChildren(...Array.from(freshCalendar.childNodes));
-                for (const key of (lazy && stage ? [stage] : Object.keys(labels))) {
-                    const oldLane = board.querySelector(`[data-drop-stage="${key}"]`), newLane = fresh.querySelector(`[data-drop-stage="${key}"]`);
-                    if (replacementStages.includes(key)) {
-                        oldLane?.replaceWith(newLane);
-                    }
-                    else {
-                        for (const selector of ['.staff-lane-heading', '.staff-lane-pagination']) {
-                            const old = oldLane?.querySelector(selector), current = newLane.querySelector(selector);
-                            if (old && current)
-                                old.replaceChildren(...Array.from(current.childNodes));
-                        }
-                    }
-                }
-                for (const [stage, top] of laneScroll) {
-                    const cards = board.querySelector(`[data-drop-stage="${stage}"] .staff-lane-cards`);
-                    if (cards)
-                        cards.scrollTop = top;
-                }
-                board.scrollLeft = boardScroll;
-                if (!stage && currentControls && freshControls) {
-                    currentControls.replaceChildren(...Array.from(freshControls.childNodes));
-                    const tabs = document.querySelector('.staff-work-views'), newTabs = fresh.querySelector('.staff-work-views');
-                    if (tabs && newTabs)
-                        tabs.replaceChildren(...Array.from(newTabs.childNodes));
-                }
-                const changedStages = new Set(replacementStages);
-                items = new Map([...Array.from(items.values()).filter(item => !changedStages.has(item.status)), ...nextItems.filter(item => changedStages.has(item.status))].map(item => [item.id, item]));
-                if (!lazy)
-                    failedLazyStages.clear();
-                else if (stage)
-                    failedLazyStages.delete(stage);
-                if (filtersChanged)
-                    selected.clear();
-                for (const item of nextItems)
-                    if (selected.has(item.id))
-                        selected.set(item.id, { ...item });
-                meta = snapshot;
-                boardData.textContent = JSON.stringify(Array.from(items.values()));
-                metaData.textContent = JSON.stringify(meta);
-                document.getElementById('staff-board-summary').textContent = meta.filters.presentation === 'calendar' ? fresh.getElementById('staff-board-summary')?.textContent || 'Calendar refreshed.' : `${items.size} shown · ${meta.totalCount.toLocaleString()} matching submissions`;
-                const mobile = document.getElementById('staff-mobile-stage');
-                if (mobile)
-                    for (const option of Array.from(mobile.options)) {
-                        const lane = meta.lanes.find(lane => lane.status === option.value);
-                        if (lane)
-                            option.textContent = lane.label + ' · ' + lane.count;
-                    }
-                selectionState();
-                const canonical = urlFor(stage, stage ? meta.filters.pages[stage] : undefined);
-                if (!stage && /^#board-lane-(approved|in_progress|resolved)$/.test(target.hash))
-                    canonical.hash = target.hash;
-                syncStage(canonical.hash);
-                const openIdea = new URL(location.href).searchParams.get('idea');
-                if (document.getElementById('staff-review-dialog')?.hasAttribute('open') && openIdea)
-                    canonical.searchParams.set('idea', openIdea);
-                if (push)
-                    window.history.pushState(null, '', canonical.href);
-                else
-                    window.history.replaceState(null, '', canonical.href);
-                if (stage && !lazy) {
-                    board.querySelector(`[data-drop-stage="${stage}"]`)?.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
-                    const heading = board.querySelector(`#board-title-${stage}`);
-                    heading?.focus({ preventScroll: true });
-                    const lane = meta.lanes.find(l => l.status === stage);
-                    tell(`${lane.label}: ${lane.from}–${lane.to} of ${lane.count}. Page ${lane.page} of ${lane.pageCount}. Selection retained.`);
-                }
-                else
-                    tell(lazy && stage ? `${labels[stage]}: ${snapshot.lanes.find(lane => lane.status === stage)?.from}–${snapshot.lanes.find(lane => lane.status === stage)?.to} of ${snapshot.lanes.find(lane => lane.status === stage)?.count}. More cards loaded.` : 'Work board refreshed.');
-                return true;
+                const loaded = await parseBoardPage(response, stage, lazy);
+                return installBoardPage(loaded, stage, lazy, target, push);
             }
             catch (e) {
                 if (lazy && stage) {
@@ -323,10 +329,11 @@
             if (!lane || loading || busy || dragging || pointerDrag || document.visibilityState === 'hidden' || document.querySelector('dialog[open]'))
                 return;
             const size = lane.windowSize || meta.filters.pageSize;
-            if (!lane.hasNext || size >= 72)
+            const limit = Number.isSafeInteger(meta.windowLimit) && meta.windowLimit >= meta.filters.pageSize ? meta.windowLimit : meta.filters.pageSize;
+            if (!lane.hasNext || size >= limit)
                 return;
             const url = urlFor(stage, lane.page);
-            url.searchParams.set(stage + 'Loaded', String(Math.min(72, size + meta.filters.pageSize)));
+            url.searchParams.set(stage + 'Loaded', String(Math.min(limit, size + meta.filters.pageSize)));
             url.searchParams.set('lazyStage', stage);
             void navigate(stage, url.href, false, false, true);
         }

@@ -12,9 +12,9 @@ test('roadmap and staff filter toolbars neutralize stacked label spacing and mat
 });
 test('calendar arrows share the scale control row and Manage work removes stacked label offsets',()=>{
   const css=fs.readFileSync(path.join(__dirname,'../public/css/modules/community.css'),'utf8');
-  assert.match(css,/\.timeline-controls \{display:grid;grid-template-columns:minmax\(140px,1fr\) 44px 44px;gap:8px;align-items:end;/);
-  assert.match(css,/\.timeline-controls > label \{margin-bottom:0;min-width:0;\}/);
-  assert.match(css,/\.timeline-controls > \.workspace-button \{width:44px;height:44px;min-height:44px;/);
+  const timeline=fs.readFileSync(path.join(__dirname,'../public/css/modules/roadmap.css'),'utf8');
+  assert.match(timeline,/\.work-timeline-heading \.timeline-controls \{[^}]*display:flex;[^}]*gap:8px;[^}]*flex-wrap:wrap;/);
+  assert.match(timeline,/\.work-timeline-heading \.timeline-controls :is\(button,select\) \{min-height:44px;/);
   assert.match(css,/\.staff-board-toolbar label \{display:grid;[^}]*margin-bottom:0;/);
 });
 
@@ -61,7 +61,7 @@ test('private messages keep the tracking-code form intact but do not dominate si
 test('workboard and care render one shared review drawer with exact-ID opening controls',()=>{
   for(const route of ['/admin/board','/admin/community']){
     const html=render(route);assert.equal((html.match(/id="staff-review-dialog"/g)||[]).length,1);
-    assert.match(html,/\/js\/staff-review.js/);assert.match(html,/href="\/admin\?idea=[^"]+" data-review=/);
+    assert.match(html,/\/js\/staff-review.js/);assert.match(html,/href="\/admin\/(?:work|reviews|community)\?[^" ]*idea=[^"]+" data-review=/);
   }
   assert.match(render('/admin/community'),/data-review-section="progress"/);
 });
@@ -77,23 +77,27 @@ test('full-width detail workspaces separate context from history and editing wit
 test('new account and staff menu entries have decorative SVGs backed by the shared sprite',()=>{
   const html=render('/admin/community');
   const account=html.match(/<div class="dropdown-menu"[\s\S]*?<form action="\/auth\/signout"/)![0];
-  for(const target of ['/admin','/','/schools','/account/security']){
+  for(const target of ['/admin','/','/profile/help','/account/security']){
     const escaped=target.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     assert.match(account,new RegExp('<a href="'+escaped+'"[^>]*>\\s*<svg[^>]*aria-hidden="true"[^>]*><use href="#ws-'));
   }
   for(const target of ['/profile','/notifications','/inbox'])assert.equal(account.includes('href="'+target+'"'),false);
   const sidebar=html.match(/<aside class="staff-sidebar"[\s\S]*?<\/aside>/)![0];
-  assert.match(sidebar,/href="\/admin\/board"[^>]*><svg[^>]*><use href="#ws-board"/);
+  assert.match(sidebar,/href="\/admin\/work"[^>]*><svg[^>]*><use href="#ws-board"/);
   assert.match(sidebar,/href="\/admin\/community"[^>]*><svg[^>]*><use href="#ws-care"/);
   const care=html.match(/<nav class="care-section-nav"[\s\S]*?<\/nav>/)![0];assert.equal((care.match(/aria-hidden="true"/g)||[]).length,3);
   for(const [,symbol] of html.matchAll(/<use href="#(ws-[\w-]+)"/g))assert.ok(html.includes('id="'+symbol+'"'),'Missing sprite: '+symbol);
-  const board=render('/admin/board');assert.match(board,/href="\/admin\/board" aria-current="page"/);
+  const board=render('/admin/board');assert.match(board,/href="\/admin\/work" aria-current="page"/);
 });
-test('staff review heading groups title/status and metadata/clarification into two compact rows',()=>{
-  const html=render('/admin/board');assert.match(html,/class="staff-review-heading-title"><h2 id="review-title"><\/h2><span class="workspace-status" id="review-current-status"/);
-  assert.match(html,/class="staff-review-heading-meta"><p id="review-meta"[\s\S]*?id="review-clarification-link"/);
-  assert.equal((html.match(/id="review-clarification-link"/g)||[]).length,1);
-  const css=fs.readFileSync(path.join(__dirname,'../public/css/modules/full-detail.css'),'utf8');assert.match(css,/padding:10px var\(--detail-gutter\) 8px/);assert.match(css,/font-size:22px; max-width:none; margin:0/);
+test('shared staff detail keeps status and close controls in a compact header with one title',()=>{
+ const html=render('/admin/board');
+ const header=html.match(/<header class="workspace-dialog-header staff-detail-topbar">[\s\S]*?<\/header>/)![0];
+ assert.match(header,/id="review-current-status"/);assert.match(header,/data-close-review aria-label="Close detail"/);
+ assert.equal((html.match(/id="review-title"/g)||[]).length,1);
+ assert.match(html,/<h2 id="review-title"><\/h2>/);assert.match(html,/<p id="review-meta"/);
+ const css=fs.readFileSync(path.join(__dirname,'../public/css/modules/staff-detail.css'),'utf8');
+ assert.match(css,/\.staff-detail-topbar \{[^}]*padding:12px 22px;/);
+ assert.match(css,/@media\(max-width:600px\)/);
 });
 function contrast(hex1:string,hex2:string){
   const luminance=(hex:string)=>{const c=hex.match(/\w\w/g)!.map(part=>parseInt(part,16)/255).map(n=>n<=.04045?n/12.92:Math.pow((n+.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2];};
@@ -108,14 +112,12 @@ test('shared secondary text tokens meet normal-text contrast on main light and d
 });
 
 
-test('school layout identifies the active school and shows settings only for school administrators', () => {
+test('school layout retains tenant metadata without restoring the removed school banner', () => {
   const eta = new Eta({ views: path.join(__dirname, '../views') });
   for (const role of ['student', 'admin']) {
     const html = eta.render('layout', { currentPath: '/feed', body: '', schoolBase: '/s/campus-a', schoolId: 'school-a-id', schoolName: 'Campus A', user: { id: 'member-a', role } });
-    const navigation = html.match(/<nav class="workspace-actions care-card" aria-label="Current school">[\s\S]*?<\/nav>/)![0];
-    assert.match(navigation, /Campus A/);
-    assert.match(navigation, /href="\/schools">Switch school/);
-    assert.equal(navigation.includes('/s/campus-a/admin/school-settings'), role === 'admin');
+    assert.doesNotMatch(html,/aria-label="Current school"/);
+    assert.doesNotMatch(html,/href="\/s\/campus-a\/admin\/school-settings"/);
     assert.match(html, /name="school-base" content="\/s\/campus-a"/);
     assert.match(html, /name="school-id" content="school-a-id"/);
     assert.match(html, /name="school-actor" content="member-a"/);

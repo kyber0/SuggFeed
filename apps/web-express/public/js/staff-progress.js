@@ -339,6 +339,26 @@
         baseline = value();
         host?.changed();
     }
+    function renderComposerPreview(staffOnly, isCompleted) {
+        document.getElementById('staff-progress-preview-title').textContent = kind.value === 'decline' ? 'Decision preview' : staffOnly ? 'Staff-only preview' : 'Public preview';
+        const preview = document.getElementById('staff-progress-preview');
+        preview.dataset.visibility = visibility.value;
+        document.getElementById('staff-progress-preview-kind').textContent = labels[kind.value] || 'Progress update';
+        document.getElementById('staff-progress-preview-body').textContent = body.value.trim() || 'Your update will appear here before you publish it.';
+        const next = document.getElementById('staff-progress-preview-next');
+        next.hidden = !nextStep.value.trim();
+        next.textContent = 'Next: ' + nextStep.value.trim();
+        const previewMeta = [date.value ? dateText(date.value) : 'Choose an event date'];
+        if ((!staffOnly && percent.value && !percent.disabled) || (!staffOnly && isCompleted))
+            previewMeta.push(percent.value + '% complete');
+        if (kind.value === 'blocked' && blocked.value)
+            previewMeta.push('Blocked: ' + reasons[blocked.value]);
+        previewMeta.push(kind.value === 'decline' ? 'Private decision' : staffOnly ? 'Staff only' : 'Posted by the school');
+        document.getElementById('staff-progress-preview-meta').textContent = previewMeta.join(' · ');
+        const readiness = document.getElementById('staff-progress-readiness');
+        if (readiness)
+            readiness.textContent = loading ? 'Loading current details…' : posting ? 'Saving your update…' : !body.value.trim() ? 'Add a clear explanation to continue.' : !evidenceReady() ? 'Upload or remove pending evidence.' : kind.value === 'decline' ? 'Private decision · review before saving' : staffOnly ? 'Staff only · review before saving' : 'Public update · review before publishing';
+    }
     function updateComposer() {
         const privateOnly = !published() && !workflow;
         if (workflow) {
@@ -373,24 +393,7 @@
         document.getElementById('staff-progress-notify-field').hidden = staffOnly;
         document.getElementById('staff-progress-percent-hint').textContent = kind.value === 'reopened' ? 'Blank resets current progress to not estimated; previous completion history remains.' : staffOnly ? 'Staff-only updates do not change public progress.' : isCompleted ? 'Completion sets public progress to 100% and clears the paused state.' : snapshot?.status === 'resolved' ? 'Completed ideas keep their completion estimate. Reopen the idea to change progress.' : 'Blank keeps the current estimate. Use increments of 5%.';
         document.getElementById('staff-progress-count').textContent = body.value.length + ' / 600';
-        document.getElementById('staff-progress-preview-title').textContent = kind.value === 'decline' ? 'Decision preview' : staffOnly ? 'Staff-only preview' : 'Public preview';
-        const preview = document.getElementById('staff-progress-preview');
-        preview.dataset.visibility = visibility.value;
-        document.getElementById('staff-progress-preview-kind').textContent = labels[kind.value] || 'Progress update';
-        document.getElementById('staff-progress-preview-body').textContent = body.value.trim() || 'Your update will appear here before you publish it.';
-        const next = document.getElementById('staff-progress-preview-next');
-        next.hidden = !nextStep.value.trim();
-        next.textContent = 'Next: ' + nextStep.value.trim();
-        const previewMeta = [date.value ? dateText(date.value) : 'Choose an event date'];
-        if ((!staffOnly && percent.value && !percent.disabled) || (!staffOnly && isCompleted))
-            previewMeta.push(percent.value + '% complete');
-        if (kind.value === 'blocked' && blocked.value)
-            previewMeta.push('Blocked: ' + reasons[blocked.value]);
-        previewMeta.push(kind.value === 'decline' ? 'Private decision' : staffOnly ? 'Staff only' : 'Posted by the school');
-        document.getElementById('staff-progress-preview-meta').textContent = previewMeta.join(' · ');
-        const readiness = document.getElementById('staff-progress-readiness');
-        if (readiness)
-            readiness.textContent = loading ? 'Loading current details…' : posting ? 'Saving your update…' : !body.value.trim() ? 'Add a clear explanation to continue.' : !evidenceReady() ? 'Upload or remove pending evidence.' : kind.value === 'decline' ? 'Private decision · review before saving' : staffOnly ? 'Staff only · review before saving' : 'Public update · review before publishing';
+        renderComposerPreview(staffOnly, isCompleted);
         post.textContent = posting ? 'Saving…' : workflow ? labels[kind.value] || 'Save action' : staffOnly ? 'Post staff update' : kind.value === 'correction' ? 'Publish correction' : 'Publish update';
         evidenceChanged();
         host?.changed();
@@ -573,44 +576,62 @@
         setMessage('Draft cleared.');
         body.focus();
     } });
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        if (isBusy() || loading || !active || !snapshot)
-            return;
+    async function parseProgressReply(response) {
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data?.success || !data.submission) {
+            if (response.status === 409)
+                throw new Error('This idea changed before your update was posted. Refresh progress, review the latest information, then retry. Your draft has been kept.');
+            if (response.status === 401 || response.status === 403)
+                throw new Error('Your staff session expired or access changed. Sign in again; your draft is still here.');
+            if (response.status === 400)
+                throw new Error(data?.error || 'Check the update type, message, estimate, and event date.');
+            throw new Error('We could not confirm the update. Retry the same draft to safely check and complete this post.');
+        }
+        return data;
+    }
+    function validatePost(current) {
         if (workflow && (workflow.paused || !workflow.allowedActions.some(action => actionKind[action] === kind.value))) {
             setMessage('This action is not currently available. Refresh the submission; keep your draft.');
-            return;
+            return false;
         }
         if (workflow && kind.value === 'completed' && !draftFiles.some(file => file.state === 'ready')) {
             fileMessage.textContent = 'Completion requires at least one ready evidence file. Review its contents for private information before publishing.';
             fileMessage.focus();
-            return;
+            return false;
         }
         if (!evidenceReady()) {
             fileMessage.textContent = 'Upload or remove every selected file before publishing this update.';
             fileMessage.focus();
-            return;
+            return false;
         }
         if (host?.canPost() === false) {
             setMessage('Save or discard changes in Review before posting a progress update. Your progress draft is safe here.');
             message.focus();
-            return;
+            return false;
         }
         if (!body.value.trim()) {
             body.setCustomValidity('Write a short update before posting.');
             body.reportValidity();
             body.setCustomValidity('');
-            return;
+            return false;
         }
         if (!date.validity.valid)
             document.getElementById('staff-progress-advanced').open = true;
         if (!form.reportValidity())
-            return;
-        if (!workflow && visibility.value === 'public' && snapshot.status === 'resolved' && !['update', 'correction'].includes(kind.value)) {
+            return false;
+        if (!workflow && visibility.value === 'public' && current.status === 'resolved' && !['update', 'correction'].includes(kind.value)) {
             setMessage('This idea is completed. Choose Progress update or Correction, or reopen it in Review first.');
             kind.focus();
-            return;
+            return false;
         }
+        return true;
+    }
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (isBusy() || loading || !active || !snapshot)
+            return;
+        if (!validatePost(snapshot))
+            return;
         const payload = { updatedAt: snapshot.updated_at, kind: kind.value, body: body.value.trim(), visibility: visibility.value,
             percent: visibility.value === 'staff' || (percent.disabled && kind.value !== 'completed') ? null : percent.value === '' ? null : Number(percent.value),
             blockedReason: kind.value === 'blocked' ? blocked.value : null, nextStep: nextStep.value.trim() || null, occurredOn: date.value, notify: visibility.value === 'public' && notify.checked };
@@ -638,16 +659,7 @@
         try {
             const action = Object.keys(actionKind).find(action => actionKind[action] === kind.value);
             const response = await sfSchoolFetch(workflow ? '/api/staff/submissions/' + encodeURIComponent(active.id) + '/actions' : '/staff/workspace/' + encodeURIComponent(active.id) + '/updates', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ ...payload, requestId, ...workflow ? { action } : {} }), signal: request.signal });
-            const data = await response.json().catch(() => null);
-            if (!response.ok || !data?.success || !data.submission) {
-                if (response.status === 409)
-                    throw new Error('This idea changed before your update was posted. Refresh progress, review the latest information, then retry. Your draft has been kept.');
-                if (response.status === 401 || response.status === 403)
-                    throw new Error('Your staff session expired or access changed. Sign in again; your draft is still here.');
-                if (response.status === 400)
-                    throw new Error(data?.error || 'Check the update type, message, estimate, and event date.');
-                throw new Error('We could not confirm the update. Retry the same draft to safely check and complete this post.');
-            }
+            const data = await parseProgressReply(response);
             if (generation !== ownGeneration)
                 return;
             snapshot = data.submission;

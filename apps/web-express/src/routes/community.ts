@@ -121,7 +121,7 @@ communityPages.get('/admin/work',run(async(req,res)=>{
     const urlFor=(status:string,page:number)=>{const query=new URLSearchParams(params);query.set(status+'Page',String(page));return '/admin/work?'+query.toString();};
     const pageFields=(status:string)=>Array.from(params.entries()).filter(([key])=>key!==status+'Page');
     const f=result.filters;
-    const html=await new Promise<string>((resolve,reject)=>res.render('partials/staff-board-lane',{lane,urlFor,pageFields,canAssign:user.role==='admin',filtered:!!(f.search||f.assignment!=='all'||f.priority!=='all'||f.overdue)},(error,html)=>error?reject(error):resolve(html)));
+    const html=await new Promise<string>((resolve,reject)=>res.render('partials/staff-board-lane',{lane,windowLimit:result.windowLimit,urlFor,pageFields,canAssign:user.role==='admin',filtered:!!(f.search||f.assignment!=='all'||f.priority!=='all'||f.overdue)},(error,html)=>error?reject(error):resolve(html)));
     const {items,...metadata}=lane;return res.json({success:true,html,items,lane:metadata,filters:result.filters});
   }
   const [board,members,counts,savedViews,calendar]=await Promise.all([loadStaffBoard(boardFilters(req.query), WORK_STAGES),loadStaffMembers(),loadModerationCounts(),loadSavedViews(user.id),presentation==='calendar'?loadStaffCalendar(boardFilters(req.query),req.query):Promise.resolve(null)]);

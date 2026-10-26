@@ -14,8 +14,8 @@ const idea = (number: number, status = 'approved', version = '2026-10-12T10:00:0
 
 // A small DOM/event harness exercises the shipped client, including delegated
 // events from freshly replaced lanes, without a browser or live staff account.
-function harness(initial = [idea(1), idea(2, 'pending')]) {
-  let currentUrl = new URL('https://www.suggfeed.me/admin/board?search=library&approvedPage=1&pendingPage=3');
+function harness(initial = [idea(1), idea(2, 'pending')], windowLimit:number|null=72) {
+  let currentUrl = new URL('https://www.suggfeed.me/admin/work?search=library&approvedPage=1&pendingPage=3');
   const listeners = new Map<string, Function[]>();
   const timers = new Map<number, Function>();
   const requests: any[] = [], confirms: string[] = [], navigations: string[] = [], historyActions: string[] = [];
@@ -27,6 +27,7 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
   let doc: any;
 
   class Node {
+    options: any[] = [];
     tagName: string;
     id = ''; textContent = ''; value = ''; checked = false; disabled = false; hidden = false;
     href = ''; dataset: Record<string, string> = {}; parentElement: any = null;
@@ -92,16 +93,18 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
     const next = new URL(currentUrl); next.searchParams.set(status + 'Page', String(page + 1)); pageLink.href = next.href;
     const jump = element('form'); jump.dataset.boardJump = status;
     const number = element('input'); number.value = String(page); number.classes.add('staff-page-input'); number.setAttribute('name', status + 'Page'); number.setAttribute('type', 'number'); jump.append(number);
-    node.append(pageLink, jump); return node;
+    const more=element('a');more.dataset.boardLazy=status;more.href=currentUrl.href;
+    node.append(pageLink, jump, more); return node;
   };
   const documentTree = (entries: any[], requested?: string, page = 1) => {
     const root = element('body'), board = element('section', 'staff-flow-board'); board.classes.add('staff-flow-board');
     for (const stage of stages) board.append(lane(stage, entries, stage === requested ? page : 1));
     const data = element('script', 'staff-board-data'); data.textContent = JSON.stringify(entries);
     const pages = Object.fromEntries(stages.map(status => [status, status === requested ? page : Number(currentUrl.searchParams.get(status + 'Page') || 1)]));
-    const meta = element('script', 'staff-board-meta'); meta.textContent = JSON.stringify({ filters: { search: 'library', sort: 'oldest', pageSize: 6, pages }, totalCount: 50, lanes: stages.map((status, index) => ({ status, label: stageLabels[index], count: 10, page: pages[status], pageCount: 5, from: 1, to: 2 })) });
+    const meta = element('script', 'staff-board-meta'); meta.textContent = JSON.stringify({ windowLimit:windowLimit===null?undefined:windowLimit, filters: { search: 'library', sort: 'oldest', pageSize: 6, pages }, totalCount: 50, lanes: stages.map((status, index) => ({ status, label: stageLabels[index], count: 10, page: pages[status], pageCount: 5, from: 1, to: 2, windowSize:6, hasNext:true })) });
     root.append(board, data, meta);
-    for (const id of ['staff-tools-message', 'staff-selection-tools', 'staff-selection-count', 'staff-board-summary', 'staff-bulk-assign', 'staff-bulk-assignee', 'staff-clear-selection', 'staff-select-page', 'staff-board-retry']) root.append(element(id.includes('assignee') ? 'select' : id.includes('assign') || id.includes('clear') || id.includes('retry') ? 'button' : 'div', id));
+    for (const id of ['staff-board-controls', 'staff-board-refresh', 'staff-selection-hint', 'staff-group-stage', 'staff-group-move', 'staff-tools-message', 'staff-selection-tools', 'staff-selection-count', 'staff-board-summary', 'staff-bulk-assign', 'staff-bulk-assignee', 'staff-clear-selection', 'staff-select-page', 'staff-board-retry']) root.append(element(id.includes('assignee') ? 'select' : id.includes('assign') || id.includes('clear') || id.includes('retry') ? 'button' : 'div', id));
+    root.querySelector('#staff-group-stage').options = [];
     root.querySelector('#staff-bulk-assignee').value = '00000000-0000-4000-8000-000000000010';
     root.querySelector('#staff-selection-tools').hidden = true;
     root.querySelector('#staff-board-retry').hidden = true;
@@ -109,6 +112,8 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
   };
   doc = documentTree(initial);
   doc.body = doc.root;
+  doc.documentElement = element('html');
+  doc.documentElement.style = {removeProperty() {}};
   doc.addEventListener = (name: string, fn: Function) => listeners.set(name, [...(listeners.get(name) || []), fn]);
   doc.createElement = (tag: string) => element(tag);
   const workflowEvents:any[]=[];
@@ -124,19 +129,22 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
     requests.push({ url, options, body: options.body ? JSON.parse(options.body) : null });
     if (!options.method || options.method === 'GET') {
       if (getError) throw getError;
-      const parsed = new URL(url, currentUrl), stage = stages.find(status => Number(parsed.searchParams.get(status + 'Page') || 1) !== Number(currentUrl.searchParams.get(status + 'Page') || 1)) || 'approved';
+      const parsed = new URL(url, currentUrl), stage = parsed.searchParams.get('lazyStage') || stages.find(status => Number(parsed.searchParams.get(status + 'Page') || 1) !== Number(currentUrl.searchParams.get(status + 'Page') || 1)) || 'approved';
       const page = Number(parsed.searchParams.get(stage + 'Page') || 1);
       const entries = pages.get(stage + ':' + page) || [idea(page * 10, stage)];
       const marker = stage + ':' + page, fresh = documentTree(entries, stage, page);
       if (missingLane) { const removed = fresh.querySelector(`[data-drop-stage="${missingLane}"]`); removed.parentElement.children = removed.parentElement.children.filter(node => node !== removed); }
       trees.set(marker, fresh);
-      return { ok: true, status: 200, text: async () => marker };
+      return { ok: true, status: 200, text: async () => marker, json:async()=>{
+        const windowSize=Number(parsed.searchParams.get(stage+'Loaded')||6),meta=JSON.parse(fresh.getElementById('staff-board-meta').textContent);
+        return {success:true,html:marker,items:entries,lane:{...meta.lanes.find((lane:any)=>lane.status===stage),windowSize,hasNext:windowSize<10},filters:{windows:{[stage]:windowSize}}};
+      }};
     }
     if (deferMutation) return new Promise(resolve => { mutationPending = resolve; });
     if (mutationError) throw mutationError;
     return { ok: true, status: 200, json: async () => ({ success: true }) };
   };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/staff-tools.js'), 'utf8'), {
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/staff-tools.js'), 'utf8'), { performance, requestAnimationFrame: () => 1, cancelAnimationFrame() {},
     sfSchoolPath: (value: string) => value, sfSchoolRoute: (value: string) => value, sfSchoolFetch: fetch, document: doc, window, history: window.history, location, fetch, URL, URLSearchParams, AbortController, Map, Set, JSON, Date, Number, String, Array, Error,
     HTMLElement: Node, HTMLInputElement: Node, HTMLSelectElement: Node, HTMLAnchorElement: Node, Event: class {}, CustomEvent: class {constructor(public type:string,public options:any){} get detail(){return this.options.detail;}},
     DOMParser: class { parseFromString(marker: string) { return trees.get(marker); } },
@@ -167,13 +175,13 @@ function harness(initial = [idea(1), idea(2, 'pending')]) {
 test('work-board paging replaces only one lane and keeps filters and other stage pages in the URL', async () => {
   const h = harness(), pending = h.lane('pending'), oldApproved = h.lane('approved');
   await h.page('approved');
-  assert.notEqual(h.lane('approved'), oldApproved);
+  assert.notEqual(h.lane('approved'), oldApproved, h.node('staff-tools-message').textContent);
   assert.equal(h.lane('pending'), pending);
   assert.equal(h.url.searchParams.get('search'), 'library');
   assert.equal(h.url.searchParams.get('pendingPage'), '3');
   assert.equal(h.url.searchParams.get('approvedPage'), '2');
   assert.equal(h.reloads, 0);
-  assert.equal(h.requests[0].url.includes('/admin/board?'), true);
+  assert.equal(h.requests[0].url.includes('/admin/work?'), true);
 });
 
 test('modified pagination clicks keep native navigation behavior and do not fetch a lane', async () => {
@@ -282,4 +290,31 @@ test('dragging a newly paged card opens completion and leaves the existing stage
   assert.equal(h.reloads, 0);
   assert.equal(h.requests.some(request=>request.options.method==='PATCH'),false);
   assert.equal(h.timers.size, 0);
+});
+
+
+test('lazy board loading grows one lane window without changing other lanes or selected versions',async()=>{
+ const original=idea(1),h=harness([original,idea(2,'pending')]),pending=h.lane('pending');
+ await h.select(original.id);h.setPage('approved',1,[idea(1,'approved','2026-10-12T11:00:00Z'),idea(20)]);
+ await h.emit('click',h.find('[data-board-lazy="approved"]'));
+ assert.equal(h.requests.length,1);const request=new URL(h.requests[0].url,'https://www.suggfeed.me');
+ assert.equal(request.searchParams.get('lazyStage'),'approved');assert.equal(request.searchParams.get('approvedLoaded'),'12');
+ assert.equal(h.lane('pending'),pending);assert.ok(h.find('[data-bulk-id="'+idea(20).id+'"]'));
+ assert.equal(h.find('[data-bulk-id="'+original.id+'"]').checked,true);
+ await h.emit('click',h.node('staff-bulk-assign'));
+ assert.equal(h.requests.find(request=>request.options.method==='POST').body.items[0].updatedAt,original.updated_at);
+});
+
+test('lazy board failures preserve the current lane and retry the same requested window',async()=>{
+ const h=harness(),original=h.lane('approved');h.setGetError(new Error('Unavailable'));
+ await h.emit('click',h.find('[data-board-lazy="approved"]'));assert.equal(h.lane('approved'),original);assert.equal(h.node('staff-board-retry').hidden,false);
+ h.setGetError(null);await h.emit('click',h.node('staff-board-retry'));
+ assert.notEqual(h.lane('approved'),original);
+ assert.deepEqual(h.requests.map(request=>new URL(request.url,'https://www.suggfeed.me').searchParams.get('approvedLoaded')),['12','12']);
+});
+
+for(const limit of [6,null,NaN,-1])test('lazy board stops at supplied limit or missing/invalid metadata: '+limit,async()=>{
+ const h=harness(undefined,limit);
+ await h.emit('click',h.find('[data-board-lazy="approved"]'));
+ assert.equal(h.requests.length,0);
 });

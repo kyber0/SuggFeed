@@ -123,6 +123,6 @@ const feedUrl = (changes = {}) => {
         <footer class="saved-search-footer"><strong id="saved-search-storage"></strong><p id="saved-search-storage-note"></p></footer>
       </div>
     </section></dialog>
-<script defer src="/js/feed.js?v=20261025-landing-ideas"></script>
+<script defer src="/js/feed.js?v=20261026-audit-remediation"></script>
 
 <script defer src="/js/saved-searches.js?v=20261018-customization"></script>

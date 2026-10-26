@@ -12,7 +12,7 @@
  }
  if(boardData) {
   interface BoardItem {id:string;title:string;status:string;updated_at:string;staff_note?:string;assignee_id?:string;priority?:string;target_date?:string;assignment_team_id?:string;assignment_version?:number|null;assignment_urgent?:boolean;is_blocked?:boolean;}
-  interface BoardMeta {filters:{presentation?:string;month?:string;calendarPage?:number;assignment?:string;priority?:string;overdue?:boolean;search:string;sort:string;pageSize:number;pages:Record<string,number>;windows?:Record<string,number>};totalCount:number;lanes:Array<{status:string;label:string;count:number;page:number;pageCount:number;from:number;to:number;windowSize?:number;hasNext?:boolean;nextPage?:number}>;}
+  interface BoardMeta {windowLimit?:number;filters:{presentation?:string;month?:string;calendarPage?:number;assignment?:string;priority?:string;overdue?:boolean;search:string;sort:string;pageSize:number;pages:Record<string,number>;windows?:Record<string,number>};totalCount:number;lanes:Array<{status:string;label:string;count:number;page:number;pageCount:number;from:number;to:number;windowSize?:number;hasNext?:boolean;nextPage?:number}>;}
   const board=document.getElementById('staff-flow-board')!;
   const stageSelect=document.getElementById('staff-mobile-stage') as HTMLSelectElement|null;
   const syncStage=(hash:string)=>{if(!stageSelect)return;const stage=hash.replace('#board-lane-','');if(Array.from(stageSelect.options).some(option=>option.value===stage))stageSelect.value=stage;board.dataset.mobileStage=stageSelect.value;const form=document.getElementById('staff-board-filters') as HTMLFormElement;form.action=sfSchoolPath('/admin/work'+(board.dataset.presentation==='board'?'#board-lane-'+stageSelect.value:''));};
@@ -79,18 +79,8 @@
    for(const select of board.querySelectorAll<HTMLSelectElement>('[data-stage-select]')){const item=items.get(select.dataset.stageSelect!);if(!item)continue;const group=selected.has(item.id)?Array.from(selected.values()).map(value=>items.get(value.id)||value):[item];for(const option of Array.from(select.options))option.disabled=option.value!==item.status&&!group.every(value=>!!moveAction(value,option.value));}
    document.getElementById('staff-selection-count')!.textContent=`${selected.size} selected${selected.size>visible?' · '+(selected.size-visible)+' on other pages':''} · maximum 25`;
   }
-  async function navigate(stage:string|null,rawUrl:string,push=true,internal=false,lazy=false){
-   if(loading || (busy && !internal))return false;
-   const target=new URL(rawUrl,window.location.origin);
-   if(target.origin!==window.location.origin || sfSchoolRoute(target.pathname)!=='/admin/work')return false;
-   const focusBefore=document.activeElement as HTMLElement|null;
-   const focusKey=focusBefore?.id?'#'+CSS.escape(focusBefore.id):['data-bulk-id','data-review','data-board-assign'].flatMap(attribute=>focusBefore?.hasAttribute(attribute)?['['+attribute+'="'+CSS.escape(focusBefore.getAttribute(attribute)!)+'"]']:[])[0];
-   loading=true;failedPage=null;retry.hidden=true;controls();tell(lazy&&stage?`Loading more ${labels[stage]} ideas…`:stage?`Loading ${labels[stage]} page…`:'Refreshing the work board…');
-   const ownLane=stage?board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"]`):board;
-   ownLane?.setAttribute('aria-busy','true');
-   const request=new AbortController(),timer=setTimeout(()=>request.abort(),15000);
-   try {
-    const response=await sfSchoolFetch(sfSchoolRoute(target.pathname)+target.search,{headers:{Accept:'text/html'},cache:'no-store',signal:request.signal});
+  interface LoadedBoard {fresh:Document;snapshot:BoardMeta;nextItems:BoardItem[];}
+  async function parseBoardPage(response:Response,stage:string|null,lazy:boolean):Promise<LoadedBoard>{
     if(!response.ok)throw new Error(response.status===401 || response.status===403?'Sign in again to continue using the staff board.':'The page could not load. Your current cards and selection are unchanged.');
     let fresh:Document,snapshot:BoardMeta,nextItems:BoardItem[];
     if(lazy&&stage){
@@ -103,6 +93,10 @@
      if(!freshData||!freshMeta)throw new Error('Your staff session may have expired. Sign in again; your current board has not been replaced.');
      snapshot=JSON.parse(freshMeta.textContent||'{}');nextItems=JSON.parse(freshData.textContent||'[]');
     }
+    return {fresh,snapshot,nextItems};
+  }
+  function installBoardPage(loaded:LoadedBoard,stage:string|null,lazy:boolean,target:URL,push:boolean){
+    const {fresh,snapshot,nextItems}=loaded;
     const freshControls=fresh.getElementById('staff-board-controls'),currentControls=document.getElementById('staff-board-controls');
     if(!lazy&&(!freshControls||!currentControls))throw new Error('The filter response was incomplete. Retry loading.');
     const laneScroll=new Map(Array.from(board.querySelectorAll<HTMLElement>('[data-drop-stage]')).map(lane=>[lane.dataset.dropStage!,lane.querySelector('.staff-lane-cards')?.scrollTop||0]));
@@ -128,7 +122,7 @@
     items=new Map([...Array.from(items.values()).filter(item=>!changedStages.has(item.status)),...nextItems.filter(item=>changedStages.has(item.status))].map(item=>[item.id,item]));
     if(!lazy)failedLazyStages.clear();else if(stage)failedLazyStages.delete(stage);
     if(filtersChanged)selected.clear();
-    for(const item of nextItems)if(selected.has(item.id))selected.set(item.id,{...item});
+    // Keep selection-time versions so paging cannot silently accept unseen changes.
     meta=snapshot;boardData.textContent=JSON.stringify(Array.from(items.values()));metaData.textContent=JSON.stringify(meta);
     document.getElementById('staff-board-summary')!.textContent=meta.filters.presentation==='calendar'?fresh.getElementById('staff-board-summary')?.textContent||'Calendar refreshed.':`${items.size} shown · ${meta.totalCount.toLocaleString()} matching submissions`;
     const mobile=document.getElementById('staff-mobile-stage') as HTMLSelectElement|null;if(mobile)for(const option of Array.from(mobile.options)){const lane=meta.lanes.find(lane=>lane.status===option.value);if(lane)option.textContent=lane.label+' · '+lane.count;}
@@ -140,6 +134,21 @@
     if(stage&&!lazy){board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"]`)?.scrollIntoView({block:'start',inline:'nearest',behavior:'instant'});const heading=board.querySelector<HTMLElement>(`#board-title-${stage}`);heading?.focus({preventScroll:true});const lane=meta.lanes.find(l=>l.status===stage)!;tell(`${lane.label}: ${lane.from}–${lane.to} of ${lane.count}. Page ${lane.page} of ${lane.pageCount}. Selection retained.`);}
     else tell(lazy&&stage?`${labels[stage]}: ${snapshot.lanes.find(lane=>lane.status===stage)?.from}–${snapshot.lanes.find(lane=>lane.status===stage)?.to} of ${snapshot.lanes.find(lane=>lane.status===stage)?.count}. More cards loaded.`:'Work board refreshed.');
     return true;
+  }
+  async function navigate(stage:string|null,rawUrl:string,push=true,internal=false,lazy=false){
+   if(loading || (busy && !internal))return false;
+   const target=new URL(rawUrl,window.location.origin);
+   if(target.origin!==window.location.origin || sfSchoolRoute(target.pathname)!=='/admin/work')return false;
+   const focusBefore=document.activeElement as HTMLElement|null;
+   const focusKey=focusBefore?.id?'#'+CSS.escape(focusBefore.id):['data-bulk-id','data-review','data-board-assign'].flatMap(attribute=>focusBefore?.hasAttribute(attribute)?['['+attribute+'="'+CSS.escape(focusBefore.getAttribute(attribute)!)+'"]']:[])[0];
+   loading=true;failedPage=null;retry.hidden=true;controls();tell(lazy&&stage?`Loading more ${labels[stage]} ideas…`:stage?`Loading ${labels[stage]} page…`:'Refreshing the work board…');
+   const ownLane=stage?board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"]`):board;
+   ownLane?.setAttribute('aria-busy','true');
+   const request=new AbortController(),timer=setTimeout(()=>request.abort(),15000);
+   try {
+    const response=await sfSchoolFetch(sfSchoolRoute(target.pathname)+target.search,{headers:{Accept:'text/html'},cache:'no-store',signal:request.signal});
+    const loaded=await parseBoardPage(response,stage,lazy);
+    return installBoardPage(loaded,stage,lazy,target,push);
    }catch(e){if(lazy&&stage){failedLazyStages.add(stage);const more=board.querySelector<HTMLElement>(`[data-board-lazy="${stage}"]`);if(more)more.textContent='Retry loading '+labels[stage].toLowerCase()+' ideas';}failedPage={stage,url:target.href,push,lazy};retry.hidden=false;tell(e.name==='AbortError'?'Loading timed out. Your current cards and selection are unchanged. Retry loading.':e.message);return false;}
    finally{clearTimeout(timer);ownLane?.removeAttribute('aria-busy');loading=false;selectionState();controls();observeMore();if(lazy&&focusBefore&&focusBefore!==document.body&&(document.activeElement===document.body||!focusBefore.isConnected)){const replacement=focusKey?document.querySelector<HTMLElement>(focusKey):null;(replacement||board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"] .staff-lane-cards`))?.focus({preventScroll:true});}}
   }
@@ -147,8 +156,10 @@
   const failedLazyStages=new Set<string>();
   function loadMore(stage:string){
    const lane=meta.lanes.find(lane=>lane.status===stage);if(!lane||loading||busy||dragging||pointerDrag||document.visibilityState==='hidden'||document.querySelector('dialog[open]'))return;
-   const size=lane.windowSize||meta.filters.pageSize;if(!lane.hasNext||size>=72)return;
-   const url=urlFor(stage,lane.page);url.searchParams.set(stage+'Loaded',String(Math.min(72,size+meta.filters.pageSize)));url.searchParams.set('lazyStage',stage);
+   const size=lane.windowSize||meta.filters.pageSize;
+   const limit=Number.isSafeInteger(meta.windowLimit)&&meta.windowLimit!>=meta.filters.pageSize?meta.windowLimit!:meta.filters.pageSize;
+   if(!lane.hasNext||size>=limit)return;
+   const url=urlFor(stage,lane.page);url.searchParams.set(stage+'Loaded',String(Math.min(limit,size+meta.filters.pageSize)));url.searchParams.set('lazyStage',stage);
    void navigate(stage,url.href,false,false,true);
   }
   function observeMore(){

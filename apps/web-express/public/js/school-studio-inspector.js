@@ -51,74 +51,88 @@
         let issueComponent = '';
         const state = () => ({ ...model.getState(), configuration: settings.getConfiguration?.() || model.getState().configuration }), apply = (property, value) => model.applyChange(selected, property, value);
         const toolbar = (label, kind, id, index) => '<div class="studio-repeat-toolbar" draggable="true" data-drag-kind="' + kind + '" data-drag-id="' + id + '"><strong>' + escape(label) + '</strong><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="-1" aria-label="Move ' + escape(label) + ' up">↑</button><button type="button" data-reorder="' + kind + '" data-id="' + id + '" data-direction="1" aria-label="Move ' + escape(label) + ' down">↓</button></div>';
-        function render() {
-            const p = state().configuration;
-            selected = settings.componentId?.() || state().selection?.componentId || '';
+        function selectionMarkup(p) {
             let html = '';
-            const focused = host.contains(document.activeElement) ? document.activeElement : null;
-            const source = focused?.classList.contains('sf-control-select-trigger') || focused?.classList.contains('sf-control-color-trigger') ? focused.previousElementSibling : focused;
-            const focusProperty = source?.dataset.property, focusMode = source?.dataset.themeMode, focusRole = source?.dataset.themeRole;
-            const caret = focused instanceof HTMLTextAreaElement || focused instanceof HTMLInputElement && ['text', 'url', 'search'].includes(focused.type) ? [focused.selectionStart, focused.selectionEnd] : null;
-            const panel = host.closest('.studio-panel'), scroll = panel?.scrollTop || 0, openDetails = renderedSelection === selected ? new Map(Array.from(host.querySelectorAll('details')).map(d => [d.querySelector('summary')?.textContent, d.open])) : null;
-            settings.controls?.close();
             const row = selected.startsWith('category:') ? p.categories.find((c) => c.id === selected.slice(9)) : selected.startsWith('question:') ? p.form.questions.find((q) => q.id === selected.slice(9)) : null;
-            if (!selected)
+            if (!selected) {
                 html = '<div class="studio-selection-empty"><h3>Select something to customize</h3><p>Click an outlined component in the preview, or choose from this screen’s component list. Workspace theme controls apply to every school screen.</p><button type="button" data-select="school.theme">Open workspace theme</button></div>';
-            else if (selected === 'school.theme')
+                return html;
+            }
+            if (selected === 'school.theme') {
                 html = settings.pane === 'content' ? '<p>Use the Design panel for school colors and typography.</p>' : themeEditor(p);
-            else if (selected.startsWith('page.') || selected.startsWith('section.'))
+                return html;
+            }
+            if (selected.startsWith('page.') || selected.startsWith('section.')) {
                 html = pageEditor(p, selected);
-            else if (selected === 'school.identity') {
+                return html;
+            }
+            if (selected === 'school.identity') {
                 html = input('displayName', 'Short school name', p.displayName || settings.schoolName, 60);
                 for (const kind of ['logo', 'cover'])
                     html += '<div class="studio-asset"><h3>' + escape(kind === 'logo' ? 'School logo' : 'Landing-page cover') + '</h3>' + (p[kind] ? '<img src="' + escape(settings.base + '/assets/' + p[kind]) + '" alt="Current ' + kind + '"><button type="button" data-clear-asset="' + kind + '">Remove ' + kind + '</button>' : '<p>No ' + kind + ' selected.</p>') + '<p data-upload-feedback role="status" hidden></p><label>Choose image<input type="file" data-upload="' + kind + '" accept="image/png,image/jpeg,image/webp" ' + (!settings.uploadsReady ? 'disabled' : '') + '></label><p>PNG, JPEG or WebP · ' + (kind === 'logo' ? '2' : '5') + ' MB maximum.</p></div>';
                 if (!settings.uploadsReady)
                     html += '<p>Image uploads need service setup. Ask the platform operator to enable file cleanup.</p>';
+                return html;
             }
-            else if (selected === 'home.hero')
+            if (selected === 'home.hero') {
                 html = input('headline', 'Welcome headline', p.welcome.headline || 'Your ideas can shape your campus.', 100) + input('intro', 'Introduction', p.welcome.intro || 'Share what could be better, support useful suggestions, and follow your school’s progress.', 500, 'textarea') + input('message', 'Welcome message', p.welcome.message, 1500, 'textarea') + '<button type="button" data-select="school.identity">Edit logo & cover</button>';
-            else if (selected === 'home.links') {
+                return html;
+            }
+            if (selected === 'home.links') {
                 html = input('help', 'Help & contact information', p.welcome.help, 500, 'textarea');
                 for (const [i, link] of p.welcome.links.entries())
                     html += '<div class="studio-repeat" data-link-index="' + i + '">' + toolbar(link.label || 'School link', 'links', String(i), i) + input('link-label', 'Link label', link.label, 60) + input('link-url', 'HTTPS address', link.url, 500, 'url') + '<button type="button" data-remove-link="' + i + '">Remove link</button></div>';
                 html += '<button type="button" data-add="link">Add official link</button><p>Up to five HTTPS links. Links do not open external websites inside the preview.</p>';
+                return html;
             }
-            else if (selected === 'community.categories') {
+            if (selected === 'community.categories') {
                 for (const [i, c] of p.categories.entries())
                     html += '<div class="studio-repeat">' + toolbar(c.name || 'Category', 'categories', c.id, i) + '<button type="button" data-select="category:' + c.id + '">Edit ' + escape(c.name || 'category') + '</button><p>' + escape(c.active ? 'Available for new ideas' : 'Archived · existing ideas stay readable') + '</p></div>';
                 html += '<button type="button" data-add="category">Add category</button><p>Keep 1–20 active categories. Categories keep stable IDs; archive rather than delete.</p>';
+                return html;
             }
-            else if (selected.startsWith('category:') && row)
+            if (selected.startsWith('category:') && row) {
                 html = input('name', 'Category name', row.name, 40) + input('slug', 'Stable address', row.slug, 63) + input('description', 'Description', row.description, 200, 'textarea') + select('icon', 'Icon', row.icon, settings.icons) + check('active', 'Available for new ideas', row.active, 'Archiving preserves existing ideas and their category.') + '<button type="button" data-select="community.categories">All categories & order</button>';
-            else if (selected === 'submission.instructions') {
+                return html;
+            }
+            if (selected === 'submission.instructions') {
                 html = input('instructions', 'Submission instructions', p.form.instructions, 1000, 'textarea') + input('example', 'Helpful example', p.form.example, 1000, 'textarea') + select('attachments', 'Image attachments', p.form.attachments, [['off', 'Off'], ['optional', 'Optional'], ['required', 'At least one required']], !settings.uploadsReady) + '<p>Questions and images stay private to the author and authorized school staff. Collection changes require platform review before publication.</p>';
                 for (const [i, q] of p.form.questions.entries())
                     html += '<div class="studio-repeat">' + toolbar(q.label || 'Question', 'questions', q.id, i) + '<button type="button" data-select="question:' + q.id + '">Edit ' + escape(q.label || 'question') + '</button></div>';
                 html += '<button type="button" data-add="question">Add question</button>';
+                return html;
             }
-            else if (selected.startsWith('question:') && row) {
+            if (selected.startsWith('question:') && row) {
                 html = input('label', 'Question', row.label, 120) + input('help', 'Helpful guidance', row.help, 240, 'textarea') + select('type', 'Answer type', row.type, [['short', 'Short text'], ['long', 'Longer text'], ['choice', 'Single choice']]) + check('required', 'Answer required', row.required);
                 if (row.type === 'choice')
                     html += input('options', 'Choices — one per line', row.options.join('\n'), 1000, 'textarea');
                 html += '<button type="button" data-remove-question="' + row.id + '">Remove from future forms</button><p>Historical wording and submitted answers are preserved.</p>';
+                return html;
             }
-            else if (selected === 'community.features') {
+            if (selected === 'community.features') {
                 for (const [key, label, hint] of [['comments', 'Allow new comments', 'Existing comments remain readable.'], ['voting', 'Allow voting', 'Existing vote records are retained.'], ['roadmap', 'Show student roadmap', 'Staff workflow remains available.'], ['sharing', 'Allow sharing controls', 'Public URLs can still be copied. This does not change privacy.'], ['anonymous', 'Allow anonymous ideas', 'Existing anonymous ideas stay anonymous.']])
                     html += check(key, label, p.features[key], hint);
+                return html;
             }
-            else if (selected === 'progress.labels') {
+            if (selected === 'progress.labels') {
                 for (const key of ['approved', 'in_progress', 'resolved'])
                     html += '<div class="studio-repeat">' + input('label:' + key, 'Public label · ' + key, p.labels[key], 40) + input('description:' + key, 'Stage explanation', p.stageDescriptions[key], 240, 'textarea') + '</div>';
                 html += '<p>These words do not change workflow values, transition rules or audit history.</p>';
+                return html;
             }
-            else if (selected === 'school.email')
+            if (selected === 'school.email') {
                 html = input('invitation', 'Invitation welcome', p.email.invitation, 1000, 'textarea') + input('introduction', 'School email introduction', p.email.introduction, 1000, 'textarea') + select('digest', 'Digest availability', p.email.digest, [['weekly', 'Weekly, for opted-in users'], ['off', 'Off']]) + '<p>SuggFeed identification, verified sender, security instructions and unsubscribe choices are retained.</p>';
-            else if (settings.readOnly?.() && (selected.startsWith('category:') || selected.startsWith('question:')))
+                return html;
+            }
+            if (settings.readOnly?.() && (selected.startsWith('category:') || selected.startsWith('question:'))) {
                 html = '<p>This item is not part of the published version. Switch to Draft to edit it.</p>';
-            else
-                html = '<p>SuggFeed branding, shared navigation, security state colors and account permissions are managed by the platform. Select a school component to edit its supported properties.</p>';
-            host.innerHTML = '<section class="studio-inspector-section">' + html + '</section>';
-            const section = host.firstElementChild, groups = new Map();
+                return html;
+            }
+            html = '<p>SuggFeed branding, shared navigation, security state colors and account permissions are managed by the platform. Select a school component to edit its supported properties.</p>';
+            return html;
+        }
+        function groupProperties(section) {
+            const groups = new Map();
             let current = 'Content';
             function group(name) { let target = groups.get(name); if (!target) {
                 const fieldset = document.createElement('fieldset'), legend = document.createElement('legend');
@@ -171,10 +185,8 @@
                 else
                     section.append(content);
             }
-            if (openDetails)
-                for (const details of host.querySelectorAll('details'))
-                    if (openDetails.has(details.querySelector('summary')?.textContent))
-                        details.open = !!openDetails.get(details.querySelector('summary')?.textContent);
+        }
+        function annotateProperties(p) {
             for (const label of Array.from(host.querySelectorAll('label'))) {
                 const field = label.querySelector('[data-property]');
                 if (!field || label.querySelector('.studio-property-origin'))
@@ -194,18 +206,9 @@
                     label.after(reset);
                 }
             }
-            if (!settings.readOnly?.())
-                for (const [key, value] of pendingColors) {
-                    const [mode, role] = key.split(':');
-                    const field = host.querySelector('input[type="text"][data-theme-mode="' + mode + '"][data-theme-role="' + role + '"]');
-                    if (field) {
-                        field.value = value;
-                        field.setAttribute('aria-invalid', 'true');
-                    }
-                }
-            renderedSelection = selected;
-            settings.controls?.refresh();
-            window.sfFileUpload?.refresh(host);
+        }
+        function restoreFocus(state) {
+            const { focused, focusProperty, focusMode, focusRole, caret } = state;
             if (focused) {
                 let next = null;
                 if (focusProperty)
@@ -221,6 +224,37 @@
                         catch { }
                 }
             }
+        }
+        function render() {
+            const p = state().configuration;
+            selected = settings.componentId?.() || state().selection?.componentId || '';
+            const focused = host.contains(document.activeElement) ? document.activeElement : null;
+            const source = focused?.classList.contains('sf-control-select-trigger') || focused?.classList.contains('sf-control-color-trigger') ? focused.previousElementSibling : focused;
+            const focusProperty = source?.dataset.property, focusMode = source?.dataset.themeMode, focusRole = source?.dataset.themeRole;
+            const caret = focused instanceof HTMLTextAreaElement || focused instanceof HTMLInputElement && ['text', 'url', 'search'].includes(focused.type) ? [focused.selectionStart, focused.selectionEnd] : null;
+            const panel = host.closest('.studio-panel'), scroll = panel?.scrollTop || 0, openDetails = renderedSelection === selected ? new Map(Array.from(host.querySelectorAll('details')).map(d => [d.querySelector('summary')?.textContent, d.open])) : null;
+            settings.controls?.close();
+            const html = selectionMarkup(p);
+            host.innerHTML = '<section class="studio-inspector-section">' + html + '</section>';
+            groupProperties(host.firstElementChild);
+            if (openDetails)
+                for (const details of host.querySelectorAll('details'))
+                    if (openDetails.has(details.querySelector('summary')?.textContent))
+                        details.open = !!openDetails.get(details.querySelector('summary')?.textContent);
+            annotateProperties(p);
+            if (!settings.readOnly?.())
+                for (const [key, value] of pendingColors) {
+                    const [mode, role] = key.split(':');
+                    const field = host.querySelector('input[type="text"][data-theme-mode="' + mode + '"][data-theme-role="' + role + '"]');
+                    if (field) {
+                        field.value = value;
+                        field.setAttribute('aria-invalid', 'true');
+                    }
+                }
+            renderedSelection = selected;
+            settings.controls?.refresh();
+            window.sfFileUpload?.refresh(host);
+            restoreFocus({ focused, focusProperty, focusMode, focusRole, caret });
             if (panel)
                 panel.scrollTop = scroll;
             settings.onValidation?.();

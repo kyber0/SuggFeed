@@ -39,5 +39,5 @@ test('platform and account layouts omit client actions while members retain thei
  assert.doesNotMatch(platform,/class="mobile-tab-bar"|id="submit-panel"/);
  assert.match(platform,/href="\/account\/security"/);
  const member=eta.render('layout',{currentPath:'/feed',user:{id:'member',role:'student'},schoolBase:'/s/school-a',body:'<main>Ideas</main>'});
- assert.match(member,/class="mobile-tab-bar"/);assert.match(member,/My profile/);assert.doesNotMatch(member,/>School administration<|>Platform dashboard</);
+ assert.match(member,/class="mobile-tab-bar"/);assert.match(member,/href="\/profile"[^>]*>Profile<\/a>/);assert.doesNotMatch(member,/>School administration<|>Platform dashboard</);
 });

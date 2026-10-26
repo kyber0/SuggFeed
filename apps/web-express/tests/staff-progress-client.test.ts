@@ -24,7 +24,7 @@ function harness() {
   let snapshot:any={id:'00000000-0000-4000-8000-000000000001',status:'in_progress',updated_at:'2026-10-11T10:00:00Z',staff_note:'Current review',assignee_id:null,priority:'normal',target_date:null,progress_percent:25,started_at:'2026-10-10',is_blocked:false,resolved_at:null};
   const posts:any[]=[];const applied:any[]=[];let updates:any[]=[];let reply='network';let allowPost=true;let sequence=0;
   const evidenceRequests:any[]=[];const reservations=new Map<string,any>();let evidenceFailure='';let uploadReply=200;
-  const context:any={document:{getElementById:node,createElement:(tag:string)=>node('new-'+tag+'-'+(++sequence)),createElementNS:(_ns:string,tag:string)=>node('new-'+tag+'-'+(++sequence))},window:{},Intl,Date,JSON,Number,String,Array,Error,TypeError,URL,AbortController,setTimeout,clearTimeout,
+  const context:any={document:{getElementById:node,dispatchEvent(){},createElement:(tag:string)=>node('new-'+tag+'-'+(++sequence)),createElementNS:(_ns:string,tag:string)=>node('new-'+tag+'-'+(++sequence))},window:{sfConfirm:async()=>true},CustomEvent,Intl,Date,JSON,Number,String,Array,Error,TypeError,URL,AbortController,setTimeout,clearTimeout,
     crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},
     fetch:async (_url:string,options:any)=>{
       if(_url.startsWith('https://storage.example/')){evidenceRequests.push({url:_url,method:options.method,body:options.body});return {ok:uploadReply===200,status:uploadReply};}
@@ -42,9 +42,11 @@ function harness() {
         Object.assign(file,{state:'ready',mime_type:file.declared_mime.startsWith('image/')?'image/webp':'application/pdf',size_bytes:file.declared_size,href:'/api/progress-evidence/'+file.id});
         return {ok:true,status:200,json:async()=>({success:true,file})};
       }
-      if(options.method!=='POST')return {ok:true,status:200,json:async()=>({success:true,updates,submission:snapshot})};
+      if(options.method!=='POST')return {ok:true,status:200,json:async()=>({success:true,updates,submission:snapshot,workflow:snapshot.workflow})};
       const payload=JSON.parse(options.body);posts.push(payload);
       if(reply==='network')throw new TypeError('Network unavailable');
+      if(reply==='forbidden')return {ok:false,status:403,json:async()=>({success:false})};
+      if(reply==='invalid-json')return {ok:true,status:201,json:async()=>{throw new SyntaxError('Invalid response');}};
       if(reply==='conflict')return {ok:false,status:409,json:async()=>({success:false})};
       snapshot={...snapshot,updated_at:'2026-10-11T11:00:00Z'};
       updates=[{id:'update-id',kind:payload.kind,body:payload.body,visibility:payload.visibility,percent:payload.percent,blocked_reason:null,next_step:null,occurred_on:payload.occurredOn,office_label:'School office',created_at:snapshot.updated_at,request_id:payload.requestId,files:[...reservations.values()].filter(file=>file.requestId===payload.requestId && file.state==='ready')}];
@@ -142,4 +144,29 @@ test('clearing an unpublished evidence draft cancels reservations and never pers
   await h.node('staff-progress-clear').emit('click');await h.flush();
   assert.equal(h.evidenceRequests.filter(request=>request.method==='DELETE').length,1);assert.equal(h.reservations.size,0);assert.equal(h.controller.hasDraft(),false);
   const source=fs.readFileSync(path.join(__dirname,'../src/client/staff-progress.ts'),'utf8');assert.doesNotMatch(source,/localStorage|sessionStorage/);
+});
+
+
+test('workflow guards keep paused actions and completion without evidence from posting',async()=>{
+ const paused=harness();paused.setSnapshot({workflow:{mode:'work',paused:true,allowedActions:['update'],issues:[],canRepair:false}});await paused.open();
+ paused.node('staff-progress-body').value='A draft that must remain private until work resumes.';await paused.node('staff-progress-body').emit('input');await paused.node('staff-progress-form').emit('submit');
+ assert.equal(paused.posts.length,0);assert.match(paused.node('staff-progress-message').textContent,/not currently available/);assert.equal(paused.controller.hasDraft(),true);
+ const completed=harness();completed.setSnapshot({workflow:{mode:'work',paused:false,allowedActions:['complete'],issues:[],canRepair:false}});await completed.open();
+ completed.node('staff-progress-body').value='Completion requires evidence.';await completed.node('staff-progress-body').emit('input');await completed.node('staff-progress-form').emit('submit');
+ assert.equal(completed.posts.length,0);assert.match(completed.node('staff-progress-evidence-message').textContent,/at least one ready evidence/);
+});
+
+test('private decline previews disable public progress and notification controls',async()=>{
+ const h=harness();h.setSnapshot({workflow:{mode:'review',paused:false,allowedActions:['decline'],issues:[],canRepair:false}});await h.open();
+ assert.equal(h.node('staff-progress-visibility').value,'staff');assert.equal(h.node('staff-progress-percent').disabled,true);assert.equal(h.node('staff-progress-notify').disabled,true);
+ assert.equal(h.node('staff-progress-preview-title').textContent,'Decision preview');assert.match(h.node('staff-progress-audience-hint').textContent,/not published/);
+});
+
+
+test('expired access and malformed replies retain progress drafts without applying an unconfirmed snapshot',async()=>{
+ for(const reply of ['forbidden','invalid-json']){
+  const h=harness();await h.open();h.node('staff-progress-body').value='Keep this unconfirmed progress draft.';await h.node('staff-progress-body').emit('input');h.setReply(reply);
+  const applied=h.applied.length;await h.node('staff-progress-form').emit('submit');assert.equal(h.posts.length,1);assert.equal(h.applied.length,applied);assert.equal(h.controller.hasDraft(),true);
+  assert.match(h.node('staff-progress-message').textContent,reply==='forbidden'?/session expired|access changed/:/could not confirm/);
+ }
 });

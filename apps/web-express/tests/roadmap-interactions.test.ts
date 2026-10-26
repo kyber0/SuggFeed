@@ -19,9 +19,9 @@ test('Tree native button can collapse and reopen repeatedly without duplicate ke
   const source = fs.readFileSync(path.join(__dirname, '../public/js/roadmap.js'), 'utf8');
   vm.runInNewContext(source, {
     sfSchoolPath: (value: string) => value, sfSchoolKey: (value: string) => value,
-    document: { getElementById: (id: string) => nodes.get(id), querySelectorAll: (selector: string) => selector === '.roadmap-tree-header' ? [header] : [], addEventListener() {} },
+    document: { querySelector: () => null, getElementById: (id: string) => nodes.get(id), querySelectorAll: (selector: string) => selector === '.roadmap-tree-header' ? [header] : [], addEventListener() {} },
     window: { location: { href: 'https://www.suggfeed.me/roadmap?view=tree' }, addEventListener() {} },
-    URL, URLSearchParams, AbortController,
+    matchMedia: () => ({matches:false,addEventListener(){}}), URL, URLSearchParams, AbortController,
   });
   assert.equal(listeners.has('keydown'), false, 'native buttons handle Enter/Space without a second toggler');
   for (let index = 0; index < 4; index++) {
@@ -65,10 +65,10 @@ test('idea drawer hides stale actions on failure and retries without adding brow
   const item = { id, title: 'Better lighting', description: 'Safer walkways', status: 'in_progress', category: 'Facilities', votes: 3, updated_at: '2026-10-10T08:00:00Z' };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/roadmap.js'), 'utf8'), {
     sfSchoolPath: (value: string) => value, sfSchoolKey: (value: string) => value,
-    document: { getElementById: (key: string) => nodes.get(key), querySelectorAll: () => [], addEventListener() {}, dispatchEvent() {} },
+    document: { querySelector: () => null, getElementById: (key: string) => nodes.get(key), querySelectorAll: () => [], addEventListener() {}, dispatchEvent() {} },
     window: { location: { href: `https://www.suggfeed.me/roadmap?item=${id}` }, addEventListener() {}, history: { pushState() { pushes++; } } },
     sfSchoolFetch: async () => { calls++; if (calls === 1) throw new Error('Network unavailable'); return { ok: true, json: async () => ({ success: true, item, updates: [], merges: [] }) }; },
-    HTMLElement: Element, CustomEvent: class {}, URL, URLSearchParams, AbortController, setTimeout, clearTimeout,
+    matchMedia: () => ({matches:false,addEventListener(){}}), HTMLElement: Element, CustomEvent: class {}, URL, URLSearchParams, AbortController, setTimeout, clearTimeout,
   });
   await new Promise<void>(resolve => setImmediate(resolve));
   assert.equal(nodes.get('roadmap-detail-content').hidden, true);

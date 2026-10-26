@@ -17,7 +17,10 @@ test('server service moderates creation and edits before persistence and owns re
    await saveComment({id,version:1,body:'fuck this terrible comment here'});assert.equal((calls.at(-1)!.args.p_data as Record<string,unknown>).status,'flagged');
    await assert.rejects(saveComment({id,version:0,body:'A valid body with invalid version.'}));
    const before=calls.length;await assert.rejects(saveComment({submissionId:id,body:'a'.repeat(501)}));assert.equal(calls.length,before);
-   await reportComment(id,'Please review this comment carefully.');assert.equal((calls.at(-1)!.args.p_data as Record<string,unknown>).threshold,3);
+   for(const revision of [undefined,0,-1,1.5,'1']){
+    const before=calls.length;assert.throws(()=>reportComment(id,'Please review this comment carefully.',revision));assert.equal(calls.length,before);
+   }
+   await reportComment(id,'Please review this comment carefully.',2);assert.equal((calls.at(-1)!.args.p_data as Record<string,unknown>).textRevision,2);assert.equal((calls.at(-1)!.args.p_data as Record<string,unknown>).threshold,3);
   });
  }finally{supabaseService.rpc=original;}
 });

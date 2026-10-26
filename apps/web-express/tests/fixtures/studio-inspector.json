@@ -1,0 +1,1010 @@
+[
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "",
+    "sha256": "61188390c2fbf5c9448cff1564d47b254e19008562cca026ad70498374bd61f1"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "school.theme",
+    "sha256": "d10e87a16dbe02407d2f2b48901b09cb1c81c2aba350f2e091894af446a4b2ce"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "page.home",
+    "sha256": "8780c9e37ce5b2f9805cfbaf95aecb9c7b0991952701dc516acf2692f509606f"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "section.home.hero",
+    "sha256": "6ca768d8fc76f7eb4107d3c347b888e0879f70379f0a8bfd241792fe7645523c"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "school.identity",
+    "sha256": "13bd0bd2c9e30b1adf6367ee33d038f5bbeab9d7c8ad67c9fae501f27b3e1c2f"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "home.hero",
+    "sha256": "7c653cb5a9b3610aa014ad71cb77e9a920fa3c67c200e9da698cafc10b6bb2b4"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "home.links",
+    "sha256": "341632db23db81cf600efc951eaf5fadc6c23267904e12cf7288484944823c68"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "community.categories",
+    "sha256": "c7952970487069055c4dab65239d70ce2f002e8368bf8824106c8b9efd544292"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "category:cat-1",
+    "sha256": "bc22c9f33ee0b1d85fbbce88b18e2b1f4c7fcd633250754e6194289d12b128ab"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "submission.instructions",
+    "sha256": "b46c6b3bfa93d22aefeb7b815d6e3e60037eec8676cc23c516550f1699235dd6"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "question:q-short",
+    "sha256": "21b5ce7308d65c7c1ed71724c2354ac88d6e59fe6e54c4d8a49714b58bcc586e"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "question:q-long",
+    "sha256": "6e3ceef8834dbfab3c8e980a80d60ef57936683e4f0ddd8109d6cd705c481f4e"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "question:q-choice",
+    "sha256": "71b650a308d6d6397811e4708ad02320891b96f3448cab799a5fdc024c5cdc54"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "community.features",
+    "sha256": "00e9e3d630995d827ddf263882fce13469ba3d888d5bd94fab58fab5c63edcb6"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "progress.labels",
+    "sha256": "dc888c6d960df47f7bcb1f3518198e35ebda9a1f9a7298152fbe92bacc9d6873"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "school.email",
+    "sha256": "d51a9d49672c6188a6ee091eb36d2f2df27a733188542bba3e2a5aef27661e5f"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "category:missing",
+    "sha256": "35ec962f9fd6692a31c0384f729d0bd0df87a2297e0fb7e50e7878d287af0e75"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "school.unknown",
+    "sha256": "bf15cbd21e830ad0fb608d02f8689523341559c41a5d88a28154b04f7931164b"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "",
+    "sha256": "61188390c2fbf5c9448cff1564d47b254e19008562cca026ad70498374bd61f1"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "school.theme",
+    "sha256": "d10e87a16dbe02407d2f2b48901b09cb1c81c2aba350f2e091894af446a4b2ce"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "page.home",
+    "sha256": "8780c9e37ce5b2f9805cfbaf95aecb9c7b0991952701dc516acf2692f509606f"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "section.home.hero",
+    "sha256": "6ca768d8fc76f7eb4107d3c347b888e0879f70379f0a8bfd241792fe7645523c"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "school.identity",
+    "sha256": "13bd0bd2c9e30b1adf6367ee33d038f5bbeab9d7c8ad67c9fae501f27b3e1c2f"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "home.hero",
+    "sha256": "7c653cb5a9b3610aa014ad71cb77e9a920fa3c67c200e9da698cafc10b6bb2b4"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "home.links",
+    "sha256": "341632db23db81cf600efc951eaf5fadc6c23267904e12cf7288484944823c68"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "community.categories",
+    "sha256": "c7952970487069055c4dab65239d70ce2f002e8368bf8824106c8b9efd544292"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "category:cat-1",
+    "sha256": "bc22c9f33ee0b1d85fbbce88b18e2b1f4c7fcd633250754e6194289d12b128ab"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "submission.instructions",
+    "sha256": "b46c6b3bfa93d22aefeb7b815d6e3e60037eec8676cc23c516550f1699235dd6"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "question:q-short",
+    "sha256": "21b5ce7308d65c7c1ed71724c2354ac88d6e59fe6e54c4d8a49714b58bcc586e"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "question:q-long",
+    "sha256": "6e3ceef8834dbfab3c8e980a80d60ef57936683e4f0ddd8109d6cd705c481f4e"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "question:q-choice",
+    "sha256": "71b650a308d6d6397811e4708ad02320891b96f3448cab799a5fdc024c5cdc54"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "community.features",
+    "sha256": "00e9e3d630995d827ddf263882fce13469ba3d888d5bd94fab58fab5c63edcb6"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "progress.labels",
+    "sha256": "dc888c6d960df47f7bcb1f3518198e35ebda9a1f9a7298152fbe92bacc9d6873"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "school.email",
+    "sha256": "d51a9d49672c6188a6ee091eb36d2f2df27a733188542bba3e2a5aef27661e5f"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "category:missing",
+    "sha256": "14826ed66dd8fe62bf740bc9a7d6c2fadce442ca568534fdd77718dfec2a6300"
+  },
+  {
+    "width": 320,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "school.unknown",
+    "sha256": "bf15cbd21e830ad0fb608d02f8689523341559c41a5d88a28154b04f7931164b"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "",
+    "sha256": "61188390c2fbf5c9448cff1564d47b254e19008562cca026ad70498374bd61f1"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "school.theme",
+    "sha256": "4580fd62f413b60387687f89057394b4a5905d1efa0dc769a66fd498d7800830"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "page.home",
+    "sha256": "8780c9e37ce5b2f9805cfbaf95aecb9c7b0991952701dc516acf2692f509606f"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "section.home.hero",
+    "sha256": "6ca768d8fc76f7eb4107d3c347b888e0879f70379f0a8bfd241792fe7645523c"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "school.identity",
+    "sha256": "13bd0bd2c9e30b1adf6367ee33d038f5bbeab9d7c8ad67c9fae501f27b3e1c2f"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "home.hero",
+    "sha256": "7c653cb5a9b3610aa014ad71cb77e9a920fa3c67c200e9da698cafc10b6bb2b4"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "home.links",
+    "sha256": "341632db23db81cf600efc951eaf5fadc6c23267904e12cf7288484944823c68"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "community.categories",
+    "sha256": "c7952970487069055c4dab65239d70ce2f002e8368bf8824106c8b9efd544292"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "category:cat-1",
+    "sha256": "bc22c9f33ee0b1d85fbbce88b18e2b1f4c7fcd633250754e6194289d12b128ab"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "submission.instructions",
+    "sha256": "b46c6b3bfa93d22aefeb7b815d6e3e60037eec8676cc23c516550f1699235dd6"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "question:q-short",
+    "sha256": "21b5ce7308d65c7c1ed71724c2354ac88d6e59fe6e54c4d8a49714b58bcc586e"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "question:q-long",
+    "sha256": "6e3ceef8834dbfab3c8e980a80d60ef57936683e4f0ddd8109d6cd705c481f4e"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "question:q-choice",
+    "sha256": "71b650a308d6d6397811e4708ad02320891b96f3448cab799a5fdc024c5cdc54"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "community.features",
+    "sha256": "00e9e3d630995d827ddf263882fce13469ba3d888d5bd94fab58fab5c63edcb6"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "progress.labels",
+    "sha256": "dc888c6d960df47f7bcb1f3518198e35ebda9a1f9a7298152fbe92bacc9d6873"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "school.email",
+    "sha256": "d51a9d49672c6188a6ee091eb36d2f2df27a733188542bba3e2a5aef27661e5f"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "category:missing",
+    "sha256": "35ec962f9fd6692a31c0384f729d0bd0df87a2297e0fb7e50e7878d287af0e75"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "school.unknown",
+    "sha256": "bf15cbd21e830ad0fb608d02f8689523341559c41a5d88a28154b04f7931164b"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "",
+    "sha256": "61188390c2fbf5c9448cff1564d47b254e19008562cca026ad70498374bd61f1"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "school.theme",
+    "sha256": "4580fd62f413b60387687f89057394b4a5905d1efa0dc769a66fd498d7800830"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "page.home",
+    "sha256": "8780c9e37ce5b2f9805cfbaf95aecb9c7b0991952701dc516acf2692f509606f"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "section.home.hero",
+    "sha256": "6ca768d8fc76f7eb4107d3c347b888e0879f70379f0a8bfd241792fe7645523c"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "school.identity",
+    "sha256": "13bd0bd2c9e30b1adf6367ee33d038f5bbeab9d7c8ad67c9fae501f27b3e1c2f"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "home.hero",
+    "sha256": "7c653cb5a9b3610aa014ad71cb77e9a920fa3c67c200e9da698cafc10b6bb2b4"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "home.links",
+    "sha256": "341632db23db81cf600efc951eaf5fadc6c23267904e12cf7288484944823c68"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "community.categories",
+    "sha256": "c7952970487069055c4dab65239d70ce2f002e8368bf8824106c8b9efd544292"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "category:cat-1",
+    "sha256": "bc22c9f33ee0b1d85fbbce88b18e2b1f4c7fcd633250754e6194289d12b128ab"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "submission.instructions",
+    "sha256": "b46c6b3bfa93d22aefeb7b815d6e3e60037eec8676cc23c516550f1699235dd6"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "question:q-short",
+    "sha256": "21b5ce7308d65c7c1ed71724c2354ac88d6e59fe6e54c4d8a49714b58bcc586e"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "question:q-long",
+    "sha256": "6e3ceef8834dbfab3c8e980a80d60ef57936683e4f0ddd8109d6cd705c481f4e"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "question:q-choice",
+    "sha256": "71b650a308d6d6397811e4708ad02320891b96f3448cab799a5fdc024c5cdc54"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "community.features",
+    "sha256": "00e9e3d630995d827ddf263882fce13469ba3d888d5bd94fab58fab5c63edcb6"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "progress.labels",
+    "sha256": "dc888c6d960df47f7bcb1f3518198e35ebda9a1f9a7298152fbe92bacc9d6873"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "school.email",
+    "sha256": "d51a9d49672c6188a6ee091eb36d2f2df27a733188542bba3e2a5aef27661e5f"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "category:missing",
+    "sha256": "14826ed66dd8fe62bf740bc9a7d6c2fadce442ca568534fdd77718dfec2a6300"
+  },
+  {
+    "width": 320,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "school.unknown",
+    "sha256": "bf15cbd21e830ad0fb608d02f8689523341559c41a5d88a28154b04f7931164b"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "",
+    "sha256": "61188390c2fbf5c9448cff1564d47b254e19008562cca026ad70498374bd61f1"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "school.theme",
+    "sha256": "d10e87a16dbe02407d2f2b48901b09cb1c81c2aba350f2e091894af446a4b2ce"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "page.home",
+    "sha256": "8780c9e37ce5b2f9805cfbaf95aecb9c7b0991952701dc516acf2692f509606f"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "section.home.hero",
+    "sha256": "6ca768d8fc76f7eb4107d3c347b888e0879f70379f0a8bfd241792fe7645523c"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "school.identity",
+    "sha256": "13bd0bd2c9e30b1adf6367ee33d038f5bbeab9d7c8ad67c9fae501f27b3e1c2f"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "home.hero",
+    "sha256": "7c653cb5a9b3610aa014ad71cb77e9a920fa3c67c200e9da698cafc10b6bb2b4"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "home.links",
+    "sha256": "341632db23db81cf600efc951eaf5fadc6c23267904e12cf7288484944823c68"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "community.categories",
+    "sha256": "c7952970487069055c4dab65239d70ce2f002e8368bf8824106c8b9efd544292"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "category:cat-1",
+    "sha256": "bc22c9f33ee0b1d85fbbce88b18e2b1f4c7fcd633250754e6194289d12b128ab"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "submission.instructions",
+    "sha256": "b46c6b3bfa93d22aefeb7b815d6e3e60037eec8676cc23c516550f1699235dd6"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "question:q-short",
+    "sha256": "21b5ce7308d65c7c1ed71724c2354ac88d6e59fe6e54c4d8a49714b58bcc586e"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "question:q-long",
+    "sha256": "6e3ceef8834dbfab3c8e980a80d60ef57936683e4f0ddd8109d6cd705c481f4e"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "question:q-choice",
+    "sha256": "71b650a308d6d6397811e4708ad02320891b96f3448cab799a5fdc024c5cdc54"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "community.features",
+    "sha256": "00e9e3d630995d827ddf263882fce13469ba3d888d5bd94fab58fab5c63edcb6"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "progress.labels",
+    "sha256": "dc888c6d960df47f7bcb1f3518198e35ebda9a1f9a7298152fbe92bacc9d6873"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "school.email",
+    "sha256": "d51a9d49672c6188a6ee091eb36d2f2df27a733188542bba3e2a5aef27661e5f"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "category:missing",
+    "sha256": "35ec962f9fd6692a31c0384f729d0bd0df87a2297e0fb7e50e7878d287af0e75"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": false,
+    "selection": "school.unknown",
+    "sha256": "bf15cbd21e830ad0fb608d02f8689523341559c41a5d88a28154b04f7931164b"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "",
+    "sha256": "61188390c2fbf5c9448cff1564d47b254e19008562cca026ad70498374bd61f1"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "school.theme",
+    "sha256": "d10e87a16dbe02407d2f2b48901b09cb1c81c2aba350f2e091894af446a4b2ce"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "page.home",
+    "sha256": "8780c9e37ce5b2f9805cfbaf95aecb9c7b0991952701dc516acf2692f509606f"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "section.home.hero",
+    "sha256": "6ca768d8fc76f7eb4107d3c347b888e0879f70379f0a8bfd241792fe7645523c"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "school.identity",
+    "sha256": "13bd0bd2c9e30b1adf6367ee33d038f5bbeab9d7c8ad67c9fae501f27b3e1c2f"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "home.hero",
+    "sha256": "7c653cb5a9b3610aa014ad71cb77e9a920fa3c67c200e9da698cafc10b6bb2b4"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "home.links",
+    "sha256": "341632db23db81cf600efc951eaf5fadc6c23267904e12cf7288484944823c68"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "community.categories",
+    "sha256": "c7952970487069055c4dab65239d70ce2f002e8368bf8824106c8b9efd544292"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "category:cat-1",
+    "sha256": "bc22c9f33ee0b1d85fbbce88b18e2b1f4c7fcd633250754e6194289d12b128ab"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "submission.instructions",
+    "sha256": "b46c6b3bfa93d22aefeb7b815d6e3e60037eec8676cc23c516550f1699235dd6"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "question:q-short",
+    "sha256": "21b5ce7308d65c7c1ed71724c2354ac88d6e59fe6e54c4d8a49714b58bcc586e"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "question:q-long",
+    "sha256": "6e3ceef8834dbfab3c8e980a80d60ef57936683e4f0ddd8109d6cd705c481f4e"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "question:q-choice",
+    "sha256": "71b650a308d6d6397811e4708ad02320891b96f3448cab799a5fdc024c5cdc54"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "community.features",
+    "sha256": "00e9e3d630995d827ddf263882fce13469ba3d888d5bd94fab58fab5c63edcb6"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "progress.labels",
+    "sha256": "dc888c6d960df47f7bcb1f3518198e35ebda9a1f9a7298152fbe92bacc9d6873"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "school.email",
+    "sha256": "d51a9d49672c6188a6ee091eb36d2f2df27a733188542bba3e2a5aef27661e5f"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "category:missing",
+    "sha256": "14826ed66dd8fe62bf740bc9a7d6c2fadce442ca568534fdd77718dfec2a6300"
+  },
+  {
+    "width": 1440,
+    "pane": "content",
+    "readOnly": true,
+    "selection": "school.unknown",
+    "sha256": "bf15cbd21e830ad0fb608d02f8689523341559c41a5d88a28154b04f7931164b"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "",
+    "sha256": "61188390c2fbf5c9448cff1564d47b254e19008562cca026ad70498374bd61f1"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "school.theme",
+    "sha256": "4580fd62f413b60387687f89057394b4a5905d1efa0dc769a66fd498d7800830"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "page.home",
+    "sha256": "8780c9e37ce5b2f9805cfbaf95aecb9c7b0991952701dc516acf2692f509606f"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "section.home.hero",
+    "sha256": "6ca768d8fc76f7eb4107d3c347b888e0879f70379f0a8bfd241792fe7645523c"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "school.identity",
+    "sha256": "13bd0bd2c9e30b1adf6367ee33d038f5bbeab9d7c8ad67c9fae501f27b3e1c2f"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "home.hero",
+    "sha256": "7c653cb5a9b3610aa014ad71cb77e9a920fa3c67c200e9da698cafc10b6bb2b4"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "home.links",
+    "sha256": "341632db23db81cf600efc951eaf5fadc6c23267904e12cf7288484944823c68"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "community.categories",
+    "sha256": "c7952970487069055c4dab65239d70ce2f002e8368bf8824106c8b9efd544292"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "category:cat-1",
+    "sha256": "bc22c9f33ee0b1d85fbbce88b18e2b1f4c7fcd633250754e6194289d12b128ab"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "submission.instructions",
+    "sha256": "b46c6b3bfa93d22aefeb7b815d6e3e60037eec8676cc23c516550f1699235dd6"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "question:q-short",
+    "sha256": "21b5ce7308d65c7c1ed71724c2354ac88d6e59fe6e54c4d8a49714b58bcc586e"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "question:q-long",
+    "sha256": "6e3ceef8834dbfab3c8e980a80d60ef57936683e4f0ddd8109d6cd705c481f4e"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "question:q-choice",
+    "sha256": "71b650a308d6d6397811e4708ad02320891b96f3448cab799a5fdc024c5cdc54"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "community.features",
+    "sha256": "00e9e3d630995d827ddf263882fce13469ba3d888d5bd94fab58fab5c63edcb6"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "progress.labels",
+    "sha256": "dc888c6d960df47f7bcb1f3518198e35ebda9a1f9a7298152fbe92bacc9d6873"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "school.email",
+    "sha256": "d51a9d49672c6188a6ee091eb36d2f2df27a733188542bba3e2a5aef27661e5f"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "category:missing",
+    "sha256": "35ec962f9fd6692a31c0384f729d0bd0df87a2297e0fb7e50e7878d287af0e75"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": false,
+    "selection": "school.unknown",
+    "sha256": "bf15cbd21e830ad0fb608d02f8689523341559c41a5d88a28154b04f7931164b"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "",
+    "sha256": "61188390c2fbf5c9448cff1564d47b254e19008562cca026ad70498374bd61f1"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "school.theme",
+    "sha256": "4580fd62f413b60387687f89057394b4a5905d1efa0dc769a66fd498d7800830"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "page.home",
+    "sha256": "8780c9e37ce5b2f9805cfbaf95aecb9c7b0991952701dc516acf2692f509606f"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "section.home.hero",
+    "sha256": "6ca768d8fc76f7eb4107d3c347b888e0879f70379f0a8bfd241792fe7645523c"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "school.identity",
+    "sha256": "13bd0bd2c9e30b1adf6367ee33d038f5bbeab9d7c8ad67c9fae501f27b3e1c2f"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "home.hero",
+    "sha256": "7c653cb5a9b3610aa014ad71cb77e9a920fa3c67c200e9da698cafc10b6bb2b4"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "home.links",
+    "sha256": "341632db23db81cf600efc951eaf5fadc6c23267904e12cf7288484944823c68"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "community.categories",
+    "sha256": "c7952970487069055c4dab65239d70ce2f002e8368bf8824106c8b9efd544292"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "category:cat-1",
+    "sha256": "bc22c9f33ee0b1d85fbbce88b18e2b1f4c7fcd633250754e6194289d12b128ab"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "submission.instructions",
+    "sha256": "b46c6b3bfa93d22aefeb7b815d6e3e60037eec8676cc23c516550f1699235dd6"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "question:q-short",
+    "sha256": "21b5ce7308d65c7c1ed71724c2354ac88d6e59fe6e54c4d8a49714b58bcc586e"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "question:q-long",
+    "sha256": "6e3ceef8834dbfab3c8e980a80d60ef57936683e4f0ddd8109d6cd705c481f4e"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "question:q-choice",
+    "sha256": "71b650a308d6d6397811e4708ad02320891b96f3448cab799a5fdc024c5cdc54"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "community.features",
+    "sha256": "00e9e3d630995d827ddf263882fce13469ba3d888d5bd94fab58fab5c63edcb6"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "progress.labels",
+    "sha256": "dc888c6d960df47f7bcb1f3518198e35ebda9a1f9a7298152fbe92bacc9d6873"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "school.email",
+    "sha256": "d51a9d49672c6188a6ee091eb36d2f2df27a733188542bba3e2a5aef27661e5f"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "category:missing",
+    "sha256": "14826ed66dd8fe62bf740bc9a7d6c2fadce442ca568534fdd77718dfec2a6300"
+  },
+  {
+    "width": 1440,
+    "pane": "design",
+    "readOnly": true,
+    "selection": "school.unknown",
+    "sha256": "bf15cbd21e830ad0fb608d02f8689523341559c41a5d88a28154b04f7931164b"
+  }
+]
