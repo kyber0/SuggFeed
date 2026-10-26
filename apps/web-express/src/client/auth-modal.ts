@@ -196,6 +196,7 @@
       btn.innerHTML = '<span>Signing in…</span>';
       try {
 
+      await window.sfAuthReady;
       var { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
 
       if (error) {
@@ -250,6 +251,7 @@
 
       try { sessionStorage.setItem('sf-auth-return', window.location.pathname + window.location.search); } catch {}
       (window as any).sfSubmissionRecovery?.preserveForSignIn();
+      await window.sfAuthReady;
       var { data, error } = await sb.auth.signUp({
         email: email,
         password: password,

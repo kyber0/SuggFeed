@@ -5,7 +5,7 @@ import { supabasePlatform } from './supabase';
 import {ipKeyGenerator} from 'express-rate-limit';
 import '../types';
 
-function sharedBudget(category: 'write' | 'auth'): RequestHandler {
+function sharedBudget(category: 'write' | 'auth' | 'activity'): RequestHandler {
   return async (req, res, next) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
     const secret = process.env.SESSION_SECRET;
@@ -15,9 +15,9 @@ function sharedBudget(category: 'write' | 'auth'): RequestHandler {
       return;
     }
     const identities: [string, string, number][] = [
-      ['ip', ipKeyGenerator(req.ip || req.socket.remoteAddress || 'unknown',56), category === 'auth' ? 20 : 200],
+      ['ip', ipKeyGenerator(req.ip || req.socket.remoteAddress || 'unknown',56), category === 'auth' ? 20 : category === 'activity' ? 2000 : 200],
     ];
-    if (req.session?.user?.id) identities.push(['account', req.session.user.id, category === 'auth' ? 20 : 120]);
+    if (req.session?.user?.id) identities.push(['account', req.session.user.id, category === 'auth' ? 20 : category === 'activity' ? 60 : 120]);
     const school = currentSchool();
     if (school) identities.push(['school', school.id, 1000]);
     try {
@@ -47,3 +47,5 @@ function sharedBudget(category: 'write' | 'auth'): RequestHandler {
 
 export const sharedWriteBudget = sharedBudget('write');
 export const sharedAuthBudget = sharedBudget('auth');
+
+export const sharedActivityBudget = sharedBudget('activity');

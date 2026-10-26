@@ -1,3 +1,4 @@
+import {blockedIdleToken,newProviderSession,idleState,idleExpired} from '../lib/session-idle';
 import { safeAccountReturn } from '../lib/navigation-context';
 import { Router, Request, Response, NextFunction } from "express";
 import { supabasePlatform } from "../lib/supabase";
@@ -18,7 +19,8 @@ router.get(["/callback", "/callback/client", "/recovery"], (req, res) => {
 router.get("/confirm", (_req,res) => { res.setHeader("Referrer-Policy","no-referrer");res.render("auth-confirm",{title:"Confirm your email — SuggFeed"}); });
 
 router.get("/session", (req, res) => {
-  res.json({ success: true, user: req.session.user ?? null });
+  if(req.session.idleBlocked&&!req.session.user)return idleExpired(res);
+  res.json({ success: true, user: req.session.user ?? null, idle:idleState(req) });
 });
 
 router.post("/session", sameOriginOnly, (req: Request, res: Response, next: NextFunction) => {
@@ -33,9 +35,11 @@ router.post("/session", sameOriginOnly, (req: Request, res: Response, next: Next
     }
     const { data: { user }, error } = await supabasePlatform.auth.getUser(access_token);
     if (error || !user) return res.status(401).json({ success: false, error: "Invalid or expired sign-in. Please try again." });
+    if(blockedIdleToken(req,access_token))return idleExpired(res);
     const { data: profile, error: profileError } = await supabasePlatform.from("profiles")
       .select("role, display_name").eq("id", user.id).maybeSingle();
     if (profileError) throw new Error("Could not load account permissions.");
+    const freshSession=!req.session.user||newProviderSession(req.session.accessToken,access_token);
     // Repeated events for the same user update the session; changing identity
     // always gets a new session ID to prevent session fixation.
     if (req.session.user?.id !== user.id) {
@@ -49,11 +53,13 @@ router.post("/session", sameOriginOnly, (req: Request, res: Response, next: Next
       avatar_url: user.user_metadata?.avatar_url,
       role: profile?.role ?? "student",
     };
+    if(freshSession)req.session.lastActivityAt=Date.now();
+    delete req.session.idleBlocked;
     req.session.accessToken = access_token;
     req.session.refreshToken = refresh_token;
     // Save before responding: Vercel may finish the invocation immediately.
     await new Promise<void>((resolve, reject) => req.session.save(err => err ? reject(err) : resolve()));
-    return res.json({ success: true, user: req.session.user });
+    return res.json({ success: true, user: req.session.user, idle:idleState(req) });
   })().catch(next);
 });
 

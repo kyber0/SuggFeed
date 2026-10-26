@@ -1,3 +1,5 @@
+import {enforceIdleSession} from './lib/session-idle';
+import sessionActivityRouter from './routes/session-activity';
 import { traceRequest, requestErrorRecord } from './lib/request-tracing';
 import { liveness, readiness } from './routes/health';
 import assistantRouter from './routes/assistant';
@@ -230,6 +232,7 @@ app.use(
 );
 
 app.use((_req,res,next)=>{res.append("Server-Timing",`session;dur=${(performance.now()-res.locals.sessionStarted).toFixed(1)}`);delete res.locals.sessionStarted;next();});
+app.use(enforceIdleSession);
 app.use(validateIdentity);
 app.use((_req,res,next)=>{
   const status=res.locals.publicNavigationCache;
@@ -255,6 +258,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.get(["/health", "/api/health"], readiness);
 
 /* Global identity and school onboarding routes. */
+app.use(sessionActivityRouter);
 app.use('/auth', sharedAuthBudget, (req,res,next) => req.method === 'POST' ? authLimiter(req,res,next) : next(), authRouter);
 app.use(['/schools','/platform','/s/:schoolSlug/admin'],sharedAuthBudget);
 app.use(navigationContext);

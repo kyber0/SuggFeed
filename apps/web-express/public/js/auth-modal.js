@@ -218,6 +218,7 @@
                 var origText = btn.innerHTML;
                 btn.innerHTML = '<span>Signing in…</span>';
                 try {
+                    await window.sfAuthReady;
                     var { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
                     if (error) {
                         sfToast(error.message, 'error', generation);
@@ -279,6 +280,7 @@
                     }
                     catch { }
                     window.sfSubmissionRecovery?.preserveForSignIn();
+                    await window.sfAuthReady;
                     var { data, error } = await sb.auth.signUp({
                         email: email,
                         password: password,

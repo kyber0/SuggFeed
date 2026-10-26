@@ -14,6 +14,8 @@ declare module "express-session" {
     user: AppUser | null;
     accessToken?: string;
     refreshToken?: string;
+    lastActivityAt?: number;
+    idleBlocked?: {tokenHash:string;providerSessionId:string|null};
   }
 }
 

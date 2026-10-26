@@ -32,6 +32,7 @@
     "src/client/student-experience.ts",
     "src/client/school-studio-tools.ts",
     "src/client/school-studio-content.ts",
-    "src/client/platform-dashboard.ts"
+    "src/client/platform-dashboard.ts",
+    "src/client/session-idle.ts"
   ]
 }

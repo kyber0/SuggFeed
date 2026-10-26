@@ -1,0 +1,11 @@
+<% if(it.user && it.sessionIdle) { %>
+<link rel="stylesheet" href="/css/modules/session-idle.css?v=20261026-idle-session">
+<script type="application/json" id="sf-session-idle"><%~ JSON.stringify(it.sessionIdle).replace(/</g,'\\u003c') %></script>
+<dialog id="sf-idle-warning" class="sf-idle-dialog sf-bottom-sheet" aria-labelledby="sf-idle-title" aria-describedby="sf-idle-message">
+ <h2 id="sf-idle-title">Still working?</h2>
+ <p id="sf-idle-message">For your security, you’ll be signed out after 30 minutes of inactivity. Stay signed in to continue and save your work.</p>
+ <p id="sf-idle-status" role="status" aria-live="polite"></p>
+ <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" id="sf-idle-signout">Sign out</button><button type="button" class="app-confirm-accept" id="sf-idle-continue" autofocus>Stay signed in</button></div>
+</dialog>
+<script defer src="/js/session-idle.js?v=20261026-idle-session"></script>
+<% } %>

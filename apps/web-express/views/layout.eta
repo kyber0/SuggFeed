@@ -51,7 +51,7 @@
 <% if(it.schoolCustomization) { %><script type="application/json" id="school-presentation-data"><%~ JSON.stringify(it.schoolCustomization).replace(/</g,'\\u003c') %></script><script defer src="/js/school-design.js?v=20261026-audit-remediation"></script><script defer src="/js/school-ui.js?v=20261021-design"></script><script defer src="/js/school-submission.js?v=20261021-category-icons"></script><% } %>
 <a class="system-skip-link" href="#page-content">Skip to page content</a>
 <%~ include('partials/workspace-icons', it) %>
-<div id="sf-auth-config" hidden data-url="<%= it.supabaseUrl || '' %>" data-key="<%= it.supabaseAnonKey || '' %>" data-user="<%= it.user?.id || '' %>"></div>
+<div id="sf-auth-config" hidden data-url="<%= it.supabaseUrl || '' %>" data-key="<%= it.supabaseAnonKey || '' %>" data-user="<%= it.user?.id || '' %>" data-idle-expired="<%= it.sessionIdleExpired ? 'true' : 'false' %>"></div>
 
 <%~ include('partials/toast', it) %>
 <%~ include('partials/confirmation', it) %>
@@ -74,7 +74,9 @@
 <% } %>
 
 <!-- Client-side auth state sync -->
-<script defer src="/js/auth.js?v=20261022-student-journey"></script>
+<script defer src="/js/auth.js?v=20261026-idle-session"></script>
+
+<%~ include('partials/session-idle',it) %>
 
 <!-- Theme toggle logic -->
 <script defer src="/js/theme.js?v=20261016-school-isolation"></script>
