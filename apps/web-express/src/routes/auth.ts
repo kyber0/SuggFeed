@@ -1,4 +1,5 @@
-import {blockedIdleToken,newProviderSession,idleState,idleExpired} from '../lib/session-idle';
+import {providerKey,providerIdle} from '../lib/session-idle-store';
+import {blockedIdleToken,idleState,idleExpired} from '../lib/session-idle';
 import { safeAccountReturn } from '../lib/navigation-context';
 import { Router, Request, Response, NextFunction } from "express";
 import { supabasePlatform } from "../lib/supabase";
@@ -20,7 +21,7 @@ router.get("/confirm", (_req,res) => { res.setHeader("Referrer-Policy","no-refer
 
 router.get("/session", (req, res) => {
   if(req.session.idleBlocked&&!req.session.user)return idleExpired(res);
-  res.json({ success: true, user: req.session.user ?? null, idle:idleState(req) });
+  res.json({ success: true, user: req.session.user ?? null, idle:res.locals.sessionIdle||idleState(req) });
 });
 
 router.post("/session", sameOriginOnly, (req: Request, res: Response, next: NextFunction) => {
@@ -39,7 +40,8 @@ router.post("/session", sameOriginOnly, (req: Request, res: Response, next: Next
     const { data: profile, error: profileError } = await supabasePlatform.from("profiles")
       .select("role, display_name").eq("id", user.id).maybeSingle();
     if (profileError) throw new Error("Could not load account permissions.");
-    const freshSession=!req.session.user||newProviderSession(req.session.accessToken,access_token);
+    const key=providerKey(access_token,user.id);if(!key)return res.status(401).json({success:false,error:'Start a fresh sign-in to continue.'});
+    const activity=await providerIdle(key,'check',user.id);if(!activity.allowed)return idleExpired(res);
     // Repeated events for the same user update the session; changing identity
     // always gets a new session ID to prevent session fixation.
     if (req.session.user?.id !== user.id) {
@@ -53,23 +55,25 @@ router.post("/session", sameOriginOnly, (req: Request, res: Response, next: Next
       avatar_url: user.user_metadata?.avatar_url,
       role: profile?.role ?? "student",
     };
-    if(freshSession)req.session.lastActivityAt=Date.now();
+    req.session.lastActivityAt=activity.lastActivityAt;
     delete req.session.idleBlocked;
     req.session.accessToken = access_token;
     req.session.refreshToken = refresh_token;
     // Save before responding: Vercel may finish the invocation immediately.
     await new Promise<void>((resolve, reject) => req.session.save(err => err ? reject(err) : resolve()));
-    return res.json({ success: true, user: req.session.user, idle:idleState(req) });
+    return res.json({ success: true, user: req.session.user, idle:idleState(req,activity.serverNow) });
   })().catch(next);
 });
 
 router.post("/signout", sameOriginOnly, (req, res, next) => {
-  req.session.destroy(err => {
-    if (err) return next(err);
-    res.clearCookie("connect.sid", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
-    if (req.is("application/json")) return res.json({ success: true });
-    return res.redirect(303, safeAccountReturn(req.body?.returnTo) || "/");
-  });
+ void (async()=>{
+  const key=req.session.user?providerKey(req.session.accessToken,req.session.user.id):null;
+  if(key)await providerIdle(key,'revoke',req.session.user!.id);
+  await new Promise<void>((resolve,reject)=>req.session.destroy(error=>error?reject(error):resolve()));
+  res.clearCookie("connect.sid", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
+  if (req.is("application/json"))return res.json({ success: true });
+  return res.redirect(303, safeAccountReturn(req.body?.returnTo) || "/");
+ })().catch(next);
 });
 
 export default router;

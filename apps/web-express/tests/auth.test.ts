@@ -1,3 +1,5 @@
+const {randomUUID}=require('node:crypto');
+const {enforceIdleSession}=require('../src/lib/session-idle');
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const express = require('express');
@@ -25,6 +27,9 @@ const database = {
     };
   }
 };
+const validTokens=new Set<string>(),providerStates=new Map<string,any>();
+const issueToken=()=>{const token='header.'+Buffer.from(JSON.stringify({session_id:randomUUID()})).toString('base64url')+'.signature';validTokens.add(token);return token;};
+const originalPlatformRpc=supabasePlatform.rpc;
 const originalGetUser = supabasePlatform.auth.getUser;
 const originalFrom = supabasePlatform.from;
 const originalRpc = supabaseService.rpc;
@@ -34,14 +39,21 @@ const servers = [];
 const origins = [];
 
 before(async () => {
+  supabasePlatform.rpc=async(name,args)=>{
+   assert.equal(name,'web_session_idle');const now=Date.now();let state=providerStates.get(args.p_key);
+   if(!state){state={allowed:true,lastActivityAt:now,expiresAt:now+1800000,serverNow:now};providerStates.set(args.p_key,state);}
+   if(args.p_action==='revoke'||state.expiresAt<=now)state.allowed=false;
+   if(args.p_action==='activity'&&state.allowed){state.lastActivityAt=now;state.expiresAt=now+1800000;}
+   return {data:{...state,serverNow:now},error:null};
+  };
   supabaseService.rpc = async (name, args) => {
     assert.equal(name, 'moderate_submission');
     moderationArgs = args;
     return { error: null };
   };
   supabasePlatform.auth.getUser = async token => ({
-    data: { user: token === 'valid-access-token' ? { id: 'test-user', email: 'student@example.test', user_metadata: { role: 'admin', full_name: 'Test Student' } } : null },
-    error: token === 'valid-access-token' ? null : { status: 401 }
+    data: { user: validTokens.has(token) ? { id: 'test-user', email: 'student@example.test', user_metadata: { role: 'admin', full_name: 'Test Student' } } : null },
+    error: validTokens.has(token) ? null : { status: 401 }
   });
   supabasePlatform.from = table => {
     assert.equal(table, 'profiles');
@@ -51,6 +63,7 @@ before(async () => {
     const app = express();
     app.use(express.json(),express.urlencoded({extended:false}));
     app.use(session({ secret, store: new SupabaseSessionStore(database, secret), resave: false, saveUninitialized: false, cookie: { httpOnly: true, sameSite: 'lax', maxAge: 60000 } }));
+    app.use(enforceIdleSession);
     app.use(validateIdentity);
     app.use('/auth', auth);
     app.use((req, _res, next) => runWithSchool({id:'00000000-0000-4000-8000-00000000000a',slug:'test-school',name:'Test School',actorId:req.session.user?.id??null,role:req.session.user ? schoolRoleOverride || role : null},next));
@@ -64,6 +77,7 @@ before(async () => {
   }
 });
 after(async () => {
+  supabasePlatform.rpc=originalPlatformRpc;
   supabasePlatform.auth.getUser = originalGetUser;
   supabasePlatform.from = originalFrom;
   supabaseService.rpc = originalRpc;
@@ -73,7 +87,7 @@ after(async () => {
 async function login() {
   const response = await fetch(origins[0] + '/auth/session', {
     method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origins[0] },
-    body: JSON.stringify({ access_token: 'valid-access-token', refresh_token: 'private-refresh-token' })
+    body: JSON.stringify({ access_token: issueToken(), refresh_token: 'private-refresh-token' })
   });
   assert.equal(response.status, 200);
   assert.match(response.headers.get('set-cookie'), /HttpOnly/i);
@@ -191,4 +205,15 @@ test('switching invitation accounts returns to that invitation and rejects exter
   const cookie=await login();const response=await fetch(origins[0]+'/auth/signout',{method:'POST',redirect:'manual',headers:{Origin:origins[0],Cookie:cookie},body:new URLSearchParams({returnTo:destination})});
   assert.equal(response.status,303);assert.equal(response.headers.get('location'),expected);
  }
+});
+
+test('expired provider sessions cannot restore sign-in without the web cookie or through token refresh',async()=>{
+ const access=issueToken(),headers={'Content-Type':'application/json',Origin:origins[0]};
+ const send=(token:string,cookie?:string)=>fetch(origins[0]+'/auth/session',{method:'POST',headers:{...headers,...cookie?{Cookie:cookie}:{}},body:JSON.stringify({access_token:token,refresh_token:'synthetic-refresh-token'})});
+ const initial=await send(access);assert.equal(initial.status,200);const cookie=initial.headers.get('set-cookie').split(';')[0];
+ const key=require('../src/lib/session-idle-store').providerKey(access,'test-user');providerStates.get(key).lastActivityAt=Date.now()-1800001;providerStates.get(key).expiresAt=providerStates.get(key).lastActivityAt+1800000;
+ const withoutCookie=await send(access);assert.equal(withoutCookie.status,401);assert.equal((await withoutCookie.json() as any).code,'SESSION_IDLE_EXPIRED');assert.equal(withoutCookie.headers.get('set-cookie'),null);
+ const claims=JSON.parse(Buffer.from(access.split('.')[1],'base64url').toString());const refreshed='header.'+Buffer.from(JSON.stringify({...claims,iat:Date.now()})).toString('base64url')+'.signature';validTokens.add(refreshed);assert.equal((await send(refreshed)).status,401);
+ assert.equal((await fetch(origins[1]+'/auth/session',{headers:{Cookie:cookie}})).status,401);
+ assert.equal((await send(issueToken(),cookie)).status,200,'fresh provider sign-in remains available');
 });

@@ -29,21 +29,31 @@ school or protected endpoint work. Expired server sessions lose their user and
 provider tokens before protected work can run. Mutations receive a 401 response
 with `SESSION_IDLE_EXPIRED`; they must not be replayed automatically.
 
-The anonymous session retains a fingerprint of the previous verified provider
-session. Browser refresh/restore cannot simply reattach that same provider session
-through `/auth/session`; a fresh sign-in establishes a new provider session. Local
-browser markers contain deadlines/flags, not credentials, and suppress automatic
-restoration after expiry. They are a UX safeguard; the server deadline is the
-security check. The existing cookie lifetime is not the inactivity allowance.
+The anonymous web session retains a fingerprint for user feedback, but the
+security decision is also stored independently in `provider_idle_sessions`.
+A hash of the verified provider session ID and account ID identifies the record.
+Cookie deletion, a new web session and access-token refresh therefore cannot reset
+an expired provider session. A fresh provider sign-in creates a different record.
+Manual signout revokes the corresponding application record too.
 
-This controls SuggFeed's application session. It does not claim immediate global
-revocation of every already-issued provider JWT or sign out other devices. A valid
-bearer token remains a credential under the identity provider's own expiry rules.
+The table stores the opaque fingerprint, account ID, last activity and revoked
+flag. It stores no access or refresh token. Account deletion cascades to these
+records, and a deleted identity cannot recreate one. Only the service-only RPC
+can operate on them; browsers and the service role cannot read the table directly.
+The application fails closed if that RPC is missing, unavailable or malformed.
+Background checks never extend activity; the database locks each record before
+checking or updating its 30-minute deadline.
 
-Existing authenticated sessions without an activity timestamp receive one
-30-minute grace period on their first request after rollout. No SQL migration or
-new environment variable is required. Policy constants live in
-`apps/web-express/src/lib/session-idle.ts`.
+This does not independently revoke provider JWTs for other clients or sign out
+other devices. Do not purge an expired guard merely because its web cookie ended:
+the old provider session may still issue credentials. Operators must tie guard
+retention/cleanup to confirmed provider invalidation and issued-token expiry.
+
+Previously untracked authenticated sessions receive one 30-minute grace period on
+first use. The corresponding SQL policy is fixed at the agreed 30 minutes; the
+browser warning constants live in `apps/web-express/src/lib/session-idle.ts`.
+No new environment variable is required. Apply migration
+`202610260004_provider_idle_sessions.sql` before deploying this app version.
 
 ## Unsaved work and failure handling
 
@@ -56,10 +66,18 @@ locally rather than extending access offline. Multiple tabs share activity notic
 and query server state. Without JavaScript, the server still rejects expired
 sessions on the next request, but cannot clear an already-rendered offline page.
 
-## Verification for this change
+## Verification
 
-Target Node 22 type checking, production build and static boundary checks pass.
-Automated tests and live/browser expiry checks were not run for this feature.
-The earlier audit's 389 passing tests predate this change. Before deployment,
-verify the 28-minute warning, 30-minute expiry, fresh sign-in, multiple tabs,
-background token refresh and draft recovery on real browsers.
+The security follow-up adds direct HTTP checks for cookie loss, refreshed tokens
+and fresh sign-in; database-role checks for expiry, non-revival, owner mismatch
+and denied access; and optional local browser checks for the warning, logout,
+explicit continuation, Studio iframe activity and another tab's activity.
+
+```sh
+PLAYWRIGHT_MODULE=/path/to/playwright CHROMIUM_PATH=/path/to/chromium node scripts/check-session-idle.cjs
+```
+
+The optional check uses synthetic local sessions and a controlled clock; it does
+not exercise production accounts. See the current security follow-up report for
+actual run results. The added provider-session lookup has not been benchmarked
+against production latency.

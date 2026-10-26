@@ -1,3 +1,4 @@
+import {providerKey,providerIdle} from '../lib/session-idle-store';
 import {Router} from 'express';
 import {sameOriginOnly} from '../lib/security';
 import {sharedActivityBudget} from '../lib/shared-rate-limit';
@@ -10,8 +11,14 @@ router.post('/auth/session/activity',sameOriginOnly,(req,res,next)=>{
  if(!req.session.user)return idleExpired(res);
  next();
 },sharedActivityBudget,(req,res,next)=>{
+ void (async()=>{
  if(!req.is('application/json'))return res.status(415).json({success:false,error:'JSON body required.'});
- req.session.lastActivityAt=Date.now();
- req.session.save(error=>error?next(error):res.json({success:true,idle:idleState(req)}));
+ const key=providerKey(req.session.accessToken,req.session.user!.id);
+ if(!key)return idleExpired(res);
+ const state=await providerIdle(key,'activity',req.session.user!.id);if(!state.allowed)return idleExpired(res);
+ req.session.lastActivityAt=state.lastActivityAt;
+ await new Promise<void>((resolve,reject)=>req.session.save(error=>error?reject(error):resolve()));
+ res.json({success:true,idle:idleState(req,state.serverNow)});
+ })().catch(next);
 });
 export default router;

@@ -64,7 +64,14 @@
   if(!document.hidden&&!stopped)void sessionRequest(false);
  }
  const events=['pointerdown','pointermove','keydown','wheel','input'];
- events.forEach(name=>document.addEventListener(name,activity,{passive:true}));
+ const documents=new WeakSet<Document>();
+ function observeDocument(target:Document){if(documents.has(target))return;documents.add(target);events.forEach(name=>target.addEventListener(name,activity,{passive:true}));}
+ observeDocument(document);
+ // Studio inline edits happen inside its same-origin preview document.
+ document.querySelectorAll<HTMLIFrameElement>('iframe').forEach(frame=>{
+  const connect=()=>{try{if(frame.contentDocument)observeDocument(frame.contentDocument);}catch{/* Cross-origin embeds cannot report trusted activity. */}};
+  frame.addEventListener('load',connect);connect();
+ });
  document.addEventListener('visibilitychange',resume);
  window.addEventListener('pageshow',resume);
  window.addEventListener('storage',event=>{

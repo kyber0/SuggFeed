@@ -1,3 +1,4 @@
+import {providerKey,providerIdle} from './session-idle-store';
 import {createHash} from 'node:crypto';
 import type {Request,Response,NextFunction} from 'express';
 import '../types';
@@ -16,10 +17,6 @@ export function blockedIdleToken(req:Request,token:string):boolean {
  const blocked=req.session.idleBlocked;
  return !!blocked&&(blocked.tokenHash===tokenHash(token)||!!blocked.providerSessionId&&blocked.providerSessionId===providerSessionId(token));
 }
-export function newProviderSession(previous:string|undefined,token:string):boolean {
- const before=providerSessionId(previous),after=providerSessionId(token);
- return !!before&&!!after&&before!==after;
-}
 export function idleState(req:Request,now=Date.now()):SessionIdleState|null {
  return req.session.user&&Number.isFinite(req.session.lastActivityAt)?{expiresAt:req.session.lastActivityAt!+SESSION_IDLE_MS,serverNow:now,warningMs:SESSION_WARNING_MS,activityIntervalMs:SESSION_ACTIVITY_INTERVAL_MS}:null;
 }
@@ -34,21 +31,21 @@ function navigationActivity(req:Request):boolean {
 }
 /** Background requests and token refresh never extend the inactivity deadline. */
 export function enforceIdleSession(req:Request,res:Response,next:NextFunction){
- const now=Date.now();res.locals.sessionIdleExpired=!!req.session.idleBlocked;
- if(!req.session.user)return next();
- // Existing sessions receive one grace period when this policy first ships.
- if(!Number.isFinite(req.session.lastActivityAt))req.session.lastActivityAt=now;
- if(now-req.session.lastActivityAt!>=SESSION_IDLE_MS){
-  req.session.idleBlocked={tokenHash:tokenHash(req.session.accessToken||''),providerSessionId:providerSessionId(req.session.accessToken)};
-  req.session.user=null;delete req.session.accessToken;delete req.session.refreshToken;delete req.session.lastActivityAt;
-  res.locals.sessionIdleExpired=true;res.setHeader('Cache-Control','private, no-store');
-  return req.session.save(error=>{
-   if(error)return next(error);
+ void (async()=>{
+  res.locals.sessionIdleExpired=!!req.session.idleBlocked;
+  if(!req.session.user)return next();
+  const key=providerKey(req.session.accessToken,req.session.user.id);
+  const state=key?await providerIdle(key,navigationActivity(req)?'activity':'check',req.session.user.id):null;
+  if(!state?.allowed){
+   req.session.idleBlocked={tokenHash:tokenHash(req.session.accessToken||''),providerSessionId:providerSessionId(req.session.accessToken)};
+   req.session.user=null;delete req.session.accessToken;delete req.session.refreshToken;delete req.session.lastActivityAt;
+   res.locals.sessionIdleExpired=true;res.setHeader('Cache-Control','private, no-store');
+   await new Promise<void>((resolve,reject)=>req.session.save(error=>error?reject(error):resolve()));
    if(!['GET','HEAD'].includes(req.method)&&!['/auth/session','/auth/signout'].includes(req.path))return idleExpired(res);
-   next();
-  });
- }
- if(navigationActivity(req))req.session.lastActivityAt=now;
- res.locals.sessionIdle=idleState(req,now);
- next();
+  }else{
+   req.session.lastActivityAt=state.lastActivityAt;
+   res.locals.sessionIdle=idleState(req,state.serverNow);
+  }
+  next();
+ })().catch(next);
 }
