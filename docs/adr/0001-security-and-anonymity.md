@@ -1,5 +1,7 @@
 > **2026-10-15 assessment:** This historical ADR is not evidence of current deployment safeguards. The Express submission route does not currently verify Turnstile, and `_shared/security.ts` retains wildcard CORS behavior in some paths. Anonymous mode omits the account ID on the submission but does not guarantee untraceability through content, device context or logs. See [current release register](../compliance/school-release-readiness.md); do not use earlier guarantees below as a public privacy notice.
 
+> Historical architecture decision from the retired Next.js client. The active Express security configuration is in `apps/web-express/src/server.ts` and its security helpers.
+
 # ADR 0001: Security Architecture and Anonymity Model
 
 **Status:** Accepted  

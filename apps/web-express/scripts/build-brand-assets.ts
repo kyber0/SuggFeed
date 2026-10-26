@@ -25,11 +25,11 @@ async function main() {
     offset += icon.length;
   });
   outputs.set('favicon.ico', Buffer.concat([header, ...sizes.map(size => outputs.get(`icon-${size}.png`)!)]));
-  for (const folder of ['../public/branding', '../../web/public/branding']) {
+  for (const folder of ['../public/branding']) {
     const target = resolve(__dirname, folder);
     await mkdir(target, { recursive: true });
     await Promise.all([...outputs].map(([name, bytes]) => writeFile(resolve(target, name), bytes)));
   }
-  console.log('Brand assets generated for both web apps from the supplied monogram.');
+  console.log('Express brand assets generated from the supplied monogram.');
 }
 void main().catch(error => { console.error(error); process.exitCode = 1; });

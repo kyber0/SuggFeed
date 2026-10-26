@@ -1,100 +1,81 @@
 # SuggFeed
 
-A school suggestion and feedback system backed by Supabase.
+A school suggestion and feedback system built with Express, Eta, TypeScript and Supabase.
 
-## Applications
+## Repository layout
 
-- `apps/web-express`: production-facing Express, Eta and TypeScript website.
-- `apps/web`: separate Next.js application, retained with explicit commands.
-- `supabase/functions`: Deno Edge Functions, including compatibility endpoints.
-- `supabase/migrations`: immutable forward PostgreSQL migrations and policies.
+- `apps/web-express/`: the active responsive website, browser scripts and server API.
+- `supabase/migrations/`: forward PostgreSQL migrations, policies and database functions.
+- `supabase/functions/`: retained Deno Edge Functions, including retirement responses for legacy endpoints.
+- `supabase/templates/`: authentication email templates.
+- `assets/branding/`: original branding artwork used to generate Express delivery assets.
+- `docs/`: architecture, operations, security reviews and historical plans.
 
-The standalone Expo/React Native app is retired. The responsive website is not
-removed or replaced. See [the retirement runbook](docs/expo-retirement.md) for
-the separate hosted rollout. Existing database token fields are retained for
-compatibility; updated functions no longer read/write Expo tokens or deliver Expo push.
+The Next.js and standalone Expo apps are retired and removed. Older audits and
+plans may mention them as historical evidence. They are not supported build or
+deployment targets. See [repository cleanup](docs/operations/repository-cleanup.md)
+and the [Expo retirement runbook](docs/expo-retirement.md).
 
 ## Local development
 
-Use Node **22.x** (`.nvmrc`) and **pnpm 9.15.0**, pinned by `packageManager`.
-From this repository's root:
+Use Node **22.x** (`.nvmrc`) and **pnpm 9.15.0** (pinned in `package.json`).
+From the repository root:
 
 ```sh
-pnpm install --frozen-lockfile
+corepack pnpm install --frozen-lockfile
 ```
 
-Copy `apps/web-express/.env.example` to `apps/web-express/.env` and configure
-local values. Do not commit secrets. The Express [README](apps/web-express/README.md)
-describes environment, authentication, storage, optional email jobs and deployment.
+Copy `apps/web-express/.env.example` to `apps/web-express/.env` and configure local
+values. Never commit secrets. See the [Express README](apps/web-express/README.md)
+for authentication, storage, email jobs and deployment configuration.
 
 ```sh
 pnpm dev          # Express, default port 3001
 pnpm dev:client   # second terminal: rebuild browser scripts on edits
-pnpm typecheck   # both applications, including the strict browser cohort
-pnpm test        # Express suite
-pnpm build       # Express server, browser, service worker and API checks
-pnpm start       # start the already-built Express server
+pnpm typecheck    # Express server, API, workers and browser checks
+pnpm test         # Express test suite, when verification is requested
+pnpm build        # Express production build
+pnpm start        # start the already-built Express server
 ```
 
-Next.js remains independently available:
+`build:all` and `test:all` remain compatibility aliases for the remaining workspace.
+There are no Next.js commands or dependencies. Root workspace installs use pnpm and
+`pnpm-lock.yaml`; do not create a root npm lockfile. Vercel and CI use the independent
+Express lockfile with `npm ci --workspaces=false --include=dev` in `apps/web-express`.
 
-```sh
-pnpm dev:next
-pnpm test:next
-pnpm build:next
-pnpm test:coverage:next
-```
+## Build boundaries
 
-Configure `apps/web/.env.local` for that app's environment, not the Express file.
-All-app checks are `pnpm test:all` and `pnpm build:all`. They execute both apps;
-they do not launch either website or deploy anything. There is no root lint
-claim: the existing Next.js lint script is a placeholder, not a real linter.
+Authored Express code is TypeScript; Eta files are server-rendered views. `dist/`,
+`public/js/`, `public/css/*.bundle.css` and `public/sw.js` are generated artifacts.
+Root commands delegate directly to Express; there is no separate monorepo build
+orchestrator. Server-only credentials must not enter browser bundles.
 
-The root workspace declarations agree on both apps. The independent Express
-`package-lock.json` remains supported for Vercel/CI installing from that app
-directory with `npm ci --workspaces=false --include=dev` (also configured in
-Vercel/CI). Root workspace installs use only pnpm
-and `pnpm-lock.yaml`; do not create an additional root npm lockfile.
+See [Express architecture](apps/web-express/docs/architecture.md) for ownership of
+routes, services, database operations, browser scripts and fixtures.
 
-## Build and maintenance boundaries
+## Edge Functions
 
-Authored Express code is TypeScript; Eta files are server-rendered views.
-`dist/`, `public/js/`, and `public/sw.js` are build artifacts. Next.js builds to
-`.next/`. Turbo declares both artifact sets; build/test/typecheck cache reuse
-is disabled until environment and generated-file inputs have a verified cache
-policy. Server-only credentials must never be included in browser artifact outputs.
-
-See [Express architecture](apps/web-express/docs/architecture.md) for route,
-feature-service, database, browser and test ownership. This is an incremental
-cleanup, not a framework rewrite or a claim of complete client strictness.
-
-## Edge Function tests
-
-Install Deno 2, then run the mocked security/notification suite:
+The retained functions use `supabase/functions/deno.json` and its adjacent lockfile.
+For explicit verification with Deno 2:
 
 ```sh
 deno test --allow-env --config supabase/functions/deno.json supabase/functions/_shared/security.test.ts supabase/functions/_shared/notifications.test.ts
 ```
 
-Local fixture/mocked tests do not prove hosted Auth, Storage, RLS, concurrency,
-mail delivery, backups or production settings.
+Retirement handlers must remain available for previously deployed client addresses.
+Removing the Next.js source does not retire or delete a separate hosted deployment.
 
-## Release safety
+## Release
 
-`ci.yml` checks Express and Next.js independently and runs Deno tests.
-`deploy.yml` requires manual dispatch from `main`, release checks and the
-configured GitHub production environment approval before hosted changes.
-Environment reviewers and Vercel auto-deploy settings require separate operator
-verification. Do not deploy from a successful local build alone.
+CI checks Express and retained Edge Functions. The manual deployment workflow keeps
+its release checks, migration sequence and GitHub production-environment approval.
+Vercel auto-deploy settings and environment reviewers are configured separately.
 
-Use the [guided workflow rollout](apps/web-express/docs/guided-workflows.md):
-inventory remote migration versions, rehearse through migration
-`202610130014_public_submission_history.sql` in a separate staging project
-(including the [persistent-workflow runbook](apps/web-express/docs/persistent-workflows.md)), verify staff
-acceptance, deploy compatible code/database functions, then enable the central
-rollout control explicitly. Preserve audit/history data during rollback. No
-production migration or enforcement change is performed by local scripts.
+For the current Vercel project, keep **Root Directory = `apps/web-express`**. The
+repository-root deployment command relies on that project setting. Hosting secrets
+belong in Vercel; never put service-role credentials in public configuration.
 
-For Vercel, select `apps/web-express` as the project root for the Express website,
-not `apps/web`. Configure environment values in the hosting platform; never
-place a service-role key in public browser configuration.
+Follow the [guided workflow rollout](apps/web-express/docs/guided-workflows.md) and
+[persistent workflow runbook](apps/web-express/docs/persistent-workflows.md). Preserve
+migration and audit history. Local builds do not prove hosted authentication,
+mail delivery, tenant isolation, backups or production settings.

@@ -1,6 +1,6 @@
 # Express UI/UX audit — October 14, 2026
 
-Scope: the currently used Express/Eta app, its student/staff pages and shared panels. Audit uses local fixtures, not production accounts or database records. The retained Next.js application is not the deployed interface covered by this pass.
+Scope: the currently used Express/Eta app, its student/staff pages and shared panels. Audit uses local fixtures, not production accounts or database records. The Next.js application, since retired and removed, was not the deployed interface covered by this pass.
 
 ## Evidence and root causes
 

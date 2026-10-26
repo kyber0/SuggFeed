@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync,readdirSync } from 'node:fs';
+import { readFileSync,readdirSync,existsSync } from 'node:fs';
 import path from 'node:path';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
@@ -27,8 +27,7 @@ test('all legacy Edge entrypoints retire before constructing service clients or 
  }
  assert.equal(endpoint(new Request('https://functions.test/legacy',{method:'OPTIONS'})).status,200);
 });
-test('legacy Next middleware retires every route with no environment toggle or database access',()=>{
- const source=readFileSync(path.join(root,'apps/web/middleware.ts'),'utf8');
- const {middleware,config}=moduleExports(source,name=>{assert.equal(name,'next/server');return {NextResponse:Response};});
- assert.equal(config.matcher,'/:path*');const response=middleware();assert.equal(response.status,410);assert.equal(response.headers.get('cache-control'),'no-store');
+test('retired Next client is absent from the active repository',()=>{
+ assert.equal(existsSync(path.join(root,'apps/web')),false);
+ assert.equal(existsSync(path.join(root,'next.config.js')),false);
 });

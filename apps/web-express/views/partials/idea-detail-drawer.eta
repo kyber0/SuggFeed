@@ -1,4 +1,4 @@
-<!-- ── Global Idea Detail Slide-Over Drawer (Identical to apps/web) ── -->
+<!-- ── Global Idea Detail Slide-Over Drawer ── -->
 <div id="idea-drawer-overlay" class="panel-overlay" data-sf-click="action-96" aria-hidden="true" hidden></div>
 
 <aside

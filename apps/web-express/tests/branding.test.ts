@@ -22,8 +22,8 @@ test('worker compiler emits the classic-script logo cache change, rather than si
   assert.doesNotMatch(outputs[0], /^\s*(?:export\s*\{|Object\.defineProperty\(exports)/m);
 });
 
-test('both apps share the supplied transparent monogram and correctly sized installation icons', async () => {
-  const roots = ['apps/web-express/public', 'apps/web/public'];
+test('the Express app retains the supplied transparent monogram and correctly sized installation icons', async () => {
+  const roots = ['apps/web-express/public'];
   for (const publicRoot of roots) {
     const manifest = JSON.parse(readFileSync(resolve(root, publicRoot, 'manifest.json'), 'utf8'));
     for (const icon of manifest.icons) {
@@ -43,7 +43,6 @@ test('both apps share the supplied transparent monogram and correctly sized inst
     const ico = readFileSync(resolve(root, publicRoot, 'branding/favicon.ico'));
     assert.equal(ico.readUInt16LE(2), 1); assert.equal(ico.readUInt16LE(4), 3);
   }
-  assert.deepEqual(readFileSync(resolve(root, roots[0], 'branding/sf-monogram.png')), readFileSync(resolve(root, roots[1], 'branding/sf-monogram.png')));
 });
 
 test('navigation stays text-only while staff, auth, offline and email branding retain the supplied asset', () => {
@@ -56,11 +55,6 @@ test('navigation stays text-only while staff, auth, offline and email branding r
   const brand = header.match(/<a class="brand"[\s\S]*?<\/a>/)?.[0];
   assert.ok(brand);
   assert.doesNotMatch(brand, /<img|sf-brand-logo/);
-  for (const file of ['header.tsx', 'admin-dashboard.tsx']) {
-    const source = readFileSync(resolve(root, 'apps/web/components', file), 'utf8');
-    assert.doesNotMatch(source, /BrandLogo|sf-brand-logo/);
-    assert.match(source, /Sugg<span>Feed<\/span>/);
-  }
   for (const template of ['confirmation', 'email_change', 'invite', 'magic_link', 'recovery']) {
     const html = readFileSync(resolve(root, 'supabase/templates/' + template + '.html'), 'utf8');
     assert.match(html, /\{\{ \.SiteURL \}\}\/branding\/sf-monogram\.png/);

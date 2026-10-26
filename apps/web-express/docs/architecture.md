@@ -2,11 +2,10 @@
 
 ## Application ownership
 
-Express is the primary website for ongoing production features and workflows.
-Next.js is retained as a secondary compatibility/reference app, not a second
-feature-parity target. Keep its explicit commands and checks working. Removing
-it requires a separate inventory of hosting, shared consumers and retained
-functionality; this cleanup does not remove or redirect an existing deployment.
+Express is the active website for production features and workflows. The retired
+Next.js and Expo clients have been removed. Retained Edge retirement handlers and
+historical audits remain; removal of source does not change independent hosted
+deployments. See [repository cleanup](../../../docs/operations/repository-cleanup.md).
 
 ## Runtime and build
 
@@ -18,9 +17,8 @@ to modules without a bundling/loading plan.
 
 Server output is `dist/`, browser output `public/js/`, worker output
 `public/sw.js`. Regenerate them through build scripts, never hand-edit generated
-JavaScript. Root commands choose Express by default; explicit `:next` commands
-choose the retained Next.js app. Turbo declares both outputs but does not cache
-verification/build tasks, avoiding stale generated files or env-dependent builds.
+JavaScript. Root commands delegate directly to the Express workspace. The app owns its
+compiler and build pipeline; no separate monorepo orchestrator or Next build exists.
 
 ## HTTP, feature services and persistence
 
@@ -61,10 +59,10 @@ as fully strict.
 
 `tests/` owns Node HTTP/browser fixtures and PGlite database checks. Fixtures must
 never be mounted by production routes. Structural tests guard workspace selection,
-Turbo output sets and the strict cohort. Community reader tests guard authorization,
+root command delegation and the strict cohort. Community reader tests guard authorization,
 visibility and explicit selections; existing route/database tests remain required.
 
 Run root `pnpm typecheck`, `pnpm test:all`, and the appropriate builds. CI checks
-each app independently. Hosted staging acceptance and rollout use
+the Express application and retained Edge Functions. Hosted staging acceptance and rollout use
 [guided-workflows.md](guided-workflows.md), not this document. No schema changes,
 production migration, rollout switch or deployment are part of this cleanup.

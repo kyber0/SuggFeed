@@ -21,3 +21,6 @@ __pycache__/
 
 # Local retirement backups may contain environment secrets. Never commit them.
 .local-backups/
+
+# Generated package-manager cache; never commit local dependency databases.
+.pnpm-store/

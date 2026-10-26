@@ -2,29 +2,21 @@
   "name": "suggfeed",
   "private": true,
   "packageManager": "pnpm@9.15.0",
-  "engines": { "node": "22.x" },
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "pnpm dev:express",
     "dev:express": "pnpm --filter suggfeed-express dev",
     "dev:client": "pnpm --filter suggfeed-express dev:client",
-    "dev:next": "pnpm --filter web dev",
-    "build": "turbo run build --filter=suggfeed-express",
-    "build:next": "turbo run build --filter=web",
-    "build:all": "turbo run build",
+    "build": "pnpm --filter suggfeed-express build",
+    "build:all": "pnpm run build",
     "start": "pnpm --filter suggfeed-express start",
-    "typecheck": "turbo typecheck",
+    "typecheck": "pnpm --filter suggfeed-express typecheck",
     "test": "pnpm --filter suggfeed-express test",
-    "test:next": "pnpm --filter web test",
-    "test:all": "turbo run test",
-    "test:coverage:next": "pnpm --filter web test:coverage"
-  },
-  "devDependencies": {
-    "turbo": "^2.3.3",
-    "typescript": "^5.7.2"
+    "test:all": "pnpm run test"
   },
   "workspaces": [
-    "apps/web",
-    "apps/web-express",
-    "packages/*"
+    "apps/web-express"
   ]
 }

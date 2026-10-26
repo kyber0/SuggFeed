@@ -1,8 +1,7 @@
 # Persistent workflows
 
-This implementation applies to `apps/web-express`. The retained Next.js app
-has not been migrated; the standalone Expo app is retired. Production has not
-been changed by this task.
+This implementation applies to `apps/web-express`. The Next.js and standalone
+Expo apps are retired; their removal does not change the workflows described here.
 
 ## Setup and release
 

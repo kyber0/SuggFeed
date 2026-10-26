@@ -1,6 +1,6 @@
 # Sugi · SuggFeed Help
 
-Sugi writes concise answers grounded in shared app guides and the current school’s approved sources on desktop/mobile web. Exact reviewed FAQs remain an offline/provider-failure fallback. It cannot read private records, file reports, change memberships, reset accounts or make decisions. Expo and the retained Next.js app are not new feature targets.
+Sugi writes concise answers grounded in shared app guides and the current school’s approved sources on desktop/mobile web. Exact reviewed FAQs remain an offline/provider-failure fallback. It cannot read private records, file reports, change memberships, reset accounts or make decisions. The Expo and Next.js clients are retired and removed.
 
 ## Locations
 

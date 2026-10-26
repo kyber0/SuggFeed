@@ -1,5 +1,7 @@
 # Disconnected-feature audit — 13 October 2026
 
+> Historical audit: the Next.js and Expo clients referenced below have since been retired and removed. Findings about those clients are retained as historical evidence.
+
 ## Scope and method
 
 Source audit of `apps/web-express` (views, client controllers, routes and persistence), `apps/web` (pages, components and browser libraries), `apps/mobile` (all screens and libraries), and shared Supabase authentication templates, submission/notification functions and relevant policies. Each finding below traces a displayed promise to its handler and its persistence or verification path. This is not a live production acceptance test.

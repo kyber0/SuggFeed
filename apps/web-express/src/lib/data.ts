@@ -76,7 +76,7 @@ export async function fetchWithCache<T>(
 /* ─── Search sanitization ──────────────────────────────────────────────── */
 /**
  * Escapes PostgREST ilike metacharacters.
- * Mirrors sanitizeSearchTerm() in apps/web/lib/feedback-api.ts.
+ * Sanitize untrusted search text before building PostgREST filters.
  */
 export function sanitizeSearch(term: string): string {
   return term
