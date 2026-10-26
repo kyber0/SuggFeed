@@ -21,6 +21,7 @@ export interface BoardFilters {
   sort: 'oldest' | 'newest';
   pageSize: BoardPageSize;
   pages: Record<BoardStage, number>;
+  windows?: Partial<Record<BoardStage,number>>;
 }
 export interface BoardLane {
   status: BoardStage;
@@ -32,11 +33,13 @@ export interface BoardLane {
   to: number;
   hasPrevious: boolean;
   hasNext: boolean;
+  nextPage:number;
+  windowSize:number;
   items: Record<string, any>[];
 }
 
 // Keep range offsets within PostgreSQL's integer range, even for malformed URLs.
-const MAX_PAGE = Math.floor(2_147_483_647 / 24);
+const MAX_PAGE = Math.floor((2_147_483_647 - 72) / 24);
 function pageNumber(value: unknown): number {
   if (typeof value !== 'string' || !/^\d+$/.test(value)) return 1;
   const parsed = Number(value);
@@ -45,13 +48,16 @@ function pageNumber(value: unknown): number {
 
 export function boardFilters(query: Record<string, unknown>): BoardFilters {
   const pages = Object.fromEntries(BOARD_STAGES.map(stage => [stage.status, pageNumber(query[`${stage.status}Page`])])) as Record<BoardStage, number>;
+  const pageSize:BoardPageSize=query.pageSize==='12'?12:query.pageSize==='24'?24:6;
+  const windows=Object.fromEntries(BOARD_STAGES.flatMap(({status})=>{const value=query[status+'Loaded'];return typeof value==='string'&&/^\d{1,3}$/.test(value)&&Number(value)>pageSize?[[status,Math.min(72,Math.ceil(Number(value)/pageSize)*pageSize)]]:[];}));
   return {
+    ...(Object.keys(windows).length?{windows}:{}),
     assignment:query.assignment==='mine'||query.assignment==='team'||query.assignment==='unassigned'?query.assignment:'all',
     priority:['low','normal','high','urgent'].includes(String(query.priority))?String(query.priority):'all',
     overdue:query.overdue==='true',
     search: typeof query.search === 'string' ? query.search.trim().slice(0, 120) : '',
     sort: query.sort === 'newest' ? 'newest' : 'oldest',
-    pageSize: query.pageSize === '12' ? 12 : query.pageSize === '24' ? 24 : 6,
+    pageSize,
     pages,
   };
 }
@@ -77,10 +83,11 @@ function stageQuery(status:BoardStage,filters:BoardFilters,head=false){return bo
 async function loadLane(stage: typeof BOARD_STAGES[number], filters: BoardFilters): Promise<BoardLane> {
   let page = filters.pages[stage.status];
   const ascending = filters.sort === 'oldest';
+  const windowSize=Math.min(72,Math.max(filters.pageSize,filters.windows?.[stage.status]||filters.pageSize));
   const fetchPage = (page: number) => stageQuery(stage.status, filters)
     .order('created_at', { ascending })
     .order('id', { ascending })
-    .range((page - 1) * filters.pageSize, page * filters.pageSize - 1);
+    .range((page - 1) * filters.pageSize, (page-1)*filters.pageSize+windowSize-1);
 
   const lane = (count: number, items: Record<string, any>[]): BoardLane => {
     const pageCount = Math.max(1, Math.ceil(count / filters.pageSize));
@@ -88,7 +95,7 @@ async function loadLane(stage: typeof BOARD_STAGES[number], filters: BoardFilter
     return {
       status: stage.status, label: stage.label, count, page, pageCount,
       from, to: items.length ? Math.min(count, from + items.length - 1) : 0,
-      hasPrevious: page > 1, hasNext: page < pageCount, items,
+      hasPrevious: page > 1, hasNext: items.length>0&&from+items.length-1<count, nextPage:Math.ceil((from+items.length-1)/filters.pageSize)+1,windowSize,items,
     };
   };
   // Another staff member can move/delete rows between the count and a clamped

@@ -12,30 +12,56 @@
  }
  if(boardData) {
   interface BoardItem {id:string;title:string;status:string;updated_at:string;staff_note?:string;assignee_id?:string;priority?:string;target_date?:string;assignment_team_id?:string;assignment_version?:number|null;assignment_urgent?:boolean;is_blocked?:boolean;}
-  interface BoardMeta {filters:{presentation?:string;month?:string;calendarPage?:number;assignment?:string;priority?:string;overdue?:boolean;search:string;sort:string;pageSize:number;pages:Record<string,number>};totalCount:number;lanes:Array<{status:string;label:string;count:number;page:number;pageCount:number;from:number;to:number}>;}
+  interface BoardMeta {filters:{presentation?:string;month?:string;calendarPage?:number;assignment?:string;priority?:string;overdue?:boolean;search:string;sort:string;pageSize:number;pages:Record<string,number>;windows?:Record<string,number>};totalCount:number;lanes:Array<{status:string;label:string;count:number;page:number;pageCount:number;from:number;to:number;windowSize?:number;hasNext?:boolean;nextPage?:number}>;}
   const board=document.getElementById('staff-flow-board')!;
   const stageSelect=document.getElementById('staff-mobile-stage') as HTMLSelectElement|null;
   const syncStage=(hash:string)=>{if(!stageSelect)return;const stage=hash.replace('#board-lane-','');if(Array.from(stageSelect.options).some(option=>option.value===stage))stageSelect.value=stage;board.dataset.mobileStage=stageSelect.value;const form=document.getElementById('staff-board-filters') as HTMLFormElement;form.action=sfSchoolPath('/admin/work'+(board.dataset.presentation==='board'?'#board-lane-'+stageSelect.value:''));};
   syncStage(location.hash);
   stageSelect?.addEventListener('change',()=>{syncStage('#board-lane-'+stageSelect.value);const url=new URL(location.href);url.hash='board-lane-'+stageSelect.value;history.replaceState(history.state,'',url);});
+  const maximize=document.getElementById('staff-board-maximize') as HTMLButtonElement|null;
+  const maxFilters=document.getElementById('staff-board-filter-toggle') as HTMLButtonElement|null;
+  let maximized=false,originalScroll=0,maxFrame=0;
+  const measureMaximized=()=>{maxFrame=0;if(!maximized)return;const height=Math.max(280,Math.floor((window.visualViewport?.height||innerHeight)-board.getBoundingClientRect().top-16));const value=height+'px';if(board.style.getPropertyValue('--sf-max-board-height')!==value)board.style.setProperty('--sf-max-board-height',value);};
+  const scheduleMaximized=()=>{if(maximized&&!maxFrame)maxFrame=requestAnimationFrame(measureMaximized);};
+  const setMaximized=(value:boolean)=>{
+   if(!maximize)return;if(value)originalScroll=scrollY;maximized=value;
+   document.documentElement.toggleAttribute('data-staff-board-maximized',value);
+   document.documentElement.toggleAttribute('data-staff-board-filters-hidden',value);
+   if(maxFilters){maxFilters.hidden=!value;maxFilters.setAttribute('aria-expanded','false');maxFilters.textContent='Show filters';}
+   const title=document.querySelector('.staff-board-display-bar>strong');if(value){title?.setAttribute('role','heading');title?.setAttribute('aria-level','1');}else{title?.removeAttribute('role');title?.removeAttribute('aria-level');}
+   maximize.querySelector('svg path')?.setAttribute('d',value?'M3 8h5V3m8 0v5h5M8 21v-5H3m18 0h-5v5':'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5');
+   maximize.setAttribute('aria-pressed',String(value));maximize.querySelector('span')!.textContent=value?'Restore board':'Maximize board';
+   if(value){window.scrollTo({top:0,behavior:'instant'});scheduleMaximized();tell('Board maximized. Press Escape to restore the workspace.');}
+   else{cancelAnimationFrame(maxFrame);maxFrame=0;board.style.removeProperty('--sf-max-board-height');window.scrollTo({top:originalScroll,behavior:'instant'});maximize.focus({preventScroll:true});tell('Normal workspace restored.');}
+  };
+  if(maximize){
+   maxFilters?.addEventListener('click',()=>{const hidden=document.documentElement.toggleAttribute('data-staff-board-filters-hidden');maxFilters.setAttribute('aria-expanded',String(!hidden));maxFilters.textContent=hidden?'Show filters':'Hide filters';scheduleMaximized();});
+   maximize.hidden=false;maximize.addEventListener('click',()=>setMaximized(!maximized));
+   const observer=new ResizeObserver(scheduleMaximized);observer.observe(board.closest('.staff-board-main')!);
+   window.addEventListener('resize',scheduleMaximized);window.visualViewport?.addEventListener('resize',scheduleMaximized);
+   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&maximized&&!event.defaultPrevented&&!pointerDrag&&!document.querySelector('dialog[open]')){event.preventDefault();setMaximized(false);}});
+   window.addEventListener('pagehide',()=>{observer.disconnect();cancelAnimationFrame(maxFrame);});
+   window.addEventListener('pageshow',()=>{observer.observe(board.closest('.staff-board-main')!);scheduleMaximized();});
+  }
   const metaData=document.getElementById('staff-board-meta')!;
   let meta:BoardMeta=JSON.parse(metaData.textContent || '{}');
   let items=new Map<string,BoardItem>((JSON.parse(boardData.textContent || '[]') as BoardItem[]).map(item=>[item.id,item]));
   const selected=new Map<string,BoardItem>();
   const labels:Record<string,string>=Object.fromEntries(meta.lanes.map(lane=>[lane.status,lane.label]));
   const retry=document.getElementById('staff-board-retry') as HTMLButtonElement;
-  let loading=false, failedPage:{stage:string|null;url:string;push:boolean}|null=null;
+  let loading=false, failedPage:{stage:string|null;url:string;push:boolean;lazy?:boolean}|null=null;
   const urlFor=(stage:string|null,page?:number)=>{
    const url=new URL(sfSchoolPath('/admin/work'),window.location.origin);url.searchParams.set('sort',meta.filters.sort);url.searchParams.set('pageSize',String(meta.filters.pageSize));if(meta.filters.assignment&&meta.filters.assignment!=='all')url.searchParams.set('assignment',meta.filters.assignment);if(meta.filters.priority&&meta.filters.priority!=='all')url.searchParams.set('priority',meta.filters.priority);if(meta.filters.overdue)url.searchParams.set('overdue','true');
    if(meta.filters.presentation)url.searchParams.set('presentation',meta.filters.presentation);if(meta.filters.month)url.searchParams.set('month',meta.filters.month);if(meta.filters.calendarPage)url.searchParams.set('calendarPage',String(meta.filters.calendarPage));
    if(meta.filters.search)url.searchParams.set('search',meta.filters.search);
+   for(const [status,size] of Object.entries(meta.filters.windows||{}))url.searchParams.set(status+'Loaded',String(size));
    for(const [key,number] of Object.entries(meta.filters.pages)){const value=key===stage?page:number;if(value && value>1)url.searchParams.set(key+'Page',String(value));}
    if(stage)url.hash='board-lane-'+stage;return url;
   };
   const controls=()=>{
    const locked=busy || loading;
    document.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLButtonElement>('.staff-flow-board input,.staff-flow-board select,.staff-flow-board button,#staff-bulk-assign,#staff-bulk-assignee,#staff-clear-selection,#staff-group-stage,#staff-group-move,#staff-mobile-stage,#staff-board-filters input,#staff-board-filters select,#staff-board-filters button').forEach(el=>{el.disabled=locked;});
-   board.querySelectorAll<HTMLAnchorElement>('[data-board-page]').forEach(link=>{link.setAttribute('aria-disabled',String(locked));link.tabIndex=locked?-1:0;});
+   board.querySelectorAll<HTMLAnchorElement>('[data-board-page],[data-board-lazy]').forEach(link=>{link.setAttribute('aria-disabled',String(locked));link.tabIndex=locked?-1:0;});
    document.getElementById('staff-board-controls')?.setAttribute('aria-busy',String(loading));const apply=document.getElementById('staff-board-apply');if(apply)apply.textContent=loading?'Loading…':'Apply';const refresh=document.getElementById('staff-board-refresh') as HTMLButtonElement;refresh.disabled=locked;
    retry.disabled=locked;const groupMove=document.getElementById('staff-group-move') as HTMLButtonElement;groupMove.disabled=locked||!(document.getElementById('staff-group-stage') as HTMLSelectElement).value;
   };
@@ -53,34 +79,42 @@
    for(const select of board.querySelectorAll<HTMLSelectElement>('[data-stage-select]')){const item=items.get(select.dataset.stageSelect!);if(!item)continue;const group=selected.has(item.id)?Array.from(selected.values()).map(value=>items.get(value.id)||value):[item];for(const option of Array.from(select.options))option.disabled=option.value!==item.status&&!group.every(value=>!!moveAction(value,option.value));}
    document.getElementById('staff-selection-count')!.textContent=`${selected.size} selected${selected.size>visible?' · '+(selected.size-visible)+' on other pages':''} · maximum 25`;
   }
-  async function navigate(stage:string|null,rawUrl:string,push=true,internal=false){
+  async function navigate(stage:string|null,rawUrl:string,push=true,internal=false,lazy=false){
    if(loading || (busy && !internal))return false;
    const target=new URL(rawUrl,window.location.origin);
    if(target.origin!==window.location.origin || sfSchoolRoute(target.pathname)!=='/admin/work')return false;
-   loading=true;failedPage=null;retry.hidden=true;controls();tell(stage?`Loading ${labels[stage]} page…`:'Refreshing the work board…');
+   const focusBefore=document.activeElement as HTMLElement|null;
+   const focusKey=focusBefore?.id?'#'+CSS.escape(focusBefore.id):['data-bulk-id','data-review','data-board-assign'].flatMap(attribute=>focusBefore?.hasAttribute(attribute)?['['+attribute+'="'+CSS.escape(focusBefore.getAttribute(attribute)!)+'"]']:[])[0];
+   loading=true;failedPage=null;retry.hidden=true;controls();tell(lazy&&stage?`Loading more ${labels[stage]} ideas…`:stage?`Loading ${labels[stage]} page…`:'Refreshing the work board…');
    const ownLane=stage?board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"]`):board;
    ownLane?.setAttribute('aria-busy','true');
    const request=new AbortController(),timer=setTimeout(()=>request.abort(),15000);
    try {
     const response=await sfSchoolFetch(sfSchoolRoute(target.pathname)+target.search,{headers:{Accept:'text/html'},cache:'no-store',signal:request.signal});
     if(!response.ok)throw new Error(response.status===401 || response.status===403?'Sign in again to continue using the staff board.':'The page could not load. Your current cards and selection are unchanged.');
-    const fresh=new DOMParser().parseFromString(await response.text(),'text/html');
-    const freshData=fresh.getElementById('staff-board-data'),freshMeta=fresh.getElementById('staff-board-meta');
-    if(!freshData || !freshMeta)throw new Error('Your staff session may have expired. Sign in again; your current board has not been replaced.');
+    let fresh:Document,snapshot:BoardMeta,nextItems:BoardItem[];
+    if(lazy&&stage){
+     const payload=await response.json();if(!payload.success||payload.lane?.status!==stage||!Array.isArray(payload.items))throw new Error('The next cards could not load. Retry loading.');
+     fresh=new DOMParser().parseFromString(payload.html,'text/html');nextItems=payload.items;
+     snapshot={...meta,filters:{...meta.filters,pages:{...meta.filters.pages,[stage]:payload.lane.page},windows:{...meta.filters.windows,...payload.filters.windows}},lanes:meta.lanes.map(lane=>lane.status===stage?payload.lane:lane),totalCount:meta.totalCount-(meta.lanes.find(lane=>lane.status===stage)?.count||0)+payload.lane.count};
+    }else{
+     fresh=new DOMParser().parseFromString(await response.text(),'text/html');
+     const freshData=fresh.getElementById('staff-board-data'),freshMeta=fresh.getElementById('staff-board-meta');
+     if(!freshData||!freshMeta)throw new Error('Your staff session may have expired. Sign in again; your current board has not been replaced.');
+     snapshot=JSON.parse(freshMeta.textContent||'{}');nextItems=JSON.parse(freshData.textContent||'[]');
+    }
     const freshControls=fresh.getElementById('staff-board-controls'),currentControls=document.getElementById('staff-board-controls');
-    if(!freshControls||!currentControls)throw new Error('The filter response was incomplete. Retry loading.');
+    if(!lazy&&(!freshControls||!currentControls))throw new Error('The filter response was incomplete. Retry loading.');
     const laneScroll=new Map(Array.from(board.querySelectorAll<HTMLElement>('[data-drop-stage]')).map(lane=>[lane.dataset.dropStage!,lane.querySelector('.staff-lane-cards')?.scrollTop||0]));
     const boardScroll=board.scrollLeft;
-    const freshCalendar=fresh.getElementById('staff-calendar'),calendar=document.getElementById('staff-calendar');if(calendar&&!freshCalendar)throw new Error('The calendar response was incomplete. Refresh to retry.');
-    const snapshot:BoardMeta=JSON.parse(freshMeta.textContent || '{}');
+    const freshCalendar=fresh.getElementById('staff-calendar'),calendar=document.getElementById('staff-calendar');if(!lazy&&calendar&&!freshCalendar)throw new Error('The calendar response was incomplete. Refresh to retry.');
     const filtersChanged=(['assignment','priority','overdue','search','sort','pageSize'] as const).some(key=>snapshot.filters[key]!==meta.filters[key]);
-    const nextItems:BoardItem[]=JSON.parse(freshData.textContent || '[]');
     const replacementStages=Object.keys(labels).filter(key=>!stage || key===stage || snapshot.filters.pages[key]!==meta.filters.pages[key]);
     // Validate every replacement before touching the existing board. A failed
     // response cannot partially erase cards or silently discard bulk selection.
-    for(const key of Object.keys(labels))if(!fresh.querySelector(`[data-drop-stage="${key}"]`))throw new Error('The page was incomplete. Retry loading; your current cards are still here.');
+    for(const key of (lazy&&stage?[stage]:Object.keys(labels)))if(!fresh.querySelector(`[data-drop-stage="${key}"]`))throw new Error('The page was incomplete. Retry loading; your current cards are still here.');
     if(calendar&&freshCalendar)calendar.replaceChildren(...Array.from(freshCalendar.childNodes));
-    for(const key of Object.keys(labels)){
+    for(const key of (lazy&&stage?[stage]:Object.keys(labels))){
      const oldLane=board.querySelector<HTMLElement>(`[data-drop-stage="${key}"]`),newLane=fresh.querySelector<HTMLElement>(`[data-drop-stage="${key}"]`)!;
      if(replacementStages.includes(key)){
       oldLane?.replaceWith(newLane);
@@ -89,9 +123,10 @@
      }
     }
     for(const [stage,top] of laneScroll){const cards=board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"] .staff-lane-cards`);if(cards)cards.scrollTop=top;}board.scrollLeft=boardScroll;
-    if(!stage){currentControls.replaceChildren(...Array.from(freshControls.childNodes));const tabs=document.querySelector('.staff-work-views'),newTabs=fresh.querySelector('.staff-work-views');if(tabs&&newTabs)tabs.replaceChildren(...Array.from(newTabs.childNodes));}
+    if(!stage&&currentControls&&freshControls){currentControls.replaceChildren(...Array.from(freshControls.childNodes));const tabs=document.querySelector('.staff-work-views'),newTabs=fresh.querySelector('.staff-work-views');if(tabs&&newTabs)tabs.replaceChildren(...Array.from(newTabs.childNodes));}
     const changedStages=new Set(replacementStages);
     items=new Map([...Array.from(items.values()).filter(item=>!changedStages.has(item.status)),...nextItems.filter(item=>changedStages.has(item.status))].map(item=>[item.id,item]));
+    if(!lazy)failedLazyStages.clear();else if(stage)failedLazyStages.delete(stage);
     if(filtersChanged)selected.clear();
     for(const item of nextItems)if(selected.has(item.id))selected.set(item.id,{...item});
     meta=snapshot;boardData.textContent=JSON.stringify(Array.from(items.values()));metaData.textContent=JSON.stringify(meta);
@@ -102,12 +137,32 @@
     if(!stage&&/^#board-lane-(approved|in_progress|resolved)$/.test(target.hash))canonical.hash=target.hash;syncStage(canonical.hash);
     const openIdea=new URL(location.href).searchParams.get('idea');if(document.getElementById('staff-review-dialog')?.hasAttribute('open')&&openIdea)canonical.searchParams.set('idea',openIdea);
     if(push)window.history.pushState(null,'',canonical.href);else window.history.replaceState(null,'',canonical.href);
-    if(stage){board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"]`)?.scrollIntoView({block:'start',inline:'nearest',behavior:'instant'});const heading=board.querySelector<HTMLElement>(`#board-title-${stage}`);heading?.focus({preventScroll:true});const lane=meta.lanes.find(l=>l.status===stage)!;tell(`${lane.label}: ${lane.from}–${lane.to} of ${lane.count}. Page ${lane.page} of ${lane.pageCount}. Selection retained.`);}
-    else tell('Work board refreshed.');
+    if(stage&&!lazy){board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"]`)?.scrollIntoView({block:'start',inline:'nearest',behavior:'instant'});const heading=board.querySelector<HTMLElement>(`#board-title-${stage}`);heading?.focus({preventScroll:true});const lane=meta.lanes.find(l=>l.status===stage)!;tell(`${lane.label}: ${lane.from}–${lane.to} of ${lane.count}. Page ${lane.page} of ${lane.pageCount}. Selection retained.`);}
+    else tell(lazy&&stage?`${labels[stage]}: ${snapshot.lanes.find(lane=>lane.status===stage)?.from}–${snapshot.lanes.find(lane=>lane.status===stage)?.to} of ${snapshot.lanes.find(lane=>lane.status===stage)?.count}. More cards loaded.`:'Work board refreshed.');
     return true;
-   }catch(e){failedPage={stage,url:target.href,push};retry.hidden=false;tell(e.name==='AbortError'?'Loading timed out. Your current cards and selection are unchanged. Retry loading.':e.message);return false;}
-   finally{clearTimeout(timer);ownLane?.removeAttribute('aria-busy');loading=false;selectionState();controls();}
+   }catch(e){if(lazy&&stage){failedLazyStages.add(stage);const more=board.querySelector<HTMLElement>(`[data-board-lazy="${stage}"]`);if(more)more.textContent='Retry loading '+labels[stage].toLowerCase()+' ideas';}failedPage={stage,url:target.href,push,lazy};retry.hidden=false;tell(e.name==='AbortError'?'Loading timed out. Your current cards and selection are unchanged. Retry loading.':e.message);return false;}
+   finally{clearTimeout(timer);ownLane?.removeAttribute('aria-busy');loading=false;selectionState();controls();observeMore();if(lazy&&focusBefore&&focusBefore!==document.body&&(document.activeElement===document.body||!focusBefore.isConnected)){const replacement=focusKey?document.querySelector<HTMLElement>(focusKey):null;(replacement||board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"] .staff-lane-cards`))?.focus({preventScroll:true});}}
   }
+  const moreObservers:IntersectionObserver[]=[];
+  const failedLazyStages=new Set<string>();
+  function loadMore(stage:string){
+   const lane=meta.lanes.find(lane=>lane.status===stage);if(!lane||loading||busy||dragging||pointerDrag||document.visibilityState==='hidden'||document.querySelector('dialog[open]'))return;
+   const size=lane.windowSize||meta.filters.pageSize;if(!lane.hasNext||size>=72)return;
+   const url=urlFor(stage,lane.page);url.searchParams.set(stage+'Loaded',String(Math.min(72,size+meta.filters.pageSize)));url.searchParams.set('lazyStage',stage);
+   void navigate(stage,url.href,false,false,true);
+  }
+  function observeMore(){
+   moreObservers.splice(0).forEach(observer=>observer.disconnect());
+   if(!('IntersectionObserver' in window)||board.dataset.presentation!=='board')return;
+   for(const sentinel of board.querySelectorAll<HTMLAnchorElement>('[data-board-lazy]')){
+    const root=sentinel.closest<HTMLElement>('.staff-lane-cards');
+    const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)&&!failedLazyStages.has(sentinel.dataset.boardLazy!))loadMore(sentinel.dataset.boardLazy!);},{root,rootMargin:'0px 0px 100px 0px'});observer.observe(sentinel);moreObservers.push(observer);
+   }
+  }
+  board.addEventListener('click',event=>{const link=(event.target as HTMLElement).closest<HTMLAnchorElement>('[data-board-lazy]');if(!link||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();loadMore(link.dataset.boardLazy!);});
+  window.addEventListener('pagehide',()=>moreObservers.splice(0).forEach(observer=>observer.disconnect()));
+  window.addEventListener('pageshow',observeMore);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')observeMore();});
   const stageActions:Record<string,Record<string,string>>={
    pending:{approved:'approve',rejected:'decline'},approved:{in_progress:'start',rejected:'withdraw'},
    in_progress:{resolved:'complete',rejected:'withdraw'},resolved:{in_progress:'reopen',rejected:'withdraw'}
@@ -267,7 +322,7 @@
   document.addEventListener('sf:board-group-saved' ,event=>{const {id}=(event as CustomEvent).detail;selected.delete(id);selectionState();});
   window.addEventListener('pagehide',clearDrag);
   document.getElementById('staff-board-refresh')?.addEventListener('click',()=>void navigate(null,urlFor(null).href,false));
-  retry.addEventListener('click',()=>{if(failedPage)void navigate(failedPage.stage,failedPage.url,failedPage.push);});
+  retry.addEventListener('click',()=>{if(failedPage)void navigate(failedPage.stage,failedPage.url,failedPage.push,false,failedPage.lazy);});
   document.getElementById('staff-clear-selection')?.addEventListener('click',()=>{if(busy || loading)return;selected.clear();selectionState();tell('Selection cleared.');});
   document.getElementById('staff-bulk-assign')?.addEventListener('click',async()=>{
    if(busy || loading)return;if(!selected.size){tell('Select at least one idea.');return;}
@@ -339,7 +394,7 @@
    try{if(await window.sfConfirm('Changing Work views clears your selection. Continue?')&&!busy&&!loading)location.assign(link.href);}finally{confirmingFilter=false;}
   });
   window.addEventListener('popstate',()=>{if(busy || loading){window.history.pushState(null,'',urlFor(null).href);tell('Wait for the current request before changing pages.');return;}void navigate(null,window.location.href,false);});
-  selectionState();
+  selectionState();observeMore();
   window.sfStaffBoardRefresh=()=>navigate(null,urlFor(null).href,false);
  }
  document.getElementById('staff-response-template')?.addEventListener('change',async e=>{

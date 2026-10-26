@@ -32,3 +32,13 @@ Both migrations were applied to the configured Supabase project. No school, idea
 - All 104 Eta templates compiled. Local synthetic layouts at 320, 375, 768 and 1440 px had no document horizontal overflow.
 - Synthetic browser inspection covered incompatible group destinations, a single selected move, failed/successful filtering, and a mocked reassignment conflict retaining the reason. No browser exceptions were observed in that isolated inspection.
 - Hosted assignment saves, real-device dragging and keyboard behavior, deployment and performance profiling remain unverified. The server remains authoritative when an older card snapshot offers a move that is no longer valid.
+
+## Maximize and progressive loading
+
+The board's Maximize/Restore toggle expands the application workspace without requesting browser fullscreen. It hides surrounding navigation, collapses filters behind Show filters, and fits lane height to the available viewport. Escape restores the workspace unless a drag, dialog or custom control handles it first. Selection and lane nodes remain in the same document; progress and assignment dialogs continue to use their normal safeguards. Normal workspace scroll is restored on exit. No preference is stored across separate documents.
+
+Each lane has an independently observed Load more link. Near the bottom, the client requests `lazyStage` for that authorized delivery stage only. The server grows that lane's requested window by the configured page size, up to 72 cards, and returns a rendered lane plus fresh metadata. Existing rows in that window are refreshed too, keeping status/version snapshots coherent. Full refreshes preserve requested window sizes and lane scroll offsets. Requests serialize to avoid racing updates; a failed lane keeps its current cards and offers retry without repeatedly requesting on its own. Dragging, open dialogs and background tabs pause automatic loading.
+
+The 72-card cap bounds DOM size and server range queries. Pagination continues beyond that window; without JavaScript, Load more follows its ordinary next-page URL. No dependency or migration is needed for this increment.
+
+Local synthetic inspection confirmed maximize/restore, Show filters, Escape, selection preservation, one-column lazy requests, and retention of 12 loaded cards after refresh. No browser exceptions or document horizontal overflow were observed at 320, 375, 768 and 1440 px. Build/type checks and template compilation were used; no test suite, hosted write or physical-device check was run.

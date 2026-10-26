@@ -786,3 +786,24 @@ html:has(.staff-review-dialog[open]) { overflow:hidden; }
 .staff-flow-card h3 {margin:0;line-height:1.5;}
 .staff-flow-card .staff-card-schedule,.staff-flow-card .staff-card-progress {margin:0;}
 .staff-card-assignee[data-board-assign] {background:none;border:0;padding:0;min-height:44px;text-align:left;text-decoration:underline;text-underline-offset:3px;font:inherit;color:var(--ink-2);cursor:pointer;}
+.staff-board-display-bar {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;}
+.staff-board-display-bar>strong {font-size:14px;}
+.staff-board-maximize {display:inline-flex;align-items:center;gap:8px;min-height:44px;}
+.staff-board-maximize[hidden],.staff-board-display-bar[hidden] {display:none;}
+.staff-lane-load-more {display:flex;align-items:center;justify-content:center;min-height:44px;margin:10px 0 0;padding:10px;border:1px dashed var(--line);border-radius:8px;background:var(--surface);font-size:13px;text-align:center;}
+html[data-staff-board-maximized] :is(.site-header,.staff-sidebar,.mobile-bottom-nav,.staff-work-heading,.staff-work-views,.staff-work-context) {display:none!important;}
+html[data-staff-board-maximized] .staff-workspace {grid-template-columns:minmax(0,1fr);min-height:100dvh;}
+html[data-staff-board-maximized] .staff-board-main {max-width:none;width:100%;padding:16px max(16px,env(safe-area-inset-right)) 16px max(16px,env(safe-area-inset-left));}
+html[data-staff-board-maximized] #staff-flow-board[data-presentation=board] .staff-flow-lane {height:var(--sf-max-board-height,calc(100dvh - 300px));min-height:280px;}
+html[data-staff-board-maximized] .staff-board-display-bar {position:relative;top:0;margin-bottom:12px;}
+@media(max-width:480px){.staff-board-display-bar{gap:8px}.staff-board-maximize{font-size:12px;padding:10px}.staff-board-display-bar>strong{font-size:13px}}
+.staff-board-display-bar>strong {margin-right:auto;}
+#staff-board-filter-toggle[hidden] {display:none;}
+html[data-staff-board-maximized][data-staff-board-filters-hidden] #staff-board-controls {display:none;}
+html[data-staff-board-maximized] .staff-board-caption>p:last-child {display:none;}
+html[data-staff-board-maximized] .staff-board-selection {display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:10px;padding:10px 12px;}
+html[data-staff-board-maximized] .staff-board-selection>strong {flex:1 1 150px;}
+html[data-staff-board-maximized] .staff-group-destination {display:flex;align-items:center;gap:8px;}
+html[data-staff-board-maximized] .staff-board-selection .staff-footnote {flex-basis:auto;max-width:30ch;font-size:12px;}
+html[data-staff-board-maximized] .staff-board-selection>a[href$="/admin/routing"] {display:none;}
+@media(max-width:600px){html[data-staff-board-maximized] .staff-board-display-bar{flex-wrap:wrap}html[data-staff-board-maximized] .staff-group-destination{flex-basis:100%}html[data-staff-board-maximized] .staff-board-selection .staff-footnote{max-width:none;flex-basis:100%}}

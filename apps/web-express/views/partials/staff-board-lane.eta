@@ -12,6 +12,7 @@
    <div class="staff-card-bottom"><% if(it.canAssign&&item.status!=='resolved'&&Number.isInteger(item.assignment_version??0)) { %><button class="staff-card-assignee" type="button" data-board-assign="<%= item.id %>" aria-label="<%= item.assignee_id?'Reassign':'Assign' %> owner for <%= item.title %>"><%= item.assignee_name||item.team_name||'Assign owner' %></button><% } else { %><span class="staff-card-assignee" title="<%= item.assignee_name || item.team_name || 'Needs an owner' %>"><%= item.assignee_name || item.team_name || 'Needs an owner' %></span><% } %><details class="staff-card-move"><summary>Move <span aria-hidden="true">⌄</span></summary><label><span>Move <%= item.title %> to</span><select class="workspace-input" data-stage-select="<%= item.id %>" aria-label="Move <%= item.title %> to"><% for(const [status,label] of [['approved','Planned'],['in_progress','In progress'],['resolved','Completed']]) { %><option value="<%= status %>" <%= item.status===status?'selected':'' %>><%= label %></option><% } %></select></label></details></div>
   </article>
   <% } %>
+  <% if(lane.hasNext&&(lane.windowSize||6)<72) { %><a class="staff-lane-load-more" href="<%= it.urlFor(lane.status,lane.nextPage||lane.page+1) %>" data-board-lazy="<%= lane.status %>">Load more <%= lane.label.toLowerCase() %> ideas</a><% } %>
   <% if(!lane.items.length) { %><div class="staff-lane-empty"><%~ include('./empty-state',{compact:true,icon:lane.count?'refresh':'board',heading:lane.count?'This page has changed':it.filtered?'No matching '+lane.label.toLowerCase()+' ideas':'No '+lane.label.toLowerCase()+' ideas yet',description:lane.count?'Refresh the board to see the latest cards.':it.filtered?'Remove a filter or adjust your search to see more work.':'Approved ideas appear here when they reach this stage. Use Move on a card to review a stage change.'}) %></div><% } %>
  </div>
  <nav class="staff-lane-pagination" aria-label="<%= lane.label %> pages">
@@ -20,6 +21,6 @@
    <% for(const [name,value] of it.pageFields(lane.status)) { %><input type="hidden" name="<%= name %>" value="<%= value %>"/><% } %>
    <label class="visually-hidden" for="board-page-<%= lane.status %>">Page for <%= lane.label %></label><input class="staff-page-input" type="number" name="<%= lane.status %>Page" id="board-page-<%= lane.status %>" min="1" max="<%= lane.pageCount %>" value="<%= lane.page %>" required inputmode="numeric"/><span class="staff-page-total">/ <%= lane.pageCount.toLocaleString() %></span><button type="submit" aria-label="Go to <%= lane.label %> page">Go</button>
   </form>
-  <% if(lane.hasNext) { %><a href="<%= it.urlFor(lane.status,lane.page+1) %>" data-board-page="<%= lane.status %>" aria-label="Next <%= lane.label %> page" title="Next page">›</a><% } else { %><span aria-disabled="true" aria-label="No next <%= lane.label %> page">›</span><% } %>
+  <% if(lane.hasNext) { %><a href="<%= it.urlFor(lane.status,lane.nextPage||lane.page+1) %>" data-board-page="<%= lane.status %>" aria-label="Next <%= lane.label %> page" title="Next page">›</a><% } else { %><span aria-disabled="true" aria-label="No next <%= lane.label %> page">›</span><% } %>
  </nav>
 </section>

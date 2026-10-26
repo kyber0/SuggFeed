@@ -113,6 +113,17 @@ communityPages.get('/admin/work',run(async(req,res)=>{
   }
   const presentation=['board','calendar'].includes(String(req.query.presentation))?String(req.query.presentation):'board';
   try {
+  if(req.query.lazyStage!==undefined){
+    const stage=WORK_STAGES.find(stage=>stage.status===req.query.lazyStage);
+    if(!stage||presentation!=='board')return res.status(400).json({success:false,error:'Choose a delivery stage.'});
+    const result=await loadStaffBoard(boardFilters(req.query),[stage]),lane=result.lanes[0];
+    const params=new URLSearchParams();for(const [key,value] of Object.entries(req.query))if(typeof value==='string'&&!['lazyStage','idea'].includes(key))params.set(key,value);params.set('presentation','board');
+    const urlFor=(status:string,page:number)=>{const query=new URLSearchParams(params);query.set(status+'Page',String(page));return '/admin/work?'+query.toString();};
+    const pageFields=(status:string)=>Array.from(params.entries()).filter(([key])=>key!==status+'Page');
+    const f=result.filters;
+    const html=await new Promise<string>((resolve,reject)=>res.render('partials/staff-board-lane',{lane,urlFor,pageFields,canAssign:user.role==='admin',filtered:!!(f.search||f.assignment!=='all'||f.priority!=='all'||f.overdue)},(error,html)=>error?reject(error):resolve(html)));
+    const {items,...metadata}=lane;return res.json({success:true,html,items,lane:metadata,filters:result.filters});
+  }
   const [board,members,counts,savedViews,calendar]=await Promise.all([loadStaffBoard(boardFilters(req.query), WORK_STAGES),loadStaffMembers(),loadModerationCounts(),loadSavedViews(user.id),presentation==='calendar'?loadStaffCalendar(boardFilters(req.query),req.query):Promise.resolve(null)]);
   res.render('staff-board',{title:'Work — SuggFeed',activeSection:'board',...board,members,counts,savedViews,presentation,calendar});
   } catch {
