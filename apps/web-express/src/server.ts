@@ -1,3 +1,5 @@
+import { traceRequest, requestErrorRecord } from './lib/request-tracing';
+import { liveness, readiness } from './routes/health';
 import assistantRouter from './routes/assistant';
 import assistantAdminRouter from './routes/assistant-admin';
 import submissionSafetyRouter from './routes/submission-safety';
@@ -71,6 +73,7 @@ import digestRouter from './routes/digests';
 import legalRouter from "./routes/legal";
 
 const app = express();
+app.use(traceRequest);
 const isProd = process.env.NODE_ENV === "production";
 
 /* ── Trust reverse proxy (Render, Railway, Fly, Cloudflare, Nginx) ───────── */
@@ -156,8 +159,11 @@ app.use(compression());
 
 /* ── Request logging ─────────────────────────────────────────────────────── */
 // OAuth and tracking codes must not enter request logs.
+morgan.token<Request, Response>("request-id", (_req, res) => res.locals.requestId);
 morgan.token("safe-path", req => safeRequestPath(req.url ?? "/"));
-app.use(morgan(":method :safe-path :status :response-time ms"));
+app.use(morgan(":request-id :method :safe-path :status :response-time ms"));
+// Liveness must not depend on sessions, database budgets or provider availability.
+app.get('/health/live', liveness);
 
 /* ── Rate limiters ───────────────────────────────────────────────────────── */
 // General API: 200 req / 15 min per IP
@@ -246,15 +252,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 /* ── Health check (before rate limiters) ─────────────────────────────────── */
 // Aliased at both /health and /api/health so container orchestrators and the
 // API router both work correctly.
-app.get(["/health", "/api/health"], async (_req: Request, res: Response) => {
-  try {
-    const { error } = await supabasePlatform.from("schools").select("id").limit(1);
-    if (error) throw error;
-    res.json({ status: "healthy", database: "connected", ts: new Date().toISOString() });
-  } catch {
-    res.status(503).json({ status: "unhealthy", database: "disconnected", ts: new Date().toISOString() });
-  }
-});
+app.get(["/health", "/api/health"], readiness);
 
 /* Global identity and school onboarding routes. */
 app.use('/auth', sharedAuthBudget, (req,res,next) => req.method === 'POST' ? authLimiter(req,res,next) : next(), authRouter);
@@ -330,7 +328,7 @@ app.use((_req: Request, res: Response) => {
 // Returns a generic message — never leaks stack traces or file paths.
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   res.setHeader("Cache-Control","private, no-store");
-  console.error(`[error] ${req.method} ${safeRequestPath(req.path)}: ${err.name}`);
+  console.error(JSON.stringify(requestErrorRecord(err, req, res)));
   if ((err as any).status === 503) {
     res.setHeader('Retry-After','30');
     if (req.path.startsWith('/api/') || req.path.startsWith('/auth/') || req.headers.accept?.includes('application/json') || req.xhr) return res.status(503).json({success:false,error:'The service is temporarily unavailable. Please try again shortly.'});

@@ -1,3 +1,4 @@
+import { providerFetch } from './provider-fetch';
 import { createClient } from "@supabase/supabase-js";
 
 export const supabaseUrl =
@@ -17,7 +18,7 @@ export const supabaseAnonKey =
 const publicClient = createClient(
   supabaseUrl || "https://placeholder-project.supabase.co",
   supabaseAnonKey || "placeholder-anon-key",
-  { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+  { global: { fetch: providerFetch }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
 );
 
 /**
@@ -29,12 +30,13 @@ const publicClient = createClient(
 export const supabasePlatform = createClient(
   supabaseUrl || "https://placeholder-project.supabase.co",
   process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey || "placeholder-anon-key",
-  { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+  { global: { fetch: providerFetch }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
 );
 
 /** Never share mutable Auth state between requests or with the service-role client. */
 export function createAuthClient() {
   return createClient(supabaseUrl, supabaseAnonKey, {
+    global: { fetch: providerFetch },
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 }
