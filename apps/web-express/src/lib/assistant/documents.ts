@@ -20,7 +20,9 @@ export function validateAnswer(value:unknown,sources:Source[]):GroundedAnswer|nu
 }
 export const sourceVersion=(sources:Source[])=>createHash('sha256').update(JSON.stringify(sources)).digest('hex').slice(0,16);
 let extracting=0;
-export async function extractDocument(bytes:Buffer,type:string):Promise<string>{
+export async function extractDocument(bytes:unknown,type:unknown):Promise<string>{
+ if(!Buffer.isBuffer(bytes))throw new Error('Upload a PDF, text or Markdown file.');
+ if(typeof type!=='string')throw new Error('Choose PDF, Markdown or plain text.');
  if(!bytes.length||bytes.length>2*1024*1024)throw new Error('Choose a file no larger than 2 MB.');let text:string;
  if(type==='application/pdf'){
   if(bytes.subarray(0,5).toString()!=='%PDF-')throw new Error('This file is not a valid PDF.');if(extracting>=2)throw new Error('Other documents are being read. Please try again shortly.');extracting++;

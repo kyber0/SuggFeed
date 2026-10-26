@@ -32,3 +32,13 @@ import {unsafeQuestion} from '../src/lib/assistant/normalize';
 test('domain-only questions are allowed while personal email input is blocked',()=>{assert.equal(unsafeQuestion('Does @my.cspc.edu.ph qualify?'),false);assert.equal(unsafeQuestion('Does alice@my.cspc.edu.ph qualify?'),true);});
 import {selectAvailableModel,providerErrorCode} from '../src/lib/assistant/provider';
 test('model discovery selects available stable Flash variants and never silently selects Pro or preview',()=>{assert.equal(providerErrorCode(new Error('API key not valid: secret-value')),'api_key');assert.equal(providerErrorCode(new Error('Invalid response schema')),'schema');assert.equal(providerErrorCode({message:'Invalid response schema',status:400}),'schema');assert.equal(providerErrorCode({message:'Minimum allowed deadline is 10s.',status:400}),'deadline');assert.ok(config.providerDeadlineMs>=10000);assert.ok(config.deadlineMs<=config.providerDeadlineMs);assert.equal(selectAvailableModel([{name:'models/gemini-4-pro',supportedActions:['generateContent']},{name:'models/gemini-3.1-flash-lite',supportedActions:['generateContent']},{name:'models/gemini-3.2-flash-preview',supportedActions:['generateContent']}]),'gemini-3.1-flash-lite');assert.equal(selectAvailableModel([{name:'models/gemini-flash-latest',supportedActions:['generateContent']}]),'gemini-flash-latest');assert.throws(()=>selectAvailableModel([{name:'models/gemini-4-pro',supportedActions:['generateContent']}]),/model/);});
+
+test('document extraction validates runtime types before reading byte length',async()=>{
+ for(const value of [null,undefined,'plain text',[],['PDF'],{}, {length:10},new Uint8Array([65])]){
+  await assert.rejects(extractDocument(value,'text/plain'),/Upload a PDF, text or Markdown file\./);
+ }
+ for(const type of [null,undefined,[],['text/plain'],{}]){
+  await assert.rejects(extractDocument(Buffer.from('Reviewed synthetic text.'),type),/Choose PDF, Markdown or plain text\./);
+ }
+ assert.equal(await extractDocument(Buffer.from('Reviewed synthetic text.'),'text/plain'),'Reviewed synthetic text.');
+});
