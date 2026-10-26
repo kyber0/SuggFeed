@@ -98,7 +98,7 @@ communityPages.get('/admin/community',run(async(req,res)=>{
 }));
 communityPages.get('/admin/board',(req,res)=>{
   const query=new URLSearchParams();for(const [key,value] of Object.entries(req.query))if(typeof value==='string')query.set(key,value);
-  if(!['board','list','calendar'].includes(query.get('presentation')||''))query.set('presentation','board');
+  if(!['board','calendar'].includes(query.get('presentation')||''))query.set('presentation','board');
   return res.redirect(302,'/admin/work?'+query.toString());
 });
 communityPages.get('/admin/work',run(async(req,res)=>{
@@ -111,7 +111,13 @@ communityPages.get('/admin/work',run(async(req,res)=>{
     if(result.error)throw result.error;
     if(result.data&&['pending','rejected'].includes(result.data.status))return res.redirect('/admin/reviews?idea='+encodeURIComponent(req.query.idea)+staffWorkReturn(req.query));
   }
-  const presentation=['board','list','calendar'].includes(String(req.query.presentation))?String(req.query.presentation):'board';
+  const presentation=['board','calendar'].includes(String(req.query.presentation))?String(req.query.presentation):'board';
+  try {
   const [board,members,counts,savedViews,calendar]=await Promise.all([loadStaffBoard(boardFilters(req.query), WORK_STAGES),loadStaffMembers(),loadModerationCounts(),loadSavedViews(user.id),presentation==='calendar'?loadStaffCalendar(boardFilters(req.query),req.query):Promise.resolve(null)]);
   res.render('staff-board',{title:'Work — SuggFeed',activeSection:'board',...board,members,counts,savedViews,presentation,calendar});
+  } catch {
+    console.warn('Staff work could not be loaded');
+    const query=new URLSearchParams();for(const [key,value] of Object.entries(req.query))if(typeof value==='string')query.set(key,value);query.set('presentation',presentation);
+    return res.status(503).render('school-message',{title:'Work is temporarily unavailable',message:'Your ideas and assignments have not changed. Retry loading your current view.',nextHref:'/admin/work?'+query.toString(),nextLabel:'Retry loading work'});
+  }
 }));

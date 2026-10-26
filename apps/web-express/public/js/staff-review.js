@@ -32,6 +32,8 @@
     let requestedId = '', requestedSection = 'decision';
     let active;
     let returnFocus = null;
+    let returnPosition = null;
+    const rememberPosition = () => { returnPosition = { x: scrollX, y: scrollY, id: returnFocus?.closest('[data-review]')?.dataset.review || null }; };
     let group = null;
     const groupPanel = document.getElementById('review-group');
     const groupNext = document.getElementById('review-group-next');
@@ -137,6 +139,7 @@
         group = { entries, stage: detail.stage, index: 0, notice: '' };
         groupPanel.querySelector('details').open = false;
         returnFocus = detail.trigger instanceof HTMLElement ? detail.trigger : null;
+        rememberPosition();
         void openGroupItem();
     });
     let repairRetry;
@@ -439,8 +442,10 @@
         window.sfStaffProgress?.close();
         requestedId = id;
         requestedSection = section === 'progress' ? 'progress' : 'decision';
-        if (!dialog.open && !group)
+        if (!dialog.open && !group) {
             returnFocus = trigger || document.activeElement;
+            rememberPosition();
+        }
         active = undefined;
         internalNote.value = '';
         saved = false;
@@ -548,10 +553,14 @@
         pageMessage.textContent = `Group review ended: ${counts.saved} moves saved, ${counts.skipped} skipped, ${counts.already} already in target stage, ${counts.pending} not moved. Saved changes remain; other selections are retained.`;
         group = null;
         paintGroup();
-    } detailRequest?.abort(); activityRequest?.abort(); window.sfStaffProgress?.close(); if (returnFocus?.isConnected)
-        returnFocus.focus();
-    else
-        document.querySelector('#staff-queue-title,.workspace-heading h1')?.focus(); });
+    } detailRequest?.abort(); activityRequest?.abort(); window.sfStaffProgress?.close(); const focus = returnFocus?.isConnected && returnFocus.getClientRects().length ? returnFocus : returnPosition?.id ? document.querySelector(`[data-review="${CSS.escape(returnPosition.id)}"]`) : null; if (focus?.getClientRects().length)
+        focus.focus({ preventScroll: true });
+    else {
+        const heading = document.querySelector('#staff-queue-title,.workspace-heading h1');
+        heading?.setAttribute('tabindex', '-1');
+        heading?.focus({ preventScroll: true });
+    } if (returnPosition)
+        window.scrollTo({ left: returnPosition.x, top: returnPosition.y, behavior: 'instant' }); });
     window.addEventListener('beforeunload', event => { if (dialog.open && (busy || noteBusy || window.sfStaffProgress?.isBusy() || hasUnsavedChanges())) {
         event.preventDefault();
         event.returnValue = '';

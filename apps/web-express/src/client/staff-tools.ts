@@ -11,7 +11,7 @@
   finally{clearTimeout(timer);}
  }
  if(boardData) {
-  interface BoardItem {id:string;title:string;status:string;updated_at:string;staff_note?:string;assignee_id?:string;priority?:string;target_date?:string;}
+  interface BoardItem {id:string;title:string;status:string;updated_at:string;staff_note?:string;assignee_id?:string;priority?:string;target_date?:string;assignment_team_id?:string;assignment_version?:number|null;assignment_urgent?:boolean;is_blocked?:boolean;}
   interface BoardMeta {filters:{presentation?:string;month?:string;calendarPage?:number;assignment?:string;priority?:string;overdue?:boolean;search:string;sort:string;pageSize:number;pages:Record<string,number>};totalCount:number;lanes:Array<{status:string;label:string;count:number;page:number;pageCount:number;from:number;to:number}>;}
   const board=document.getElementById('staff-flow-board')!;
   const stageSelect=document.getElementById('staff-mobile-stage') as HTMLSelectElement|null;
@@ -34,14 +34,23 @@
   };
   const controls=()=>{
    const locked=busy || loading;
-   document.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLButtonElement>('.staff-flow-board input,.staff-flow-board select,.staff-flow-board button,#staff-bulk-assign,#staff-bulk-assignee,#staff-clear-selection,#staff-board-filters input,#staff-board-filters select,#staff-board-filters button').forEach(el=>{el.disabled=locked;});
+   document.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLButtonElement>('.staff-flow-board input,.staff-flow-board select,.staff-flow-board button,#staff-bulk-assign,#staff-bulk-assignee,#staff-clear-selection,#staff-group-stage,#staff-group-move,#staff-mobile-stage,#staff-board-filters input,#staff-board-filters select,#staff-board-filters button').forEach(el=>{el.disabled=locked;});
    board.querySelectorAll<HTMLAnchorElement>('[data-board-page]').forEach(link=>{link.setAttribute('aria-disabled',String(locked));link.tabIndex=locked?-1:0;});
-   retry.disabled=locked;
+   document.getElementById('staff-board-controls')?.setAttribute('aria-busy',String(loading));const apply=document.getElementById('staff-board-apply');if(apply)apply.textContent=loading?'Loading…':'Apply';const refresh=document.getElementById('staff-board-refresh') as HTMLButtonElement;refresh.disabled=locked;
+   retry.disabled=locked;const groupMove=document.getElementById('staff-group-move') as HTMLButtonElement;groupMove.disabled=locked||!(document.getElementById('staff-group-stage') as HTMLSelectElement).value;
   };
+  const groupStage=document.getElementById('staff-group-stage') as HTMLSelectElement;
+  const groupMove=document.getElementById('staff-group-move') as HTMLButtonElement;
   function selectionState(){
    let visible=0;
    board.querySelectorAll<HTMLInputElement>('[data-bulk-id]').forEach(input=>{input.checked=selected.has(input.dataset.bulkId!);if(input.checked)visible++;});
    document.getElementById('staff-selection-tools')!.hidden=!selected.size;
+   for(const option of Array.from(groupStage.options)){if(option.value)option.disabled=!selected.size||!Array.from(selected.values()).every(item=>!!moveAction(items.get(item.id)||item,option.value));}
+   if(groupStage.selectedOptions[0]?.disabled)groupStage.value='';
+   groupMove.disabled=busy||loading||!groupStage.value;
+   const compatible=Array.from(groupStage.options).some(option=>option.value&&!option.disabled);
+   document.getElementById('staff-selection-hint')!.textContent=compatible?'Review each idea before saving. Nothing moves automatically.':'These ideas have no shared next stage. Adjust your selection.';
+   for(const select of board.querySelectorAll<HTMLSelectElement>('[data-stage-select]')){const item=items.get(select.dataset.stageSelect!);if(!item)continue;const group=selected.has(item.id)?Array.from(selected.values()).map(value=>items.get(value.id)||value):[item];for(const option of Array.from(select.options))option.disabled=option.value!==item.status&&!group.every(value=>!!moveAction(value,option.value));}
    document.getElementById('staff-selection-count')!.textContent=`${selected.size} selected${selected.size>visible?' · '+(selected.size-visible)+' on other pages':''} · maximum 25`;
   }
   async function navigate(stage:string|null,rawUrl:string,push=true,internal=false){
@@ -58,8 +67,13 @@
     const fresh=new DOMParser().parseFromString(await response.text(),'text/html');
     const freshData=fresh.getElementById('staff-board-data'),freshMeta=fresh.getElementById('staff-board-meta');
     if(!freshData || !freshMeta)throw new Error('Your staff session may have expired. Sign in again; your current board has not been replaced.');
+    const freshControls=fresh.getElementById('staff-board-controls'),currentControls=document.getElementById('staff-board-controls');
+    if(!freshControls||!currentControls)throw new Error('The filter response was incomplete. Retry loading.');
+    const laneScroll=new Map(Array.from(board.querySelectorAll<HTMLElement>('[data-drop-stage]')).map(lane=>[lane.dataset.dropStage!,lane.querySelector('.staff-lane-cards')?.scrollTop||0]));
+    const boardScroll=board.scrollLeft;
     const freshCalendar=fresh.getElementById('staff-calendar'),calendar=document.getElementById('staff-calendar');if(calendar&&!freshCalendar)throw new Error('The calendar response was incomplete. Refresh to retry.');
     const snapshot:BoardMeta=JSON.parse(freshMeta.textContent || '{}');
+    const filtersChanged=(['assignment','priority','overdue','search','sort','pageSize'] as const).some(key=>snapshot.filters[key]!==meta.filters[key]);
     const nextItems:BoardItem[]=JSON.parse(freshData.textContent || '[]');
     const replacementStages=Object.keys(labels).filter(key=>!stage || key===stage || snapshot.filters.pages[key]!==meta.filters.pages[key]);
     // Validate every replacement before touching the existing board. A failed
@@ -74,10 +88,15 @@
       for(const selector of ['.staff-lane-heading','.staff-lane-pagination']){const old=oldLane?.querySelector(selector),current=newLane.querySelector(selector);if(old && current)old.replaceChildren(...Array.from(current.childNodes));}
      }
     }
+    for(const [stage,top] of laneScroll){const cards=board.querySelector<HTMLElement>(`[data-drop-stage="${stage}"] .staff-lane-cards`);if(cards)cards.scrollTop=top;}board.scrollLeft=boardScroll;
+    if(!stage){currentControls.replaceChildren(...Array.from(freshControls.childNodes));const tabs=document.querySelector('.staff-work-views'),newTabs=fresh.querySelector('.staff-work-views');if(tabs&&newTabs)tabs.replaceChildren(...Array.from(newTabs.childNodes));}
     const changedStages=new Set(replacementStages);
     items=new Map([...Array.from(items.values()).filter(item=>!changedStages.has(item.status)),...nextItems.filter(item=>changedStages.has(item.status))].map(item=>[item.id,item]));
+    if(filtersChanged)selected.clear();
+    for(const item of nextItems)if(selected.has(item.id))selected.set(item.id,{...item});
     meta=snapshot;boardData.textContent=JSON.stringify(Array.from(items.values()));metaData.textContent=JSON.stringify(meta);
     document.getElementById('staff-board-summary')!.textContent=meta.filters.presentation==='calendar'?fresh.getElementById('staff-board-summary')?.textContent||'Calendar refreshed.':`${items.size} shown · ${meta.totalCount.toLocaleString()} matching submissions`;
+    const mobile=document.getElementById('staff-mobile-stage') as HTMLSelectElement|null;if(mobile)for(const option of Array.from(mobile.options)){const lane=meta.lanes.find(lane=>lane.status===option.value);if(lane)option.textContent=lane.label+' · '+lane.count;}
     selectionState();
     const canonical=urlFor(stage,stage?meta.filters.pages[stage]:undefined);
     if(!stage&&/^#board-lane-(approved|in_progress|resolved)$/.test(target.hash))canonical.hash=target.hash;syncStage(canonical.hash);
@@ -87,20 +106,21 @@
     else tell('Work board refreshed.');
     return true;
    }catch(e){failedPage={stage,url:target.href,push};retry.hidden=false;tell(e.name==='AbortError'?'Loading timed out. Your current cards and selection are unchanged. Retry loading.':e.message);return false;}
-   finally{clearTimeout(timer);ownLane?.removeAttribute('aria-busy');loading=false;controls();}
+   finally{clearTimeout(timer);ownLane?.removeAttribute('aria-busy');loading=false;selectionState();controls();}
   }
   const stageActions:Record<string,Record<string,string>>={
    pending:{approved:'approve',rejected:'decline'},approved:{in_progress:'start',rejected:'withdraw'},
    in_progress:{resolved:'complete',rejected:'withdraw'},resolved:{in_progress:'reopen',rejected:'withdraw'}
   };
-  const moveAction=(item:BoardItem,stage:string)=>stageActions[item.status]?.[stage] || null;
+  const moveAction=(item:BoardItem,stage:string)=>item.is_blocked&&stage==='resolved'?null:stageActions[item.status]?.[stage] || null;
   async function move(id:string,stage:string){
-   const item=items.get(id);if(!item || item.status===stage || busy || loading)return;
+   const item=items.get(id)||selected.get(id);if(!item || item.status===stage || busy || loading)return;
    const action=moveAction(item,stage);
    const select=board.querySelector<HTMLSelectElement>(`[data-stage-select="${id}"]`);if(select)select.value=item.status;
    if(!action){tell('That stage is unavailable for this idea. Open the idea to see its available actions.');return;}
    document.dispatchEvent(new CustomEvent('sf:review-action',{detail:{id,action,trigger:board.querySelector(`[data-review="${id}"]`)}}));
   }
+  board.addEventListener('click',event=>{if((busy||loading)&&(event.target as HTMLElement).closest('[data-review]')){event.preventDefault();event.stopImmediatePropagation();tell('Wait for the board to finish updating.');}},true);
   board.addEventListener('click',e=>{
    const link=(e.target as HTMLElement).closest<HTMLAnchorElement>('[data-board-page]');
    if(!link || (e as MouseEvent).button!==0 || (e as MouseEvent).metaKey || (e as MouseEvent).ctrlKey || (e as MouseEvent).shiftKey || (e as MouseEvent).altKey)return;
@@ -170,17 +190,19 @@
    }
    if(dragPreview)dragPreview.style.transform=`translate3d(${Math.max(8,Math.min(pointer.x+18,innerWidth-ghostWidth-8))}px,${Math.max(8,Math.min(pointer.y+18,innerHeight-ghostHeight-8))}px,0)`;
    const rect=board.getBoundingClientRect(),previousX=board.scrollLeft,previousY=window.scrollY;
+   const laneCards=inside?lane!.querySelector<HTMLElement>('.staff-lane-cards'):null,previousLaneY=laneCards?.scrollTop||0;
+   if(laneCards){const area=laneCards.getBoundingClientRect();if(pointer.y>area.top&&pointer.y<area.top+48)laneCards.scrollTop-=10;else if(pointer.y<area.bottom&&pointer.y>area.bottom-48)laneCards.scrollTop+=10;}
    if(pointer.y>=Math.max(0,rect.top)&&pointer.y<=Math.min(innerHeight,rect.bottom)){
     if(pointer.x<Math.max(0,rect.left)+40)board.scrollLeft-=12;
     else if(pointer.x>Math.min(innerWidth,rect.right)-40)board.scrollLeft+=12;
    }
    if(pointer.y<96)window.scrollBy({top:-10,behavior:'instant'});
    else if(pointer.y>innerHeight-48)window.scrollBy({top:10,behavior:'instant'});
-   if(board.scrollLeft!==previousX||window.scrollY!==previousY)dragFrame=requestAnimationFrame(paintPointer);
+   if(board.scrollLeft!==previousX||window.scrollY!==previousY||(laneCards?.scrollTop||0)!==previousLaneY)dragFrame=requestAnimationFrame(paintPointer);
   }
   board.addEventListener('pointerdown',event=>{
    lastPointerType=event.pointerType;
-   if(event.pointerType!=='mouse'||event.button!==0||busy||loading||pointerDrag||!(event.target instanceof Element)||event.target.closest('input,select,textarea,button,summary,label,details,[contenteditable]'))return;
+   if(event.pointerType!=='mouse'||event.button!==0||busy||loading||pointerDrag||!(event.target instanceof Element)||event.target.closest('a,input,select,textarea,button,summary,label,details,[contenteditable]'))return;
    const card=event.target.closest<HTMLElement>('[data-board-id]'),item=card?items.get(card.dataset.boardId!):null;if(!card||!item)return;
    const capture=event.target instanceof HTMLElement?event.target:card;
    pointerDrag={pointerId:event.pointerId,card,capture,item,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,started:false};
@@ -240,8 +262,11 @@
    if(group.length===1){void move(group[0].id,stage);return;}
    document.dispatchEvent(new CustomEvent('sf:review-group',{detail:{items:group.map(item=>({id:item.id,title:item.title})),stage,trigger:board.querySelector(`[data-review="${group[0].id}"]`)}}));
   }
-  document.addEventListener('sf:board-group-saved',event=>{const {id}=(event as CustomEvent).detail;selected.delete(id);selectionState();});
+  groupStage.addEventListener('change',()=>{groupMove.disabled=busy||loading||!groupStage.value;});
+  groupMove.addEventListener('click',()=>{if(busy||loading||!groupStage.value)return;const group=Array.from(selected.values()).map(item=>items.get(item.id)||item);if(!group.length||!group.every(item=>moveAction(item,groupStage.value))){tell('Adjust your selection: these ideas cannot share that move.');return;}dropGroup(group,groupStage.value);});
+  document.addEventListener('sf:board-group-saved' ,event=>{const {id}=(event as CustomEvent).detail;selected.delete(id);selectionState();});
   window.addEventListener('pagehide',clearDrag);
+  document.getElementById('staff-board-refresh')?.addEventListener('click',()=>void navigate(null,urlFor(null).href,false));
   retry.addEventListener('click',()=>{if(failedPage)void navigate(failedPage.stage,failedPage.url,failedPage.push);});
   document.getElementById('staff-clear-selection')?.addEventListener('click',()=>{if(busy || loading)return;selected.clear();selectionState();tell('Selection cleared.');});
   document.getElementById('staff-bulk-assign')?.addEventListener('click',async()=>{
@@ -254,30 +279,65 @@
    try {await save('/api/community/staff/bulk_assign',assignment);selected.clear();selectionState();if(!await navigate(null,urlFor(null).href,false,true))tell('Assignments saved, but the board could not refresh. Retry loading.');}
    catch(e){tell(e.name==='AbortError'?'Request timed out. Refresh to confirm assignments before retrying.':e.message);}finally{busy=false;controls();}
   });
-  let filterConfirmed=false,confirmingFilter=false;
-  document.getElementById('staff-board-filters')?.addEventListener('submit',async e=>{
-   if(busy || loading){e.preventDefault();return;}
-   if(filterConfirmed){filterConfirmed=false;return;}
-   if(!selected.size)return;
-   e.preventDefault();if(confirmingFilter)return;confirmingFilter=true;
+  const assignmentDialog=document.getElementById('staff-board-assignment') as HTMLDialogElement|null;
+  const assignmentForm=document.getElementById('staff-board-assignment-form') as HTMLFormElement|null;
+  let assignmentItem:BoardItem|null=null,assignmentSaved=false,assignmentTrigger:HTMLElement|null=null,assignmentOriginal='';
+  const assignmentValues=()=>assignmentForm?JSON.stringify(Array.from(new FormData(assignmentForm).entries())):'';
+  const assignmentDirty=()=>!!assignmentDialog?.open&&!assignmentSaved&&assignmentValues()!==assignmentOriginal;
+  async function closeAssignment(){
+   if(busy||loading)return;
+   if(assignmentDirty()&&!await window.sfConfirm('Discard this unsaved ownership change?'))return;
+   assignmentDialog?.close();
+  }
+  board.addEventListener('click',event=>{
+   const trigger=(event.target as HTMLElement).closest<HTMLButtonElement>('[data-board-assign]');if(!trigger||!assignmentDialog||!assignmentForm||busy||loading)return;
+   const item=items.get(trigger.dataset.boardAssign!);if(!item||!Number.isInteger(item.assignment_version??0)||item.status==='resolved')return;
+   assignmentItem={...item};assignmentSaved=false;assignmentTrigger=trigger;assignmentForm.reset();(assignmentForm.elements.namedItem('person') as HTMLSelectElement).disabled=false;(assignmentForm.elements.namedItem('note') as HTMLTextAreaElement).readOnly=false;
+   const person=assignmentForm.elements.namedItem('person') as HTMLSelectElement;
+   for(const option of Array.from(person.options))option.disabled=!!option.value&&(!!item.assignment_urgent||item.priority==='urgent')&&option.dataset.role!=='admin';
+   person.value=item.assignee_id||'';const submit=assignmentForm.querySelector<HTMLButtonElement>('button[type=submit]')!;submit.disabled=false;
+   document.getElementById('board-assignment-idea')!.textContent=item.title;document.getElementById('board-assignment-message')!.textContent='';
+   assignmentOriginal=assignmentValues();assignmentDialog.showModal();person.focus();
+  });
+  assignmentDialog?.querySelectorAll('[data-close-board-assignment]').forEach(button=>button.addEventListener('click',()=>void closeAssignment()));
+  assignmentDialog?.addEventListener('cancel',event=>{event.preventDefault();void closeAssignment();});
+  assignmentDialog?.addEventListener('close',()=>{const replacement=assignmentItem?board.querySelector<HTMLElement>(`[data-board-assign="${CSS.escape(assignmentItem.id)}"]`):null;const target=assignmentTrigger?.isConnected?assignmentTrigger:replacement;target?.focus({preventScroll:true});});
+  window.addEventListener('beforeunload',event=>{if(assignmentDialog?.open&&(busy||assignmentDirty())){event.preventDefault();event.returnValue='';}});
+  assignmentForm?.addEventListener('submit',async event=>{
+   event.preventDefault();if(busy||loading||assignmentSaved||!assignmentItem||!assignmentForm.reportValidity())return;
+   const values=new FormData(assignmentForm),message=document.getElementById('board-assignment-message')!;
+   const submit=assignmentForm.querySelector<HTMLButtonElement>('button[type=submit]')!;
+   busy=true;controls();submit.disabled=true;submit.textContent='Saving…';(assignmentForm.elements.namedItem('person') as HTMLSelectElement).disabled=true;(assignmentForm.elements.namedItem('note') as HTMLTextAreaElement).readOnly=true;assignmentForm.setAttribute('aria-busy','true');
+   assignmentDialog!.querySelectorAll<HTMLButtonElement>('[data-close-board-assignment]').forEach(button=>button.disabled=true);message.textContent='Saving ownership and assignment history…';
    try{
-    if(!await window.sfConfirm('Changing the search, order or page size clears your selection. Continue?'))return;
-    if(busy || loading)return;
-    filterConfirmed=true;
-    const form=e.target as HTMLFormElement,submitter=(e as SubmitEvent).submitter;
-    if(submitter instanceof HTMLButtonElement || submitter instanceof HTMLInputElement)form.requestSubmit(submitter);else form.requestSubmit();
-    filterConfirmed=false;
-   }finally{confirmingFilter=false;}
+    await save('/admin/assignments/action',{action:'assign',data:{kind:'suggestion',id:assignmentItem.id,version:assignmentItem.assignment_version??0,person:String(values.get('person')||''),team:assignmentItem.assignment_team_id||'',note:String(values.get('note')||'').trim()}});
+    assignmentSaved=true;
+    const refreshed=await navigate(null,urlFor(null).href,false,true);
+    message.textContent=refreshed?'Owner saved. Assignment history has been updated.':'Owner saved, but the board could not refresh. Close this panel and use Retry loading before making another change.';
+   }catch(error){message.textContent=error.name==='AbortError'?'The request timed out. Your entries are preserved. Close and refresh to confirm the owner before retrying.':error.message;}
+   finally{busy=false;controls();submit.disabled=assignmentSaved;submit.textContent=assignmentSaved?'Saved':'Save owner';(assignmentForm.elements.namedItem('person') as HTMLSelectElement).disabled=assignmentSaved;(assignmentForm.elements.namedItem('note') as HTMLTextAreaElement).readOnly=assignmentSaved;assignmentForm.removeAttribute('aria-busy');assignmentDialog!.querySelectorAll<HTMLButtonElement>('[data-close-board-assignment]').forEach(button=>button.disabled=false);}
   });
-  document.querySelector<HTMLAnchorElement>('[data-board-reset]')?.addEventListener('click',async e=>{
-   if(busy || loading){e.preventDefault();return;}
-   if(!selected.size)return;
-   e.preventDefault();if(confirmingFilter)return;confirmingFilter=true;
-   const href=(e.currentTarget as HTMLAnchorElement).href;
-   try{if(await window.sfConfirm('Reset filters and clear your selection?') && !busy && !loading)window.location.assign(href);}
+  let confirmingFilter=false;
+  async function filterNavigate(url:string){
+   if(busy||loading||confirmingFilter)return;
+   confirmingFilter=true;
+   try{if(selected.size&&!await window.sfConfirm('Changing delivery filters clears your selection after the new work loads. Continue?'))return;if(busy||loading)return;await navigate(null,url);}
    finally{confirmingFilter=false;}
+  }
+  document.getElementById('staff-board-controls')?.addEventListener('submit',event=>{
+   const form=(event.target as HTMLElement).closest<HTMLFormElement>('#staff-board-filters');if(!form)return;event.preventDefault();if(busy||loading||!form.reportValidity())return;
+   const query=new URLSearchParams();for(const [key,value] of new FormData(form))if(typeof value==='string'&&value)query.set(key,value);
+   const url=new URL(form.action,location.href);url.search=query.toString();void filterNavigate(url.href);
   });
-  document.querySelectorAll<HTMLAnchorElement>('[data-board-presentation]').forEach(link=>link.addEventListener('click',async event=>{if(!selected.size)return;event.preventDefault();if(await window.sfConfirm('Changing work views clears this selection. Continue?')&&!busy&&!loading)location.assign(link.href);}));
+  document.getElementById('staff-board-controls')?.addEventListener('click',event=>{
+   const link=(event.target as HTMLElement).closest<HTMLAnchorElement>('[data-board-reset],[data-board-filter-link]');if(!link||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();void filterNavigate(link.href);
+  });
+  document.querySelector('.staff-work-views')?.addEventListener('click',async event=>{
+   const click=event as MouseEvent,link=(event.target as HTMLElement).closest<HTMLAnchorElement>('[data-board-presentation]');if(!link||click.button!==0||click.ctrlKey||click.metaKey||click.shiftKey||click.altKey)return;
+   if(busy||loading||document.querySelector('#staff-review-dialog[open]')){event.preventDefault();tell('Finish the current action before changing Work views.');return;}
+   if(!selected.size)return;event.preventDefault();if(confirmingFilter)return;confirmingFilter=true;
+   try{if(await window.sfConfirm('Changing Work views clears your selection. Continue?')&&!busy&&!loading)location.assign(link.href);}finally{confirmingFilter=false;}
+  });
   window.addEventListener('popstate',()=>{if(busy || loading){window.history.pushState(null,'',urlFor(null).href);tell('Wait for the current request before changing pages.');return;}void navigate(null,window.location.href,false);});
   selectionState();
   window.sfStaffBoardRefresh=()=>navigate(null,urlFor(null).href,false);

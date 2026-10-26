@@ -17,12 +17,13 @@ router.get('/internal/assignment-escalation',async(req,res)=>{
 router.get(['/admin/assignments','/admin/my-work','/admin/work','/admin/routing'],async(req,res,next)=>{
  const user=schoolUser(req);if(!user||!['admin','moderator'].includes(user.role||''))return res.status(403).render('403',{title:'Staff access required'});
  res.setHeader('Cache-Control','private, no-store');
+ if(req.path==='/admin/work'&&req.query.presentation==='list'){const query=new URLSearchParams();for(const [key,value] of Object.entries(req.query))if(typeof value==='string')query.set(key,value);query.set('presentation','board');return res.redirect(302,'/admin/work?'+query.toString());}
  const configuration=['rules','teams','workload','settings'];
  if(req.path==='/admin/assignments'||req.path==='/admin/my-work'){
   const params=new URLSearchParams();for(const key of ['view','page','kind','id'])if(typeof req.query[key]==='string')params.set(key,String(req.query[key]));
   return res.redirect(302,(configuration.includes(String(req.query.view))?'/admin/routing':'/admin/work')+(params.size?'?'+params.toString():''));
  }
- if(req.path==='/admin/work'&&(['board','list','calendar'].includes(String(req.query.presentation))||req.query.idea&&!req.query.presentation))return next();
+ if(req.path==='/admin/work'&&(['board','calendar'].includes(String(req.query.presentation))||req.query.idea&&!req.query.presentation))return next();
  const routing=req.path==='/admin/routing';
  if(routing&&user.role!=='admin')return res.status(403).render('403',{title:'School administrator access required'});
  try{

@@ -5,7 +5,7 @@ The school-admin Overview keeps operational attention cards and management links
 ## Navigation
 
 - `/s/:school/admin/work` opens Tasks: individual/team assignments, acknowledgement, assigned reviews and delivery follow-through.
-- `?presentation=board`, `list` or `calendar` opens approved delivery ideas in the same Work destination.
+- `?presentation=board` or `calendar` opens approved delivery ideas in the same Work destination.
 - One sidebar entry and one shared presentation selector replace separate My work and Work board destinations.
 - `/admin/my-work` and `/admin/assignments` redirect to Tasks, retaining task view, pagination and history identifiers. Configuration links still redirect to Routing & teams.
 - `/admin/board` redirects to Work with a delivery presentation and retains filters, lane pages and deep-linked ideas.
@@ -17,7 +17,7 @@ Existing service/database permissions are unchanged. Moderators retain their ass
 
 The header and delivery filters use ordinary GET links/forms. Existing board refresh, drag/group review, progress forms, acknowledgements, conflict handling and database APIs are retained. Availability and ownership details are progressively disclosed. Tasks have separated cards, short page-count summaries and responsive presentation controls. Studio previews render the same shared Work header.
 
-No migration, dependency, data mutation or new permission is required.
+The original unified navigation required no migration. Subsequent delivery improvements use the read-only view described in [work-board-delivery.md](work-board-delivery.md). Legacy List links now redirect to Board.
 
 ## Checks and limits
 

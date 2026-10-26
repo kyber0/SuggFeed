@@ -26,8 +26,9 @@ function mockBoard(counts: Partial<Record<string, number>>, invalidRange = false
     }
     query.in = () => query;
     query.then = (resolve: (value: unknown) => unknown) => {
-      if (table === 'profiles') return resolve({ data: [], error: null });
-      assert.equal(table, 'staff_submission_queue');
+      if (table === 'profiles' || table === 'staff_saved_views') return resolve({ data: [], error: null });
+      if (table === 'submissions') return resolve({data:[],count:counts[record.status!]??0,error:null});
+      assert.equal(table, 'staff_work_queue');
       const attempt = attempts[record.status!] ?? 0;
       attempts[record.status!] = attempt + 1;
       const count = countForQuery ? countForQuery(record, attempt) : counts[record.status!] ?? 0;
@@ -49,7 +50,7 @@ function mockBoard(counts: Partial<Record<string, number>>, invalidRange = false
 
 test('work-board filters strictly normalize search, size, sort and independent lane pages', () => {
   assert.deepEqual(boardFilters({ search: '  library  ', sort: 'newest', pageSize: '12', pendingPage: '2', approvedPage: '3' }), {
-    search: 'library', sort: 'newest', pageSize: 12,
+    assignment:'all',priority:'all',overdue:false,search: 'library', sort: 'newest', pageSize: 12,
     pages: { pending: 2, approved: 3, in_progress: 1, resolved: 1, rejected: 1 },
   });
   const invalid = boardFilters({ search: ['secret'], pageSize: '200', sort: 'invalid', pendingPage: '2junk', approvedPage: '-1', resolvedPage: '0', rejectedPage: ['2'] });
@@ -191,10 +192,10 @@ test('work-board JSON and page routes enforce staff access, no-store and normali
     const anonymous = await fetch(origin + '/api/community/staff/board');
     assert.equal(anonymous.status, 401);
     assert.equal(anonymous.headers.get('cache-control'), 'private, no-store');
-    assert.equal((await fetch(origin + '/admin/board', { redirect: 'manual' })).headers.get('location'), '/admin');
+    assert.equal((await fetch(origin + '/admin/work?presentation=board', { redirect: 'manual' })).headers.get('location'), '/admin');
     role = 'student';
     assert.equal((await fetch(origin + '/api/community/staff/board')).status, 403);
-    assert.equal((await fetch(origin + '/admin/board')).status, 403);
+    assert.equal((await fetch(origin + '/admin/work?presentation=board')).status, 403);
     assert.equal(mock.queries.length, 0, 'unauthorized users never query the private queue');
     role = 'moderator';
     const params = '?search=library&sort=newest&pageSize=12&pendingPage=40&approvedPage=1';
@@ -203,10 +204,10 @@ test('work-board JSON and page routes enforce staff access, no-store and normali
     assert.equal(response.headers.get('cache-control'), 'private, no-store');
     const body: any = await response.json();
     assert.equal(body.success, true);
-    assert.deepEqual(body.filters, { search: 'library', sort: 'newest', pageSize: 12, pages: { approved: 1, in_progress: 1, resolved: 1 } });
+    assert.deepEqual(body.filters, { assignment:'all',priority:'all',overdue:false,search: 'library', sort: 'newest', pageSize: 12, pages: { approved: 1, in_progress: 1, resolved: 1 } });
     assert.equal(body.totalCount, body.lanes.reduce((sum:number,lane:any)=>sum+lane.count,0));
     role = 'admin';
-    const page = await fetch(origin + '/admin/board' + params);
+    const page = await fetch(origin + '/admin/work?presentation=board&' + params.slice(1));
     assert.equal(page.headers.get('cache-control'), 'private, no-store');
     const rendered: any = await page.json();
     assert.equal(rendered.view, 'staff-board');

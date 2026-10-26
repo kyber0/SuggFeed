@@ -33,6 +33,8 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
   let requestedId='', requestedSection='decision';
   let active:QueueItem | undefined;
   let returnFocus:HTMLElement | null=null;
+  let returnPosition:{x:number;y:number;id:string|null}|null=null;
+  const rememberPosition=()=>{returnPosition={x:scrollX,y:scrollY,id:returnFocus?.closest<HTMLElement>('[data-review]')?.dataset.review||null};};
   type GroupEntry={id:string;title:string;result:'pending'|'saved'|'skipped'|'already'};
   let group:{entries:GroupEntry[];stage:string;index:number;notice:string}|null=null;
   const groupPanel=document.getElementById('review-group')!;
@@ -77,7 +79,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     if(!Array.isArray(detail?.items)||detail.items.length<2||detail.items.length>25||!['approved','in_progress','resolved'].includes(detail.stage))return;
     const ids=new Set<string>();const entries:GroupEntry[]=[];
     for(const item of detail.items){if(typeof item?.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id)||ids.has(item.id))return;ids.add(item.id);entries.push({id:item.id,title:String(item.title||'Idea'),result:'pending'});}
-    group={entries,stage:detail.stage,index:0,notice:''};groupPanel.querySelector('details')!.open=false;returnFocus=detail.trigger instanceof HTMLElement?detail.trigger:null;void openGroupItem();
+    group={entries,stage:detail.stage,index:0,notice:''};groupPanel.querySelector('details')!.open=false;returnFocus=detail.trigger instanceof HTMLElement?detail.trigger:null;rememberPosition();void openGroupItem();
   });
 
   let repairRetry:{payload:string;id:string}|undefined;
@@ -210,7 +212,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     if(!discard && dialog.open && hasUnsavedChanges()){discardWarning.hidden=false;document.getElementById('review-keep-editing')!.focus();return;}
     detailRequest?.abort();activityRequest?.abort();window.sfStaffProgress?.close();
     requestedId=id;requestedSection=section==='progress'?'progress':'decision';
-    if(!dialog.open && !group)returnFocus=trigger || document.activeElement as HTMLElement;
+    if(!dialog.open && !group){returnFocus=trigger || document.activeElement as HTMLElement;rememberPosition();}
     active=undefined;internalNote.value='';saved=false;discardWarning.hidden=true;
     dialog.dataset.unavailable='true';dialog.setAttribute('aria-busy','true');
     fields.disabled=true;save.hidden=true;saveNext.hidden=true;
@@ -256,7 +258,7 @@ interface Window { sfStaffBoardRefresh?:()=>Promise<boolean>; }
     dialog.querySelectorAll<HTMLElement>('[data-close-review]').forEach(button=>button.setAttribute('aria-label','Close detail and return to Work tasks'));
     dialog.addEventListener('close',()=>{const query=new URLSearchParams({view:sourceWorkView,page:sourceWorkPage&&/^\d{1,6}$/.test(sourceWorkPage)?sourceWorkPage:'1'});location.replace(sfSchoolPath('/admin/work?'+query.toString()));});
   }
-  dialog.addEventListener('close',()=>{if(isQueue||mode==='work'){const url=new URL(location.href);url.searchParams.delete('idea');history.replaceState(history.state,'',url);}if(group){const counts={saved:0,skipped:0,already:0,pending:0};for(const item of group.entries)counts[item.result]++;pageMessage.textContent=`Group review ended: ${counts.saved} moves saved, ${counts.skipped} skipped, ${counts.already} already in target stage, ${counts.pending} not moved. Saved changes remain; other selections are retained.`;group=null;paintGroup();}detailRequest?.abort();activityRequest?.abort();window.sfStaffProgress?.close();if(returnFocus?.isConnected)returnFocus.focus();else document.querySelector<HTMLElement>('#staff-queue-title,.workspace-heading h1')?.focus();});
+  dialog.addEventListener('close',()=>{if(isQueue||mode==='work'){const url=new URL(location.href);url.searchParams.delete('idea');history.replaceState(history.state,'',url);}if(group){const counts={saved:0,skipped:0,already:0,pending:0};for(const item of group.entries)counts[item.result]++;pageMessage.textContent=`Group review ended: ${counts.saved} moves saved, ${counts.skipped} skipped, ${counts.already} already in target stage, ${counts.pending} not moved. Saved changes remain; other selections are retained.`;group=null;paintGroup();}detailRequest?.abort();activityRequest?.abort();window.sfStaffProgress?.close();const focus=returnFocus?.isConnected&&returnFocus.getClientRects().length?returnFocus:returnPosition?.id?document.querySelector<HTMLElement>(`[data-review="${CSS.escape(returnPosition.id)}"]`):null;if(focus?.getClientRects().length)focus.focus({preventScroll:true});else{const heading=document.querySelector<HTMLElement>('#staff-queue-title,.workspace-heading h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}if(returnPosition)window.scrollTo({left:returnPosition.x,top:returnPosition.y,behavior:'instant'});});
   window.addEventListener('beforeunload',event=>{if(dialog.open && (busy || noteBusy || window.sfStaffProgress?.isBusy() || hasUnsavedChanges())){event.preventDefault();event.returnValue='';}});
   status.addEventListener('change',()=>{updateHint();updateDraft();});note.addEventListener('input',updateCount);
   [assignee,priority,targetDate,internalNote].forEach(input=>input.addEventListener('input',updateDraft));

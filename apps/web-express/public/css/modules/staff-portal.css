@@ -63,11 +63,6 @@
 @media(max-width:480px){.staff-overview-page .staff-attention-grid{grid-template-columns:minmax(0,1fr)}.portal-work-group>header{flex-direction:column;gap:5px}.portal-section-tabs>a{flex:1;min-width:90px}.portal-task-summary strong{font-size:22px}.portal-management .school-settings-header h1{font-size:clamp(25px,7vw,34px)}}
 @media(prefers-reduced-motion:no-preference){.portal-task-summary>a,.portal-section-tabs>a{transition:transform .2s ease,opacity .2s ease}.portal-task-summary>a:hover{transform:translateY(-2px)}}
 /* Board and list share the same records, selection and action controls. */
-#staff-flow-board[data-presentation=list] {display:grid;grid-template-columns:minmax(0,1fr);gap:24px;overflow:visible;}
-#staff-flow-board[data-presentation=list] .staff-flow-lane {display:flex;flex-direction:column;width:100%;min-width:0;max-height:none;}
-#staff-flow-board[data-presentation=list] .staff-lane-cards {display:grid;grid-template-columns:minmax(0,1fr);max-height:none;overflow:visible;gap:8px;}
-#staff-flow-board[data-presentation=list] .staff-flow-card {padding:14px 16px;min-height:0;}
-#staff-flow-board[data-presentation=list] .staff-flow-card h3 {font-size:15px;margin:9px 0;}
 .portal-calendar {background:var(--surface);padding:20px;border:1px solid var(--line);border-radius:16px;}
 .portal-calendar>header {display:flex;align-items:start;justify-content:space-between;gap:20px;margin-bottom:20px;}
 .portal-calendar>header h2 {font-size:21px;margin:0 0 8px;}
@@ -86,8 +81,6 @@
 .staff-sidebar .staff-navigation-disclosure>summary {display:flex;align-items:center;min-height:44px;cursor:pointer;}
 @media(min-width:801px){html[data-staff-sidebar] .staff-sidebar .staff-navigation-disclosure>summary{display:none}}
 .staff-sidebar .staff-nav-item>span:not(.staff-nav-count) {margin-left:0;flex:1;text-align:left;}
-#staff-flow-board[data-presentation=list] .staff-flow-lane {min-height:0;height:auto;}
-#staff-flow-board[data-presentation=list] .staff-lane-cards {min-height:0;flex:none;}
 .portal-management .school-settings-back {display:none;}
 .assignment-page>details.assignment-card {padding:12px 18px;margin:16px 0;}
 .assignment-page>details.assignment-card>summary {min-height:44px;display:flex;align-items:center;gap:12px;cursor:pointer;}
@@ -105,7 +98,7 @@
 .staff-work-heading.workspace-heading {align-items:center;gap:16px;margin-bottom:20px;}
 .staff-work-heading h1 {font-size:clamp(28px,3vw,36px);line-height:1.15;letter-spacing:-.035em;margin:6px 0 10px;}
 .staff-work-heading .workspace-button {flex:none;}
-.staff-work-views {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:min(100%,540px);padding:5px;margin:0 0 14px;border:1px solid var(--line);border-radius:14px;background:var(--bg);}
+.staff-work-views {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:min(100%,440px);padding:5px;margin:0 0 14px;border:1px solid var(--line);border-radius:14px;background:var(--bg);}
 .staff-work-views>a {display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:0;padding:10px 12px;border:1px solid transparent;border-radius:10px;text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600;}
 .staff-work-views .workspace-svg {width:16px;height:16px;flex:none;}
 .staff-work-views>a[aria-current=page] {background:var(--surface);border-color:var(--line);color:var(--navy);box-shadow:var(--shadow-sm);}
@@ -129,3 +122,50 @@
 @media(max-width:800px){.staff-work-heading.workspace-heading{align-items:start}.staff-work-heading .workspace-button{align-self:start}.staff-work-tasks .portal-work-summary{gap:10px}.staff-work-tasks .portal-work-primary .workspace-button{width:auto}.staff-work-context{margin-bottom:18px}.staff-work-tasks .portal-task-summary>:is(a,div){padding:10px;gap:4px}.staff-work-tasks .portal-work-item{padding:14px}}
 @media(max-width:480px){.staff-work-heading.workspace-heading{flex-direction:column;gap:12px}.staff-work-views{gap:4px;padding:4px}.staff-work-views>a{flex-direction:column;gap:4px;padding:8px 3px;font-size:12px}.staff-work-views>a>span{white-space:nowrap;overflow-wrap:normal}.staff-work-views .workspace-svg{width:14px;height:14px}.staff-work-tasks .assignment-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.staff-work-tasks .assignment-tabs>a{min-width:0;padding:10px 8px}.staff-work-tasks .portal-task-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.staff-work-tasks .portal-task-summary>:is(a,div){flex-direction:column;align-items:start;gap:3px;padding:10px 8px}.staff-work-tasks .portal-task-summary span{font-size:11px}.staff-work-tasks .portal-work-primary .workspace-button{width:100%}}
 @media(prefers-reduced-motion:no-preference){.staff-work-views>a{transition:transform .2s ease,opacity .2s ease}.staff-work-views>a:active{transform:translateY(1px)}}
+
+/* Delivery controls keep the everyday scope visible; advanced choices stay disclosed. */
+#staff-board-controls {margin-bottom:14px;}
+.staff-board-main .staff-board-toolbar {display:flex;align-items:end;flex-wrap:wrap;gap:12px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:0;}
+.staff-board-toolbar>.staff-board-search {flex:1 1 240px;min-width:0;}
+.staff-board-toolbar>label:not(.staff-board-search) {flex:0 1 210px;min-width:0;}
+.staff-board-toolbar>label {display:grid;gap:6px;font-size:12px;}
+.staff-board-toolbar .workspace-input {width:100%;min-width:0;}
+.staff-board-toolbar .staff-board-more-filters>summary {border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--bg);font-size:12px;min-height:44px;}
+.staff-board-chips {display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.staff-board-chips>a {display:flex;align-items:center;gap:12px;min-height:44px;max-width:100%;padding:8px 12px;background:var(--sky);border:1px solid var(--line);border-radius:9px;color:var(--ink);text-decoration:none;font-size:12px;}
+.staff-board-chips>a>span:first-child {overflow-wrap:anywhere;min-width:0;}
+.staff-board-chips>a>span:last-child {font-size:18px;flex:none;}
+.staff-board-feedback {display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:10px 0;}
+.staff-board-feedback p {flex:1;min-width:0;margin:0;font-size:13px;}
+.staff-board-feedback .workspace-text-link {min-height:44px;}
+.staff-card-schedule {display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);line-height:1.5;margin:10px 0;}
+.staff-card-schedule[data-overdue=true] time {color:var(--error);font-weight:600;}
+.staff-card-schedule>strong {border:1px solid var(--line);border-radius:5px;padding:2px 6px;font-size:11px;}
+.staff-card-progress {display:flex;align-items:center;gap:10px;margin:10px 0;font-size:12px;color:var(--ink-2);}
+.staff-card-progress>progress {width:100%;min-width:0;height:6px;border:0;border-radius:6px;background:var(--line);accent-color:var(--navy);}
+.staff-card-progress>progress::-webkit-progress-bar {background:var(--line);border-radius:6px;}
+.staff-card-progress>progress::-webkit-progress-value {background:var(--navy);border-radius:6px;}
+.staff-card-progress>progress::-moz-progress-bar {background:var(--navy);border-radius:6px;}
+.staff-card-progress>span {flex:none;font-variant-numeric:tabular-nums;}
+.staff-board-selection {align-items:center;gap:12px;padding:12px 14px;}
+.staff-group-destination {display:grid;gap:5px;font-size:12px;min-width:0;}
+.staff-group-destination select {min-height:44px;max-width:100%;}
+.staff-board-selection .staff-footnote {flex-basis:100%;margin:0;}
+.staff-flow-lane .staff-lane-heading {position:relative;top:0;z-index:2;background:var(--surface);border-radius:12px 12px 0 0;}
+@media(max-width:800px){.staff-board-main .staff-board-toolbar{gap:10px;padding:12px}.staff-board-toolbar>.staff-board-search{flex-basis:100%}.staff-board-toolbar>label:not(.staff-board-search){flex:1 1 100%}.staff-board-toolbar .staff-board-more-filters{position:static;flex:1}.staff-board-toolbar .staff-board-more-filters>div{position:static;min-width:0;max-width:100%;margin-top:8px;box-shadow:none}.staff-board-toolbar .staff-board-more-filters[open]{flex-basis:100%}.staff-board-toolbar>.workspace-button{flex:1}.staff-board-selection{position:static;flex-wrap:wrap}.staff-group-destination{flex:1 1 150px}.staff-board-selection .workspace-button{min-height:44px}.staff-card-bottom{gap:10px}.staff-board-main .staff-work-heading{margin-bottom:16px}}
+@media(prefers-reduced-motion:no-preference){#staff-board-controls{transition:opacity .2s ease}#staff-board-controls[aria-busy=true]{opacity:.65}}
+.staff-board-assignment-dialog {width:min(520px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-lg);}
+.staff-board-assignment-dialog::backdrop {background:rgb(5 14 25 / .55);}
+.staff-board-assignment-dialog>header {position:static;display:flex;align-items:start;justify-content:space-between;gap:16px;}
+.staff-board-assignment-dialog h2 {font-size:20px;margin:0 0 8px;}
+.staff-board-assignment-dialog header p {font-size:13px;line-height:1.6;color:var(--ink-2);margin:0;overflow-wrap:anywhere;}
+.staff-board-assignment-dialog .workspace-input {width:100%;}
+@media(max-width:600px){.staff-board-assignment-dialog{padding:18px 16px}.staff-board-assignment-dialog :is(input,select,textarea){font-size:16px}.staff-board-assignment-dialog form>button{width:100%}}
+#staff-flow-board[data-presentation=board] .staff-flow-lane {display:flex;flex-direction:column;height:clamp(420px,calc(100dvh - 240px),680px);min-height:0;}
+#staff-flow-board[data-presentation=board] .staff-lane-cards {flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;}
+#staff-flow-board[data-presentation=board] :is(.staff-lane-heading,.staff-lane-pagination) {flex:none;}
+#staff-flow-board[data-presentation=board] .staff-lane-pagination {position:static;}
+.staff-flow-card .staff-card-top {min-height:44px;}
+.staff-flow-card h3 {margin:0;line-height:1.5;}
+.staff-flow-card .staff-card-schedule,.staff-flow-card .staff-card-progress {margin:0;}
+.staff-card-assignee[data-board-assign] {background:none;border:0;padding:0;min-height:44px;text-align:left;text-decoration:underline;text-underline-offset:3px;font:inherit;color:var(--ink-2);cursor:pointer;}

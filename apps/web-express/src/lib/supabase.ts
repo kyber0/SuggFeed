@@ -43,7 +43,7 @@ export function createAuthClient() {
 import { requireSchool } from './school-scope';
 const businessTables = new Set([
   'comment_moderation_queue','categories','submissions','comments','votes','bookmarks','shared_posts','reports','status_history','attachments',
-  'submission_workflow','staff_internal_notes','staff_workflow_history','staff_saved_views','staff_submission_queue','staff_stale_work',
+  'submission_workflow','staff_internal_notes','staff_workflow_history','staff_saved_views','staff_submission_queue','staff_work_queue','staff_stale_work',
   'idea_updates','idea_update_drafts','idea_update_uploads','idea_follows','idea_notifications','idea_notification_outbox',
   'idea_clarifications','idea_merges','notification_preferences','weekly_digest_jobs','student_saved_searches',
   'submission_receipts','workflow_requests','work_date_repairs','retention_settings','school_profiles',
@@ -56,8 +56,8 @@ function scopedFrom(client: typeof publicClient, table: string) {
   if (!businessTables.has(relation)) throw new Error('This table is not a school data source.');
   const publicRead = client === publicClient;
   if (publicRead && !['categories','submissions','comments'].includes(relation)) throw new Error('This relation is not public.');
-  const staffViews:Record<string,string>={submissions:'staff_assigned_submissions',staff_submission_queue:'staff_assignment_queue',staff_stale_work:'staff_assignment_stale',staff_internal_notes:'staff_assignment_notes',staff_workflow_history:'staff_assignment_history',idea_clarifications:'staff_assignment_clarifications'};
-  const restrictedView=!publicRead&&school.role==='moderator'&&(school.staffRead||['staff_submission_queue','staff_stale_work','staff_internal_notes','staff_workflow_history'].includes(relation))?staffViews[relation]:undefined;
+  const staffViews:Record<string,string>={submissions:'staff_assigned_submissions',staff_submission_queue:'staff_assignment_queue',staff_work_queue:'staff_work_queue',staff_stale_work:'staff_assignment_stale',staff_internal_notes:'staff_assignment_notes',staff_workflow_history:'staff_assignment_history',idea_clarifications:'staff_assignment_clarifications'};
+  const restrictedView=!publicRead&&school.role==='moderator'&&(school.staffRead||['staff_submission_queue','staff_work_queue','staff_stale_work','staff_internal_notes','staff_workflow_history'].includes(relation))?staffViews[relation]:undefined;
   const builder = supabasePlatform.from(relation);
   return new Proxy(builder, {
     get(target, property) {
