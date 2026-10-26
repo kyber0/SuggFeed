@@ -18,14 +18,35 @@
 - The inactivity controller observes trusted activity inside the same-origin
   Studio iframe, so inline editing counts as activity too.
 
+## Hosted migration update — 26 October 2026
+
+Both forward migrations were applied atomically and independently verified in the
+configured live project. The migration ledger records `202610260003` and
+`202610260004`. Counts of accounts, schools, memberships, submissions, comments and
+votes were preserved inside the transaction.
+
+Post-application checks confirm the assignment guard, provider-session RLS,
+service-only session RPC, account-deletion cascade and restored restriction on
+schema creation. REST checks confirm invalid service input is rejected and the
+anonymous role cannot execute the session RPC. These checks create no sessions.
+
+A scoped backup of affected definitions, permissions and migration metadata was
+saved privately. Forward application, rollback and reapplication passed on
+disposable PostgreSQL with existing fixture rows preserved. This is not a full
+production database/Auth/Storage backup or a hosted recovery drill.
+
+The application has not been deployed. GitHub API access remains blocked; CodeQL,
+branch protection and deployment checks remain pending. The backup API still lists
+zero backups, disabled PITR and no physical restore metadata.
+
 ## Deployment order — required
 
 1. Establish a usable production backup and a recovery owner first. The hosted API
    review returned no listed backups or physical restore metadata; WAL-G being
    enabled alone does not demonstrate a restore point.
-2. Review/apply `202610260003_private_file_authorization.sql` and then
-   `202610260004_provider_idle_sessions.sql` through the normal migration workflow.
-   Both are forward migrations. Historical migrations are unchanged.
+2. Already applied: `202610260003_private_file_authorization.sql` and
+   `202610260004_provider_idle_sessions.sql`. Confirm the ledger in the deployment
+   environment; do not reapply manually. Historical migrations are unchanged.
 3. Deploy the matching application build only after the RPCs exist. The new
    session guard fails closed when its database operation is unavailable.
 4. Run the role, MFA, public-download, idle and explicit reauthentication checks
@@ -34,9 +55,9 @@
 5. Confirm an Active ruleset targeting main and completed required CI/security
    checks. Confirm Vercel Git/deployment settings through read-only operator access.
 
-No hosted migration, deployment, real-account creation or hosted restore was
-performed in this follow-up. Hosted permission inspection was catalog-only and
-read-only. Six public Sugi requests consumed ordinary application rate/log counters;
+The hosted schema changes above are the only production writes in this follow-up.
+No application deployment, real-account creation or hosted restore was performed.
+Six earlier public Sugi requests consumed ordinary application rate/log counters;
 no school content, membership or published document was changed.
 
 ## Rollback and limits

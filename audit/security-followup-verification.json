@@ -175,7 +175,7 @@
     "202610260003_private_file_authorization.sql",
     "202610260004_provider_idle_sessions.sql"
   ],
-  "hostedMigrationsApplied": false,
+  "hostedMigrationsApplied": true,
   "deployed": false,
   "codeqlRerun": "Pending; alert #31 not dismissed",
   "limitations": [
@@ -185,5 +185,49 @@
     "No live poisoned-school-document test; citation IDs do not prove semantic entailment.",
     "Provider JWTs are not globally revoked by the application guard.",
     "Production latency of the provider-session lookup was not benchmarked."
-  ]
+  ],
+  "hostedMigrationVerification": {
+    "appliedAt": "2026-10-26T13:25:43.866612+00:00",
+    "atomic": true,
+    "applicationCountsPreserved": true,
+    "verified": {
+      "versions": [
+        "202610260003",
+        "202610260004"
+      ],
+      "providerRls": true,
+      "publicFileOwner": "tenant_executor",
+      "browserRpcAccess": false,
+      "providerFunction": true,
+      "serviceRpcAccess": true,
+      "assignmentGuarded": true,
+      "browserTableAccess": false,
+      "publicFileFunction": true,
+      "tenantSchemaCreate": false,
+      "accountDeletionCascades": true,
+      "serviceAssignmentAccess": true
+    },
+    "rpcSmoke": [
+      {
+        "role": "service",
+        "status": 400,
+        "code": "22023",
+        "passed": true
+      },
+      {
+        "role": "anonymous",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      }
+    ],
+    "rollbackRehearsal": {
+      "status": "passed",
+      "rollback": "passed",
+      "businessRowsUnchanged": true,
+      "reapply": true
+    },
+    "backupScope": "Affected function definitions, permissions and migration metadata; not a full production disaster-recovery backup",
+    "applicationDeployed": false
+  }
 }
