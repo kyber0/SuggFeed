@@ -13,8 +13,16 @@ export const CATEGORY_A='20000000-0000-4000-8000-00000000000a';
 export const CATEGORY_B='20000000-0000-4000-8000-00000000000b';
 export const IDEA_A='30000000-0000-4000-8000-00000000000a';
 export const IDEA_B='30000000-0000-4000-8000-00000000000b';
-export async function createTenantDb(options:{through?:string;seed?:boolean;migrationRole?:boolean}={}) {
- const db=new PGlite({extensions:{pg_trgm}});
+export interface FixtureDatabase {
+ exec(sql:string):Promise<unknown>;
+ query<T=Record<string,unknown>>(sql:string,params?:unknown[]):Promise<{rows:T[]}>;
+ close():Promise<void>;
+}
+export type TenantFixtureOptions={through?:string;seed?:boolean;migrationRole?:boolean};
+export async function createTenantDb(options:TenantFixtureOptions={}) {
+ return bootstrapTenantDb(new PGlite({extensions:{pg_trgm}}),options);
+}
+export async function bootstrapTenantDb<DB extends FixtureDatabase>(db:DB,options:TenantFixtureOptions={}):Promise<DB> {
  try {
   await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role BYPASSRLS;
    CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz,raw_user_meta_data jsonb DEFAULT '{}',created_at timestamptz DEFAULT now());

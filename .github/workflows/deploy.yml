@@ -34,9 +34,15 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web-express/package-lock.json
       - run: npm ci --workspaces=false --include=dev
+      - run: npm run lint:animations
+      - run: npm run lint:moderation
+      - run: npm run lint:assistant
+      - run: npm run lint:assignments
+      - run: npm run check:boundaries
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: npm run check:postgres
   # ── Supabase migrations ──────────────────────────────────────────────────────
   supabase-migrate:
     name: Push DB migrations
@@ -49,7 +55,7 @@ jobs:
 
       - uses: supabase/setup-cli@v3
         with:
-          version: latest
+          version: '2.122.0'
 
       - name: Push migrations
         run: |
@@ -89,7 +95,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Deploy to Vercel (production)
-        run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx --yes vercel@65.2.0 --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

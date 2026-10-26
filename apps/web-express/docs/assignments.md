@@ -60,3 +60,8 @@ under `/admin/routing`. The old `/admin/assignments` address redirects according
 to its view, preserving history identifiers and pagination. Existing POST routes,
 assignment permissions, acknowledgements and escalation jobs are unchanged.
 See `staff-portal.md` for screen behavior and release limitations.
+
+
+## Repeatable real PostgreSQL check
+
+Run `npm run check:postgres` with Node22 and access to the local Docker socket. The script creates a uniquely named `sf-assignment-check-*` container from a pinned image, with no network or published port and temporary data storage. It reuses the existing synthetic bootstrap, runs ten concurrent inserts and overlapping assignment jobs, and rehearses a dump/restore into a second local database. Cleanup runs even when verification fails. CI and production release checks include this command. The ordinary Node test suite still skips the standalone concurrency case without its prepared fixture; the separate job supplies it. No hosted database, real accounts or application API keys are used.

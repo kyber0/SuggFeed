@@ -47,3 +47,33 @@ test('strict browser cohort stays enforced by development, build and typecheck',
     assert.ok(config.include.includes('src/client/' + file));
   }
 });
+
+test('release and CI preserve verification gates and pinned deployment CLIs',()=>{
+ for(const file of ['.github/workflows/ci.yml','.github/workflows/deploy.yml']){
+  const workflow=readFileSync(resolve(root,file),'utf8');
+  for(const script of ['lint:animations','lint:moderation','lint:assistant','lint:assignments','check:boundaries','check:postgres'])assert.ok(workflow.includes('npm run '+script),file+' omits '+script);
+ }
+ const deploy=readFileSync(resolve(root,'.github/workflows/deploy.yml'),'utf8');
+ assert.match(deploy,/version: '2\.122\.0'/);assert.doesNotMatch(deploy,/version: latest/);
+ assert.match(deploy,/npx --yes vercel@65\.2\.0 --prod/);
+ const pkg=json('apps/web-express/package.json');assert.equal(pkg.scripts['check:postgres'],'node scripts/check-postgres.cjs');
+});
+
+test('supported lockfiles keep Supabase and Node type resolutions aligned',()=>{
+ const lock=json('apps/web-express/package-lock.json');
+ const pnpm=readFileSync(resolve(root,'pnpm-lock.yaml'),'utf8');
+ for(const name of ['@supabase/supabase-js','@types/node']){
+  const npmVersion=lock.packages['node_modules/'+name].version;
+  const versions=Array.from(pnpm.matchAll(new RegExp("^  '"+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+"@([^':(]+)",'gm')),match=>match[1]);
+  assert.ok(versions.length>0,name+' must be present in pnpm');
+  assert.deepEqual([...new Set(versions)],[npmVersion],name+' lock drift');
+ }
+});
+
+test('changed cached client assets use the remediation revision',()=>{
+ const templates=['layout','home','feed','school-customization','staff-board','staff-community','staff-comment-review','admin'];
+ for(const template of templates){
+  const text=readFileSync(resolve(root,'apps/web-express/views/'+template+'.eta'),'utf8');
+  for(const match of text.matchAll(/\/js\/(school-colors|school-design|staff-progress|staff-tools|feed|school-studio-inspector)\.js\?v=([\w-]+)/g))assert.equal(match[2],'20261026-audit-remediation',template+':'+match[1]);
+ }
+});
