@@ -78,9 +78,9 @@ export async function listStaffEvidence(submissionId: string, staffId: string): 
   return (data ?? []).map(fileMetadata);
 }
 /** Never accept a storage path from the browser. Authorization is rechecked in the database. */
-async function authorizedFile(fileId: string, actorId: string | null): Promise<UploadRow> {
+async function authorizedFile(fileId: string, actorId: string | null, publicOnly=false): Promise<UploadRow> {
   if (!UUID.test(fileId)) throw new ProgressError(400, 'Invalid evidence ID.');
-  const { data, error } = await supabaseService.rpc('read_authorized_progress_file', { p_file_id: fileId, p_actor_id: actorId });
+  const { data, error } = await supabaseService.rpc(publicOnly?'read_public_progress_file':'read_authorized_progress_file', publicOnly?{p_file_id:fileId}:{ p_file_id: fileId, p_actor_id: actorId });
   evidenceError(error);
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) throw new ProgressError(404, 'Evidence not found.');
@@ -181,8 +181,9 @@ export async function cancelEvidence(actorId: string, fileId: string) {
   evidenceError(error);
   return { id: fileId, state: 'delete_pending' };
 }
-export async function evidenceDownload(fileId: string, actorId: string | null) {
-  const row = await authorizedFile(fileId, actorId);
+export async function publicEvidenceDownload(fileId:string){return signEvidence(await authorizedFile(fileId,null,true));}
+export async function evidenceDownload(fileId: string, actorId: string | null) {return signEvidence(await authorizedFile(fileId,actorId));}
+async function signEvidence(row:UploadRow){
   if (!['ready', 'published'].includes(row.state) || !row.final_path || !row.mime_type) throw new ProgressError(404, 'Evidence not found.');
   if(row.mime_type==='application/pdf')throw new ProgressError(403,'PDF evidence is quarantined until malware scanning is available. Ask school staff for an image alternative.');
   const { data, error } = await supabaseService.storage.from(EVIDENCE_BUCKET).createSignedUrl(row.final_path, 60,

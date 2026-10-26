@@ -122,12 +122,12 @@ test('evidence routes require staff mutations, same-origin requests, UUIDs and a
   supabasePlatform.from=(()=>{const q:any={select(){return q;},not(){return q;},eq(){return q;},order(){return q;},async range(){return {error:null,data:[SCHOOL]};}};return q;}) as any;
   let role: string | null = null;
   supabaseService.rpc = (async (name) => {
-    if (name === 'read_authorized_progress_file') return { data: [], error: null };
+    if (name === 'read_authorized_progress_file'||name==='read_public_progress_file') return { data: [], error: null };
     if (name === 'claim_progress_upload_cleanup' || name === 'list_progress_sources_to_clean') return { data: [], error: null };
     return { error: { code: '22023' } };
   }) as any;
   const app = express(); app.use(express.json());
-  app.use((req, _res, next) => { req.session = { user: role ? { id: actorId, role } : undefined } as any; runWithSchool({...SCHOOL,actorId:role?actorId:null,role:role as any},next); });
+  app.use((req, _res, next) => { _res.locals.authAssurance='aal2';req.session = { user: role ? { id: actorId, role } : undefined } as any; runWithSchool({...SCHOOL,actorId:role?actorId:null,role:role as any},next); });
   app.get('/internal/cleanup', cleanupHandler); app.use(sameOriginOnly); app.use('/api/evidence', evidenceRouter);
   app.use((_err, _req, res, _next) => res.status(500).json({ success: false, error: 'Unexpected error.' }));
   const server = app.listen(0, '127.0.0.1'); await new Promise<void>(resolve => server.once('listening', resolve));
@@ -180,4 +180,19 @@ test('evidence signing rejects another school and only the demo school can use p
   path=`${SCHOOL.id}/${fileId}/%2e%2e%2fsecret.pdf`;await assert.rejects(()=>evidenceDownload(fileId,null),/another school/);
   assert.equal(signed,1);
  }finally{supabaseService.rpc=rpc;supabaseService.storage.from=storage;}
+});
+
+test('public downloads do not require MFA but private evidence does before signing a URL',async()=>{
+ const oldRpc=supabaseService.rpc,oldStorage=supabaseService.storage.from;let publicFile=true,assured=false,role='moderator',privateReads=0,signed=0;
+ const row={id:fileId,actor_id:actorId,state:'published',mime_type:'image/webp',final_path:`${SCHOOL.id}/${fileId}/final.webp`,temp_path:`${SCHOOL.id}/${fileId}/source`};
+ supabaseService.rpc=(async(name)=>{if(name==='read_public_progress_file')return {data:publicFile?[row]:[],error:null};if(name==='read_authorized_progress_file'){privateReads++;return {data:[row],error:null};}throw Error('Unexpected RPC');}) as any;
+ supabaseService.storage.from=(()=>({async createSignedUrl(){signed++;return {data:{signedUrl:'https://storage.test/synthetic'},error:null};}})) as any;
+ const app=express();app.use((req,res,next)=>{req.session={user:{id:actorId,role}} as any;res.locals.authAssurance=assured?'aal2':'aal1';runWithSchool({...SCHOOL,actorId,role:role as any},next);});app.use('/api/progress-evidence',evidenceRouter);
+ const server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));const url='http://127.0.0.1:'+(server.address() as any).port+'/api/progress-evidence/'+fileId;
+ try{
+  assert.equal((await fetch(url,{redirect:'manual'})).status,302);assert.equal(privateReads,0);assert.equal(signed,1);
+  publicFile=false;const denied=await fetch(url,{redirect:'manual',headers:{Accept:'application/json'}});assert.equal(denied.status,403);assert.equal((await denied.json() as any).code,'MFA_REQUIRED');assert.equal(privateReads,0);assert.equal(signed,1);
+  assured=true;assert.equal((await fetch(url,{redirect:'manual'})).status,302);assert.equal(privateReads,1);
+  role='student';assert.equal((await fetch(url,{redirect:'manual'})).status,404);assert.equal(privateReads,1);
+ }finally{supabaseService.rpc=oldRpc;supabaseService.storage.from=oldStorage;server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
 });
