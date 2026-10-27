@@ -19,7 +19,6 @@ import {
   loadPublishedSubmissions,
   loadSingleSubmission,
   loadComments,
-  sanitizeSearch,
   invalidateCache,
   type SortMode,
 } from "../lib/data";

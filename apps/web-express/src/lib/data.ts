@@ -79,14 +79,13 @@ export async function fetchWithCache<T>(
  * Sanitize untrusted search text before building PostgREST filters.
  */
 export function sanitizeSearch(term: string): string {
-  return term
-    .trim()
-    .replace(/%/g, "\\%")
-    .replace(/_/g, "\\_")
-    .replace(/\(/g, "\\(")
-    .replace(/\)/g, "\\)")
-    .replace(/,/g, "\\,")
-    .replace(/\./g, "\\.");
+  return term.trim().replace(/[\\%_]/g, character => "\\" + character);
+}
+
+/** Quote each PostgREST operand separately from LIKE-pattern escaping. */
+export function searchOrFilter(term: string, columns: readonly ('title'|'description'|'email'|'display_name')[] = ['title','description']): string {
+  const pattern = JSON.stringify('%' + sanitizeSearch(term) + '%');
+  return columns.map(column => column + '.ilike.' + pattern).join(',');
 }
 
 /* ─── Category ID cache ────────────────────────────────────────────────── */
@@ -120,7 +119,7 @@ export function loadPublishedTotal(category='All',search='',report?:(status:Cach
     let query=supabase.from('submissions').select(filtered && !id?'id,categories!inner(name)':'id',{count:'exact',head:true})
       .in('status',['approved','in_progress','resolved']);
     if(filtered)query=id?query.eq('category_id',id):query.eq('categories.name',category);
-    if(term){const safe=sanitizeSearch(term);query=query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);}
+    if(term){query=query.or(searchOrFilter(term));}
     const {count,error}=await query;
     if(error)throw error;
     return count ?? 0;
@@ -159,7 +158,7 @@ export async function loadPublishedSubmissions(opts: {
     query=query.eq('safety_state','clear').in('status',['approved','in_progress','resolved']);
     if(followingUserId)query=query.eq('idea_follows.user_id',followingUserId);
     if(filteredCategory)query=catId?query.eq('category_id',catId):query.eq('categories.name',category);
-    if(term){const safe=sanitizeSearch(term);query=query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);}
+    if(term){query=query.or(searchOrFilter(term));}
     return query;
   };
   const readRows=async()=>{
@@ -326,8 +325,7 @@ export async function loadAllSubmissionsForAdmin(opts: {
 
   if (status && status !== "all") query = query.eq("status", status);
   if (search) {
-    const safe = sanitizeSearch(search);
-    query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
+    query = query.or(searchOrFilter(search));
   }
   query = query.order("created_at", { ascending: status === "pending" }).order("id");
 

@@ -20,8 +20,8 @@
                 option.textContent = link.textContent?.trim() || '';
                 picker.append(option);
             }
-            picker.addEventListener('change', () => { if (picker)
-                location.assign(picker.value); });
+            picker.addEventListener('change', () => { const panel = panels.find(item => '#' + item.id === picker?.value); if (panel)
+                location.hash = panel.id; });
             label.append(picker);
             nav.before(label);
             nav.classList.add('has-section-picker');

@@ -117,3 +117,5 @@ interface SFEmptyStateOptions { heading: string; description: string; icon?: str
 interface Window {sfFeedback?:{pending(element:HTMLElement):()=>void;reset():void;};}
 
 declare function sfRememberVote(id:string,voted:boolean,count:number):void;
+
+declare const DOMPurify: import("dompurify").DOMPurify;

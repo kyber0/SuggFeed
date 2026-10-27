@@ -1,5 +1,5 @@
 import { requireSchool } from './school-scope';
-import { sanitizeSearch } from './data';
+import { searchOrFilter } from './data';
 import { supabaseService } from './supabase';
 
 export const BOARD_STAGES = [
@@ -72,9 +72,7 @@ function boardQuery(filters: BoardFilters, head = false) {
   if(filters.priority&&filters.priority!=='all')query=query.eq('priority',filters.priority);
   if(filters.overdue){const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());query=query.lt('target_date',today).neq('status','resolved');}
   if (filters.search) {
-    // Quoting prevents a search term from introducing another PostgREST filter.
-    const search = sanitizeSearch(filters.search).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    query = query.or(`title.ilike."%${search}%",description.ilike."%${search}%"`);
+    query = query.or(searchOrFilter(filters.search));
   }
   return query;
 }

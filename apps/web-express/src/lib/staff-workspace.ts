@@ -2,7 +2,7 @@ import {summarizeAnalytics} from './analytics';
 import { requireSchool } from './school-scope';
 import { invitationToken, invitationHash } from './school-onboarding';
 import { supabaseService, supabasePlatform } from './supabase';
-import { MODERATION_STATUSES, PER_PAGE, sanitizeSearch } from './data';
+import { MODERATION_STATUSES, PER_PAGE, searchOrFilter } from './data';
 
 export const PRIORITIES = ['low', 'normal', 'high', 'urgent'] as const;
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -33,7 +33,7 @@ export async function loadStaffQueue(filters: ReturnType<typeof queueFilters>, s
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     query = query.lt('target_date', today).not('status', 'in', '(resolved,rejected)');
   }
-  if (filters.search) query = query.or(`title.ilike.%${sanitizeSearch(filters.search)}%,description.ilike.%${sanitizeSearch(filters.search)}%`);
+  if (filters.search) query = query.or(searchOrFilter(filters.search));
   const { data, count, error } = await query.order('created_at', { ascending: filters.status === 'pending' }).order('id')
     .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
   if (error) throw error;
@@ -64,7 +64,7 @@ export async function searchStudentProfiles(search = '', limit = 30) {
     .order('created_at', { ascending: false })
     .limit(limit);
   if (trimmed) {
-    q = q.or(`email.ilike.%${sanitizeSearch(trimmed)}%,display_name.ilike.%${sanitizeSearch(trimmed)}%`);
+    q = q.or(searchOrFilter(trimmed, ['email','display_name']));
   }
   const { data, error } = await q;
   if (error) throw error;
