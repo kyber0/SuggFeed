@@ -1,10 +1,25 @@
 # Audit remediation status — 26 October 2026
 
+## Security follow-up — latest local verification
+
+The Claude-Red follow-up is recorded in [security verification](security-followup-verification.json).
+Both supported installation paths pass: **397 tests, 396 passed, zero failed, one
+native-PostgreSQL test skipped in the standard suite and passed separately**.
+Seven local browser cases and the native 85-table recovery rehearsal pass.
+Both forward migrations are now applied to production, with permissions and
+unchanged application row counts verified. Scoped rollback/reapplication passed
+on disposable PostgreSQL; full hosted recovery remains unverified.
+CodeQL rerun, remaining alert triage and hosted release/recovery evidence remain open.
+See [rollout requirements](../docs/operations/security-followup.md).
+
+
 This is the current status against the historical audit published in `bfa1ac7`.
 Earlier batch JSON files retain their original results; they are not the final
-verification. No hosted migration, account change, deployment or restore was run.
+verification. The latest security follow-up applied the two documented migrations;
+earlier audit-remediation batches made no hosted changes. No application deployment,
+account change or hosted restore was run.
 
-## Results
+## Earlier audit-remediation results
 
 - Target Node **22.23.4**, clean npm installation: **390 tests, 389 passed,
   zero failed, one skipped**. Original baseline: 363/321/41/1.

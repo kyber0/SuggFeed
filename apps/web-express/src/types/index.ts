@@ -12,8 +12,11 @@ export interface AppUser {
 declare module "express-session" {
   interface SessionData {
     user: AppUser | null;
+    csrfToken?: string;
     accessToken?: string;
     refreshToken?: string;
+    lastActivityAt?: number;
+    idleBlocked?: {tokenHash:string;providerSessionId:string|null};
   }
 }
 

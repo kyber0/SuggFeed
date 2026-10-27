@@ -1,7 +1,8 @@
 /// <reference path="./school-contracts.d.ts" />
 interface AppConfirmationOptions { title?: string; confirmLabel?: string; danger?: boolean; }
 type AuthSession = import("@supabase/supabase-js").Session;
-interface AuthSyncResult { success: boolean; user: { id: string }; }
+interface SessionIdleState {expiresAt:number;serverNow:number;warningMs:number;activityIntervalMs:number;}
+interface AuthSyncResult { success: boolean; user: { id: string }; idle?:SessionIdleState|null; }
 interface Window {
   sfFileUpload?: {refresh(root?:ParentNode):void;destroy():void};
   sfSchoolPath: typeof sfSchoolPath;
@@ -22,6 +23,8 @@ interface Window {
   sfCompleteSignIn: (session: AuthSession) => Promise<void>;
   sfStartGoogleSignIn: () => Promise<void>;
   sfSignOut: () => Promise<void>;
+  sfExpireSession: () => void;
+  sfIdleUpdate?: (state:SessionIdleState) => void;
   openAuthModal: (tab?: string) => void;
   closeAuthModal: () => void;
   sfToast?: (message: string, type?: string, title?: string) => void;

@@ -159,3 +159,5 @@ migration and audit history. Local builds do not prove hosted authentication,
 mail delivery, tenant isolation, backups or production settings.
 
 Audit remediation source ownership and remaining operational decisions are documented in [application boundaries](docs/operations/remediation-boundaries.md) and [recovery rehearsal](docs/operations/recovery-rehearsal.md).
+
+Authenticated sessions expire after 30 minutes of inactivity, with a warning two minutes beforehand. See [session inactivity](docs/operations/session-inactivity.md) for activity rules, limits and verification scope.

@@ -1,0 +1,258 @@
+{
+  "date": "2026-10-26",
+  "baseRevision": "2c44a3d",
+  "runtime": "Node 22.23.4",
+  "npm": {
+    "checks": [
+      {
+        "check": "runtime",
+        "exit": 0,
+        "seconds": 0.01
+      },
+      {
+        "check": "audit",
+        "exit": 0,
+        "seconds": 0.47
+      },
+      {
+        "check": "lint:animations",
+        "exit": 0,
+        "seconds": 0.72
+      },
+      {
+        "check": "lint:moderation",
+        "exit": 0,
+        "seconds": 0.77
+      },
+      {
+        "check": "lint:assistant",
+        "exit": 0,
+        "seconds": 0.87
+      },
+      {
+        "check": "lint:assignments",
+        "exit": 0,
+        "seconds": 0.67
+      },
+      {
+        "check": "typecheck",
+        "exit": 0,
+        "seconds": 17.4
+      },
+      {
+        "check": "build",
+        "exit": 0,
+        "seconds": 13.67
+      },
+      {
+        "check": "tests",
+        "exit": 0,
+        "seconds": 123.41
+      }
+    ],
+    "tests": {
+      "tests": 397,
+      "pass": 396,
+      "fail": 0,
+      "skipped": 1
+    }
+  },
+  "pnpm": {
+    "checks": [
+      {
+        "check": "runtime",
+        "exit": 0,
+        "seconds": 0.01
+      },
+      {
+        "check": "audit",
+        "exit": 0,
+        "seconds": 0.52
+      },
+      {
+        "check": "lint:animations",
+        "exit": 0,
+        "seconds": 1.07
+      },
+      {
+        "check": "lint:moderation",
+        "exit": 0,
+        "seconds": 0.97
+      },
+      {
+        "check": "lint:assistant",
+        "exit": 0,
+        "seconds": 1.22
+      },
+      {
+        "check": "lint:assignments",
+        "exit": 0,
+        "seconds": 0.97
+      },
+      {
+        "check": "typecheck",
+        "exit": 0,
+        "seconds": 18.68
+      },
+      {
+        "check": "build",
+        "exit": 0,
+        "seconds": 15.25
+      },
+      {
+        "check": "tests",
+        "exit": 0,
+        "seconds": 109.98
+      }
+    ],
+    "tests": {
+      "tests": 397,
+      "pass": 396,
+      "fail": 0,
+      "skipped": 1
+    }
+  },
+  "browser": {
+    "cases": [
+      {
+        "case": "warning-and-expiry",
+        "width": 320,
+        "passed": true
+      },
+      {
+        "case": "warning-and-expiry",
+        "width": 375,
+        "passed": true
+      },
+      {
+        "case": "warning-and-expiry",
+        "width": 768,
+        "passed": true
+      },
+      {
+        "case": "warning-and-expiry",
+        "width": 1440,
+        "passed": true
+      },
+      {
+        "case": "keyboard-explicit-continue",
+        "width": 375,
+        "passed": true
+      },
+      {
+        "case": "trusted-studio-iframe-activity",
+        "width": 1440,
+        "passed": true
+      },
+      {
+        "case": "other-tab-activity-preserves-session",
+        "passed": true
+      }
+    ],
+    "pageErrors": 0,
+    "scope": "Synthetic local sessions and controlled time; no production accounts"
+  },
+  "nativePostgres": {
+    "image": "postgres@sha256:d81f7b51697014367236d07ec58b54153fc28f828b72bf247fe5c7487520bcb0",
+    "hostedWrites": false,
+    "portsPublished": false,
+    "migrationReplay": "passed",
+    "concurrency": "passed",
+    "restoredTables": 85,
+    "restore": "passed",
+    "authorization": "passed",
+    "containerRemoved": true,
+    "seconds": 30.43
+  },
+  "boundaryCheck": {
+    "findings": 0,
+    "strictExit": 0
+  },
+  "runtimeGuard": "Buffer and MIME-value types checked before document length; HTTP arrays/objects rejected",
+  "privateAuthorization": "Owner/receipt preserved; unassigned moderators denied; public audience separated from staff MFA",
+  "sessionGuard": "Persistent verified-provider-session fingerprint; cookie loss and refresh do not revive expired guard; account deletion cascades",
+  "migrations": [
+    "202610260003_private_file_authorization.sql",
+    "202610260004_provider_idle_sessions.sql"
+  ],
+  "hostedMigrationsApplied": true,
+  "deployed": false,
+  "codeqlRerun": "Pending; alert #31 not dismissed",
+  "limitations": [
+    "Remaining CodeQL alerts require complete data-flow traces.",
+    "Hosted backup/restore point not established.",
+    "Active main protection and Vercel gates unverified.",
+    "No live poisoned-school-document test; citation IDs do not prove semantic entailment.",
+    "Provider JWTs are not globally revoked by the application guard.",
+    "Production latency of the provider-session lookup was not benchmarked."
+  ],
+  "hostedMigrationVerification": {
+    "appliedAt": "2026-10-26T13:25:43.866612+00:00",
+    "atomic": true,
+    "applicationCountsPreserved": true,
+    "verified": {
+      "versions": [
+        "202610260003",
+        "202610260004"
+      ],
+      "providerRls": true,
+      "publicFileOwner": "tenant_executor",
+      "browserRpcAccess": false,
+      "providerFunction": true,
+      "serviceRpcAccess": true,
+      "assignmentGuarded": true,
+      "browserTableAccess": false,
+      "publicFileFunction": true,
+      "tenantSchemaCreate": false,
+      "accountDeletionCascades": true,
+      "serviceAssignmentAccess": true
+    },
+    "rpcSmoke": [
+      {
+        "role": "service",
+        "status": 400,
+        "code": "22023",
+        "passed": true
+      },
+      {
+        "role": "anonymous",
+        "status": 401,
+        "code": "42501",
+        "passed": true
+      }
+    ],
+    "rollbackRehearsal": {
+      "status": "passed",
+      "rollback": "passed",
+      "businessRowsUnchanged": true,
+      "reapply": true
+    },
+    "backupScope": "Affected function definitions, permissions and migration metadata; not a full production disaster-recovery backup",
+    "applicationDeployed": false
+  },
+  "csrfRedirectFollowup": {
+    "date": "2026-10-27",
+    "runtime": "Node 22.23.4",
+    "tests": {
+      "total": 399,
+      "passed": 398,
+      "failed": 0,
+      "skipped": 1
+    },
+    "focusedHttpTests": 17,
+    "scopedLints": "passed (animations, moderation, assistant, assignments)",
+    "boundaries": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "csrf": "Matching Origin/Referer or session-bound synchronizer token required; explicit cross-site or invalid origins always rejected",
+    "logoutRedirect": "Only a reconstructed invitation token path or home; JSON logout unchanged",
+    "dependenciesAdded": false,
+    "migrationsAdded": false,
+    "codeql": "Fresh PR scan pending after push; no alert dismissed",
+    "limitations": [
+      "No production deployment or live-account flow exercised in this follow-up",
+      "Standard suite skips the native PostgreSQL case; existing PR CI runs it separately",
+      "Other pre-existing CodeQL alerts remain outside this focused two-alert fix"
+    ]
+  }
+}

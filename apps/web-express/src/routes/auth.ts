@@ -1,7 +1,9 @@
+import {providerKey,providerIdle} from '../lib/session-idle-store';
+import {blockedIdleToken,idleState,idleExpired} from '../lib/session-idle';
 import { safeAccountReturn } from '../lib/navigation-context';
 import { Router, Request, Response, NextFunction } from "express";
 import { supabasePlatform } from "../lib/supabase";
-import { sameOriginOnly } from "../lib/security";
+import { sameOriginOnly, csrfToken } from "../lib/security";
 
 const router = Router();
 router.use((_req, res, next) => { res.setHeader("Cache-Control", "no-store"); res.locals.accountArea = true; next(); });
@@ -18,7 +20,8 @@ router.get(["/callback", "/callback/client", "/recovery"], (req, res) => {
 router.get("/confirm", (_req,res) => { res.setHeader("Referrer-Policy","no-referrer");res.render("auth-confirm",{title:"Confirm your email — SuggFeed"}); });
 
 router.get("/session", (req, res) => {
-  res.json({ success: true, user: req.session.user ?? null });
+  if(req.session.idleBlocked&&!req.session.user)return idleExpired(res);
+  res.json({ success: true, user: req.session.user ?? null, idle:res.locals.sessionIdle||idleState(req), csrfToken:csrfToken(req) });
 });
 
 router.post("/session", sameOriginOnly, (req: Request, res: Response, next: NextFunction) => {
@@ -33,9 +36,12 @@ router.post("/session", sameOriginOnly, (req: Request, res: Response, next: Next
     }
     const { data: { user }, error } = await supabasePlatform.auth.getUser(access_token);
     if (error || !user) return res.status(401).json({ success: false, error: "Invalid or expired sign-in. Please try again." });
+    if(blockedIdleToken(req,access_token))return idleExpired(res);
     const { data: profile, error: profileError } = await supabasePlatform.from("profiles")
       .select("role, display_name").eq("id", user.id).maybeSingle();
     if (profileError) throw new Error("Could not load account permissions.");
+    const key=providerKey(access_token,user.id);if(!key)return res.status(401).json({success:false,error:'Start a fresh sign-in to continue.'});
+    const activity=await providerIdle(key,'check',user.id);if(!activity.allowed)return idleExpired(res);
     // Repeated events for the same user update the session; changing identity
     // always gets a new session ID to prevent session fixation.
     if (req.session.user?.id !== user.id) {
@@ -49,21 +55,27 @@ router.post("/session", sameOriginOnly, (req: Request, res: Response, next: Next
       avatar_url: user.user_metadata?.avatar_url,
       role: profile?.role ?? "student",
     };
+    req.session.lastActivityAt=activity.lastActivityAt;
+    delete req.session.idleBlocked;
     req.session.accessToken = access_token;
     req.session.refreshToken = refresh_token;
     // Save before responding: Vercel may finish the invocation immediately.
     await new Promise<void>((resolve, reject) => req.session.save(err => err ? reject(err) : resolve()));
-    return res.json({ success: true, user: req.session.user });
+    return res.json({ success: true, user: req.session.user, idle:idleState(req,activity.serverNow) });
   })().catch(next);
 });
 
 router.post("/signout", sameOriginOnly, (req, res, next) => {
-  req.session.destroy(err => {
-    if (err) return next(err);
-    res.clearCookie("connect.sid", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
-    if (req.is("application/json")) return res.json({ success: true });
-    return res.redirect(303, safeAccountReturn(req.body?.returnTo) || "/");
-  });
+ void (async()=>{
+  const key=req.session.user?providerKey(req.session.accessToken,req.session.user.id):null;
+  if(key)await providerIdle(key,'revoke',req.session.user!.id);
+  await new Promise<void>((resolve,reject)=>req.session.destroy(error=>error?reject(error):resolve()));
+  res.clearCookie("connect.sid", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
+  if (req.is("application/json"))return res.json({ success: true });
+  // Account switching only returns to an invitation, never an arbitrary URL.
+  const invitation = typeof req.body?.returnTo === 'string' && /^\/schools\/invitations\/([a-f0-9]{64})$/.exec(req.body.returnTo);
+  return res.redirect(303, invitation ? "/schools/invitations/" + encodeURIComponent(invitation[1]) : "/");
+ })().catch(next);
 });
 
 export default router;

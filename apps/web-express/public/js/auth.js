@@ -19,15 +19,51 @@
     }
     var syncingToken;
     var syncPromise;
-    var navigating = false;
+    var navigating = false, expiringSession = false;
+    var autoRestoreBlocked = config.dataset.idleExpired === 'true';
+    try {
+        if (!config.dataset.user && (localStorage.getItem('sf-session-expired') || Number(localStorage.getItem('sf-session-deadline')) > 0 && Number(localStorage.getItem('sf-session-deadline')) <= Date.now()))
+            autoRestoreBlocked = true;
+        if (config.dataset.user && !autoRestoreBlocked)
+            localStorage.removeItem('sf-session-expired');
+    }
+    catch (_) { }
+    function rememberIdle(state) {
+        if (!state)
+            return;
+        try {
+            localStorage.setItem('sf-session-deadline', String(state.expiresAt));
+        }
+        catch (_) { }
+        window.sfIdleUpdate?.(state);
+    }
+    window.sfExpireSession = function () {
+        if (expiringSession)
+            return;
+        expiringSession = true;
+        autoRestoreBlocked = true;
+        try {
+            localStorage.setItem('sf-session-expired', 'true');
+        }
+        catch (_) { }
+        window.sfSubmissionRecovery?.preserveForSignIn();
+        window.dispatchEvent(new CustomEvent('sf:session-expired'));
+        sb.auth.stopAutoRefresh?.();
+        void Promise.resolve(window.sfClearSchoolState?.()).catch(function () { });
+        void sb.auth.signOut({ scope: 'local' }).catch(function () { });
+        window.sfAuthNavigate('/account/home?session=expired');
+    };
     async function request(url, options = {}) {
         var controller = new AbortController();
         var timeout = setTimeout(function () { controller.abort(); }, 15000);
         try {
             var response = await fetch(url, { credentials: 'same-origin', cache: 'no-store', signal: controller.signal, ...options });
             var body = await response.json();
-            if (!response.ok || !body.success)
+            if (!response.ok || !body.success) {
+                if (body.code === 'SESSION_IDLE_EXPIRED')
+                    window.sfExpireSession();
                 throw new Error(body.error || 'The site could not finish signing you in. Please try again.');
+            }
             return body;
         }
         finally {
@@ -49,6 +85,13 @@
             if (!persisted.user || persisted.user.id !== result.user.id) {
                 throw new Error('Your sign-in could not be saved. Allow cookies for this site and try again.');
             }
+            autoRestoreBlocked = false;
+            try {
+                localStorage.removeItem('sf-session-expired');
+            }
+            catch (_) { }
+            rememberIdle(persisted.idle);
+            sb.auth.startAutoRefresh?.();
             return result;
         }).catch(function (error) {
             syncingToken = null;
@@ -74,6 +117,7 @@
         window.sfAuthNavigate();
     };
     window.sfStartGoogleSignIn = async function () {
+        await window.sfAuthReady;
         window.sfSubmissionRecovery?.preserveForSignIn();
         try {
             sessionStorage.setItem('sf-auth-return', window.location.pathname + window.location.search);
@@ -104,6 +148,8 @@
     // The callback page owns code exchange and navigation. Events never reload it.
     // Keep this callback synchronous; run I/O after Supabase releases its auth lock.
     sb.auth.onAuthStateChange(function (event, session) {
+        if (expiringSession || autoRestoreBlocked && !callbackPage)
+            return;
         if (!callbackPage && ((event === 'SIGNED_OUT' && config.dataset.user) ||
             (event === 'SIGNED_IN' && session && config.dataset.user !== session.user.id))) {
             setTimeout(async function () {
@@ -128,6 +174,12 @@
             setTimeout(function () { window.sfSyncSession(session).catch(function () { }); }, 0);
         }
     });
+    if (autoRestoreBlocked && !callbackPage) {
+        sb.auth.stopAutoRefresh?.();
+        window.sfAuthReady = sb.auth.signOut({ scope: 'local' }).then(function () { return null; }, function () { return null; });
+        window.sfToast?.('You were signed out after inactivity. Sign in again to continue.', 'info');
+        return;
+    }
     window.sfAuthReady = sb.auth.getSession().then(async function (result) {
         if (result.error)
             throw result.error;

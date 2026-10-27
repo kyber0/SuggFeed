@@ -1,9 +1,10 @@
+import {requireStrongAuth} from '../lib/auth-assurance';
 import { schoolUser } from '../lib/school-scope';
 import { Router, Request, Response, NextFunction } from 'express';
 import { timingSafeEqual } from 'node:crypto';
 import { staffRole, UUID } from '../lib/staff-workspace';
 import { ProgressError } from '../lib/progress';
-import { reserveEvidence, finalizeEvidence, cancelEvidence, evidenceDownload, cleanupAllSchoolEvidence } from '../lib/progress-evidence';
+import { reserveEvidence, finalizeEvidence, cancelEvidence, evidenceDownload, publicEvidenceDownload, cleanupAllSchoolEvidence } from '../lib/progress-evidence';
 
 const router = Router();
 const run = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => {
@@ -18,8 +19,12 @@ router.param('id', (_req, res, next, id) => {
 });
 // This public entry point still authorizes publication state and private audience for every download.
 router.get('/:id', run(async (req, res) => {
-  const url = await evidenceDownload(req.params.id as string, schoolUser(req)?.id ?? null);
-  return res.redirect(302, url);
+  try{return res.redirect(302,await publicEvidenceDownload(req.params.id as string));}
+  catch(error){if(!(error instanceof ProgressError)||error.status!==404)throw error;}
+  const actor=schoolUser(req);
+  if(!actor||!staffRole(actor.role))throw new ProgressError(404,'Evidence not found.');
+  let assured=false;requireStrongAuth(req,res,()=>{assured=true;});if(!assured)return;
+  return res.redirect(302,await evidenceDownload(req.params.id as string,actor.id));
 }));
 router.use((req, res, next) => {
   if (!schoolUser(req)) return res.status(401).json({ success: false, error: 'Sign in to the staff portal.' });
