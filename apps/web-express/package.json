@@ -30,7 +30,8 @@
     "lint:assignments": "eslint --config eslint.assignment.config.mjs src/lib/assignment/*.ts src/routes/assignments.ts src/client/assignments.ts",
     "build:contracts": "node scripts/build-school-contracts.cjs",
     "check:boundaries": "node scripts/check-boundaries.cjs",
-    "check:postgres": "node scripts/check-postgres.cjs"
+    "check:postgres": "node scripts/check-postgres.cjs",
+    "security:live": "node scripts/check-live-security.cjs"
   },
   "dependencies": {
     "@google/genai": "2.31.0",
