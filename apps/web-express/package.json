@@ -52,7 +52,7 @@
     "unpdf": "1.9.1"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite": "0.5.11",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
