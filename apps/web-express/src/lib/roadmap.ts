@@ -1,6 +1,6 @@
 import {schoolCategory,schoolCategories} from './school-customization';
 import { supabase } from './supabase';
-import { sanitizeSearch, fetchWithCache, type CacheStatus } from './data';
+import { sanitizeSearch, searchOrFilter, fetchWithCache, type CacheStatus } from './data';
 
 export const ROADMAP_STAGES = ['approved', 'in_progress', 'resolved'] as const;
 export const ROADMAP_PER_STAGE = 8;
@@ -63,7 +63,7 @@ async function readRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
     const loadItems = filters.view === 'board' && visible;
     let query = supabase.from('submissions').select(`${publicColumns},${categoryJoin}`, { count: 'exact', head: !loadItems }).eq('status', stage);
     if (filters.category !== 'all') query = query.eq('category_id', schoolCategory(filters.category)?.id || filters.category);
-    if (filters.search) query = query.or(`title.ilike.%${sanitizeSearch(filters.search)}%,description.ilike.%${sanitizeSearch(filters.search)}%`);
+    if (filters.search) query = query.or(searchOrFilter(filters.search));
     if (loadItems) {
       if (stage === 'resolved') {
         query = query.order('resolved_at', { ascending: false, nullsFirst: false }).order('vote_count', { ascending: false }).order('id');
@@ -96,7 +96,7 @@ async function readRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
     treeData = await Promise.all((aggregates || []).map(async (aggregate: any) => {
       let query = supabase.from('submissions').select(`${publicColumns},categories!inner(name)`)
         .eq('categories.name', aggregate.name).in('status', filters.stage === 'all' ? [...ROADMAP_STAGES] : [filters.stage]);
-      if (filters.search) query = query.or(`title.ilike.%${sanitizeSearch(filters.search)}%,description.ilike.%${sanitizeSearch(filters.search)}%`);
+      if (filters.search) query = query.or(searchOrFilter(filters.search));
       query = query.order('vote_count', { ascending: false }).order('id');
       const page = filters.category === 'all' ? 1 : filters.page;
       const { data, error: previewError } = await query.range((page - 1) * ROADMAP_PER_STAGE, page * ROADMAP_PER_STAGE - 1);
@@ -111,7 +111,7 @@ async function readRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
   } else if (filters.view === 'done') {
     let query = supabase.from('submissions').select(`${publicColumns},${filters.category === 'all' ? 'categories(name)' : 'categories!inner(name)'}`).eq('status', 'resolved');
     if (filters.category !== 'all') query = query.eq('category_id', schoolCategory(filters.category)?.id || filters.category);
-    if (filters.search) query = query.or(`title.ilike.%${sanitizeSearch(filters.search)}%,description.ilike.%${sanitizeSearch(filters.search)}%`);
+    if (filters.search) query = query.or(searchOrFilter(filters.search));
     const { data, error } = await query.order('resolved_at', { ascending: false, nullsFirst: false }).order('id')
       .range((filters.page - 1) * ROADMAP_DONE_PER_PAGE, filters.page * ROADMAP_DONE_PER_PAGE - 1);
     if (error) throw error;
@@ -122,7 +122,7 @@ async function readRoadmapPage(filters: ReturnType<typeof roadmapFilters>) {
     let query = supabase.from('submissions').select(`${publicColumns},${filters.category === 'all' ? 'categories(name)' : 'categories!inner(name)'}`)
       .in('status', filters.stage === 'all' ? [...ROADMAP_STAGES] : [filters.stage]);
     if (filters.category !== 'all') query = query.eq('category_id', schoolCategory(filters.category)?.id || filters.category);
-    if (filters.search) query = query.or(`title.ilike.%${sanitizeSearch(filters.search)}%,description.ilike.%${sanitizeSearch(filters.search)}%`);
+    if (filters.search) query = query.or(searchOrFilter(filters.search));
     const { data, error } = await query.order('updated_at', { ascending: false }).order('id')
       .range((filters.page - 1) * ROADMAP_TIMELINE_PER_PAGE, filters.page * ROADMAP_TIMELINE_PER_PAGE - 1);
     if (error) throw error;

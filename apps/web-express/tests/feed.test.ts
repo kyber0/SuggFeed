@@ -1,3 +1,4 @@
+import {htmlElements} from './support/html';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -202,7 +203,7 @@ test('loaded feed cards escape content and expose native title links without dup
     status: 'resolved', categories: { name: '<img>' }, author: { display_name: 'Student <script>' },
     created_at: '2026-10-01T08:00:00Z', vote_count: 50, comment_count: 2,
   },votedIds:[],voteStateKnown:true});
-  assert.doesNotMatch(html, /<script>|<img\b|onfocus=/);
+  assert.equal(htmlElements(html).some(element=>['script','img'].includes(element.tagName)||element.attrs.some(attr=>attr.name==='onfocus')),false);
   assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
   assert.match(html, /href="\/idea\/idea-%22%3Cunsafe%3E"/);
   assert.match(html, /<h2 class="post-title"><a class="post-title-link"/);

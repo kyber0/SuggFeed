@@ -32,7 +32,7 @@ test('staff search is applied before pagination and existing response notes are 
     assert.deepEqual(calls.find(c => c[0] === 'range'), ['range', 15, 29]);
     assert.deepEqual(calls.find(c => c[0] === 'order'), ['order', 'created_at', { ascending: true }]);
     assert.ok(calls.findIndex(c => c[0] === 'or') < calls.findIndex(c => c[0] === 'range'));
-    assert.match(String(calls.find(c => c[0] === 'or')![1]), /description.ilike.%library%/);
+    assert.equal(calls.find(c => c[0] === 'or')![1], 'title.ilike."%library%",description.ilike."%library%"');
   } finally { supabaseService.from = original; }
 });
 

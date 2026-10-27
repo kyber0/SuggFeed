@@ -45,7 +45,9 @@
  async function replaceFragment(payload:any,sequence:number){
   if(editing){deferredFragment={payload,sequence};return;}
   fragmentSequence=sequence;
-  const parsed=new DOMParser().parseFromString(payload.html,'text/html');parsed.querySelectorAll('script').forEach(el=>el.remove());
+  if(typeof DOMPurify==='undefined'){send('render-error');return;}
+  const safeHtml=DOMPurify.sanitize(payload.html,{WHOLE_DOCUMENT:true,ADD_TAGS:['link','use'],FORBID_TAGS:['script','iframe','object','embed','base','meta'],FORBID_ATTR:['srcdoc']});
+  const parsed=new DOMParser().parseFromString(safeHtml,'text/html');
   const desired=Array.from(parsed.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map(link=>new URL(link.getAttribute('href')||'',location.origin)).filter(url=>url.origin===origin&&url.pathname.startsWith('/css/')).map(url=>url.href);
   try{await Promise.all(desired.map(href=>{
    const pending=stylesheetLoads.get(href);if(pending)return pending;

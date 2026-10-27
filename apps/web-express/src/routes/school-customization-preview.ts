@@ -1,3 +1,4 @@
+import {scriptlessPreviewHtml} from '../lib/preview-html';
 import {Router,type Request,type Response,type NextFunction} from 'express';
 import {Eta} from 'eta';
 import path from 'node:path';
@@ -16,17 +17,17 @@ function options(value:Record<string,unknown>){const page=String(value.page||'ho
  return {page,scenario,theme,view:page==='roadmap'?variant:view,variant};
 }
 export function renderSchoolPreview(input:Parameters<typeof buildSchoolPreviewModel>[0],base:string,instanceId:string,revision=0){
+ const theme=input.theme==='dark'?'dark':'light';
+ if(input.theme!==theme||!PREVIEW_PAGES.includes(input.page as any)||!PREVIEW_SCENARIOS.includes(input.scenario as any))throw Object.assign(new Error('Choose a supported preview state.'),{status:400});
  const model=buildSchoolPreviewModel(input);const disabledRoadmap=input.page==='roadmap'&&(!input.configuration.features.roadmap||input.scenario==='disabled');const template=disabledRoadmap?'school-message':input.page==='submit'?'home':input.page==='inbox'?'private-inbox':input.page==='staff'?(input.variant==='overview'?'admin-overview':['reviews','review-detail'].includes(input.variant||'')?'admin':input.variant==='my-work'?'assignments':'staff-board'):input.page;if(disabledRoadmap)Object.assign(model,{title:'Roadmap is disabled',message:'This school has disabled the student roadmap. You can still browse community ideas.',nextHref:'/feed',nextLabel:'Browse ideas'});
- let html=schoolHtml(eta.render(template,model),model.schoolBase);
- html=html.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi,'');
- html=html.replace(/<link\b[^>]*rel="manifest"[^>]*>/gi,'').replace(/<link\b[^>]*href="\/css\/motion-transitions\.css[^"]*"[^>]*>/gi,'');
+ let html=scriptlessPreviewHtml(schoolHtml(eta.render(template,model),model.schoolBase));
  html=html.replace(/<a\b[^>]*>/gi,tag=>tag.replace(/\shref="([^"]*)"/i,(_all,href:string)=>' href="#studio" data-studio-route="'+href+'"').replace(/\starget="[^"]*"/gi,''));
  html=html.replace(/<form\b[^>]*>/gi,tag=>tag.replace(/\saction="[^"]*"/gi,''));
  html=html.replace(/<input\b[^>]*type="file"[^>]*>/gi,tag=>tag.replace(/\sdisabled(?:="[^"]*")?/gi,'').replace(/\/?\s*>$/,' disabled>'));
  html=html.replace(new RegExp(model.schoolBase+'/branding/([a-f0-9-]{36})','gi'),base+'/assets/$1');
- html=html.replace(/data-theme="[^"]*"/,'data-theme="'+input.theme+'"').replace('<html lang="en"','<html data-studio-mode="edit" data-text-size="compact" lang="en"');
+ html=html.replace(/data-theme="[^"]*"/,'data-theme="'+theme+'"').replace('<html lang="en"','<html data-studio-mode="edit" data-text-size="compact" lang="en"');
  const data=JSON.stringify({instanceId,revision,base,schoolName:input.school.name,scenario:input.scenario,page:input.page,configuration:input.configuration,variant:input.variant||PREVIEW_VARIANTS[input.page]?.[0]?.[0],example:model.submission}).replace(/</g,'\\u003c');
- return html.replace('</head>','<link rel="stylesheet" href="/css/school-studio.css?v=20261025-canvas-edit"/></head>').replace('</body>','<script type="application/json" id="school-studio-data">'+data+'</script><script defer src="/js/file-upload.js?v=20261021-upload"></script><script defer src="/js/school-colors.js?v=20261020-studio-colors"></script><script defer src="/js/school-design.js?v=20261025-landing-ideas"></script><script defer src="/js/animations.js?v=20261022-home-polish"></script><script defer src="/js/school-studio-content.js?v=20261025-canvas-edit"></script><script defer src="/js/school-studio-frame.js?v=20261025-canvas-edit"></script><script defer src="/js/controls.js?v=20261024-controls"></script></body>');
+ return html.replace('</head>','<link rel="stylesheet" href="/css/school-studio.css?v=20261025-canvas-edit"/></head>').replace('</body>','<script type="application/json" id="school-studio-data">'+data+'</script><script defer src="/js/file-upload.js?v=20261021-upload"></script><script defer src="/js/school-colors.js?v=20261020-studio-colors"></script><script defer src="/js/school-design.js?v=20261025-landing-ideas"></script><script defer src="/js/animations.js?v=20261022-home-polish"></script><script defer src="/js/school-studio-content.js?v=20261025-canvas-edit"></script><script defer src="/js/vendor/dompurify.js?v=3.4.17"></script><script defer src="/js/school-studio-frame.js?v=20261027-sanitized-preview"></script><script defer src="/js/controls.js?v=20261024-controls"></script></body>');
 }
 router.get(paths.map(p=>p+'/preview/content'),run(async(req,res)=>{
  const context=await authorizeSchoolStudio(req,res);if(!context)return;const value=options(req.query);const instance=String(req.query.instance||'');if(!/^[a-f0-9-]{36}$/i.test(instance))return res.status(400).send('Open this preview from the customization workspace.');

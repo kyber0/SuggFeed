@@ -62,7 +62,8 @@ Deno.test("review and comment email notifications remain; legacy tokens never tr
       "https://api.resend.com/emails",
     ]);
     assertEquals(requests[0].payload.to, ["student@example.test"]);
-    assertEquals(requests[0].payload.html.includes("https://school.example.test/idea/idea-id"), true);
+    const links=[...requests[0].payload.html.matchAll(/href="([^"]*)"/g)].map(match=>new URL(match[1]));
+    assertEquals(links.some(url=>url.origin==="https://school.example.test"&&url.pathname==="/idea/idea-id"),true);
     assertEquals(requests[1].payload.text.includes("Additional seating would help."), true);
     assertEquals(JSON.stringify(requests).includes("retired-device"), false);
   } finally {

@@ -14,3 +14,7 @@ const lenis=Buffer.from(fs.readFileSync(path.join(lenisRoot,'lenis.min.js'),'utf
 fs.writeFileSync(path.join(target,'lenis.js'),lenis);
 fs.copyFileSync(path.join(lenisRoot,'../LICENSE'),path.join(target,'lenis.LICENSE'));
 fs.writeFileSync(path.join(target,'lenis-version.json'),JSON.stringify({version:JSON.parse(fs.readFileSync(path.join(lenisRoot,'../package.json'),'utf8')).version,sha256:crypto.createHash('sha256').update(lenis).digest('hex')},null,2)+'\n');
+
+const purifyRoot=path.dirname(require.resolve('dompurify'));
+fs.writeFileSync(path.join(target,'dompurify.js'),fs.readFileSync(path.join(purifyRoot,'purify.min.js'),'utf8').replace(/\/\/# sourceMappingURL=.*$/m,''));
+fs.copyFileSync(path.join(purifyRoot,'../LICENSE'),path.join(target,'dompurify.LICENSE'));

@@ -1,3 +1,4 @@
+import {htmlElements} from './support/html';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -14,10 +15,12 @@ test('all Eta templates compile, including authenticated staff view', () => {
       if (name.endsWith('.eta')) {
         const source = fs.readFileSync(file, 'utf8');
         assert.doesNotThrow(() => eta.compile(source), file);
-        assert.equal(/<script>/.test(source), false, file + ' still has inline JavaScript');
-        assert.equal(/\bon[a-z]+\s*=/i.test(source), false, file + ' still has an inline event handler');
-        for (const script of source.matchAll(/<script src="(\/js\/[^?"]+)/g)) {
-          assert.equal(fs.existsSync(path.join(__dirname, '../public', script[1])), true, 'Missing generated script ' + script[1]);
+        const elements=htmlElements(source);
+        assert.equal(elements.some(element=>element.tagName==='script'&&!element.attrs.some(attr=>attr.name==='src')&&!element.attrs.some(attr=>attr.name==='type'&&attr.value==='application/json')), false, file + ' still has inline JavaScript');
+        assert.equal(elements.some(element=>element.attrs.some(attr=>attr.name.startsWith('on'))), false, file + ' still has an inline event handler');
+        for (const element of elements.filter(element=>element.tagName==='script')) {
+          const sourcePath=element.attrs.find(attr=>attr.name==='src')?.value.split('?')[0];
+          if(sourcePath?.startsWith('/js/'))assert.equal(fs.existsSync(path.join(__dirname,'../public',sourcePath)),true,'Missing generated script '+sourcePath);
         }
       }
     }

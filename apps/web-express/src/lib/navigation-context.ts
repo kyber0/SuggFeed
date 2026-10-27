@@ -32,5 +32,11 @@ export function safeAccountReturn(value: unknown): string | null {
   if (typeof value !== 'string' || value.length > 2048 || /[\\\x00-\x20\x7f]|%(?:2f|5c|25|2e)/i.test(value)) return null;
   if (!/^\/s\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/|$)/.test(value) && !/^\/(?:platform\/(?:schools|customization)|schools\/invitations\/[^/]+|account\/security)(?:[/?#]|$)/.test(value)) return null;
   const url = new URL(value, 'https://suggfeed.invalid');
-  return url.origin === 'https://suggfeed.invalid' && url.pathname === value.split(/[?#]/)[0] ? value : null;
+  if(url.origin !== 'https://suggfeed.invalid' || url.pathname !== value.split(/[?#]/)[0]) return null;
+  // Construct the trusted route root rather than redirecting to a request URL.
+  if(value.startsWith('/s/')) return '/s/' + value.slice('/s/'.length);
+  if(value.startsWith('/platform/schools')) return '/platform/schools' + value.slice('/platform/schools'.length);
+  if(value.startsWith('/platform/customization')) return '/platform/customization' + value.slice('/platform/customization'.length);
+  if(value.startsWith('/schools/invitations/')) return '/schools/invitations/' + value.slice('/schools/invitations/'.length);
+  return '/account/security' + value.slice('/account/security'.length);
 }
