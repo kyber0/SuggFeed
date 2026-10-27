@@ -116,9 +116,9 @@ test('cross-site login, logout and writes are rejected; malformed referer does n
 });
 
 test('session sync rejects non-JSON and invalid tokens', async () => {
-  const form = await fetch(origins[0] + '/auth/session', { method: 'POST', body: 'access_token=anything' });
+  const form = await fetch(origins[0] + '/auth/session', { method: 'POST', headers: { Origin: origins[0] }, body: 'access_token=anything' });
   assert.equal(form.status, 415);
-  const invalid = await fetch(origins[0] + '/auth/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token: 'invalid' }) });
+  const invalid = await fetch(origins[0] + '/auth/session', { method: 'POST', headers: { Origin: origins[0], 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token: 'invalid' }) });
   assert.equal(invalid.status, 401);
   assert.equal(invalid.headers.get('set-cookie'), null);
 });
@@ -144,7 +144,7 @@ test('permission lookup failures fail closed without leaking internals', async (
 
 test('logout deletes shared session so another instance no longer recognizes it', async () => {
   const cookie = await login();
-  const response = await fetch(origins[1] + '/auth/signout', { method: 'POST', headers: { Cookie: cookie, 'Content-Type': 'application/json' }, body: '{}' });
+  const response = await fetch(origins[1] + '/auth/signout', { method: 'POST', headers: { Origin: origins[1], Cookie: cookie, 'Content-Type': 'application/json' }, body: '{}' });
   assert.equal(response.status, 200);
   assert.match(response.headers.get('set-cookie'), /Expires=Thu, 01 Jan 1970/);
   await response.json();
@@ -201,7 +201,7 @@ test('global profile admin does not grant a school moderator role', async () => 
 export {};
 
 test('switching invitation accounts returns to that invitation and rejects external return addresses',async()=>{
- for(const [destination,expected]of [['/schools/invitations/'+'a'.repeat(64),'/schools/invitations/'+'a'.repeat(64)],['https://attacker.example/','/']]){
+ for(const [destination,expected]of [['/schools/invitations/'+'a'.repeat(64),'/schools/invitations/'+'a'.repeat(64)],['https://attacker.example/','/'],['//attacker.example/','/'],['/\\attacker.example','/'],['/schools/invitations/'+ 'a'.repeat(64)+'?next=https://attacker.example','/'],['/s/school/feed','/']]){
   const cookie=await login();const response=await fetch(origins[0]+'/auth/signout',{method:'POST',redirect:'manual',headers:{Origin:origins[0],Cookie:cookie},body:new URLSearchParams({returnTo:destination})});
   assert.equal(response.status,303);assert.equal(response.headers.get('location'),expected);
  }
@@ -216,4 +216,13 @@ test('expired provider sessions cannot restore sign-in without the web cookie or
  const claims=JSON.parse(Buffer.from(access.split('.')[1],'base64url').toString());const refreshed='header.'+Buffer.from(JSON.stringify({...claims,iat:Date.now()})).toString('base64url')+'.signature';validTokens.add(refreshed);assert.equal((await send(refreshed)).status,401);
  assert.equal((await fetch(origins[1]+'/auth/session',{headers:{Cookie:cookie}})).status,401);
  assert.equal((await send(issueToken(),cookie)).status,200,'fresh provider sign-in remains available');
+});
+
+
+test('session token fallback is issued on GET and cannot survive identity regeneration',async()=>{
+ const tokenResponse=await fetch(origins[0]+'/auth/session');const state=await tokenResponse.json() as any;
+ assert.match(state.csrfToken,/^[a-f0-9]{64}$/);const cookie=tokenResponse.headers.get('set-cookie').split(';')[0];
+ const response=await fetch(origins[0]+'/auth/session',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json','X-CSRF-Token':state.csrfToken},body:JSON.stringify({access_token:issueToken()})});
+ assert.equal(response.status,200);const signedCookie=response.headers.get('set-cookie').split(';')[0];assert.notEqual(signedCookie,cookie);
+ assert.equal((await fetch(origins[0]+'/auth/signout',{method:'POST',headers:{Cookie:signedCookie,'X-CSRF-Token':state.csrfToken}})).status,403);
 });

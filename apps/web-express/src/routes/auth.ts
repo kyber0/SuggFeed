@@ -3,7 +3,7 @@ import {blockedIdleToken,idleState,idleExpired} from '../lib/session-idle';
 import { safeAccountReturn } from '../lib/navigation-context';
 import { Router, Request, Response, NextFunction } from "express";
 import { supabasePlatform } from "../lib/supabase";
-import { sameOriginOnly } from "../lib/security";
+import { sameOriginOnly, csrfToken } from "../lib/security";
 
 const router = Router();
 router.use((_req, res, next) => { res.setHeader("Cache-Control", "no-store"); res.locals.accountArea = true; next(); });
@@ -21,7 +21,7 @@ router.get("/confirm", (_req,res) => { res.setHeader("Referrer-Policy","no-refer
 
 router.get("/session", (req, res) => {
   if(req.session.idleBlocked&&!req.session.user)return idleExpired(res);
-  res.json({ success: true, user: req.session.user ?? null, idle:res.locals.sessionIdle||idleState(req) });
+  res.json({ success: true, user: req.session.user ?? null, idle:res.locals.sessionIdle||idleState(req), csrfToken:csrfToken(req) });
 });
 
 router.post("/session", sameOriginOnly, (req: Request, res: Response, next: NextFunction) => {
@@ -72,7 +72,9 @@ router.post("/signout", sameOriginOnly, (req, res, next) => {
   await new Promise<void>((resolve,reject)=>req.session.destroy(error=>error?reject(error):resolve()));
   res.clearCookie("connect.sid", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
   if (req.is("application/json"))return res.json({ success: true });
-  return res.redirect(303, safeAccountReturn(req.body?.returnTo) || "/");
+  // Account switching only returns to an invitation, never an arbitrary URL.
+  const invitation = typeof req.body?.returnTo === 'string' && /^\/schools\/invitations\/([a-f0-9]{64})$/.exec(req.body.returnTo);
+  return res.redirect(303, invitation ? "/schools/invitations/" + encodeURIComponent(invitation[1]) : "/");
  })().catch(next);
 });
 

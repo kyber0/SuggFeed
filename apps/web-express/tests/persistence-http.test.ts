@@ -36,13 +36,13 @@ test('real HTTP submit replays a lost response, recovers code, and rejects accou
     assert.deepEqual(Object.keys(context).sort(),['actor','signedIn','success']);
     const cookie=setCookie.split(';')[0],body={title:'Improve school seating',description:'Add comfortable seats near the school reading area.',category:'Facilities',isAnonymous:true,requestId:crypto.randomUUID(),actor:context.actor};
     const send=(value:any=body,origin=server.origin)=>fetch(server.origin+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json',cookie,origin},body:JSON.stringify(value)});
-    const invalidTrack=await fetch(server.origin+'/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:body.requestId})});assert.equal(invalidTrack.status,400);
+    const invalidTrack=await fetch(server.origin+'/api/track',{method:'POST',headers:{Origin:server.origin,'Content-Type':'application/json'},body:JSON.stringify({code:body.requestId})});assert.equal(invalidTrack.status,400);
     const first=await send();assert.equal(first.status,201);const recorded=await first.json() as any;
     const replay=await send();assert.equal(replay.status,200);const repeated=await replay.json() as any;
     assert.equal(recorded.id,repeated.id);assert.equal(recorded.tracking_code,repeated.tracking_code);assert.equal(repeated.replayed,true);
     assert.equal((await send({...body,title:'Different school seating'})).status,409);
     assert.equal((await send(body,'https://other.example')).status,403);
-    const recover=()=>fetch(server.origin+'/api/submission-receipt',{method:'POST',headers:{'Content-Type':'application/json',cookie},body:JSON.stringify({actor:body.actor,requestId:body.requestId})});
+    const recover=()=>fetch(server.origin+'/api/submission-receipt',{method:'POST',headers:{Origin:server.origin,'Content-Type':'application/json',cookie},body:JSON.stringify({actor:body.actor,requestId:body.requestId})});
     assert.equal(((await (await recover()).json()) as any).tracking_code,recorded.tracking_code);
     user=USER_ID;assert.equal((await send()).status,409);assert.equal((await recover()).status,409);
     assert.equal((await db.query('SELECT * FROM submission_receipts')).rows.length,1);

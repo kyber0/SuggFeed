@@ -60,6 +60,27 @@ No application deployment, real-account creation or hosted restore was performed
 Six earlier public Sugi requests consumed ordinary application rate/log counters;
 no school content, membership or published document was changed.
 
+## CSRF and logout follow-up — 27 October 2026
+
+Unsafe requests now require either a matching Origin/Referer or a session-bound
+CSRF token. Explicit cross-site Fetch Metadata and mismatched/malformed origins
+are rejected even when a token is supplied. An absent origin without a valid token
+fails closed. The global guard runs after session loading so token validation has
+the verified server session available; route-level guards retain the same rule.
+
+Browser forms and fetch requests retain their existing same-origin flow. A client
+that deliberately omits Origin/Referer must first GET `/auth/session`, keep its
+session cookie, and send the returned `csrfToken` in `X-CSRF-Token` (or `_csrf` for
+a parsed form). The token is random, compared in constant time, and lost when
+login regenerates the session or logout destroys it. Do not log or share tokens.
+GET requests and token retrieval do not extend the inactivity deadline.
+
+HTML logout now constructs only an invitation account-switch destination from a
+64-character hexadecimal token, or returns home. JSON logout is unchanged. The
+existing generic redirect validator already rejected the tested external URLs;
+this change narrows the logout contract and removes arbitrary redirect input.
+No new dependency or database migration is required.
+
 ## Rollback and limits
 
 The schema additions can remain when reverting presentation code. Do not deploy a

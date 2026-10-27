@@ -202,7 +202,6 @@ app.use((req,res,next) => {
 });
 
 /* ── Body parsers ────────────────────────────────────────────────────────── */
-app.use(sameOriginOnly);
 app.use(express.json({ limit: "512kb" }));
 app.use(express.urlencoded({ extended: true, limit: "512kb" }));
 app.use(cookieParser());
@@ -232,6 +231,7 @@ app.use(
 );
 
 app.use((_req,res,next)=>{res.append("Server-Timing",`session;dur=${(performance.now()-res.locals.sessionStarted).toFixed(1)}`);delete res.locals.sessionStarted;next();});
+app.use(sameOriginOnly);
 app.use(enforceIdleSession);
 app.use(validateIdentity);
 app.use((_req,res,next)=>{
